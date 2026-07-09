@@ -38,6 +38,7 @@ from kitsune.wiki.models import (
     Locale,
     Revision,
     RevisionAnchorRecord,
+    RevisionTranslationRecord,
     SlugCollision,
     TitleCollision,
     resolves_to_document_view,
@@ -389,7 +390,9 @@ def maybe_award_badge(badge_template: dict, year: int, user_id: int) -> bool:
         else:
             # l10n-badge
             qs = qs.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
-            deleted_contributions_extra_kwargs.update(exclude_locale=settings.WIKI_DEFAULT_LANGUAGE)
+            deleted_contributions_extra_kwargs.update(
+                exclude_locale=settings.WIKI_DEFAULT_LANGUAGE
+            )
 
         num_contributions = qs.count() + num_deleted_contributions(
             Revision,
@@ -622,3 +625,16 @@ def cleanup_old_anchor_records() -> None:
     )
 
     log.info(f"Deleted {num_deleted} stale anchor record(s).")
+
+
+@shared_task
+@skip_if_read_only_mode
+def cleanup_old_translation_records() -> None:
+    """
+    Deletes all RevisionTranslationRecord entries that were created more than
+    settings.TRANSLATION_RECORD_RETENTION_DAYS ago.
+    """
+    cutoff = timezone.now() - timedelta(days=settings.TRANSLATION_RECORD_RETENTION_DAYS)
+    num_deleted, _ = RevisionTranslationRecord.objects.filter(created__lt=cutoff).delete()
+
+    log.info(f"Deleted {num_deleted} old translation record(s).")
