@@ -44,6 +44,12 @@ def documents_for(user, locale, topics=None, products=None, current_document=Non
     that aren't localized to the specified locale. If the specified locale
     is en-US, the second item will be None.
 
+    The order of the returned articles is derived from the given topics: if they
+    all have an "article_ordering" of "newest", the articles are ordered
+    newest-first (most recently added); otherwise the default ordering is used
+    (see "_documents_for"). Both the localized and fallback lists use the same
+    order.
+
     :arg user: the user making this request
     :arg locale: the locale
     :arg topics: (optional) a list of Topic instances
@@ -90,11 +96,18 @@ def documents_for(user, locale, topics=None, products=None, current_document=Non
 
 def _documents_for(user, locale, topics=None, products=None):
     """Returns a list of articles that apply to passed in locale, topics and products."""
+    # Order newest-first only when every given topic opts in, so a mixed set of
+    # topics keeps the default (meaningful) ordering.
+    newest_first = bool(topics) and all(
+        topic.article_ordering == Topic.ArticleOrdering.NEWEST for topic in topics
+    )
     cache_key = _cache_key(locale, topics, products)
 
     if not user.is_authenticated:
-        # For anonymous users, first check the cache.
-        documents_cache_key = f"documents_for_v2:{cache_key}"
+        # For anonymous users, first check the cache. The ordering is part of the
+        # key (but not the shared "cache_key") so that toggling a topic's
+        # article_ordering invalidates only this already-sorted result.
+        documents_cache_key = f"documents_for_v2:{cache_key}:{newest_first}"
         documents = cache.get(documents_cache_key)
         if documents is not None:
             return documents
@@ -188,8 +201,14 @@ def _documents_for(user, locale, topics=None, products=None):
             }
         )
 
-    # sort the results by ascending display_order and descending votes
-    doc_dicts.sort(key=lambda x: (x["display_order"], -x["helpful_votes"]))
+    if newest_first:
+        # newest-first by the original document's creation order (its own id, or
+        # its parent's id for translations, so localized listings and their en-US
+        # fallbacks stay in the same order as en-US).
+        doc_dicts.sort(key=lambda x: x["document_parent_id"] or x["id"], reverse=True)
+    else:
+        # sort the results by ascending display_order and descending votes
+        doc_dicts.sort(key=lambda x: (x["display_order"], -x["helpful_votes"]))
 
     if not user.is_authenticated:
         cache.set(documents_cache_key, doc_dicts)

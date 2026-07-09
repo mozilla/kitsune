@@ -1,5 +1,7 @@
+import heapq
 import random
 import time
+from collections.abc import Iterable
 from itertools import chain, islice
 
 import requests
@@ -336,13 +338,31 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
         ]
 
         # Get remaining main documents excluding featured ones
-        remaining_docs = (doc for doc in main_topic_docs if doc not in topic_featured)
+        remaining_docs: Iterable[Document] = (
+            doc for doc in main_topic_docs if doc not in topic_featured
+        )
+
+        if newest_first := (topic.article_ordering == Topic.ArticleOrdering.NEWEST):
+            # Featured articles are always shown first; order the rest newest-first
+            # by the original document's creation order (its parent's id for
+            # translations). Use nlargest so we only pull the few we need instead
+            # of sorting the whole list.
+            remaining_docs = heapq.nlargest(
+                3, remaining_docs, key=lambda doc: doc.parent_id or doc.id
+            )
 
         # First try to get documents from featured and main docs
         main_docs = list(islice(chain(topic_featured, remaining_docs), 3))
 
         # Fall back to fallback documents only if no main documents exist
-        documents_to_show = main_docs if main_docs else list(islice(fallback_topic_docs, 3))
+        if main_docs:
+            documents_to_show = main_docs
+        elif newest_first:
+            documents_to_show = heapq.nlargest(
+                3, fallback_topic_docs, key=lambda doc: doc.parent_id or doc.id
+            )
+        else:
+            documents_to_show = list(islice(fallback_topic_docs, 3))
 
         topic_data = {
             "topic": topic,

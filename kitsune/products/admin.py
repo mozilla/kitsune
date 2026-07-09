@@ -118,13 +118,21 @@ class TopicAdmin(admin.ModelAdmin):
         parent,
         get_products,
         "display_order",
+        "article_ordering",
         "visible",
         "in_aaq",
         "in_nav",
         "is_archived",
     )
     list_display_links = ("title", "slug")
-    list_editable = ("display_order", "visible", "in_aaq", "in_nav", "is_archived")
+    list_editable = (
+        "display_order",
+        "article_ordering",
+        "visible",
+        "in_aaq",
+        "in_nav",
+        "is_archived",
+    )
     list_filter = (
         ArchivedFilter,
         "in_aaq",
