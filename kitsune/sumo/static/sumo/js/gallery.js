@@ -15,7 +15,7 @@ import "sumo/js/kbox";
     // the remainder are set by input name, not file type
     messages: {},
     extensions: {
-      file: ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'tiff']
+      file: ['jpg', 'jpeg', 'png', 'gif']
     },
     max_size: {
       file: $('#gallery-upload-modal').data('max-image-size')
