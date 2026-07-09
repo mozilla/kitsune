@@ -307,6 +307,7 @@ import "sumo/js/kbox";
       // Show the preview area and make it a draft
       $previewArea.showFade();
       $form.addClass('draft');
+      $form.find('input[name="upload"]').prop('disabled', false);
     },
     /*
     * Little helper function to display a message next to the file input.
@@ -382,15 +383,17 @@ import "sumo/js/kbox";
     * -- show the file input
     */
     _reUpload: function($form, type) {
+      var hasUpload = $form.find('.preview').hasClass('on');
       // If nothing else is being or has been uploaded, hide the metadata
       // and enable the upload input.
       if (!$form.find('.progress').hasClass('on') &&
-      !$form.find('.preview').hasClass('on')) {
+      !hasUpload) {
         $form.find('.metadata').hide();
         $form.removeClass('draft');
       }
       // finally, show the input again
       $form.find('.upload-media.' + type).showFade();
+      $form.find('input[name="upload"]').prop('disabled', !hasUpload);
     },
     /*
     * If there is a draft, this will be fired off from init()
