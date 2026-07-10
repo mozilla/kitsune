@@ -63,6 +63,21 @@ export function fadeIn(el, duration = 400) {
   });
 }
 
+// Slide an element up (collapse its height) and set display:none. Resolves
+// when done. jsdom lacks layout/WAAPI, so it falls back to the final state.
+export function slideUp(el, duration = 400) {
+  const height = el.offsetHeight;
+  const prevOverflow = el.style.overflow;
+  el.style.overflow = "hidden";
+  return animate(el, [{ height: height + "px" }, { height: "0px" }], duration).then(
+    () => {
+      el.style.display = "none";
+      el.style.height = "";
+      el.style.overflow = prevOverflow;
+    }
+  );
+}
+
 // Serialize a form's successful controls into a plain object (name -> value),
 // mirroring jQuery's $.fn.serializeArray semantics: skips disabled controls,
 // buttons/submits/resets, file/image inputs, and unchecked checkboxes/radios.

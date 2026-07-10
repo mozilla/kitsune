@@ -2,35 +2,56 @@
 * Report abuse UI.
 */
 
-(function ($) {
-  'use strict';
+import { apiFetch } from "sumo/js/utils/fetch";
+import { serialize, slideUp } from "sumo/js/utils/dom";
 
-  $(function () {
-    $('[data-sumo-modal]').each(function () {
-      var identifier = $(this).data('sumo-modal');
-      $('[data-modal-id="' + identifier + '"] [type="submit"]').on('click', function (ev) {
-        ev.preventDefault();
-        var $this = $(this);
-        var $form = $this.closest('form');
-
-        $.ajax({
-          url: $form.attr('action'),
-          type: 'POST',
-          data: $form.serialize(),
-          dataType: 'json',
-
-          success: function (data) {
-            $form.siblings('.message').text(data.message);
-            $form.slideUp();
-          },
-          error: function (error) {
-            $form.siblings('.message')
-              .text(gettext('There was an error. Please try again in a moment.'));
-            $form.slideUp();
+export function init() {
+  document.querySelectorAll('[data-sumo-modal]').forEach(function (modalToggle) {
+    var identifier = modalToggle.dataset.sumoModal;
+    document
+      .querySelectorAll('[data-modal-id="' + identifier + '"] [type="submit"]')
+      .forEach(function (submitButton) {
+        submitButton.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          var form = submitButton.closest('form');
+          if (!form) {
+            return;
           }
+
+          apiFetch(form.getAttribute('action'), {
+            method: 'POST',
+            data: serialize(form),
+            dataType: 'json',
+          })
+            .then(function (data) {
+              showMessage(form, data.message);
+              slideUp(form);
+            })
+            .catch(function () {
+              showMessage(
+                form,
+                gettext('There was an error. Please try again in a moment.')
+              );
+              slideUp(form);
+            });
         });
       });
-    });
   });
+}
 
-})(jQuery);
+function showMessage(form, text) {
+  if (!form.parentNode) {
+    return;
+  }
+  Array.from(form.parentNode.children).forEach(function (sibling) {
+    if (sibling !== form && sibling.matches('.message')) {
+      sibling.textContent = text;
+    }
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}

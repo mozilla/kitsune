@@ -68,5 +68,11 @@ describe('ajax preview', () => {
       });
       document.getElementById('preview').click();
     });
+
+    it('does not throw when the trigger element is absent', () => {
+      expect(function () {
+        new AjaxPreview(document.querySelector('.does-not-exist'));
+      }).to.not.throw();
+    });
   });
 });

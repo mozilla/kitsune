@@ -125,6 +125,9 @@ KBox.prototype = {
     self.el = el;
     self.html = typeof el === 'string' ? el : false;
     self.element = self.html ? parseHTML(self.html) : toElement(el);
+    if (!self.element) {
+      return;
+    }
     options = Object.assign({
       // defaults
       clickTarget: dataAttr(self.element, 'target'),

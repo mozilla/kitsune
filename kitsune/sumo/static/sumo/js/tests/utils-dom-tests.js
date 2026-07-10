@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { fadeOut, fadeIn, serialize, toElements, toElement } from "sumo/js/utils/dom";
+import { fadeOut, fadeIn, slideUp, serialize, toElements, toElement } from "sumo/js/utils/dom";
 
 describe("utils/dom", () => {
   afterEach(() => {
@@ -43,6 +43,15 @@ describe("utils/dom", () => {
       document.body.innerHTML = '<div id="box">hi</div>';
       const box = document.getElementById("box");
       await fadeOut(box, 1);
+      expect(box.style.display).to.equal("none");
+    });
+  });
+
+  describe("slideUp", () => {
+    it("collapses the element and sets display:none", async () => {
+      document.body.innerHTML = '<div id="box">content</div>';
+      const box = document.getElementById("box");
+      await slideUp(box, 1);
       expect(box.style.display).to.equal("none");
     });
   });

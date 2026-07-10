@@ -2,28 +2,25 @@
 * Inline editable sections
 */
 
-(function($) {
-
-  'use strict';
-
-  function initInlineEditing() {
-    // Enable managing of member and leader lists.
-    $('.editable a.edit').each(function() {
-      var $this = $(this),
-        originalText = $this.text();
-      $this.on('click', function(ev) {
-        var $container = $this.closest('.editable');
-        $container.toggleClass('edit-on');
-        if ($container.hasClass('edit-on')) {
-          $this.text(gettext('Cancel'));
-        } else {
-          $this.text(originalText);
-        }
-        ev.preventDefault();
-      });
+export function initInlineEditing() {
+  // Enable managing of member and leader lists.
+  document.querySelectorAll('.editable a.edit').forEach(function(edit) {
+    var originalText = edit.textContent;
+    edit.addEventListener('click', function(ev) {
+      var container = edit.closest('.editable');
+      container.classList.toggle('edit-on');
+      if (container.classList.contains('edit-on')) {
+        edit.textContent = gettext('Cancel');
+      } else {
+        edit.textContent = originalText;
+      }
+      ev.preventDefault();
     });
-  }
+  });
+}
 
-  $(initInlineEditing);
-
-})(jQuery);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initInlineEditing);
+} else {
+  initInlineEditing();
+}

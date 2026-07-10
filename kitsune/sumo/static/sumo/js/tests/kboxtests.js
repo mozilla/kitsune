@@ -64,5 +64,11 @@ describe('kbox', () => {
       kbox.destroy();
       expect(document.querySelector('.kbox-container')).to.equal(null);
     });
+
+    it('does not throw when the element is absent', () => {
+      expect(function () {
+        new KBox(document.querySelector('.does-not-exist'));
+      }).to.not.throw();
+    });
   });
 });
