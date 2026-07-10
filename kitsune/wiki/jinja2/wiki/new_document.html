@@ -27,7 +27,7 @@
                   <legend>{{ _("Restrict Visibility") }}</legend>
                   <span class="{% if document_form.restrict_to_groups.errors %}has-error{% endif %}">
                     {{ document_form.restrict_to_groups|label_with_help }}
-                    {{ document_form.restrict_to_groups }}
+                    {{ document_form.restrict_to_groups.as_widget(attrs={"class": "tom-select-restrict-to-groups"}) }}
                     {{ document_form.restrict_to_groups.errors }}
                   </span>
               </fieldset>

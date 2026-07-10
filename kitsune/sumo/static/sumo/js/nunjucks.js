@@ -3,65 +3,61 @@ import nunjucks from "nunjucks/browser/nunjucks-slim";
 var env = nunjucks.configure({autoescape: true});
 export default env;
 
-(function($) {
+env.addGlobal('_', window.gettext);
+env.addGlobal('ngettext', window.ngettext);
 
-  env.addGlobal('_', window.gettext);
-  env.addGlobal('ngettext', window.ngettext);
+env.addFilter('f', function(fmt, obj, named) {
+  var keys = Object.keys(obj);
+  var escape = env.getFilter('escape');
 
-  env.addFilter('f', function(fmt, obj, named) {
-    var keys = Object.keys(obj);
-    var escape = env.getFilter('escape');
+  for (var i = 0; i < keys.length; i++) {
+    obj[keys[i]] = escape(obj[keys[i]]);
+  }
 
-    for (var i = 0; i < keys.length; i++) {
-      obj[keys[i]] = escape(obj[keys[i]]);
+  return window.interpolate(fmt, obj, named);
+});
+
+env.addFilter('urlparams', function(url, params) {
+  if (url) {
+    var i;
+    var base = url.split('?')[0];
+    var qs = url.split('?')[1] || '';
+    qs = qs.split('&');
+
+    var old_params = {};
+    for (i = 0; i < qs.length; i++) {
+      var s = qs[i].split('=');
+      old_params[s.shift()] = s.join('=');
     }
 
-    return window.interpolate(fmt, obj, named);
-  });
+    params = Object.assign({}, old_params, params);
 
-  env.addFilter('urlparams', function(url, params) {
-    if (url) {
-      var i;
-      var base = url.split('?')[0];
-      var qs = url.split('?')[1] || '';
-      qs = qs.split('&');
-
-      var old_params = {};
-      for (i = 0; i < qs.length; i++) {
-        var s = qs[i].split('=');
-        old_params[s.shift()] = s.join('=');
+    url = base;
+    var keys = Object.keys(params);
+    for (i = 0; i < keys.length; i++) {
+      url += (url.indexOf('?') === -1) ? '?' : '&';
+      url += keys[i];
+      var val = params[keys[i]];
+      if (val !== undefined && val !== null && val !== '') {
+        url += '=' + val;
       }
-
-      params = $.extend({}, old_params, params);
-
-      url = base;
-      var keys = Object.keys(params);
-      for (i = 0; i < keys.length; i++) {
-        url += (url.indexOf('?') === -1) ? '?' : '&';
-        url += keys[i];
-        var val = params[keys[i]];
-        if (val !== undefined && val !== null && val !== '') {
-          url += '=' + val;
-        }
-      }
-
-      return url;
     }
-  });
 
-  env.addFilter('class_selected', function(v1, v2) {
-    if (v1 === v2) {
-      return ' class=selected ';
-    }
-    return '';
-  });
+    return url;
+  }
+});
 
-  env.addFilter('stringify', function(obj) {
-    return JSON.stringify(obj);
-  });
+env.addFilter('class_selected', function(v1, v2) {
+  if (v1 === v2) {
+    return ' class=selected ';
+  }
+  return '';
+});
 
-  env.addFilter('encodeURI', function(uri) {
-    return encodeURI(uri);
-  });
+env.addFilter('stringify', function(obj) {
+  return JSON.stringify(obj);
+});
 
-})(jQuery);
+env.addFilter('encodeURI', function(uri) {
+  return encodeURI(uri);
+});

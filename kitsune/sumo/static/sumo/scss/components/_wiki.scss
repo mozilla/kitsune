@@ -756,6 +756,21 @@ article {
   width: 100%;
 }
 
+// Align the wiki edit page's Tom Selects - related documents and
+// restrict-to-groups - with the app's Protocol typography instead of Tom
+// Select's default system font at 13px. Both widgets carry a class on their
+// original element (in the template markup) that Tom Select copies onto its
+// wrapper. text-body-sm sets the family, size, and line-height together;
+// form-control inputs don't inherit these, so the input is included explicitly.
+.ts-wrapper.tom-select-related-docs,
+.ts-wrapper.tom-select-restrict-to-groups {
+  .ts-control,
+  .ts-control input,
+  .ts-dropdown {
+    @include c.text-body-sm;
+  }
+}
+
 /* Translate specific */
 
 .translate {

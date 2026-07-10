@@ -38,6 +38,9 @@ export default class AjaxPreview extends window.EventTarget {
 
     const self = this;
     const btn = toElement(el);
+    if (!btn) {
+      return;
+    }
     const o = options || {};
     const form = btn.closest("form");
     const previewUrl = o.previewUrl || btn.dataset.previewUrl;

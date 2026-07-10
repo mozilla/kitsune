@@ -1,5 +1,6 @@
 import _each from "underscore/modules/each";
 import _reduce from "underscore/modules/reduce";
+import { toElement } from "sumo/js/utils/dom";
 import {
   diff_match_patch,
   DIFF_DELETE,
@@ -21,15 +22,22 @@ export default function Diff(from, to, outputContainer) {
 
 // Apply diffs automatically to '.diff-this' elements using children
 // '.from', '.to' and '.output' as the parameters.
-export function initDiff($container) {
-  $container = $container || $('body');
-  $container.find('.diff-this').each(function() {
-    var $this = $(this);
-    var diff = new Diff($this.find('.from').text(), $this.find('.to').text(), $this.find('.output'));
+export function initDiff(container) {
+  container = toElement(container) || document.body;
+  container.querySelectorAll('.diff-this').forEach(function(el) {
+    var output = el.querySelector('.output');
+    if (!output) {
+      return;
+    }
+    new Diff(textOf(el.querySelector('.from')), textOf(el.querySelector('.to')), output);
   });
 }
 
-(function($) {
+function textOf(el) {
+  return el ? el.textContent : '';
+}
+
+(function() {
 
   'use strict';
 
@@ -39,9 +47,12 @@ export function initDiff($container) {
 
       self.from = from;
       self.to = to;
-      self.$container = $(outputContainer);
-      self.$container.html('<div class="diff-html" />');
-      self.$diff = self.$container.find('.diff-html');
+      self.container = toElement(outputContainer);
+      if (!self.container) {
+        return;
+      }
+      self.container.innerHTML = '<div class="diff-html"></div>';
+      self.diff = self.container.querySelector('.diff-html');
 
       self.rawDiffs = self._diff();
       self.lineDiffs = self._lineDiff();
@@ -194,7 +205,7 @@ export function initDiff($container) {
     render: function() {
       // Render the diff.
       var self = this;
-      self.$diff.html(self.prettyHtml());
+      self.diff.innerHTML = self.prettyHtml();
     },
     prettyHtml: function() {
       var self = this;
@@ -300,4 +311,4 @@ export function initDiff($container) {
 
   initDiff();
 
-})(jQuery);
+})();
