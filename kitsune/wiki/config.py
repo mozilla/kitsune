@@ -7,6 +7,7 @@ DOCUMENTS_PER_PAGE = 100
 
 COLLAPSIBLE_DOCUMENTS = {
     "en-US": [
+        "flash-113-crashes",
         "firefox-os-support-forum-contributors-training",
         "firefox-android-support-forum-contributors",
         "firefox-support-forum-contributors",

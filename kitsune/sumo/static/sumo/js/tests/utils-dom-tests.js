@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { fadeOut, fadeIn, slideUp, serialize, toElements, toElement } from "sumo/js/utils/dom";
+import { fadeOut, fadeIn, slideUp, slideDown, slideToggle, serialize, toElements, toElement } from "sumo/js/utils/dom";
 
 describe("utils/dom", () => {
   afterEach(() => {
@@ -62,6 +62,26 @@ describe("utils/dom", () => {
       const box = document.getElementById("box");
       await fadeIn(box, 1);
       expect(box.style.display).to.not.equal("none");
+    });
+  });
+
+  describe("slideDown", () => {
+    it("reveals a hidden element and resolves", async () => {
+      document.body.innerHTML = '<div id="box" style="display:none">content</div>';
+      const box = document.getElementById("box");
+      await slideDown(box, 1);
+      expect(box.style.display).to.not.equal("none");
+    });
+  });
+
+  describe("slideToggle", () => {
+    it("shows a hidden element and hides a visible one", async () => {
+      document.body.innerHTML = '<div id="box" style="display:none">content</div>';
+      const box = document.getElementById("box");
+      await slideToggle(box, 1);
+      expect(box.style.display).to.not.equal("none");
+      await slideToggle(box, 1);
+      expect(box.style.display).to.equal("none");
     });
   });
 
