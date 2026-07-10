@@ -18,7 +18,8 @@ class AwardNotificationTests(TestCase):
         self.assertEqual(0, len(mail.outbox))
 
         # Create an award and save it. This triggers the notification.
-        AwardFactory(description="yay!", badge=new_badge)
+        with self.captureOnCommitCallbacks(execute=True):
+            AwardFactory(description="yay!", badge=new_badge)
 
         self.assertEqual(1, len(mail.outbox))
 

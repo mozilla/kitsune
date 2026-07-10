@@ -1,4 +1,4 @@
-# Pruned and mnodified version of django-badger/badger/models.py
+# Pruned and modified version of django-badger/badger/models.py
 # https://github.com/mozilla/django-badger/blob/master/badger/models.py
 
 import re
@@ -6,7 +6,7 @@ from typing import override
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q
 from django.urls import reverse
 
@@ -390,8 +390,12 @@ class Award(models.Model):
 
         if is_new:
             # Only fire was-awarded signal on a new award.
-            # TODO: we might not need this as there are no more notifications
-            badge_was_awarded.send(sender=self.__class__, award=self)
+            transaction.on_commit(
+                lambda award=self: badge_was_awarded.send(
+                    sender=award.__class__,
+                    award=award,
+                )
+            )
 
     @override
     def delete(self):
