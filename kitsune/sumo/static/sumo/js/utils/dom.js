@@ -78,6 +78,28 @@ export function slideUp(el, duration = 400) {
   );
 }
 
+// Slide an element down (expand from collapsed to its natural height) and leave
+// it visible. Resolves when done. jsdom falls back to the final state.
+export function slideDown(el, duration = 400) {
+  el.style.display = "";
+  const height = el.offsetHeight;
+  const prevOverflow = el.style.overflow;
+  el.style.overflow = "hidden";
+  return animate(el, [{ height: "0px" }, { height: height + "px" }], duration).then(
+    () => {
+      el.style.height = "";
+      el.style.overflow = prevOverflow;
+    }
+  );
+}
+
+// Slide an element up or down depending on its current visibility, mirroring
+// jQuery's .slideToggle(). Resolves when done.
+export function slideToggle(el, duration = 400) {
+  const isHidden = window.getComputedStyle(el).display === "none";
+  return isHidden ? slideDown(el, duration) : slideUp(el, duration);
+}
+
 // Serialize a form's successful controls into a plain object (name -> value),
 // mirroring jQuery's $.fn.serializeArray semantics: skips disabled controls,
 // buttons/submits/resets, file/image inputs, and unchecked checkboxes/radios.
