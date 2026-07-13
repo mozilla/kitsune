@@ -96,7 +96,7 @@ function positionVotingBasedOnScreenWidth() {
   }
 }
 
-$(window).on("load", function () {
+window.addEventListener("load", function () {
   // Wait for all content (including images) to load
   var hash = window.location.hash;
   if (hash) {
@@ -105,8 +105,7 @@ $(window).on("load", function () {
       window.location.hash = hash; // Restore the hash after all images are loaded
     }, 0);
   }
-}
-);
+});
 
 // For this singular document, we are going to load
 // all images without lazy loading
@@ -126,7 +125,17 @@ function addReferrerAndQueryToVoteForm() {
   var urlParams = getQueryParamsAsDict(),
     referrer = getReferrer(urlParams),
     query = getSearchQuery(urlParams, referrer);
-  $(".document-vote form")
-    .append($('<input type="hidden" name="referrer"/>').attr("value", referrer))
-    .append($('<input type="hidden" name="query"/>').attr("value", query));
-};
+  document.querySelectorAll(".document-vote form").forEach(function (form) {
+    var referrerInput = document.createElement("input");
+    referrerInput.type = "hidden";
+    referrerInput.name = "referrer";
+    referrerInput.value = referrer;
+    form.appendChild(referrerInput);
+
+    var queryInput = document.createElement("input");
+    queryInput.type = "hidden";
+    queryInput.name = "query";
+    queryInput.value = query;
+    form.appendChild(queryInput);
+  });
+}
