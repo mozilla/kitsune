@@ -1,5 +1,4 @@
 import questionmarkIcon from "sumo/img/questions/icon.questionmark.png";
-import "sumo/js/libs/jquery.cookie";
 import _throttle from "underscore/modules/throttle";
 import KBox from "sumo/js/kbox";
 import AjaxPreview from "sumo/js/ajaxpreview";
@@ -7,6 +6,9 @@ import AjaxVote from "sumo/js/ajaxvote";
 import { getQueryParamsAsDict, getReferrer, getSearchQuery, unquote } from "sumo/js/main";
 import Marky from "sumo/js/markup";
 import AAQSystemInfo from "sumo/js/aaq";
+import { apiFetch } from "sumo/js/utils/fetch";
+import { getCookie } from "sumo/js/utils/cookie";
+import { serialize, slideToggle } from "sumo/js/utils/dom";
 
 /*
 * questions.js
@@ -25,62 +27,63 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// TODO: Figure out how to break out the functionality here into
-// testable parts.
-
 function init() {
-  var $body = $('body');
+  var body = document.body;
 
   // if there's an error on page load, focus the field.
-  $('.has-error input, .has-error textarea').first().focus();
+  var errorField = document.querySelector('.has-error input, .has-error textarea');
+  if (errorField) {
+    errorField.focus();
+  }
 
-  if ($body.is('.new-question')) {
+  if (body.classList.contains('new-question')) {
     initQuestion();
   }
 
-  if ($body.is('.edit-question')) {
+  if (body.classList.contains('edit-question')) {
     initQuestion("editing");
   }
 
-  if ($body.is('.questions')) {
+  if (body.classList.contains('questions')) {
     initTagFilterToggle();
 
-    $('#flag-filter input[type="checkbox"]').on('click', function() {
-      window.location = $(this).data('url');
+    document.querySelectorAll('#flag-filter input[type="checkbox"]').forEach(function (cb) {
+      cb.addEventListener('click', function () {
+        window.location = cb.dataset.url;
+      });
     });
   }
 
-  if ($body.is('.answers')) {
+  if (body.classList.contains('answers')) {
     // Put last search query into search box
-    $('#support-search input[name=q]')
-    .val(unquote($.cookie('last_search')));
-
-    function takeQuestion() {
-      if ($(this).val().length > 0) {
-        var $form = $(this).closest('form');
-        var url = $form.data('take-question-url');
-        var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
-        $.ajax({
-          url: url,
-          method: 'POST',
-          beforeSend: function(xhr, settings) {
-            xhr.setRequestHeader('X-CSRFToken', csrftoken);
-          }
-        });
-      }
+    var searchBox = document.querySelector('#support-search input[name=q]');
+    if (searchBox) {
+      searchBox.value = unquote(getCookie('last_search'));
     }
 
-    $('#id_content').on('keyup', _throttle(takeQuestion, 60000));
+    var content = document.getElementById('id_content');
+    if (content) {
+      content.addEventListener('keyup', _throttle(takeQuestion, 60000));
+    }
 
-    $(document).on('click', '#details-edit', function(ev) {
-      ev.preventDefault();
-      $('#question-details').addClass('editing');
-    });
-    $(document).on('click', '#details-cancel', function(ev) {
-      ev.preventDefault();
-      let $form = $('#details-cancel').closest('form');
-      $form.trigger('reset');
-      $('#question-details').removeClass('editing');
+    document.addEventListener('click', function (ev) {
+      if (ev.target.closest('#details-edit')) {
+        ev.preventDefault();
+        var details = document.getElementById('question-details');
+        if (details) {
+          details.classList.add('editing');
+        }
+      } else if (ev.target.closest('#details-cancel')) {
+        ev.preventDefault();
+        var form = ev.target.closest('#details-cancel').closest('form');
+        if (form) {
+          form.reset();
+        }
+        var detailsToClose = document.getElementById('question-details');
+        if (detailsToClose) {
+          detailsToClose.classList.remove('editing');
+        }
+      }
     });
 
     initHaveThisProblemTooAjax();
@@ -89,24 +92,41 @@ function init() {
     initEditDetails();
     addReferrerAndQueryToVoteForm();
     initReplyToAnswer();
-    new AjaxPreview($('#preview'));
+    new AjaxPreview(document.getElementById('preview'));
   }
 
-  Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', {cannedResponses: !$body.is('.new-question') && !$body.is('.edit-question')});
-
-  // product selector page reloading
-  $('#product-selector select').on('change', function() {
-    var val = $(this).val();
-    var queryParams = getQueryParamsAsDict(document.location.toString());
-
-    if (val === '') {
-      delete queryParams.product;
-    } else {
-      queryParams.product = val;
-    }
-    document.location = document.location.pathname + '?' + $.param(queryParams);
+  Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', {
+    cannedResponses: !body.classList.contains('new-question') && !body.classList.contains('edit-question'),
   });
 
+  // product selector page reloading
+  var productSelect = document.querySelector('#product-selector select');
+  if (productSelect) {
+    productSelect.addEventListener('change', function () {
+      var val = productSelect.value;
+      var queryParams = getQueryParamsAsDict(document.location.toString());
+
+      if (val === '') {
+        delete queryParams.product;
+      } else {
+        queryParams.product = val;
+      }
+      document.location = document.location.pathname + '?' + new URLSearchParams(queryParams).toString();
+    });
+  }
+}
+
+// Take (assign) a question to the current user once they start replying.
+// Bound as a throttled keyup handler, so `this` is the content textarea.
+function takeQuestion() {
+  if (this.value.length > 0) {
+    var form = this.closest('form');
+    var url = form ? form.dataset.takeQuestionUrl : null;
+    if (url) {
+      // apiFetch adds the X-CSRFToken header automatically.
+      apiFetch(url, { method: 'POST' });
+    }
+  }
 }
 
 /*
@@ -127,37 +147,36 @@ function initQuestion(action) {
   }
 }
 
-function isLoggedIn() {
-  return $('#greeting span.user').length > 0;
-}
-
 // Handle changes to the details for a question
 function initEditDetails() {
-  $('#details-product').on('change', function() {
-    var $selected;
+  var product = document.getElementById('details-product');
+  if (!product) {
+    return;
+  }
+  product.addEventListener('change', function () {
+    var selected = product.selectedOptions[0];
+    var topic = document.getElementById('details-topic');
+    var submit = document.getElementById('details-submit');
 
-    $(this).children().each(function() {
-      if (this.selected) {
-        $selected = $(this);
-      }
-    });
+    if (topic) {
+      topic.innerHTML = '';
+    }
+    if (submit) {
+      submit.disabled = true;
+    }
 
-    $('#details-topic').children().remove();
-    $('#details-submit').prop('disabled', true);
-
-    $.ajax($selected.data('url'), {
-      'dataType': 'json',
-      'success': function(data) {
-        for (var i = 0; i < data.topics.length; i++) {
-          var topic = data.topics[i];
-          var $opt = $('<option />');
-
-          $opt.attr('value', topic.id);
-          $opt.html(topic.title);
-
-          $('#details-topic').append($opt);
+    apiFetch(selected.dataset.url, { dataType: 'json' }).then(function (data) {
+      for (var i = 0; i < data.topics.length; i++) {
+        var t = data.topics[i];
+        var opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.title;
+        if (topic) {
+          topic.appendChild(opt);
         }
-        $('#details-submit').prop('disabled', false);
+      }
+      if (submit) {
+        submit.disabled = false;
       }
     });
   });
@@ -183,106 +202,140 @@ function hideDetails(form) {
 * Ajaxify any "I have this problem too" forms (may be multiple per page)
 */
 function initHaveThisProblemTooAjax() {
-  var $container = $('#question div.me-too, .question-tools div.me-too');
+  var containers = document.querySelectorAll('#question div.me-too, .question-tools div.me-too');
 
-  // ajaxify each form individually so the resulting kbox attaches to
-  // the correct DOM element
-  $container.each(function() {
-    initAjaxForm($(this), 'form', '#vote-thanks');
-  });
+  containers.forEach(function (container) {
+    // ajaxify each form individually so the resulting kbox attaches to
+    // the correct DOM element
+    initAjaxForm(container, 'form', '#vote-thanks');
 
-  $container.find('input').on("click", function() {
-    $(this).attr('disabled', 'disabled');
-  });
+    container.querySelectorAll('input').forEach(function (input) {
+      input.addEventListener('click', function () {
+        input.setAttribute('disabled', 'disabled');
+      });
+    });
 
-  // closing or cancelling the kbox on any of the forms should remove
-  // all of them
-  $container.on('click', '.kbox-close, .kbox-cancel', function(ev) {
-    ev.preventDefault();
-    $container.off().remove();
+    // closing or cancelling the kbox on any of the forms should remove
+    // all of them
+    container.addEventListener('click', function (ev) {
+      if (ev.target.closest('.kbox-close, .kbox-cancel')) {
+        ev.preventDefault();
+        containers.forEach(function (c) {
+          c.remove();
+        });
+      }
+    });
   });
 }
 
 function addReferrerAndQueryToVoteForm() {
   // Add the source/referrer and query terms to the helpful vote form
-  var urlParams = getQueryParamsAsDict(),
-    referrer = getReferrer(urlParams),
-    query = getSearchQuery(urlParams, referrer);
-  $('form.helpful, .me-too form')
-  .append($('<input type="hidden" name="referrer"/>')
-  .attr('value', referrer))
-  .append($('<input type="hidden" name="query"/>')
-  .attr('value', query));
+  var urlParams = getQueryParamsAsDict();
+  var referrer = getReferrer(urlParams);
+  var query = getSearchQuery(urlParams, referrer);
+  document.querySelectorAll('form.helpful, .me-too form').forEach(function (form) {
+    var referrerInput = document.createElement('input');
+    referrerInput.type = 'hidden';
+    referrerInput.name = 'referrer';
+    referrerInput.value = referrer;
+    form.appendChild(referrerInput);
+
+    var queryInput = document.createElement('input');
+    queryInput.type = 'hidden';
+    queryInput.name = 'query';
+    queryInput.value = query;
+    form.appendChild(queryInput);
+  });
 }
 
 /*
 * Ajaxify the Helpful/Not Helpful form
 */
 function initHelpfulVote() {
-  $('.sumo-l-two-col--sidebar, #document-list, .answer-footer').each(function() {
-    new AjaxVote($(this).find('form.helpful'), { // eslint-disable-line
+  document.querySelectorAll('.sumo-l-two-col--sidebar, #document-list, .answer-footer').forEach(function (el) {
+    new AjaxVote(el.querySelector('form.helpful'), {
       replaceFormWithMessage: true,
-      removeForm: true
+      removeForm: true,
     });
   });
 }
 
 // Helper
-function initAjaxForm($container, formSelector, boxSelector, onKboxClose) {
-  $container.on('submit', formSelector, function(ev) {
+function initAjaxForm(container, formSelector, boxSelector, onKboxClose) {
+  container.addEventListener('submit', function (ev) {
+    var form = ev.target.closest(formSelector);
+    if (!form || !container.contains(form)) {
+      return;
+    }
     ev.preventDefault();
-    var $form = $(this);
-    var url = $form.attr('action');
-    var data = $form.serialize();
+    var url = form.getAttribute('action');
 
-    $.ajax({
-      url: url,
-      type: 'POST',
-      data: data,
-      dataType: 'json',
-      success: function(response) {
+    apiFetch(url, { method: 'POST', data: serialize(form), dataType: 'json' })
+      .then(function (response) {
         if (response.html) {
-          if ($(boxSelector).length === 0) {
+          var box = document.querySelector(boxSelector);
+          if (!box) {
             // We don't have a modal set up yet.
             var kbox = new KBox(response.html, {
-              container: $container,
-              preClose: onKboxClose
+              container: container,
+              preClose: onKboxClose,
             });
             kbox.open();
           } else {
-            $(boxSelector).html($(response.html).children());
+            // Replace the box contents with the children of the returned markup
+            // (mirrors the old jQuery `.html($(response.html).children())`).
+            var temp = document.createElement('div');
+            temp.innerHTML = response.html;
+            var children = [];
+            Array.from(temp.children).forEach(function (topEl) {
+              children.push.apply(children, Array.from(topEl.children));
+            });
+            box.replaceChildren.apply(box, children);
           }
         } else if (response.message) {
-          $form.find('[type="submit"]').prop('disabled', true);
-          $form.siblings('.vote-rate-limit-msg').remove();
-          $form.after($('<p class="vote-rate-limit-msg"></p>').text(response.message));
+          var submit = form.querySelector('[type="submit"]');
+          if (submit) {
+            submit.disabled = true;
+          }
+          var existing = form.parentNode.querySelector('.vote-rate-limit-msg');
+          if (existing) {
+            existing.remove();
+          }
+          var msg = document.createElement('p');
+          msg.className = 'vote-rate-limit-msg';
+          msg.textContent = response.message;
+          form.insertAdjacentElement('afterend', msg);
         }
 
         if (!response.ignored) {
           // Trigger an event for others to listen for.
-          document.dispatchEvent(new CustomEvent("vote-for-question", { bubbles: true, detail: { url } }));
+          document.dispatchEvent(new CustomEvent("vote-for-question", { bubbles: true, detail: { url: url } }));
         }
-      },
-      error: function() {
+      })
+      .catch(function () {
         var message = gettext('There was an error.');
         alert(message);
-      }
-    });
-
-    return false;
+      });
   });
 }
 
 function initTagFilterToggle() {
-  $('#toggle-tag-filter').on("click", function(e) {
+  var toggle = document.getElementById('toggle-tag-filter');
+  if (!toggle) {
+    return;
+  }
+  toggle.addEventListener("click", function (e) {
     e.preventDefault();
-    $('#tag-filter').slideToggle('fast');  // CSS3: Y U NO TRANSITION TO `height: auto;`?
-    $(this).toggleClass('off');
+    var filter = document.getElementById('tag-filter');
+    if (filter) {
+      slideToggle(filter); // CSS3: Y U NO TRANSITION TO `height: auto;`?
+    }
+    toggle.classList.toggle('off');
   });
 }
 
 /*
-* Links all crash IDs found in the passed HTML container elements
+* Links all crash IDs found in the passed HTML container element
 */
 export function linkCrashIds(container) {
   if (!container) {
@@ -297,40 +350,47 @@ export function linkCrashIds(container) {
   "<a href='" + helpingWithCrashesArticle + "' target='_blank'>" +
   "<img src='" + questionmarkIcon + "'></img></a></span>";
 
-  container.html(container.html().replace(crashIDRegex, crashReportContainer));
+  container.innerHTML = container.innerHTML.replace(crashIDRegex, crashReportContainer);
 }
 
 /*
 * Initialize the automatic linking of crash IDs
 */
 function initCrashIdLinking() {
-  var postContents = $('.question .content, .answer .main-content, #more-system-details');
-  postContents.each(function() {
-    linkCrashIds($(this));
+  document.querySelectorAll('.question .content, .answer .main-content, #more-system-details').forEach(function (el) {
+    linkCrashIds(el);
   });
 }
 
 function initReplyToAnswer() {
-  $('a.quoted-reply').on("click", function() {
-    var contentId = $(this).data('content-id'),
-      $content = $('#' + contentId),
-      text = $content.find('.content-raw').text(),
-      user = $content.find('.display-name').text(),
-      reply_text = `''<p>${user} [[#${contentId}|${gettext('said')}]]</p>''\n<blockquote>${text}\n</blockquote>\n\n`,
-      $textarea = $('#id_content'),
-      oldtext = $textarea.val();
+  document.querySelectorAll('a.quoted-reply').forEach(function (link) {
+    link.addEventListener("click", function () {
+      var contentId = link.dataset.contentId;
+      var contentEl = document.getElementById(contentId);
+      var rawEl = contentEl ? contentEl.querySelector('.content-raw') : null;
+      var nameEl = contentEl ? contentEl.querySelector('.display-name') : null;
+      var text = rawEl ? rawEl.textContent : '';
+      var user = nameEl ? nameEl.textContent : '';
+      var reply_text = `''<p>${user} [[#${contentId}|${gettext('said')}]]</p>''\n<blockquote>${text}\n</blockquote>\n\n`;
+      var textarea = document.getElementById('id_content');
 
-    $textarea.val(oldtext + reply_text);
+      if (textarea) {
+        textarea.value = textarea.value + reply_text;
+        setTimeout(function () {
+          textarea.focus();
+        }, 10);
+      }
 
-    setTimeout(function() {
-      $textarea.focus();
-    }, 10);
-
-    return true;
+      return true;
+    });
   });
 }
 
-$(init);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 
 const TAGS_INITIAL_LIMIT = 10;
 const TAGS_PAGE_SIZE = 20;
