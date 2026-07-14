@@ -881,66 +881,56 @@ class TestRateLimiting(TestCase):
         else:
             self.assertEqual(AnswerVote.objects.filter(answer=a).count(), votes + 1)
 
+    @override_settings(ANON_VOTE_RATELIMITS=["2/m"])
     def test_question_vote_limit(self):
-        """Test that an anonymous user's votes are ignored after 1
-        question vote."""
-        question1 = QuestionFactory()
-        question2 = QuestionFactory()
+        """An anonymous user's votes are ignored once their limit is exceeded."""
+        questions = [QuestionFactory() for _ in range(3)]
 
-        # The rate limit is 1 per minute. So make 1 request.
-        self._check_question_vote(question1, False)
+        self._check_question_vote(questions[0], False)
+        self._check_question_vote(questions[1], False)
 
-        # Now make another, it should fail.
-        self._check_question_vote(question2, True)
+        # The third vote exceeds the anonymous limit.
+        self._check_question_vote(questions[2], True)
 
+    @override_settings(ANON_VOTE_RATELIMITS=["1/m"], VOTE_RATELIMITS=["2/m"])
     def test_question_vote_logged_in(self):
-        """This exhausts the rate limit, then logs in, and exhausts it
-        again."""
-        question1 = QuestionFactory()
-        question2 = QuestionFactory()
+        """Anonymous and authenticated users have independent vote limits."""
+        questions = [QuestionFactory() for _ in range(6)]
         u = UserFactory(password="testpass")
 
-        # The rate limit is 1 per minute. So make 1 request.
-        self._check_question_vote(question1, False)
+        # Anonymous: limited to 1.
+        self._check_question_vote(questions[0], False)
+        self._check_question_vote(questions[1], True)
 
-        # Now make another, it should fail.
-        self._check_question_vote(question2, True)
-
-        # Login.
+        # Logging in starts a fresh, more generous bucket.
         self.client.login(username=u.username, password="testpass")
+        self._check_question_vote(questions[2], False)
+        self._check_question_vote(questions[3], False)
+        self._check_question_vote(questions[4], True)
 
-        # The rate limit is 1 per minute. So make 1 request.
-        self._check_question_vote(question1, False)
-
-        # Now make another, it should fail.
-        self._check_question_vote(question2, True)
-
-        # Logging out out won't help
+        # Logging out returns to the exhausted anonymous bucket.
         self.client.logout()
-        self._check_question_vote(question2, True)
+        self._check_question_vote(questions[5], True)
 
+    @override_settings(VOTE_RATELIMITS=["2/m"])
     def test_answer_vote_logged_in(self):
-        """Test that different authenticated users have separate rate limits."""
+        """Each authenticated user can burst up to their limit, tracked separately."""
         q = QuestionFactory()
-        answer1 = AnswerFactory(question=q)
-        answer2 = AnswerFactory(question=q)
+        answers = [AnswerFactory(question=q) for _ in range(6)]
         u1 = UserFactory(password="testpass")
         u2 = UserFactory(password="testpass")
 
-        # First user logs in and votes
+        # First user bursts up to their limit, then is blocked.
         self.client.login(username=u1.username, password="testpass")
-        # The rate limit is 1 per hour. So make 1 request.
-        self._check_answer_vote(q, answer1, False)
+        self._check_answer_vote(q, answers[0], False)
+        self._check_answer_vote(q, answers[1], False)
+        self._check_answer_vote(q, answers[2], True)
 
-        # The rate limit has been hit for this user, so the next request will fail.
-        self._check_answer_vote(q, answer2, True)
-
-        # Login as a different user - they should have their own rate limit
+        # A different user has their own separate limit.
         self.client.login(username=u2.username, password="testpass")
-        self._check_answer_vote(q, answer1, False)
-
-        # Now the second user has also hit the rate limit.
-        self._check_answer_vote(q, answer2, True)
+        self._check_answer_vote(q, answers[3], False)
+        self._check_answer_vote(q, answers[4], False)
+        self._check_answer_vote(q, answers[5], True)
 
     def test_answers_limit(self):
         """Only four answers per minute can be posted."""

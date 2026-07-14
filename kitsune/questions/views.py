@@ -1344,8 +1344,21 @@ def unsolve(request, question_id, answer_id):
     return HttpResponseRedirect(question.get_absolute_url())
 
 
+def vote_is_ratelimited(request, action):
+    """Apply the multi-window vote limits; return True if any window is exceeded."""
+    rates = (
+        settings.VOTE_RATELIMITS
+        if request.user.is_authenticated
+        else settings.ANON_VOTE_RATELIMITS
+    )
+    limited = False
+    for rate in rates:
+        if is_ratelimited(request, action, rate):
+            limited = True
+    return limited
+
+
 @require_POST
-@ratelimit("question-vote", "1/h")
 def question_vote(request, question_id):
     """I have this problem too."""
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
@@ -1354,7 +1367,7 @@ def question_vote(request, question_id):
         raise PermissionDenied
 
     if not question.has_voted(request):
-        if request.limited:
+        if vote_is_ratelimited(request, "question-vote"):
             msg = _("You've hit your voting limit for now. Please try again later.")
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 return HttpResponse(json.dumps({"message": str(msg), "ignored": True}))
@@ -1404,7 +1417,6 @@ def question_vote(request, question_id):
 
 @require_POST
 @login_required
-@ratelimit("answer-vote", "1/h")
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
     answer = get_object_or_404(
@@ -1419,7 +1431,7 @@ def answer_vote(request, question_id, answer_id):
         raise PermissionDenied
 
     if not answer.has_voted(request):
-        if request.limited:
+        if vote_is_ratelimited(request, "answer-vote"):
             msg = _("You've hit your voting limit for now. Please try again later.")
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 return HttpResponse(json.dumps({"message": msg, "ignored": True}))

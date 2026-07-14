@@ -1138,6 +1138,10 @@ DISABLE_QUESTIONS_LIST_GLOBAL = config("DISABLE_QUESTIONS_LIST_GLOBAL", default=
 DISABLE_QUESTIONS_LIST_ALL = config("DISABLE_QUESTIONS_LIST_ALL", default=False, cast=bool)
 IMAGE_ATTACHMENT_USER_LIMIT = config("IMAGE_ATTACHMENT_USER_LIMIT", default=50, cast=int)
 
+# Multi-window vote rate limits (see kitsune.questions.views.vote_is_ratelimited).
+VOTE_RATELIMITS = config("VOTE_RATELIMITS", default="5/m,20/h,50/d", cast=Csv())
+ANON_VOTE_RATELIMITS = config("ANON_VOTE_RATELIMITS", default="10/d", cast=Csv())
+
 # list of strings to match against user agent to block
 USER_AGENT_FILTERS = config("USER_AGENT_FILTERS", default="", cast=Csv())
 
