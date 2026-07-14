@@ -36,7 +36,7 @@ describe("reminder-dialog custom element", () => {
   beforeEach(() => {
     dialog = new ReminderDialog();
     dialog.close = () => {};
-    $("body").empty().append(dialog);
+    document.body.replaceChildren(dialog);
   });
 
   it("should render a reminder-dialog custom element", () => {

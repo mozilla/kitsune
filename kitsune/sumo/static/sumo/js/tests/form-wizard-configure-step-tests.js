@@ -13,7 +13,7 @@ describe("configure-step custom element", () => {
 
   beforeEach(() => {
     step = new ConfigureStep();
-    $("body").empty().append(step);
+    document.body.replaceChildren(step);
   });
 
   it("should render a configure-step custom element", () => {

@@ -1,5 +1,3 @@
-import { getCookie } from "sumo/js/utils/cookie";
-
 export const getQueryParamsAsDict = function (url) {
   // Parse the url's query parameters into a dict. Mostly stolen from:
   // http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript/2880929#2880929
@@ -95,24 +93,6 @@ export const safeInterpolate = function (fmt, obj, named) {
 };
 
 
-// Pass CSRF token in XHR header for jQuery ajax.
-// NOTE: This $.ajaxSetup is intentionally retained until every jQuery $.ajax
-// caller has been migrated to apiFetch (which sets its own CSRF header). It is
-// what supplies the header to all not-yet-migrated $.ajax/$.post calls, so
-// removing it early would break their CSRF. Remove in the teardown batch.
-$.ajaxSetup({
-  beforeSend: function (xhr, settings) {
-    var csrfElem = document.querySelector('input[name=csrfmiddlewaretoken]');
-    var csrf = getCookie('csrftoken');
-    if (!csrf && csrfElem) {
-      csrf = csrfElem.value;
-    }
-    if (csrf) {
-      xhr.setRequestHeader('X-CSRFToken', csrf);
-    }
-  }
-});
-
 function onReady() {
   layoutTweaks();
   /* Focus form field when clicking on error message. */
@@ -191,37 +171,34 @@ export function initAutoSubmitSelects() {
   * NOTE: We can't disable the buttons because it prevents their name/value
   * from being submitted and we depend on those in some views.
   *
-  * TODO(jquery-removal): retained on jQuery until the $.ajax callers are gone.
-  * It re-enables the form via $this.ajaxComplete(), which only fires for jQuery
-  * $.ajax. Migrate to vanilla in the teardown batch once no $.ajax remains.
   */
 function disableFormsOnSubmit() {
-  $('form').on("submit", function (ev) {
-    var $this = $(this);
-    // Get method, defaulting to GET if not specified
-    let method = ($this.attr('method') || 'get').toLowerCase();
-
-    if (method === 'post') {
-      if ($this.data('disabled')) {
-        ev.preventDefault();
-      } else {
-        $this.data('disabled', true).addClass('disabled');
+  document.querySelectorAll('form').forEach(function (form) {
+    form.addEventListener('submit', function (ev) {
+      // Only guard POST forms; default to GET if not specified.
+      var method = (form.getAttribute('method') || 'get').toLowerCase();
+      if (method !== 'post') {
+        return;
       }
+
+      // The `disabled` class doubles as the "already submitting" flag.
+      if (form.classList.contains('disabled')) {
+        ev.preventDefault();
+        return;
+      }
+      form.classList.add('disabled');
 
       function enableForm() {
-        $this.data('disabled', false).removeClass('disabled');
+        form.classList.remove('disabled');
       }
 
-      $this.ajaxComplete(function () {
-        enableForm();
-        $this.off('ajaxComplete');
-      });
-
-      // Re-enable the form when users leave the page in case they come back.
-      $(window).on('unload', enableForm);
-      // Re-enable the form after 5 seconds in case something else went wrong.
+      // Re-enable after an async completion (upload/gallery dispatch a native
+      // 'ajaxComplete' event on their forms), when the user leaves the page in
+      // case they come back, and after 5 seconds as a failsafe.
+      form.addEventListener('ajaxComplete', enableForm, { once: true });
+      window.addEventListener('unload', enableForm);
       setTimeout(enableForm, 5000);
-    }
+    });
   });
 }
 

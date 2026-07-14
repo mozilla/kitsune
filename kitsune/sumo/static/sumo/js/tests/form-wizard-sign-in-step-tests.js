@@ -25,9 +25,7 @@ describe("sign-in-step custom element", () => {
 
   beforeEach(() => {
     step = new SignInStep();
-    $("body")
-      .empty()
-      .append(step);
+    document.body.replaceChildren(step);
   });
 
   it("should render a sign-in-step custom element", () => {
