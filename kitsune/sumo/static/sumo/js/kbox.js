@@ -156,10 +156,6 @@ KBox.prototype = {
 
     // Make the instance accessible from the DOM element.
     self.element.kbox = self;
-    // Transitional bridge: not-yet-migrated consumers (dashboards.js, wiki.js)
-    // still retrieve the instance via jQuery's $(el).data('kbox'). Remove once
-    // those callers use element.kbox directly.
-    $(self.element).data('kbox', self);
 
     // If we have a click target, open the kbox when it is clicked.
     self.clickTargets.forEach(function (target) {
@@ -407,14 +403,6 @@ KBox.prototype = {
       delete this.overlay;
     }
   }
-};
-
-// Transitional jQuery plugin: not-yet-migrated consumers (gallery.js, wiki.js)
-// still call $('.kbox').kbox(). Remove once those callers use `new KBox(...)`.
-$.fn.kbox = function (options) {
-  return this.each(function () {
-    new KBox(this, options);
-  });
 };
 
 // Initialize declared kboxes.

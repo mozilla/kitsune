@@ -33,7 +33,7 @@ describe("form-wizard custom element", () => {
   let slot;
 
   function renderWizard() {
-    $("body").empty().html(`
+    document.body.innerHTML = `
         <form-wizard>
           <test-form-step name="sign-into-fxa">
             <p>This is the first step.</p>
@@ -45,7 +45,7 @@ describe("form-wizard custom element", () => {
             <p>This is the third step.</p>
           </test-form-step>
         </form-wizard>
-    `);
+    `;
     wizard = document.querySelector("form-wizard");
     slot = wizard.shadowRoot.querySelector('slot[name="active"]');
   }

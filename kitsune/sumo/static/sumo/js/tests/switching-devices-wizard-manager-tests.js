@@ -172,9 +172,9 @@ describe("k", () => {
         url: "https://example.com/#search",
       });
 
-      $("body").empty().html(`
+      document.body.innerHTML = `
         <form-wizard fxa-root="${FAKE_FXA_ROOT}"></form-wizard>
-      `);
+      `;
       let wizard = document.querySelector("form-wizard");
       wizard.disqualify = () => {};
       wizard.setStep = () => {};
@@ -825,9 +825,9 @@ describe("k", () => {
     });
 
     beforeEach(() => {
-      $("body").empty().html(`
+      document.body.innerHTML = `
         <form-wizard fxa-root="${FAKE_FXA_ROOT}"></form-wizard>
-      `);
+      `;
       let wizard = document.querySelector("form-wizard");
       wizard.disqualify = () => {};
       wizard.setStep = () => {};

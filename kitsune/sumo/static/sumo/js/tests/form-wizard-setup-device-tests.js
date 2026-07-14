@@ -37,7 +37,7 @@ describe("setup-device-step custom element", () => {
 
   beforeEach(() => {
     step = new SetupDeviceStep();
-    $("body").empty().append(step);
+    document.body.replaceChildren(step);
   });
 
   it("should render a setup-device-step custom element", () => {
@@ -251,7 +251,7 @@ describe("setup-device-step custom element", () => {
       // Prefilling the email address occurs when the element is bound
       // to the DOM, so we'll disconnect and reconnect.
       step.remove();
-      $("body").append(step);
+      document.body.appendChild(step);
 
       let email = step.shadowRoot.querySelector("input[name=email]");
       let submitBtn = step.shadowRoot.querySelector("#submit");
@@ -266,7 +266,7 @@ describe("setup-device-step custom element", () => {
       // Prefilling the email address occurs when the element is bound
       // to the DOM, so we'll disconnect and reconnect.
       step.remove();
-      $("body").append(step);
+      document.body.appendChild(step);
 
       let email = step.shadowRoot.querySelector("input[name=email]");
       let submitBtn = step.shadowRoot.querySelector("#submit");
