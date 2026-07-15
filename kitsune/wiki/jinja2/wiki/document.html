@@ -50,7 +50,7 @@
 {% endif %}
 
 {% block breadcrumbs %}
-  {% if document.slug == "built-in-vpn" %}
+  {% if document.slug == "built-in-vpn" or document.slug == "mobile-android-vpn" %}
     {{ sumo_banner(
         id="built-in-vpn-banner",
         text=_("Now through August 31, get unlimited bandwidth with more locations in built-in VPN. Head to Connect for more details."),
