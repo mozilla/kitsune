@@ -28,11 +28,11 @@ class ProductSupportForum(BasePage):
         self.is_spam_locator_for_question = lambda question_id: page.locator(
             f"//div[@id='questions-list']//article[@id='{question_id}']//span[text()='Spam']")
         self.question_solved_indicator = lambda question_id: page.locator(
-            f"//article[@id='{question_id}']//span[text()='Solved']")
+            f"//article[@id='{question_id}']//span[normalize-space()='Solved']")
         self.question_archived_indicator = lambda question_id: page.locator(
-            f"//article[@id='{question_id}']//span[text()='Archived']")
+            f"//article[@id='{question_id}']//span[normalize-space()='Archived']")
         self.question_locked_indicator = lambda question_id: page.locator(
-            f"//article[@id='{question_id}']//span[text()='Locked']")
+            f"//article[@id='{question_id}']//span[normalize-space()='Locked']")
 
         """Locators belonging to the filter options sections."""
         self.selected_tab_filter = page.locator(

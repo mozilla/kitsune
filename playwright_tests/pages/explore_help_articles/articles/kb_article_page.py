@@ -25,6 +25,8 @@ class KBArticlePage(BasePage):
         """Locators belonging to the article metadata."""
         self.kb_article_helpfulness_count = page.locator(
             "div#document_metadata span[class='helpful-count']")
+        self.kb_article_products_metadata = page.locator(
+            "div#document_metadata span.product span.tooltip")
 
         """Locators belonging to the editing tools options section."""
         self.editing_tools_article_option = page.get_by_role("link", name="Article",
@@ -70,6 +72,12 @@ class KBArticlePage(BasePage):
 
     def get_text_of_article_title(self) -> str:
         return self._get_text_of_element(self.kb_article_heading)
+
+    def get_article_products_metadata(self) -> list[str]:
+        """Returns the list of product titles the article belongs to, as shown in the article
+        metadata section."""
+        product_titles = self._get_element_text_content(self.kb_article_products_metadata)
+        return [title.strip() for title in product_titles.split(",") if title.strip()]
 
     def click_on_a_particular_article_contributor(self, username: str):
         self._click(self.kb_article_contributor(username))

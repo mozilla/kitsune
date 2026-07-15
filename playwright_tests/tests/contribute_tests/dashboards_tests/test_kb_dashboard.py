@@ -1,11 +1,18 @@
+import random
+
 import allure
 import pytest
 from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
+from playwright_tests.messages.common_elements_messages import CommonElementsMessages
 from playwright_tests.messages.contribute_messages.con_tools.kb_dashboard_messages import (
     KBDashboardPageMessages,
 )
+from playwright_tests.messages.contribute_messages.con_tools.moderate_forum_messages import (
+    ModerateForumContentPageMessages,
+)
+from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -667,3 +674,173 @@ def test_article_title_update(page: Page, create_user_factory):
                      "correct title is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
         expect(sumo_pages.kb_dashboard_page.article_title(new_article_title)).to_be_visible()
+
+
+# C891350, C891351, C954936
+@pytest.mark.kbDashboard
+def test_kb_dashboard_can_be_filtered_by_each_product(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    kb_overview_link = utilities.general_test_data['dashboard_links']['kb_overview']
+
+    with allure.step("Signing in with a staff account"):
+        utilities.start_existing_session(
+            session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
+
+    with allure.step("Navigating to the kb overview dashboard and fetching the list of products "
+                     "available in the filter dropdown"):
+        utilities.navigate_to_link(kb_overview_link)
+        product_options = sumo_pages.kb_dashboard_page.get_product_filter_options()
+        assert product_options, "No products were found inside the kb dashboard filter dropdown"
+
+    for product in product_options:
+        with allure.step(f"Filtering the kb dashboard by the '{product['label']}' product"):
+            utilities.navigate_to_link(kb_overview_link)
+            sumo_pages.kb_dashboard_page.filter_by_product(product['value'])
+            page.wait_for_url(
+                lambda url: f"product={product['value']}" in url, timeout=10000)
+
+        articles_count = sumo_pages.kb_dashboard_page.get_number_of_listed_articles()
+        if articles_count == 0:
+            print(f"No articles are listed for the '{product['label']}' product. Skipping.")
+            continue
+
+        with allure.step(f"Clicking on a random listed article for the '{product['label']}' "
+                         f"product"):
+            random_index = random.randint(0, articles_count - 1)
+            article_title = sumo_pages.kb_dashboard_page.get_listed_article_title(random_index)
+            sumo_pages.kb_dashboard_page.click_on_listed_article(random_index)
+
+        with check, allure.step(f"Verifying that the '{article_title}' article belongs to the "
+                                f"'{product['label']}' product"):
+            article_products = sumo_pages.kb_article_page.get_article_products_metadata()
+            assert product['label'] in article_products, (
+                f"The '{article_title}' article was listed under the '{product['label']}' product "
+                f"filter but its metadata only lists the following products: {article_products}")
+
+    with allure.step("Fetching the list of types available in the kb dashboard filter dropdown"):
+        utilities.navigate_to_link(kb_overview_link)
+        type_options = sumo_pages.kb_dashboard_page.get_type_filter_options()
+        assert type_options, "No types were found inside the kb dashboard type filter dropdown"
+
+    for kb_type in type_options:
+        with allure.step(f"Filtering the kb dashboard by the '{kb_type['label']}' type"):
+            utilities.navigate_to_link(kb_overview_link)
+            sumo_pages.kb_dashboard_page.select_type_filter(kb_type['value'])
+            page.wait_for_url(
+                lambda url, value=kb_type['value']: f"category={value}" in url, timeout=10000)
+
+        articles_count = sumo_pages.kb_dashboard_page.get_number_of_listed_articles()
+        if articles_count == 0:
+            print(f"No articles are listed for the '{kb_type['label']}' type. Skipping.")
+            continue
+
+        with allure.step(f"Opening the edit metadata page of a random listed article for the "
+                         f"'{kb_type['label']}' type"):
+            random_index = random.randint(0, articles_count - 1)
+            article_title = sumo_pages.kb_dashboard_page.get_listed_article_title(random_index)
+            sumo_pages.kb_dashboard_page.click_on_listed_article(random_index)
+            utilities.navigate_to_link(
+                sumo_pages.kb_article_page.get_url().rstrip("/") + "/edit/metadata")
+            if sumo_pages.kb_edit_article_page.is_edit_anyway_option_visible():
+                sumo_pages.kb_edit_article_page.click_on_edit_anyway_option()
+
+        with check, allure.step(f"Verifying that the '{article_title}' article is of the "
+                                f"'{kb_type['label']}' type"):
+            selected_category = (
+                sumo_pages.kb_article_edit_article_metadata_page.get_selected_category_value())
+            assert selected_category == kb_type['value'], (
+                f"The '{article_title}' article was listed under the '{kb_type['label']}' type "
+                f"filter but its metadata category value is '{selected_category}' instead of the "
+                f"expected '{kb_type['value']}'")
+
+
+# C2597852
+@pytest.mark.kbDashboard
+def test_kb_dashboard_contributor_tools_sidebar(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    common = sumo_pages.common_web_elements
+    kb_dashboard_url = HomepageMessages.STAGE_HOMEPAGE_URL_EN_US + "contributors"
+
+    sidebar_options = [
+        (ModerateForumContentPageMessages.SIDEBAR_OPTION_NAME, "/flagged", False),
+        ("Knowledge base dashboards", "/contributors", False),
+        ("Guides", "/contributor", False),
+        ("Templates", "/kb/category/60", False),
+        ("Media gallery", "/gallery/images", False),
+        ("Recent revisions", "/kb/revisions", False),
+        ("Community hub", "/community", False),
+        ("Locales", "/kb/locales", True),
+        ("Locale metrics", "/kb/dashboard/metrics/en-US", True),
+        ("Aggregated metrics", "/kb/dashboard/metrics/aggregated", True),
+    ]
+
+    with allure.step("Creating a simple user and a forum moderator account"):
+        simple_user = create_user_factory()
+        forum_moderator = create_user_factory(groups=["Forum Moderators"])
+
+    with allure.step("Signing in with the simple user account and navigating to the KB "
+                     "dashboard"):
+        utilities.start_existing_session(cookies=simple_user)
+        utilities.navigate_to_link(kb_dashboard_url)
+
+    with check, allure.step("Verifying that the 'Contributor tools' sidebar and heading are "
+                            "displayed"):
+        expect(common.contributor_tools_side_navbar).to_be_visible()
+        expect(common.contributor_tools_side_navbar_heading).to_have_text(
+            CommonElementsMessages.CONTRIBUTOR_TOOLS_SIDEBAR_HEADING)
+
+    with check, allure.step("Verifying that the 'Moderate forum content' option is not displayed "
+                            "for a user without the moderation permission"):
+        expect(common.contributor_tools_side_navbar_option(
+            ModerateForumContentPageMessages.SIDEBAR_OPTION_NAME)).to_be_hidden()
+
+    with allure.step("Signing in with the forum moderator account and navigating to the KB "
+                     "dashboard"):
+        utilities.start_existing_session(cookies=forum_moderator)
+        utilities.navigate_to_link(kb_dashboard_url)
+
+    with check, allure.step("Verifying that the 'Moderate forum content' option is displayed for "
+                            "a user with the moderation permission"):
+        expect(common.contributor_tools_side_navbar_option(
+            ModerateForumContentPageMessages.SIDEBAR_OPTION_NAME)).to_be_visible()
+
+    for option_name, url_fragment, behind_show_more in sidebar_options:
+        with allure.step(f"Clicking on the '{option_name}' contributor tools sidebar option"):
+            utilities.navigate_to_link(kb_dashboard_url)
+            if behind_show_more:
+                common.click_on_contributor_tools_side_navbar_show_more_button()
+            common.click_on_a_contributor_tools_side_navbar_option(option_name)
+            utilities.wait_for_page_to_load()
+
+        with check, allure.step(f"Verifying that the '{option_name}' option redirects to the "
+                                f"correct page"):
+            assert url_fragment in utilities.get_page_url(), (
+                f"The '{option_name}' sidebar option redirected to "
+                f"'{utilities.get_page_url()}' which does not contain '{url_fragment}'")
+
+
+# C2266227
+@pytest.mark.kbDashboard
+def test_kb_dashboard_subscribe_button_not_available_for_logged_out_users(page: Page,
+                                                                          create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    kb_dashboard_url = HomepageMessages.STAGE_HOMEPAGE_URL_EN_US + "contributors"
+
+    with allure.step("Signing in with a simple user account and navigating to the KB dashboard"):
+        test_user = create_user_factory()
+        utilities.start_existing_session(cookies=test_user)
+        utilities.navigate_to_link(kb_dashboard_url)
+
+    with allure.step("Verifying that the 'Subscribe' button is available for logged in users"):
+        expect(sumo_pages.kb_dashboard_page.subscribe_button).to_be_visible()
+
+    with allure.step("Signing out and navigating back to the KB dashboard"):
+        utilities.delete_cookies()
+        utilities.navigate_to_link(kb_dashboard_url)
+
+    with allure.step("Verifying that the 'Subscribe' button is not available for logged out "
+                     "users"):
+        expect(sumo_pages.kb_dashboard_page.subscribe_button).to_be_hidden()
