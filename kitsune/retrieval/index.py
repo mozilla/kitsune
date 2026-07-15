@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import ClassVar
 
 from django.conf import settings
 from elasticsearch.dsl import field
@@ -44,7 +45,10 @@ class ChunkDocument(SumoDocument):
     updated = field.Date()
 
     class Index:
-        pass
+        # populated at runtime by AliasedIndexMixin.__init_subclass__
+        base_name: ClassVar[str]
+        read_alias: ClassVar[str]
+        write_alias: ClassVar[str]
 
 
 @dataclass(frozen=True)
@@ -99,5 +103,21 @@ def index_chunks(chunks: list[Chunk], source: ChunkSource) -> None:
         es_client(),
         actions,
         chunk_size=settings.ES_DEFAULT_ELASTIC_CHUNK_SIZE,
+        refresh=settings.TEST,
+    )
+
+
+def delete_chunks_for(*, content_type: str, object_id: str, locale: str) -> None:
+    es_client().delete_by_query(
+        index=ChunkDocument.Index.write_alias,
+        query={
+            "bool": {
+                "filter": [
+                    {"term": {"content_type": content_type}},
+                    {"term": {"object_id": object_id}},
+                    {"term": {"locale": locale}},
+                ]
+            }
+        },
         refresh=settings.TEST,
     )

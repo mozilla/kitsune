@@ -5,7 +5,7 @@ from django.test import SimpleTestCase
 from elasticsearch.dsl import Document as DSLDocument
 
 from kitsune.retrieval.chunking import chunk_kb
-from kitsune.retrieval.index import ChunkDocument, ChunkSource, index_chunks
+from kitsune.retrieval.index import ChunkDocument, ChunkSource, delete_chunks_for, index_chunks
 from kitsune.retrieval.tests import ChunkIndexTestCase
 from kitsune.search.base import AliasedIndexMixin
 from kitsune.search.es_utils import es_client
@@ -111,3 +111,35 @@ class IndexChunksTests(ChunkIndexTestCase):
         ]
         self.assertEqual(scoped["content_text"]["en-US"], chunks[1].text)
         self.assertEqual(scoped["applies_to"], ["win"])
+
+
+class DeleteChunksForTests(ChunkIndexTestCase):
+    def test_deletes_only_the_targeted_documents_chunks(self):
+        html = (
+            "<h1>Sync</h1>"
+            "<p>Turn on sync to share tabs across devices.</p>"
+            "<h2>Devices</h2>"
+            "<p>Manage your connected devices here.</p>"
+        )
+        chunks = chunk_kb(html, title="Sync")
+        common = {
+            "content_type": "kb",
+            "locale": "en-US",
+            "family_id": "1",
+            "title": "Sync",
+            "summary": "About sync.",
+            "keywords": "sync",
+            "slug": "sync",
+            "category": "10",
+            "product_ids": ["3"],
+            "topic_ids": ["10"],
+            "updated": datetime(2026, 1, 1, tzinfo=UTC),
+            "content_hash": "abc123",
+        }
+        index_chunks(chunks, ChunkSource(object_id="1", **common))
+        index_chunks(chunks, ChunkSource(object_id="2", **common))
+
+        delete_chunks_for(content_type="kb", object_id="1", locale="en-US")
+
+        self.assertEqual(ChunkDocument.search().filter("term", object_id="1").count(), 0)
+        self.assertEqual(ChunkDocument.search().filter("term", object_id="2").count(), len(chunks))
