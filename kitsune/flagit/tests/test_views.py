@@ -38,6 +38,17 @@ class FlagTestCase(TestCaseBase):
         self.assertEqual("spam", flag.reason)
         self.assertEqual(self.question, flag.content_object)
 
+    def test_flag_without_reason_is_rejected(self):
+        """A flag submitted without a valid reason is rejected."""
+        d = {
+            "content_type": ContentType.objects.get_for_model(Question).id,
+            "object_id": self.question.id,
+            "next": self.question.get_absolute_url(),
+        }
+        response = post(self.client, "flagit.flag", d)
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, FlaggedObject.objects.count())
+
 
 class SpamFlagReconciliationTestCase(TestCaseBase):
     """Moderator decisions on an Answer's spam flag propagate to the Answer.

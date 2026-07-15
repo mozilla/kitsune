@@ -90,6 +90,8 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
         return HttpResponseForbidden(_("System account content cannot be flagged."))
 
     reason = request.POST.get("reason")
+    if reason not in FlaggedObject.VALID_REASONS:
+        return HttpResponseBadRequest(_("Please select a reason for flagging this content."))
     notes = request.POST.get("other", "")
     next = request.POST.get("next")
 
