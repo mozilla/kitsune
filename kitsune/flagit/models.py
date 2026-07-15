@@ -31,6 +31,9 @@ class FlaggedObject(ModelBase):
         (REASON_ABUSE, _lazy("Abusive content")),
         (REASON_OTHER, _lazy("Other (please specify)")),
     )
+    VALID_REASONS = frozenset(
+        {REASON_SPAM, REASON_LANGUAGE, REASON_ABUSE, REASON_CONTENT_MODERATION, REASON_OTHER}
+    )
 
     FLAG_PENDING = 0
     FLAG_ACCEPTED = 1

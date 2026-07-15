@@ -68,4 +68,43 @@ describe("reportabuse", () => {
       "There was an error. Please try again in a moment."
     );
   });
+
+  it("shows the message the server rejected the report with, and keeps the form", async () => {
+    fetchStub.resolves({
+      ok: false,
+      status: 400,
+      headers: { get: () => "application/json" },
+      json: async () => ({ message: "Please select a reason." }),
+      text: async () => JSON.stringify({ message: "Please select a reason." }),
+    });
+    document.querySelector('[data-modal-id="ra"] [type="submit"]').click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(document.querySelector(".message").textContent).to.equal(
+      "Please select a reason."
+    );
+    expect(document.querySelector("form").style.display).to.not.equal("none");
+  });
+
+  it("reports unfilled required fields instead of posting", () => {
+    document.body.innerHTML = `
+      <a data-sumo-modal="ra">Report</a>
+      <div data-modal-id="ra">
+        <form action="/report" method="post">
+          <div class="field radio">
+            <input type="radio" name="reason" value="spam" required>
+            <label>Spam</label>
+          </div>
+          <button type="submit">Send</button>
+        </form>
+        <div class="message"></div>
+      </div>`;
+    init();
+
+    document.querySelector('[data-modal-id="ra"] [type="submit"]').click();
+
+    expect(fetchStub.called).to.equal(false);
+    expect(document.querySelector(".message").textContent).to.not.equal("");
+    expect(document.querySelector("form").style.display).to.not.equal("none");
+  });
 });

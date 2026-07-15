@@ -14,6 +14,7 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseNotFound,
     HttpResponseRedirect,
+    JsonResponse,
 )
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -89,7 +90,15 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
     ):
         return HttpResponseForbidden(_("System account content cannot be flagged."))
 
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
+
     reason = request.POST.get("reason")
+    if reason not in FlaggedObject.VALID_REASONS:
+        msg = _("Please select a reason for flagging this content.")
+        if is_ajax:
+            return JsonResponse({"message": msg}, status=400)
+        return HttpResponseBadRequest(msg)
+
     notes = request.POST.get("other", "")
     next = request.POST.get("next")
 
@@ -118,7 +127,7 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
         else _("You have flagged this content. A moderator will review your submission shortly.")
     )
 
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+    if is_ajax:
         return HttpResponse(json.dumps({"message": msg}))
     elif next:
         messages.add_message(request, messages.INFO, msg)

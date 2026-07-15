@@ -5,6 +5,7 @@ from kitsune.flagit.tests import TestCaseBase
 from kitsune.questions.models import Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import get, post
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 
 
@@ -37,6 +38,33 @@ class FlagTestCase(TestCaseBase):
         self.assertEqual(self.user.username, flag.creator.username)
         self.assertEqual("spam", flag.reason)
         self.assertEqual(self.question, flag.content_object)
+
+    def test_flag_without_reason_is_rejected(self):
+        """A flag submitted without a valid reason is rejected."""
+        d = {
+            "content_type": ContentType.objects.get_for_model(Question).id,
+            "object_id": self.question.id,
+            "next": self.question.get_absolute_url(),
+        }
+        response = post(self.client, "flagit.flag", d)
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, FlaggedObject.objects.count())
+
+    def test_flag_without_reason_is_rejected_with_json_for_ajax(self):
+        """An AJAX flag without a valid reason gets a message to show the user."""
+        d = {
+            "content_type": ContentType.objects.get_for_model(Question).id,
+            "object_id": self.question.id,
+        }
+        response = self.client.post(
+            reverse("flagit.flag"), d, headers={"x-requested-with": "XMLHttpRequest"}
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "Please select a reason for flagging this content.",
+            response.json()["message"],
+        )
+        self.assertEqual(0, FlaggedObject.objects.count())
 
 
 class SpamFlagReconciliationTestCase(TestCaseBase):
