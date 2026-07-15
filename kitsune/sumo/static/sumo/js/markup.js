@@ -678,7 +678,7 @@ Marky.CannedResponsesButton = function() {
   this.classes = 'btn-cannedresponses';
   this.openTag = '';
   this.closeTag = '';
-  this.defaultText = gettext('cannedresponses');
+  this.defaultText = 'cannedresponses';
   this.everyline = false;
 
   this.html = '<a class="markup-toolbar-link" href="#"/>';
