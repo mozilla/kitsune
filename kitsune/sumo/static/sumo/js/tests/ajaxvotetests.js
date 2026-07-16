@@ -13,6 +13,20 @@ function jsonResponse(body) {
   };
 }
 
+function errorResponse() {
+  // A 500 whose body is an HTML error page (as Django serves), which is exactly
+  // the case fetch resolves successfully but $.ajax routed to error().
+  return {
+    ok: false,
+    status: 500,
+    headers: { get: () => "text/html" },
+    json: async () => {
+      throw new SyntaxError("Unexpected token <");
+    },
+    text: async () => "<!doctype html><h1>500</h1>",
+  };
+}
+
 describe('ajaxvote', () => {
   let eventListener;
   let fetchStub;
@@ -92,6 +106,25 @@ describe('ajaxvote', () => {
       }
       document.addEventListener('vote', eventListener);
       document.querySelector('input[name="helpful"]').click();
+    });
+
+    it('shows an error and re-enables the buttons when the vote fails', async () => {
+      fetchStub.resolves(errorResponse());
+      const av = new AjaxVote(document.querySelector('form.vote'), {
+        positionMessage: true,
+        removeForm: true,
+      });
+      const yes = document.querySelector('input[name="helpful"]');
+      yes.click();
+
+      // Let the rejected apiFetch settle so the .catch handler runs.
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      const box = document.querySelector('.ajax-vote-box');
+      expect(box).to.not.equal(null);
+      expect(box.textContent).to.equal('There was an error submitting your vote.');
+      expect(yes.disabled).to.equal(false);
+      expect(av.voted).to.equal(false);
     });
 
   });

@@ -52,4 +52,20 @@ describe("reportabuse", () => {
 
     expect(document.querySelector(".message").textContent).to.equal("Reported!");
   });
+
+  it("shows an error message when the report fails", async () => {
+    fetchStub.resolves({
+      ok: false,
+      status: 500,
+      headers: { get: () => "text/html" },
+      json: async () => { throw new SyntaxError("no"); },
+      text: async () => "<h1>500</h1>",
+    });
+    document.querySelector('[data-modal-id="ra"] [type="submit"]').click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(document.querySelector(".message").textContent).to.equal(
+      "There was an error. Please try again in a moment."
+    );
+  });
 });

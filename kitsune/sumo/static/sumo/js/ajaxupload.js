@@ -21,9 +21,11 @@ import dialogSet from "sumo/js/upload-dialog";
  *   inputEvent    - event that triggers the upload (default 'change')
  *   beforeSubmit  - called with the input before POSTing; return false to
  *                   cancel, or a value to pass through to onComplete
- *   onComplete    - called with (input, responseText, beforeSubmitResult) when
- *                   the request finishes (responseText is null on a network
- *                   error, mirroring the old empty-iframe case)
+ *   onComplete    - called with (input, responseText, beforeSubmitResult, ok)
+ *                   when the request finishes. responseText is null on a
+ *                   network error (mirroring the old empty-iframe case); ok is
+ *                   response.ok - false on a network error or a non-2xx status
+ *                   - so callers can tell an HTTP failure from a success.
  */
 export function ajaxSubmitInput(input, options) {
   // Only works on <input/>
@@ -69,13 +71,13 @@ export function ajaxSubmitInput(input, options) {
 
     fetch(options.url, { method: "POST", body: formData })
       .then(function (response) {
-        return response.text();
-      })
-      .then(function (text) {
-        options.onComplete(input, text, passThrough);
+        var ok = response.ok;
+        return response.text().then(function (text) {
+          options.onComplete(input, text, passThrough, ok);
+        });
       })
       .catch(function () {
-        options.onComplete(input, null, passThrough);
+        options.onComplete(input, null, passThrough, false);
       });
   });
 
@@ -95,7 +97,11 @@ export function wrapDeleteInput(input, options) {
   options = Object.assign(
     {
       error_title_del: gettext("Error deleting"),
-      error_json: gettext("Please check you are signed in, and try again."),
+      // Shown when the response is OK but unparseable - typically a
+      // session-expired redirect to a login page.
+      error_login: gettext("Please check you are signed in, and try again."),
+      // Shown on an HTTP/transport failure with no usable message.
+      error_server: gettext("There was an error. Please try again in a moment."),
       onComplete: function () {},
     },
     options
@@ -125,34 +131,38 @@ export function wrapDeleteInput(input, options) {
       }
       return false;
     },
-    onComplete: function (inp, content) {
-      if (!content) {
-        if (image) {
-          image.style.opacity = 1;
+    onComplete: function (inp, content, passThrough, ok) {
+      var json = null;
+      if (content) {
+        try {
+          json = JSON.parse(content);
+        } catch (err) {
+          json = null;
         }
+      }
+
+      if (json && json.status === "success") {
+        if (attachment) {
+          attachment.remove();
+        }
+        options.onComplete();
         return;
       }
-      var json;
-      try {
-        json = JSON.parse(content);
-      } catch (err) {
-        dialogSet(options.error_json, options.error_title_del);
-        if (image) {
-          image.style.opacity = 1;
-        }
-        return;
+
+      // Any other outcome is a failure: restore the dimmed image and surface a
+      // message. Prefer the server's structured message; otherwise show the
+      // sign-in hint only when the response was itself OK (a session-expired
+      // login redirect) and a generic error on an HTTP/transport failure.
+      if (image) {
+        image.style.opacity = 1;
       }
-      if (json.status !== "success") {
+      if (json && json.message) {
         dialogSet(json.message, options.error_title_del);
-        if (image) {
-          image.style.opacity = 1;
-        }
-        return;
+      } else if (ok) {
+        dialogSet(options.error_login, options.error_title_del);
+      } else {
+        dialogSet(options.error_server, options.error_title_del);
       }
-      if (attachment) {
-        attachment.remove();
-      }
-      options.onComplete();
     },
   });
 
