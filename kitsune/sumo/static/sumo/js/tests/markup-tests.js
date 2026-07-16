@@ -177,3 +177,45 @@ describe("markup: attachTypeahead", () => {
     expect(list().hidden).to.equal(true);
   });
 });
+
+describe("markup: MediaButton upload link", () => {
+  afterEach(() => {
+    sinon.restore();
+    document.body.innerHTML = "";
+  });
+
+  function htmlResponse(htmlStr) {
+    return {
+      ok: true,
+      status: 200,
+      headers: { get: () => "text/html" },
+      json: async () => JSON.parse(htmlStr),
+      text: async () => htmlStr,
+    };
+  }
+
+  it("opens the gallery in a new tab and closes the modal when Upload Media is clicked", () => {
+    document.body.innerHTML =
+      '<div class="editor" data-media-search-url="/gallery/async" data-media-gallery-url="/gallery/">' +
+      '<textarea id="id_content"></textarea></div>';
+    // openModal() fires an apiFetch (updateResults) on open; stub it.
+    sinon.stub(window, "fetch").resolves(htmlResponse('<ol id="media-list"></ol>'));
+    const openStub = sinon.stub(window, "open");
+
+    const btn = new Marky.MediaButton();
+    btn.bind(document.getElementById("id_content"));
+    btn.openModal({ preventDefault() {} });
+
+    const uploadLink = document.querySelector("a.upload");
+    expect(uploadLink).to.not.equal(null);
+    uploadLink.click();
+
+    // The gallery is opened explicitly (not left to the anchor, which the modal
+    // teardown would have detached before the browser could follow it).
+    expect(openStub.calledOnce).to.equal(true);
+    expect(openStub.firstCall.args[0]).to.contain("/gallery/");
+    expect(openStub.firstCall.args[1]).to.equal("_blank");
+    // And the modal was destroyed on close.
+    expect(document.querySelector("a.upload")).to.equal(null);
+  });
+});

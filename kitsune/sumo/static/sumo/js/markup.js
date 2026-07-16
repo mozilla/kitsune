@@ -668,8 +668,13 @@ Marky.MediaButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
     });
 
     // Handle Upload link
-    html.querySelector("a.upload").addEventListener("click", function () {
-      // Close the modal. The link itself will open gallery in new tab/window.
+    var uploadLink = html.querySelector("a.upload");
+    uploadLink.addEventListener("click", function (e) {
+      // Open the gallery ourselves, then close. Closing destroys the modal DOM
+      // (destroy: true), which detaches this link before the browser can follow
+      // it - so relying on the anchor's own navigation would open nothing.
+      e.preventDefault();
+      window.open(uploadLink.href, "_blank", "noopener");
       kbox.close();
     });
 
