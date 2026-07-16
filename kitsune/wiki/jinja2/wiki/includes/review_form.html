@@ -55,7 +55,7 @@
             {{ revision_contributors_label(revision_contributors) }}
             {{ form.comment.errors }}
           </label>
-          <textarea id="id-approve-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
+          <textarea id="id-approve-comment" name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
         </div>
       {% endif %}
       {% if document.allows(user, 'mark_ready_for_l10n') %}
@@ -97,7 +97,7 @@
           <label for="id-reject-comment">
             {{ revision_contributors_label(revision_contributors) }}
           </label>
-          <textarea id="id-reject-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
+          <textarea id="id-reject-comment" name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
         </div>
       {% endif %}
       <input type="hidden" name="reject" value="1" />
