@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from django.conf import settings
+from django.core.management import call_command
 from django.test import SimpleTestCase
 from elasticsearch.dsl import Document as DSLDocument
 
@@ -143,3 +144,20 @@ class DeleteChunksForTests(ChunkIndexTestCase):
 
         self.assertEqual(ChunkDocument.search().filter("term", object_id="1").count(), 0)
         self.assertEqual(ChunkDocument.search().filter("term", object_id="2").count(), len(chunks))
+
+
+class SearchInitCommandTests(ChunkIndexTestCase):
+    def test_migrate_flags_create_index_and_point_both_aliases(self):
+        # start from a clean slate so the fresh index can't collide with setUpClass's timestamp
+        self._delete_indices()
+        call_command("search_init", "--migrate-writes", "--migrate-reads")
+
+        write_index = ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
+        read_index = ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias)
+        self.assertTrue(write_index)
+        self.assertEqual(read_index, write_index)
+
+    def test_no_flags_refreshes_existing_index_without_moving_aliases(self):
+        before = ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
+        call_command("search_init")
+        self.assertEqual(ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias), before)
