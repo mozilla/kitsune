@@ -1127,4 +1127,5 @@ Marky.QuoteButton = function () {
   return new Marky.SimpleButton(name, quote, "", "", "btn-quote", true);
 };
 
+export { attachTypeahead, parseDoc };
 export default Marky;

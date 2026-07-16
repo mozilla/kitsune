@@ -6,7 +6,11 @@ var UPLOAD = {
   max_filename_length: 80, // max filename length in characters
   error_title_up: gettext("Error uploading image"),
   error_title_del: gettext("Error deleting image"),
+  // Shown when the response is OK but unparseable - typically a session-expired
+  // redirect to a login page.
   error_login: gettext("Please check you are signed in, and try again."),
+  // Shown on an HTTP/transport failure with no usable message.
+  error_server: gettext("There was an error. Please try again in a moment."),
 };
 
 // A native bubbling CustomEvent so main.js's disableFormsOnSubmit can re-enable
@@ -17,7 +21,7 @@ function fireAjaxComplete(form) {
   }
 }
 
-function init() {
+export function init() {
   document.querySelectorAll("div.attachments-list input.delete").forEach(function (input) {
     var form = input.closest("form");
     wrapDeleteInput(input, {
@@ -68,12 +72,17 @@ function init() {
         }
         return opts;
       },
-      onComplete: function (input, content, opts) {
+      onComplete: function (input, content, opts, ok) {
         var uploadForm = input.closest("form");
         if (uploadForm) {
           uploadForm.reset();
         }
         if (!content) {
+          // No usable body: silent on a network error (ok is false with a null
+          // body), but surface a generic error on an HTTP failure.
+          if (ok === false) {
+            dialogSet(UPLOAD.error_server, UPLOAD.error_title_up);
+          }
           return;
         }
 
@@ -81,7 +90,9 @@ function init() {
         try {
           json = JSON.parse(content);
         } catch (err) {
-          dialogSet(UPLOAD.error_login, UPLOAD.error_title_up);
+          // Unparseable body: a sign-in hint when the response was itself OK (a
+          // session-expired login redirect), a generic error on an HTTP failure.
+          dialogSet(ok ? UPLOAD.error_login : UPLOAD.error_server, UPLOAD.error_title_up);
           return;
         }
 

@@ -74,5 +74,24 @@ describe('ajax preview', () => {
         new AjaxPreview(document.querySelector('.does-not-exist'));
       }).to.not.throw();
     });
+
+    it('fires "done" with success=false and shows an error when the preview fails', done => {
+      window.fetch.restore();
+      sinon.stub(window, 'fetch').resolves({
+        ok: false,
+        status: 500,
+        headers: { get: () => "text/html" },
+        json: async () => { throw new SyntaxError("no"); },
+        text: async () => "<h1>500</h1>",
+      });
+      let ajaxPreview = new AjaxPreview(document.getElementById('preview'));
+      ajaxPreview.addEventListener('done', (e) => {
+        expect(e.detail.success).to.equal(false);
+        expect(document.getElementById('preview-container').innerHTML)
+          .to.equal('There was an error generating the preview.');
+        done();
+      });
+      document.getElementById('preview').click();
+    });
   });
 });

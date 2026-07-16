@@ -111,5 +111,44 @@ describe("utils/fetch", () => {
       expect(error).to.be.an("error");
       expect(error.response.status).to.equal(500);
     });
+
+    it("still surfaces the HTTP status when the error body isn't valid JSON", async () => {
+      // A 403 whose body is Django's HTML error page for a dataType:"json"
+      // request: parsing the body must not throw and mask the real status.
+      fetchStub.resolves({
+        ok: false,
+        status: 403,
+        headers: { get: () => "text/html" },
+        text: async () => "<!doctype html><h1>403 Forbidden</h1>",
+        json: async () => {
+          throw new SyntaxError("Unexpected token <");
+        },
+      });
+      let error;
+      try {
+        await apiFetch("/x", { dataType: "json" });
+      } catch (e) {
+        error = e;
+      }
+      expect(error).to.be.an("error");
+      expect(error.response.status).to.equal(403);
+      expect(error.body).to.equal(null);
+    });
+
+    it("resolves to null for an empty 2xx body with dataType json", async () => {
+      // response.json() throws on an empty body; $.ajax returned null, so we do
+      // too rather than turning a successful request into a rejection.
+      fetchStub.resolves({
+        ok: true,
+        status: 200,
+        headers: { get: () => "application/json" },
+        text: async () => "",
+        json: async () => {
+          throw new SyntaxError("Unexpected end of JSON input");
+        },
+      });
+      const result = await apiFetch("/x", { dataType: "json" });
+      expect(result).to.equal(null);
+    });
   });
 });

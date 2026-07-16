@@ -278,7 +278,7 @@ function initPreviewDiff() {
   }
 }
 
-function initTitleAndSlugCheck() {
+export function initTitleAndSlugCheck() {
   var title = document.getElementById('id_title');
   var slug = document.getElementById('id_slug');
 
@@ -685,7 +685,7 @@ function initToggleDiff() {
   }
 }
 
-function initTranslationDraft() {
+export function initTranslationDraft() {
   var draftButton = document.querySelector('.btn-draft');
   if (!draftButton) {
     return;
@@ -739,7 +739,7 @@ function initTranslationDraft() {
   });
 }
 
-function initRevisionList() {
+export function initRevisionList() {
   var form = document.querySelector('#revision-list form.filter');
   var searchForm = document.querySelector('.simple-search-form');
 

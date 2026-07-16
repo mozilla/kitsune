@@ -1,6 +1,7 @@
 import { expect } from "chai";
+import sinon from "sinon";
 
-import Marky from "sumo/js/markup";
+import Marky, { attachTypeahead, parseDoc } from "sumo/js/markup";
 
 // Build a textarea with a selection range.
 function textareaWith(value, start, end) {
@@ -72,5 +73,107 @@ describe("markup (Marky)", () => {
       ]);
     }).to.not.throw();
     expect(document.querySelector(".editor-tools").children.length).to.equal(0);
+  });
+});
+
+describe("markup: parseDoc", () => {
+  it("parses an HTML string into a queryable document", () => {
+    const doc = parseDoc(
+      '<div class="main-content"><h2 id="w_intro">Intro</h2><h2 id="w_more">More</h2></div>'
+    );
+    expect(doc.querySelector(".main-content")).to.not.equal(null);
+    expect(doc.querySelectorAll("[id^='w_']").length).to.equal(2);
+    expect(doc.querySelector("#w_intro").textContent).to.equal("Intro");
+  });
+});
+
+describe("markup: attachTypeahead", () => {
+  let input;
+
+  beforeEach(() => {
+    document.body.innerHTML = '<input id="ta-input">';
+    input = document.getElementById("ta-input");
+  });
+
+  afterEach(() => {
+    sinon.restore();
+    document.body.innerHTML = "";
+  });
+
+  function list() {
+    return document.querySelector("ul.marky-autocomplete");
+  }
+
+  // Type a term and let the 300ms debounce fire against fake timers.
+  function type(value, source, onSelect) {
+    attachTypeahead(input, source, onSelect || function () {});
+    const clock = sinon.useFakeTimers();
+    input.value = value;
+    input.dispatchEvent(new window.Event("input"));
+    clock.tick(300);
+    clock.restore();
+  }
+
+  function key(k) {
+    input.dispatchEvent(new window.KeyboardEvent("keydown", { key: k }));
+  }
+
+  it("debounces input and queries the source with the typed term", () => {
+    const source = sinon.spy();
+    attachTypeahead(input, source, function () {});
+    const clock = sinon.useFakeTimers();
+    input.value = "fire";
+    input.dispatchEvent(new window.Event("input"));
+    expect(source.called).to.equal(false); // still within the debounce window
+    clock.tick(300);
+    expect(source.calledOnce).to.equal(true);
+    expect(source.firstCall.args[0]).to.equal("fire");
+    clock.restore();
+  });
+
+  it("does not query the source when the input is empty", () => {
+    const source = sinon.spy();
+    attachTypeahead(input, source, function () {});
+    const clock = sinon.useFakeTimers();
+    input.value = "";
+    input.dispatchEvent(new window.Event("input"));
+    clock.tick(300);
+    expect(source.called).to.equal(false);
+    clock.restore();
+  });
+
+  it("renders results and selects one on mousedown", () => {
+    const onSelect = sinon.spy();
+    type("f", (term, cb) => cb([{ label: "Firefox" }, { label: "Focus" }]), onSelect);
+
+    const ul = list();
+    expect(ul.hidden).to.equal(false);
+    expect(ul.children.length).to.equal(2);
+    expect(ul.children[0].textContent).to.equal("Firefox");
+
+    ul.children[1].dispatchEvent(new window.Event("mousedown"));
+    expect(onSelect.calledOnce).to.equal(true);
+    expect(onSelect.firstCall.args[0]).to.deep.equal({ label: "Focus" });
+    expect(list().hidden).to.equal(true); // closes after a pick
+  });
+
+  it("navigates with arrow keys and picks the highlighted item on Enter", () => {
+    const onSelect = sinon.spy();
+    type("x", (term, cb) => cb([{ label: "a" }, { label: "b" }, { label: "c" }]), onSelect);
+
+    key("ArrowDown"); // index 0
+    key("ArrowDown"); // index 1
+    key("ArrowUp"); // back to index 0
+    key("Enter");
+
+    expect(onSelect.calledOnce).to.equal(true);
+    expect(onSelect.firstCall.args[0]).to.deep.equal({ label: "a" });
+  });
+
+  it("closes the list on Escape", () => {
+    type("x", (term, cb) => cb([{ label: "a" }]));
+    expect(list().hidden).to.equal(false);
+    key("Escape");
+    expect(list().hidden).to.equal(true);
   });
 });

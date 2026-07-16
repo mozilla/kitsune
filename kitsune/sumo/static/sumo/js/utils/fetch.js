@@ -43,16 +43,24 @@ function encodeParams(data) {
   return params;
 }
 
+// Parse JSON via text() so an empty body resolves to null - matching jQuery's
+// $.ajax, which tolerated an empty response for dataType "json" instead of
+// throwing the way response.json() does.
+async function parseJson(response) {
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
 async function parseBody(response, dataType) {
   if (dataType === "json") {
-    return response.json();
+    return parseJson(response);
   }
   if (dataType === "html" || dataType === "text") {
     return response.text();
   }
   const contentType = response.headers.get("Content-Type") || "";
   if (contentType.includes("application/json")) {
-    return response.json();
+    return parseJson(response);
   }
   return response.text();
 }
@@ -92,14 +100,20 @@ export async function apiFetch(url, options = {}) {
   }
 
   const response = await window.fetch(requestUrl, init);
-  const body = await parseBody(response, dataType);
 
   if (!response.ok) {
     const error = new Error(`Request to ${url} failed (${response.status})`);
     error.response = response;
-    error.body = body;
+    // Attach the parsed body when we can, but never let an unparseable body
+    // (e.g. an HTML error page for a dataType:"json" request) throw here and
+    // mask the real HTTP status.
+    try {
+      error.body = await parseBody(response, dataType);
+    } catch {
+      error.body = null;
+    }
     throw error;
   }
 
-  return body;
+  return await parseBody(response, dataType);
 }
