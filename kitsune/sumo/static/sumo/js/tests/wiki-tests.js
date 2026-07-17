@@ -5,6 +5,9 @@ import {
   initTitleAndSlugCheck,
   initTranslationDraft,
   initRevisionList,
+  initReadyForL10n,
+  initArticlePreview,
+  initPreviewDiff,
 } from "sumo/js/wiki";
 
 function jsonResponse(body) {
@@ -124,6 +127,86 @@ describe("wiki: initTranslationDraft", () => {
     // ...and on a name collision the later form (rev_form) wins.
     expect(body.get("shared")).to.equal("rev");
   });
+
+  it("wires both 'Save as Draft' buttons (top and #preview-bottom)", () => {
+    // The submit button bar is rendered twice; the bottom one lives in
+    // #preview-bottom and is revealed after a preview.
+    document.body.innerHTML = `
+      <form id="rev_form"><input name="c" value="3"></form>
+      <button class="btn-draft" data-draft-url="/draft"></button>
+      <div id="preview-bottom" hidden>
+        <button class="btn-draft" data-draft-url="/draft"></button>
+      </div>
+      <div id="draft-message"></div>`;
+    const fetchStub = sinon.stub(window, "fetch").returns(new Promise(function () {}));
+    initTranslationDraft();
+
+    // Click the SECOND (bottom) draft button.
+    document.querySelectorAll(".btn-draft")[1].click();
+
+    expect(fetchStub.calledOnce).to.equal(true);
+    expect(fetchStub.firstCall.args[0]).to.equal("/draft");
+  });
+});
+
+describe("wiki: initArticlePreview", () => {
+  afterEach(() => {
+    sinon.restore();
+    document.body.innerHTML = "";
+  });
+
+  it("wires both 'Preview Content' buttons (top and #preview-bottom)", () => {
+    document.body.innerHTML = `
+      <form>
+        <textarea id="id_content">hello</textarea>
+        <button class="btn-preview" data-preview-url="/preview"></button>
+        <div id="preview"></div>
+        <div id="preview-bottom" hidden>
+          <button class="btn-preview" data-preview-url="/preview"></button>
+        </div>
+      </form>`;
+    // Keep the request pending so the show-preview/lazyload path doesn't run.
+    const fetchStub = sinon.stub(window, "fetch").returns(new Promise(function () {}));
+    initArticlePreview();
+
+    // Click the SECOND (bottom) preview button.
+    document.querySelectorAll(".btn-preview")[1].click();
+
+    expect(fetchStub.calledOnce).to.equal(true);
+    expect(fetchStub.firstCall.args[0]).to.equal("/preview");
+  });
+});
+
+describe("wiki: initPreviewDiff", () => {
+  afterEach(() => {
+    sinon.restore();
+    document.body.innerHTML = "";
+  });
+
+  it("wires both 'Preview Changes' buttons (top and #preview-bottom)", () => {
+    document.body.innerHTML = `
+      <div>
+        <textarea id="id_content">new content</textarea>
+        <button class="btn-diff"></button>
+        <div id="preview-diff" hidden>
+          <div class="from"></div>
+          <div class="to"></div>
+          <div class="output"></div>
+        </div>
+        <div id="preview-bottom" hidden>
+          <button class="btn-diff"></button>
+        </div>
+      </div>`;
+    initPreviewDiff();
+
+    // Click the SECOND (bottom) diff button.
+    document.querySelectorAll(".btn-diff")[1].click();
+
+    // The handler copies the textarea into #preview-diff .to and reveals the
+    // bottom button bar.
+    expect(document.querySelector("#preview-diff .to").textContent).to.equal("new content");
+    expect(document.getElementById("preview-bottom").hidden).to.equal(false);
+  });
 });
 
 describe("wiki: initRevisionList", () => {
@@ -191,5 +274,48 @@ describe("wiki: initRevisionList", () => {
     expect(requestedUrl).to.contain("show=new");
     expect(requestedUrl).to.contain("fragment=1");
     expect(document.getElementById("revisions-fragment").innerHTML).to.equal("<p>rows</p>");
+  });
+});
+
+describe("wiki: initReadyForL10n", () => {
+  afterEach(() => {
+    sinon.restore();
+    document.body.innerHTML = "";
+  });
+
+  it("marks a revision ready even though the first .l10n is the column header", () => {
+    // The revision list's first .l10n element is the <th> column header (no
+    // link); the "mark as ready" link lives in a row's <td class="l10n">.
+    document.body.innerHTML = `
+      <div id="revision-list">
+        <table>
+          <tr><th class="l10n"><abbr>R</abbr></th></tr>
+          <tr><td class="l10n">
+            <a class="markasready" id="rev-5-l10n-no"
+               data-url="/mark-ready/5" data-revdate="2020-01-01"></a>
+          </td></tr>
+        </table>
+      </div>
+      <div class="mzp-u-modal-content" data-modal-id="ready-for-l10n-modal">
+        <input type="hidden" name="csrfmiddlewaretoken" value="tok">
+        <span class="revtime"></span>
+        <button id="submit-l10n" type="submit">Submit</button>
+      </div>`;
+    // The submit handler's success path calls Protocol Modal.closeModal(), which
+    // throws without a real open modal - keep fetch pending so it never runs.
+    const fetchStub = sinon.stub(window, "fetch").returns(new Promise(function () {}));
+    initReadyForL10n();
+
+    // Clicking the "X" must record the target URL (it previously wasn't, because
+    // the handler was bound to the header cell, which has no link)...
+    document.getElementById("rev-5-l10n-no").click();
+    expect(document.querySelector("span.revtime").innerHTML).to.equal("(2020-01-01)");
+
+    // ...so clicking Submit POSTs to it.
+    document.getElementById("submit-l10n").click();
+    expect(fetchStub.calledOnce).to.equal(true);
+    const [url, init] = fetchStub.firstCall.args;
+    expect(url).to.equal("/mark-ready/5");
+    expect(init.method).to.equal("POST");
   });
 });

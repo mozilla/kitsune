@@ -224,16 +224,14 @@ function initSummaryCount() {
 /*
  * Initialize the article preview functionality.
  */
-function initArticlePreview() {
+export function initArticlePreview() {
   var previewEl = document.getElementById('preview');
   var previewBottom = document.getElementById('preview-bottom');
-  var preview = new AjaxPreview(document.querySelector('.btn-preview'), {
-    contentElement: document.getElementById('id_content'),
-    previewElement: previewEl
-  });
+  var contentEl = document.getElementById('id_content');
+
   // AjaxPreview is a native EventTarget; listen with addEventListener and read
   // success off the CustomEvent detail (was a jQuery $(preview).on).
-  preview.addEventListener('done', function (e) {
+  function onDone(e) {
     if (e.detail.success) {
       show(previewBottom);
       new ShowFor();
@@ -251,17 +249,30 @@ function initArticlePreview() {
       }
       collapsibleAccordionInit();
     }
+  }
+
+  // The submit button bar is rendered twice (top + the #preview-bottom bar
+  // revealed after a preview), so wire a preview to each ".btn-preview"
+  // (jQuery's AjaxPreview($('.btn-preview')) bound them all).
+  document.querySelectorAll('.btn-preview').forEach(function (btn) {
+    var preview = new AjaxPreview(btn, {
+      contentElement: contentEl,
+      previewElement: previewEl
+    });
+    preview.addEventListener('done', onDone);
   });
 }
 
 // Diff Preview of edits
-function initPreviewDiff() {
+export function initPreviewDiff() {
   var diff = document.getElementById('preview-diff');
-  var diffButton = document.querySelector('.btn-diff');
   if (diff) {
     diff.classList.add('diff-this');
   }
-  if (diffButton) {
+  // The submit button bar is rendered twice (top + the #preview-bottom bar that
+  // is revealed after a preview), so there are two ".btn-diff" buttons; wire
+  // them all (jQuery's $('.btn-diff') bound the handler to every match).
+  document.querySelectorAll('.btn-diff').forEach(function (diffButton) {
     diffButton.addEventListener('click', function () {
       var content = document.getElementById('id_content');
       var to = diff && diff.querySelector('.to');
@@ -275,7 +286,7 @@ function initPreviewDiff() {
         preview.innerHTML = '';
       }
     });
-  }
+  });
 }
 
 export function initTitleAndSlugCheck() {
@@ -438,30 +449,33 @@ function ajaxifyDiffPicker(form, kbox, diff) {
   });
 }
 
-function initReadyForL10n() {
-  var watchDiv = document.querySelector('#revision-list .l10n');
+export function initReadyForL10n() {
+  // Select the "mark as ready" links directly across the whole revision list.
+  // The first ".l10n" element is the column header (<th class="l10n">), which
+  // has no link - so the old `querySelector('#revision-list .l10n')` grabbed the
+  // header and found no links. jQuery's `$('#revision-list .l10n')` matched
+  // every cell, so `.find('a.markasready')` found the links.
+  var markAsReadyLinks = document.querySelectorAll('#revision-list .l10n a.markasready');
   var modal = document.querySelector('[data-modal-id="ready-for-l10n-modal"]');
   var post_url, checkbox_id;
 
-  if (watchDiv) {
-    watchDiv.querySelectorAll('a.markasready').forEach(function (check) {
-      check.addEventListener('click', function () {
-        // Once a revision is marked ready it gets the "yes" class; ignore
-        // further clicks (the old code did this via $().off('click')).
-        if (check.classList.contains('yes')) {
-          return;
+  markAsReadyLinks.forEach(function (check) {
+    check.addEventListener('click', function () {
+      // Once a revision is marked ready it gets the "yes" class; ignore
+      // further clicks (the old code did this via $().off('click')).
+      if (check.classList.contains('yes')) {
+        return;
+      }
+      post_url = check.dataset.url;
+      checkbox_id = check.getAttribute('id');
+      if (modal) {
+        var revtime = modal.querySelector('span.revtime');
+        if (revtime) {
+          revtime.innerHTML = '(' + check.dataset.revdate + ')';
         }
-        post_url = check.dataset.url;
-        checkbox_id = check.getAttribute('id');
-        if (modal) {
-          var revtime = modal.querySelector('span.revtime');
-          if (revtime) {
-            revtime.innerHTML = '(' + check.dataset.revdate + ')';
-          }
-        }
-      });
+      }
     });
-  }
+  });
 
   if (modal) {
     modal.querySelectorAll('input[type=submit], button[type=submit]').forEach(function (btn) {
@@ -686,14 +700,14 @@ function initToggleDiff() {
 }
 
 export function initTranslationDraft() {
-  var draftButton = document.querySelector('.btn-draft');
-  if (!draftButton) {
-    return;
-  }
-  var url = draftButton.dataset.draftUrl;
   var draftMessage = document.getElementById('draft-message');
 
-  draftButton.addEventListener('click', function () {
+  // The submit button bar is rendered twice (top + the #preview-bottom bar
+  // revealed after a preview), so there are two ".btn-draft" buttons; wire them
+  // all (jQuery's $('.btn-draft') bound the handler to every match).
+  document.querySelectorAll('.btn-draft').forEach(function (draftButton) {
+    var url = draftButton.dataset.draftUrl;
+    draftButton.addEventListener('click', function () {
     var message = gettext('<strong>Draft is saving...</strong>');
     var image = `<img src="${spinnerImg}">`;
     // Merge the fields of all three forms by name (the old code used
@@ -736,6 +750,7 @@ export function initTranslationDraft() {
           show(draftMessage);
         }
       });
+    });
   });
 }
 
