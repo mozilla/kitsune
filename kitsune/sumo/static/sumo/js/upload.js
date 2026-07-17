@@ -73,10 +73,12 @@ export function init() {
         return opts;
       },
       onComplete: function (input, content, opts, ok) {
-        var uploadForm = input.closest("form");
-        if (uploadForm) {
-          uploadForm.reset();
-        }
+        // Clear just the file input, not the whole form. The old
+        // jquery.ajaxupload plugin submitted an isolated wrapper form and reset
+        // that; input.closest("form") is now the real form (e.g. the AAQ
+        // question form), so form.reset() would wipe the user's entries. Mirror
+        // gallery.js.
+        input.value = "";
         if (!content) {
           // No usable body: silent on a network error (ok is false with a null
           // body), but surface a generic error on an HTTP failure.

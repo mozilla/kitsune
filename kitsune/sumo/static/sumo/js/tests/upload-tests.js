@@ -74,6 +74,58 @@ describe("upload (async file upload)", () => {
     expect(document.querySelector(".attachment")).to.not.equal(null);
   });
 
+  it("preserves the rest of the form's fields when an upload completes", async () => {
+    // The file input lives in the same <form> as the question fields (AAQ form),
+    // so completing an upload must not wipe what the user already typed.
+    document.body.innerHTML = `
+      <form>
+        <input type="text" name="title" id="q-subject">
+        <textarea name="content" id="q-content"></textarea>
+        <select name="topic">
+          <option value="">--</option>
+          <option value="general">General</option>
+        </select>
+        <div class="attachments-upload" data-post-url="/upload">
+          <div class="upload-progress"></div>
+          <div class="add-attachment"></div>
+          <div class="adding-attachment"></div>
+          <div class="uploaded"></div>
+          <input type="file" name="image">
+        </div>
+      </form>`;
+    // The user filled in the AAQ form.
+    document.getElementById("q-subject").value = "My question summary";
+    document.getElementById("q-content").value = "Please help me";
+    document.querySelector('select[name="topic"]').value = "general";
+
+    sinon.stub(global, "fetch").resolves(
+      textResponse(
+        JSON.stringify({
+          status: "success",
+          file: {
+            name: "pic.png",
+            url: "/img/1",
+            width: "10",
+            height: "10",
+            thumbnail_url: "/thumb",
+            delete_url: "/del/1",
+          },
+        })
+      )
+    );
+    init();
+
+    const input = document.querySelector('input[type="file"]');
+    const file = new window.File(["x"], "pic.png", { type: "image/png" });
+    Object.defineProperty(input, "files", { value: [file], configurable: true });
+    input.dispatchEvent(new window.Event("change"));
+    await tick();
+
+    expect(document.getElementById("q-subject").value).to.equal("My question summary");
+    expect(document.getElementById("q-content").value).to.equal("Please help me");
+    expect(document.querySelector('select[name="topic"]').value).to.equal("general");
+  });
+
   it("shows a generic server error (not the sign-in hint) on a 500 with a non-JSON body", async () => {
     sinon.stub(global, "fetch").resolves(failResponse("<h1>500 Server Error</h1>"));
     const input = setupUploadForm();
