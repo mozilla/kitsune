@@ -148,7 +148,7 @@ function initQuestion(action) {
 }
 
 // Handle changes to the details for a question
-function initEditDetails() {
+export function initEditDetails() {
   var product = document.getElementById('details-product');
   if (!product) {
     return;
@@ -170,7 +170,11 @@ function initEditDetails() {
         var t = data.topics[i];
         var opt = document.createElement('option');
         opt.value = t.id;
-        opt.textContent = t.title;
+        // Titles arrive with &nbsp; entities for nested-topic indentation (built
+        // server-side in get_hierarchical_topics). Render as HTML so the
+        // entities decode to non-breaking spaces, matching the server-rendered
+        // dropdowns which output the same title via `{{ title|safe }}`.
+        opt.innerHTML = t.title;
         if (topic) {
           topic.appendChild(opt);
         }
