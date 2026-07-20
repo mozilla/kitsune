@@ -1,14 +1,17 @@
 import glob
+import re
 import subprocess
+from pathlib import Path
 
 from babel.messages.frontend import CommandLineInterface
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 
 HEADER_COMMENT = (
     "# Translations template for kitsune.\n"
     "# Copyright (C) YEAR Mozilla\n"
-    "# This file is distributed under the license specified at "
-    "https://github.com/mozilla-l10n/sumo-l10n."
+    "# This file is distributed under the license specified at\n"
+    "# https://github.com/mozilla-l10n/sumo-l10n."
 )
 
 
@@ -110,4 +113,17 @@ class Command(BaseCommand):
             except subprocess.CalledProcessError as err:
                 raise CommandError(err.output)
 
+        update_header_comments("locale/templates/LC_MESSAGES/djangojs.pot")
+
         self.stdout.write(self.style.SUCCESS("extraction complete"))
+
+
+def update_header_comments(filename):
+    """Given a POT filename, replace the header comment."""
+    current_year = timezone.now().year
+    header = HEADER_COMMENT.replace("YEAR", str(current_year))
+
+    pot_file = Path(filename)
+    text = pot_file.read_text()
+    text = re.sub(r"\A(?:#.*\n)+(?=#, fuzzy)", f"{header}\n", text, count=1)
+    pot_file.write_text(text)

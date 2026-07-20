@@ -25,9 +25,29 @@ class ExtractCommandTests(SimpleTestCase):
         with TemporaryDirectory() as tempdir:
             root = Path(tempdir)
             (root / "babel.cfg").write_text("[python: **.py]\n")
-            (root / "babeljs.cfg").write_text("[javascript: **.js]\n")
+            (root / "babeljs.cfg").write_text(
+                "[extractors]\n"
+                "jinja2_custom = kitsune.lib.babel:extract_jinja\n"
+                "svelte_custom = kitsune.lib.babel:extract_svelte\n"
+                "\n"
+                "[svelte_custom: svelte/**/*.svelte]\n"
+                "[jinja2_custom: kitsune/**/static/**/tpl/**.njk]\n"
+            )
+
             (root / "strings.py").write_text('_lazy("Python string")\n')
-            (root / "strings.js").write_text('_lazy("JavaScript string");\n')
+
+            static_js_dir = root / "kitsune/sumo/static/sumo/js"
+            static_js_dir.mkdir(parents=True)
+            (static_js_dir / "strings.js").write_text('_lazy("JavaScript string");\n')
+
+            tpl_dir = root / "kitsune/sumo/static/sumo/tpl"
+            tpl_dir.mkdir(parents=True)
+            (tpl_dir / "strings.njk").write_text('{{ gettext("Nunjucks string") }}\n')
+
+            svelte_dir = root / "svelte/contribute"
+            svelte_dir.mkdir(parents=True)
+            (svelte_dir / "Strings.svelte").write_text('<h1>{gettext("Svelte string")}</h1>\n')
+
             (root / "locale/templates/LC_MESSAGES").mkdir(parents=True)
 
             with chdir(root):
@@ -45,6 +65,10 @@ class ExtractCommandTests(SimpleTestCase):
                 self.assertNotIn("FIRST AUTHOR", text)
 
             django_pot = root / "locale/templates/LC_MESSAGES/django.pot"
+            django_text = django_pot.read_text()
             djangojs_pot = root / "locale/templates/LC_MESSAGES/djangojs.pot"
-            self.assertIn('msgid "Python string"', django_pot.read_text())
-            self.assertIn('msgid "JavaScript string"', djangojs_pot.read_text())
+            djangojs_text = djangojs_pot.read_text()
+            self.assertIn('msgid "Python string"', django_text)
+            self.assertIn('msgid "JavaScript string"', djangojs_text)
+            self.assertIn('msgid "Nunjucks string"', djangojs_text)
+            self.assertIn('msgid "Svelte string"', djangojs_text )
