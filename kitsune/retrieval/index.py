@@ -45,7 +45,7 @@ class ChunkDocument(SumoDocument):
     updated = field.Date()
 
     class Index:
-        # populated at runtime by AliasedIndexMixin.__init_subclass__
+        # populated at runtime by SumoDocument.__init_subclass__
         base_name: ClassVar[str]
         read_alias: ClassVar[str]
         write_alias: ClassVar[str]

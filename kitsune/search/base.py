@@ -26,27 +26,36 @@ from kitsune.search.parser import Parser
 from kitsune.search.parser.tokens import TermToken
 
 
-class AliasedIndexMixin:
-    """Read/write-alias index versioning for `elasticsearch.dsl` documents.
+class SumoDocument(DSLDocument):
+    """Base class with common methods for all the different documents."""
 
-    Physical indices are named `{ES_INDEX_PREFIX}_{name}_{timestamp}` behind
-    `_read`/`_write` aliases, enabling zero-downtime rebuilds via an atomic alias
-    swap. A subclass that declares its own `Index` gets its own index; a subclass
-    that inherits its `Index` reuses the parent's (index sharing).
-    """
+    # Controls if a document should be indexed or updated in ES.
+    #   True: An update action will be performed in ES.
+    #   False: An index action will be performed in ES.
+    update_document = False
+
+    indexed_on = field.Date()
+
+    class Meta:
+        # ignore fields if they don't exist in the mapping
+        dynamic = MetaField("false")
 
     def __init_subclass__(cls, **kwargs):
-        """Set up the read/write aliases for each subclass that declares an Index."""
+        """Automatically set up each subclass' Index attribute."""
         super().__init_subclass__(**kwargs)
 
-        # Only configure classes that declare their own `Index`. Abstract bases and
-        # index-sharing subclasses (which inherit a parent's `Index`, e.g.
-        # AnswerDocument sharing QuestionDocument's) are left to reuse what they inherit.
-        if "Index" not in cls.__dict__:
-            return
-
         cls.Index.using = DEFAULT_ES_CONNECTION
-        cls.Index.base_name = f"{settings.ES_INDEX_PREFIX}_{cls.__name__.lower()}"
+
+        # this is here to ensure subclasses of subclasses of SumoDocument (e.g. AnswerDocument)
+        # use the same name in their index as their parent class (e.g. QuestionDocument) since
+        # they share an index with that parent
+        immediate_parent = cls.__mro__[1]
+        if immediate_parent is SumoDocument:
+            name = cls.__name__
+        else:
+            name = immediate_parent.__name__
+
+        cls.Index.base_name = f"{settings.ES_INDEX_PREFIX}_{name.lower()}"
         cls.Index.read_alias = f"{cls.Index.base_name}_read"
         cls.Index.write_alias = f"{cls.Index.base_name}_write"
         # Bump the refresh interval to 1 minute
@@ -109,21 +118,6 @@ class AliasedIndexMixin:
             )
 
         return aliased_indices[0] if aliased_indices else None
-
-
-class SumoDocument(AliasedIndexMixin, DSLDocument):
-    """Base class with common methods for all the different documents."""
-
-    # Controls if a document should be indexed or updated in ES.
-    #   True: An update action will be performed in ES.
-    #   False: An index action will be performed in ES.
-    update_document = False
-
-    indexed_on = field.Date()
-
-    class Meta:
-        # ignore fields if they don't exist in the mapping
-        dynamic = MetaField("false")
 
     @classmethod
     def prepare(cls, instance, parent_id=None, **kwargs):
@@ -425,7 +419,7 @@ class SumoSearchPaginator(DjPaginator):
             if isinstance(number, float) and not number.is_integer():
                 raise ValueError
             number = int(number)
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             raise PageNotAnInteger(_("That page number is not an integer"))
         if number < 1:
             raise EmptyPage(_("That page number is less than 1"))
