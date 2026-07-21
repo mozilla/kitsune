@@ -735,12 +735,17 @@ class WebhookView(View):
 
         if payload:
             issuer = payload["iss"]
+            audience = payload.get("aud")
             events = payload.get("events", "")
             fxa_uid = payload.get("sub", "")
             exp = payload.get("exp")
 
             # If the issuer is not Mozilla accounts raise a 404 error
             if settings.FXA_SET_ISSUER != issuer:
+                raise Http404
+
+            audiences = [audience] if isinstance(audience, str) else (audience or [])
+            if settings.FXA_RP_CLIENT_ID not in audiences:
                 raise Http404
 
             # If exp is in the token then it's an id_token that should not be here
