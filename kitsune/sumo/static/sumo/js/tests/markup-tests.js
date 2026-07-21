@@ -176,6 +176,31 @@ describe("markup: attachTypeahead", () => {
     key("Escape");
     expect(list().hidden).to.equal(true);
   });
+
+  it("ignores an out-of-order response from a superseded search", () => {
+    // Capture each request's callback so we can resolve them out of order.
+    const requests = [];
+    attachTypeahead(input, (term, cb) => requests.push({ term, cb }), () => {});
+    const clock = sinon.useFakeTimers();
+
+    input.value = "a";
+    input.dispatchEvent(new window.Event("input"));
+    clock.tick(300); // fires the "a" request
+
+    input.value = "ab";
+    input.dispatchEvent(new window.Event("input"));
+    clock.tick(300); // fires the newer "ab" request
+    clock.restore();
+
+    expect(requests.length).to.equal(2);
+    // Newer response lands first...
+    requests[1].cb([{ label: "ab-result" }]);
+    // ...then the older (superseded) one arrives and must NOT overwrite it.
+    requests[0].cb([{ label: "a-result" }]);
+
+    const labels = Array.prototype.map.call(list().children, (li) => li.textContent);
+    expect(labels).to.deep.equal(["ab-result"]);
+  });
 });
 
 describe("markup: MediaButton upload link", () => {

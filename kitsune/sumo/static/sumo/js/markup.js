@@ -76,6 +76,11 @@ function attachTypeahead(input, source, onSelect) {
   var items = [];
   var activeIndex = -1;
   var debounceTimer;
+  // Monotonic request id. Debouncing throttles how often requests start, but
+  // several can still be in flight and finish out of order; only the newest
+  // request's response is rendered (jQuery UI guarded this with a request
+  // index).
+  var latestRequestId = 0;
 
   function close() {
     list.hidden = true;
@@ -123,13 +128,20 @@ function attachTypeahead(input, source, onSelect) {
 
   input.addEventListener("input", function () {
     clearTimeout(debounceTimer);
+    // Every keystroke supersedes any in-flight request, so their late responses
+    // (and the empty-input case below) are ignored.
+    var requestId = ++latestRequestId;
     var term = input.value;
     if (!term) {
       close();
       return;
     }
     debounceTimer = setTimeout(function () {
-      source(term, render);
+      source(term, function (results) {
+        if (requestId === latestRequestId) {
+          render(results);
+        }
+      });
     }, 300);
   });
 
