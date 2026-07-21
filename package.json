@@ -102,7 +102,7 @@
     "stylelint-scss": "^7.2.0",
     "svelte-loader": "^3.2.4",
     "svelte-preprocess": "^5.0.1",
-    "webpack": "^5.105.4",
+    "webpack": "^5.108.4",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.1.4",
     "webpack-merge": "^6.0.1"
