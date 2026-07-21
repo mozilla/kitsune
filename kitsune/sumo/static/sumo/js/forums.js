@@ -21,7 +21,7 @@ import Marky from "sumo/js/markup";
       var post = $(this).data('post'),
         $post = $('#post-' + post),
         text = $post.find('div.content-raw').text(),
-        user = $post.closest('.thread-post').find('.thread-post--author-name').text().trim(),
+        user = $post.find('.display-name').text(),
         reply_text = `''${user} [[#post-${post}|${gettext('said')}]]''\n<blockquote>\n${text}\n</blockquote>\n\n`,
         $textarea = $('#id_content'),
         oldtext = $textarea.val();
