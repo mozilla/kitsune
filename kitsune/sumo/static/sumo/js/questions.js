@@ -27,6 +27,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+// Put the last search query back into the answers-page search box.
+export function restoreLastSearchQuery() {
+  var searchBox = document.querySelector('#support-search input[name=q]');
+  if (searchBox) {
+    // Default to "" - getCookie returns undefined when the cookie is missing,
+    // and assigning that to .value would show the literal string "undefined".
+    searchBox.value = unquote(getCookie('last_search')) || '';
+  }
+}
+
 function init() {
   var body = document.body;
 
@@ -55,11 +65,7 @@ function init() {
   }
 
   if (body.classList.contains('answers')) {
-    // Put last search query into search box
-    var searchBox = document.querySelector('#support-search input[name=q]');
-    if (searchBox) {
-      searchBox.value = unquote(getCookie('last_search'));
-    }
+    restoreLastSearchQuery();
 
     var content = document.getElementById('id_content');
     if (content) {

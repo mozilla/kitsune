@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import sinon from "sinon";
 
-import { initEditDetails } from "sumo/js/questions";
+import { initEditDetails, restoreLastSearchQuery } from "sumo/js/questions";
+import { setCookie, removeCookie } from "sumo/js/utils/cookie";
 
 // A non-breaking space (U+00A0), the decoded form of the server's &nbsp;.
 const NBSP = String.fromCharCode(160);
@@ -54,5 +55,34 @@ describe("questions: initEditDetails (topic dropdown)", () => {
     // they must be decoded to real non-breaking spaces, not shown literally.
     expect(topic.options[1].textContent).to.equal(NBSP.repeat(4) + "Subtopic");
     expect(topic.options[1].textContent).to.not.contain("&nbsp;");
+  });
+});
+
+describe("questions: restoreLastSearchQuery", () => {
+  afterEach(() => {
+    removeCookie("last_search");
+    document.body.innerHTML = "";
+  });
+
+  it("leaves the search box empty when the last_search cookie is missing", () => {
+    removeCookie("last_search");
+    document.body.innerHTML = '<div id="support-search"><input name="q"></div>';
+
+    restoreLastSearchQuery();
+
+    // Not the literal string "undefined" (getCookie returns undefined and
+    // el.value coerces it to a string).
+    expect(document.querySelector("#support-search input[name=q]").value).to.equal("");
+  });
+
+  it("prefills the search box from the last_search cookie, unquoted", () => {
+    setCookie("last_search", '"firefox crash"');
+    document.body.innerHTML = '<div id="support-search"><input name="q"></div>';
+
+    restoreLastSearchQuery();
+
+    expect(document.querySelector("#support-search input[name=q]").value).to.equal(
+      "firefox crash"
+    );
   });
 });

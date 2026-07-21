@@ -45,7 +45,9 @@ export const getReferrer = function (urlParams) {
 export const getSearchQuery = function (urlParams, referrer) {
   // If the referrer is a search page, return the search keywords.
   if (referrer === 'search') {
-    return urlParams.s;
+    // Default to "" so callers don't assign undefined to a field's .value
+    // (which would stringify to "undefined").
+    return urlParams.s || '';
   } else if (referrer !== 'inproduct') {
     return getQueryParamsAsDict(referrer).q || '';
   }
