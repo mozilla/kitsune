@@ -13,6 +13,20 @@
 
 import dialogSet from "sumo/js/upload-dialog";
 
+// Tracks each input's in-flight upload so it can be aborted mid-flight - the
+// fetch equivalent of resetting the old upload iframe's src, which the iframe
+// plugin used to cancel an in-progress POST.
+var uploadControllers = new WeakMap();
+
+// Abort the in-flight upload for the given input, if any.
+export function abortUpload(input) {
+  var controller = uploadControllers.get(input);
+  if (controller) {
+    uploadControllers.delete(input);
+    controller.abort();
+  }
+}
+
 /*
  * Takes a file (or submit) input and, on the given event, POSTs its file(s)
  * to options.url via fetch + FormData. Options:
@@ -69,7 +83,10 @@ export function ajaxSubmitInput(input, options) {
       formData.append("csrfmiddlewaretoken", csrfInput.value);
     }
 
-    fetch(options.url, { method: "POST", body: formData })
+    var controller = new AbortController();
+    uploadControllers.set(input, controller);
+
+    fetch(options.url, { method: "POST", body: formData, signal: controller.signal })
       .then(function (response) {
         var ok = response.ok;
         return response.text().then(function (text) {
@@ -77,7 +94,16 @@ export function ajaxSubmitInput(input, options) {
         });
       })
       .catch(function () {
+        // A network error or an abort() both land here; onComplete already
+        // treats null content as a failure.
         options.onComplete(input, null, passThrough, false);
+      })
+      .finally(function () {
+        // Only clear if this is still the current controller (a newer upload
+        // for the same input may have replaced it).
+        if (uploadControllers.get(input) === controller) {
+          uploadControllers.delete(input);
+        }
       });
   });
 

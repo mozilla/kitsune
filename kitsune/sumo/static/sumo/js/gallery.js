@@ -1,4 +1,4 @@
-import { ajaxSubmitInput } from "sumo/js/ajaxupload";
+import { ajaxSubmitInput, abortUpload } from "sumo/js/ajaxupload";
 import KBox from "sumo/js/kbox";
 import { apiFetch } from "sumo/js/utils/fetch";
 
@@ -398,8 +398,11 @@ var GalleryUpload = {
     var form = a.closest('form');
     var input = form ? form.querySelector('input[name="' + type + '"]') : null;
     if (input) {
-      // Ignore any in-flight upload for this input when it later completes.
+      // Abort the in-flight upload (the fetch equivalent of the old iframe
+      // src-reset) so the server doesn't save an orphaned draft, and ignore its
+      // completion if the abort lands too late to stop it.
       cancelledUploads.add(input);
+      abortUpload(input);
     }
     var mediaForm = a.closest('.upload-form') || form;
     if (mediaForm) {
@@ -478,6 +481,12 @@ var GalleryUpload = {
   */
   modalClose: function () {
     var self = this;
+    // Abort any in-flight uploads first: closing mid-upload otherwise skips the
+    // draft cancel below (there's no `.draft` yet) and the upload would land and
+    // orphan a draft.
+    self.modal.querySelectorAll('input[type="file"]').forEach(function (input) {
+      abortUpload(input);
+    });
     var cancelInput = self.modal.querySelector('.upload-action input[name="cancel"]');
     if (self.modal.querySelector('.draft')) {
       // If there's a draft to cancel.

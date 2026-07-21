@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 
-import { ajaxSubmitInput, wrapDeleteInput } from "sumo/js/ajaxupload";
+import { ajaxSubmitInput, wrapDeleteInput, abortUpload } from "sumo/js/ajaxupload";
 
 // ajaxupload.js calls the bare global `fetch` (not window.fetch), so these
 // tests stub global.fetch. Ensure FormData/File resolve to jsdom's
@@ -89,6 +89,45 @@ describe("ajaxupload", () => {
 
       expect(onComplete.calledOnce).to.equal(true);
       expect(onComplete.firstCall.args[1]).to.equal(null);
+    });
+  });
+
+  describe("abortUpload", () => {
+    it("attaches an abort signal to the upload fetch", () => {
+      document.body.innerHTML = '<form><input type="file" name="image"></form>';
+      const fetchStub = sinon.stub(global, "fetch").resolves(textResponse("{}"));
+      const input = document.querySelector('input[type="file"]');
+      ajaxSubmitInput(input, { url: "/upload" });
+
+      input.dispatchEvent(new window.Event("change"));
+
+      expect(fetchStub.calledOnce).to.equal(true);
+      expect(fetchStub.firstCall.args[1].signal).to.be.an.instanceof(AbortSignal);
+    });
+
+    it("aborts the in-flight upload and reports it as a failed completion", async () => {
+      document.body.innerHTML = '<form><input type="file" name="image"></form>';
+      // A fetch that only settles when its signal aborts (like a slow upload).
+      sinon.stub(global, "fetch").callsFake(function (url, init) {
+        return new Promise(function (resolve, reject) {
+          if (init.signal) {
+            init.signal.addEventListener("abort", function () {
+              reject(new DOMException("aborted", "AbortError"));
+            });
+          }
+        });
+      });
+      const onComplete = sinon.spy();
+      const input = document.querySelector('input[type="file"]');
+      ajaxSubmitInput(input, { url: "/upload", onComplete });
+      input.dispatchEvent(new window.Event("change"));
+
+      abortUpload(input);
+      await tick();
+
+      expect(onComplete.calledOnce).to.equal(true);
+      expect(onComplete.firstCall.args[1]).to.equal(null); // no content
+      expect(onComplete.firstCall.args[3]).to.equal(false); // ok = false
     });
   });
 
