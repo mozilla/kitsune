@@ -737,6 +737,43 @@ class WebhookViewTests(TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, AccountEvent.objects.count())
 
+    @setup_key
+    def test_rejects_wrong_audience(self, key):
+        """A validly-signed SET addressed to a different RP must be rejected."""
+        ProfileFactory(fxa_uid="54321")
+        payload = json.dumps(
+            {
+                "iss": "http://example.com",
+                "sub": "54321",
+                "aud": "attacker-client-id",
+                "iat": 1565720808,
+                "jti": "e19ed6c5-4816-4171-aa43-56ffe80dbda1",
+                "events": {
+                    "https://schemas.accounts.firefox.com/event/password-change": {
+                        "changeTime": 1565721242227
+                    }
+                },
+            }
+        )
+
+        jwt = jws.JWS.sign(
+            payload=payload.encode(),
+            key=key,
+            alg=jwa.RS256,
+            kid="123",
+            protect=frozenset(["alg", "kid"]),
+        ).to_compact()
+
+        self.assertEqual(0, AccountEvent.objects.count())
+
+        response = self.client.post(
+            reverse("users.fxa_webhook"),
+            content_type="",
+            HTTP_AUTHORIZATION="Bearer " + jwt.decode(),
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertEqual(0, AccountEvent.objects.count())
+
 
 class UserCloseAccountTests(TestCase):
     def setUp(self):
