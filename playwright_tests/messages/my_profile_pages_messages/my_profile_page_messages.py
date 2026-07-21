@@ -6,5 +6,5 @@ class MyProfileMessages:
     USER_DEACTIVATED_MESSAGE = "This user has been deactivated."
 
     @staticmethod
-    def get_my_profile_stage_url(username: str) -> str:
-        return f"https://support.allizom.org/en-US/user/{username}/"
+    def get_my_profile_stage_url(username: str, locale: str = "en-US") -> str:
+        return f"https://support.allizom.org/{locale}/user/{username}/"

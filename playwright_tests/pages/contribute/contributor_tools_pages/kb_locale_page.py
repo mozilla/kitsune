@@ -19,11 +19,11 @@ class KBLocalePage(BasePage):
             "li[class*='mzp-c-notification-bar'] p, ul.user-messages li p")
         self.edit_role_option = lambda role: page.locator(f"#locale-{role}s a.edit")
         self.add_role_form_input = lambda role: page.locator(
-            f"#add-{role}-form input#token-input-id_users")
+            f"#add-{role}-form input#id_users-ts-control")
         self.add_role_submit_button = lambda role: page.locator(
             f"#add-{role}-form input[type='submit']")
         self.autocomplete_result = lambda username: page.locator(
-            f"//div[@class='name_search']/b[text()='{username}']")
+            f"//div[@class='name_search']/span[text()='{username}']")
         self.role_member = lambda role, username: page.locator(
             f"#locale-{role}s ul.users li").filter(
             has=page.locator(f"a[href$='to={username}']"))

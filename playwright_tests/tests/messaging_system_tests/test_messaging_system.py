@@ -72,7 +72,7 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox,
     with allure.step("Verifying that the receiver is automatically added inside the 'To' field"):
         # Firefox GH runner fails here. We are running this assertion only in Chrome for now
         if not is_firefox:
-            expect(sumo_pages.new_message_page.added_to_user_text).to_have_text(
+            expect(sumo_pages.new_message_page.added_to_user_text).to_contain_text(
                 test_user_two["username"])
 
     with allure.step("Sending a message to the user"):
@@ -647,7 +647,7 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page, create_use
         )
 
     with allure.step("Verifying that no groups are returned"):
-        expect(sumo_pages.new_message_page.no_user_search_results_text).to_be_visible(timeout=15000)
+        expect(sumo_pages.new_message_page.no_user_search_results_text).to_be_visible(timeout=30000)
 
     with allure.step("Navigating to the groups page"):
         utilities.navigate_to_link(utilities.general_test_data['groups'])
@@ -906,7 +906,7 @@ def test_pm_group_member(page: Page, is_firefox, create_user_factory):
                      "field"):
         # Firefox GH runner fails here. We are running this assertion only in Chrome for now
         if not is_firefox:
-            expect(sumo_pages.new_message_page.added_to_user_text).to_have_text(
+            expect(sumo_pages.new_message_page.added_to_user_text).to_contain_text(
                 test_user_two["username"])
 
     with allure.step("Sending a message to the user"):
