@@ -15,10 +15,10 @@ import KBox from "sumo/js/kbox";
 
     //or, create a custom toolbar.
     Marky.createFullToolbar('#toolbar-container-id', '#textarea-id', [
-      new Marky.SimpleButton(
+      new Marky.MarkupButton(
         gettext('Bold'), "'''", "'''", gettext('bold text'),
         'btn-bold'),
-      new Marky.SimpleButton(
+      new Marky.MarkupButton(
         gettext('Italic'), "''", "''", gettext('italic text'),
         'btn-italic')
     ]);
@@ -34,18 +34,18 @@ var Marky = {
 
     var settings = $.extend({}, defaults, options);
 
-    var SB = Marky.SimpleButton;
+    var MB = Marky.MarkupButton;
     var buttons = [
-      new SB(gettext('Bold'), "'''", "'''", gettext('bold text'),
+      new MB(gettext('Bold'), "'''", "'''", gettext('bold text'),
         'btn-bold'),
-      new SB(gettext('Italic'), "''", "''", gettext('italic text'),
+      new MB(gettext('Italic'), "''", "''", gettext('italic text'),
         'btn-italic'),
       new Marky.Separator(),
       new Marky.LinkButton(),
       new Marky.Separator(),
-      new SB(gettext('Numbered List'), '# ', '',
+      new MB(gettext('Numbered List'), '# ', '',
         gettext('Numbered list item'), 'btn-ol', true),
-      new SB(gettext('Bulleted List'), '* ', '',
+      new MB(gettext('Bulleted List'), '* ', '',
         gettext('Bulleted list item'), 'btn-ul', true)
     ];
     if (settings.mediaButton) {
@@ -63,8 +63,7 @@ var Marky = {
     Marky.createCustomToolbar(toolbarSel, textareaSel, buttons);
   },
   createFullToolbar: function(toolbarSel, textareaSel) {
-    var SB = Marky.SimpleButton,
-      buttons = Marky.allButtons();
+    var buttons = Marky.allButtons();
     Marky.createCustomToolbar(toolbarSel, textareaSel, buttons);
   },
   createCustomToolbar: function(toolbarSel, textareaSel, partsArray) {
@@ -75,107 +74,153 @@ var Marky = {
     }
   },
   allButtons: function() {
-    var SB = Marky.SimpleButton;
+    var MB = Marky.MarkupButton;
     return [
-      new SB(gettext('Bold'), "'''", "'''", gettext('bold text'),
+      new MB(gettext('Bold'), "'''", "'''", gettext('bold text'),
         'btn-bold'),
-      new SB(gettext('Italic'), "''", "''", gettext('italic text'),
+      new MB(gettext('Italic'), "''", "''", gettext('italic text'),
         'btn-italic'),
       new Marky.Separator(),
       new Marky.LinkButton(),
       new Marky.MediaButton(),
       new Marky.Separator(),
-      new SB(gettext('Numbered List'), '# ', '',
+      new MB(gettext('Numbered List'), '# ', '',
         gettext('Numbered list item'), 'btn-ol', true),
-      new SB(gettext('Bulleted List'), '* ', '',
+      new MB(gettext('Bulleted List'), '* ', '',
         gettext('Bulleted list item'), 'btn-ul', true),
       new Marky.Separator(),
-      new SB(gettext('Heading 1'), '=', '=', gettext('Heading 1'),
+      new MB(gettext('Heading 1'), '=', '=', gettext('Heading 1'),
         'btn-h1', true),
-      new SB(gettext('Heading 2'), '==', '==', gettext('Heading 2'),
+      new MB(gettext('Heading 2'), '==', '==', gettext('Heading 2'),
         'btn-h2', true),
-      new SB(gettext('Heading 3'), '===', '===', gettext('Heading 3'),
+      new MB(gettext('Heading 3'), '===', '===', gettext('Heading 3'),
         'btn-h3', true)
     ];
   }
 };
 
 
-/*
-  * A simple button.
-  * Note: `everyline` is a boolean value that says whether or not the selected
-  *       text should be broken into multiple lines and have the markup applied
-  *       to each line or not. Default is false (do not apply this behavior).
-  *       `classes` is a list of classes to include in the output
-  */
-Marky.SimpleButton = function(name, openTag, closeTag, defaultText,
-                              classes, everyline) {
-  this.name = name;
-  this.classes = '';
-  this.openTag = openTag;
-  this.closeTag = closeTag;
-  this.defaultText = defaultText;
-  this.everyline = everyline;
-  if (undefined !== classes) {
+/**
+ * A simple button template. Do not use directly:
+ * use MarkupButton or InsertButton instead.
+ */
+class SimpleButton {
+  /**
+   * @param {string} name - Button title.
+   * @param {string} classes - A list of classes to include in the output.
+   */
+  constructor(name, classes = '') {
+    this.name = name;
     this.classes = classes;
+
+    this.html = '<button class="markup-toolbar-button" type="button" />';
   }
 
-  this.html = '<button class="markup-toolbar-button" type="button" />';
-};
-
-Marky.SimpleButton.prototype = {
-  // Binds the button to a textarea (DOM node).
-  bind: function(textarea) {
+  /**
+   * Binds the button to a textarea (DOM node).
+   */
+  bind(textarea) {
     this.textarea = textarea;
     return this;
-  },
-  // Renders the html.
-  render: function() {
-    var $out = $(this.html).attr({
-      title: this.name
-    }).html(this.name);
+  }
+
+  /**
+   * Renders the html.
+   */
+  render() {
+    const $out = $(this.html)
+      .attr({
+        title: this.name,
+      })
+      .html(this.name);
     $out.addClass(this.classes);
     return $out;
-  },
-  // Gets the DOM node for the button.
-  node: function() {
-    var me = this,
-      $btn = this.render();
-    $btn.on("click", function(e) {
-      me.handleClick(e);
-    });
-    return $btn[0];
-  },
-  // Get selected text
-  getSelectedText: function() {
-    var selText = '';
+  }
+
+  /**
+   * Get selected text
+   */
+  getSelectedText() {
     if (window.codemirror && window.highlighting.isEnabled()) {
-      var editor = window.highlighting.editor;
+      const editor = window.highlighting.editor;
       return editor.getSelection();
     }
 
-    if (document.selection && document.selection.createRange) {
-      // IE/Opera
-      selText = document.selection.createRange().text;
-    } else if (this.textarea.selectionStart ||
-      parseInt(this.textarea.selectionStart) === 0) {
-      // Firefox/Safari/Chrome/etc.
-      selText = this.textarea.value.substring(
-        this.textarea.selectionStart, this.textarea.selectionEnd);
+    if (typeof this.textarea.selectionStart === 'number') {
+      return this.textarea.value.substring(
+        this.textarea.selectionStart,
+        this.textarea.selectionEnd,
+      );
     }
-    return selText;
-  },
-  // Handles the button click.
-  handleClick: function(e) {
-    var selText, selStart, selEnd, splitText, range,
+    return '';
+  }
+}
+
+/**
+ * A button that wraps the selected text in markup.
+ */
+class MarkupButton extends SimpleButton {
+  /**
+   * @param {string} name - Button title.
+   * @param {string} openTag - Markup placed before the selected text.
+   * @param {string} closeTag - Markup placed after the selected text.
+   * @param {string} defaultText - Default text used when no text is selected.
+   * @param {string} classes - A list of classes to include in the output.
+   * @param {boolean} everyline - Says whether or not the selected
+   *   text should be broken into multiple lines and have the markup applied
+   *   to each line or not. Default is false (do not apply this behavior).
+   */
+  constructor(name, openTag, closeTag, defaultText, classes = '', everyline) {
+    super(name, classes);
+
+    this.openTag = openTag;
+    this.closeTag = closeTag;
+    this.defaultText = defaultText;
+    this.everyline = everyline;
+  }
+
+  /**
+   * Gets the DOM node for the button.
+   */
+  node() {
+    const me = this,
+      $btn = this.render();
+    $btn.on('click', function (e) {
+      me.handleClick(e);
+    });
+    return $btn[0];
+  }
+
+  /**
+   * Handles the button click.
+   */
+  handleClick(e) {
+    const me = this,
       textarea = this.textarea,
-      scrollTop = $(textarea).scrollTop(),
-      editor = window.highlighting && window.highlighting.editor;
+      scrollTop = $(textarea).scrollTop();
+
+    function configureSelection(selText) {
+      const applyEveryLine = me.everyline && selText.includes('\n');
+      me.markup = applyEveryLine
+        ? me.#applyEveryLine(selText).join('\n')
+        : me.openTag + selText + me.closeTag;
+
+      me.selStartDiff = applyEveryLine ? 0 : me.openTag.length;
+      me.selLength = applyEveryLine ? me.markup.length : selText.length;
+    }
 
     if (window.codemirror && window.highlighting && window.highlighting.isEnabled()) {
-      selText = (editor.somethingSelected()) ? editor.getSelection() : this.defaultText;
-      selText = this.openTag + selText + this.closeTag;
-      editor.replaceSelection(selText);
+      const editor = window.highlighting.editor;
+      const selText = (editor.somethingSelected()) ? editor.getSelection() : this.defaultText;
+      const fromIndex = editor.indexFromPos(editor.getCursor('from'));
+
+      configureSelection(selText);
+      editor.replaceSelection(this.markup);
+      editor.setSelection(
+        editor.posFromIndex(fromIndex + this.selStartDiff),
+        editor.posFromIndex(fromIndex + this.selStartDiff + this.selLength),
+      );
+
       editor.focus();
       e.preventDefault();
       return false;
@@ -183,171 +228,206 @@ Marky.SimpleButton.prototype = {
 
     textarea.focus();
 
-    if (document.selection && document.selection.createRange) {
-      // IE/Opera
-      range = document.selection.createRange();
-      selText = range.text;
-      if (!selText.length) {
-        selText = this.defaultText;
-      }
+    if (typeof textarea.selectionStart === 'number') {
+      const selStart = textarea.selectionStart;
+      const selEnd = textarea.selectionEnd;
+      const selText = textarea.value.substring(selStart, selEnd) || this.defaultText;
 
-      if (this.everyline && -~selText.indexOf('\n')) {
-        splitText = this._applyEveryLine(this.openTag, this.closeTag,
-          selText);
-        range.text = splitText.join('\n');
-      } else {
-        range.text = this.openTag + selText + this.closeTag;
-
-        if (range.moveStart) {
-          range.moveStart('character', (-1 * this.openTag.length) -
-            selText.length);
-          range.moveEnd('character', (-1 * this.closeTag.length));
-        }
-      }
-
-      range.select();
-    } else if (textarea.selectionStart || parseInt(textarea.selectionStart) === 0) {
-      // Firefox/Safari/Chrome/etc.
-      selStart = textarea.selectionStart;
-      selEnd = textarea.selectionEnd;
-      selText = textarea.value.substring(selStart, selEnd);
-      if (!selText.length) {
-        selText = this.defaultText;
-      }
-
-      if (this.everyline && -~selText.indexOf('\n')) {
-        splitText = this._applyEveryLine(this.openTag, this.closeTag,
-          selText).join('\n');
-        textarea.value =
-          textarea.value.substring(0, textarea.selectionStart) +
-          splitText +
-          textarea.value.substring(textarea.selectionEnd);
-
-        textarea.selectionStart = selStart;
-        textarea.selectionEnd = textarea.selectionStart +
-          splitText.length;
-      } else {
-        textarea.value =
-          textarea.value.substring(0, textarea.selectionStart) +
-          this.openTag + selText + this.closeTag +
-          textarea.value.substring(textarea.selectionEnd);
-
-        textarea.selectionStart = selStart + this.openTag.length;
-        textarea.selectionEnd = textarea.selectionStart +
-          selText.length;
-      }
+      configureSelection(selText);
+      textarea.value =
+        textarea.value.substring(0, textarea.selectionStart) +
+        this.markup +
+        textarea.value.substring(textarea.selectionEnd);
+      textarea.selectionStart = selStart + this.selStartDiff;
+      textarea.selectionEnd = textarea.selectionStart + this.selLength;
     }
+
     $(textarea).scrollTop(scrollTop);
     e.preventDefault();
     return false;
-  },
-  _applyEveryLine: function(opentag, closetag, block) {
-    return $.map(block.split('\n'), function(line) {
-      return (line.replace(/\s+/, '').length ?
-        opentag + line + closetag : line);
-    });
   }
-};
 
-/*
-  * A button separator.
-  */
-Marky.Separator = function() {
-  this.html = '<span class="separator"></span>';
-};
-
-Marky.Separator.prototype = {
-  node: function() {
-    return $(this.html)[0];
-  },
-  bind: function() {
-    return this;
+  /**
+   * Wraps each line of the given text block in markup.
+   * @param {string} block - Text block to be wrapped in markup.
+   * @returns {string[]} - Array of lines, each wrapped in markup.
+   */
+  #applyEveryLine(block) {
+    return $.map(block.split('\n'), (line) =>
+      line.trim().length ? this.openTag + line + this.closeTag : line,
+    );
   }
-};
+}
 
-/*
-  * The link helper.
-  */
-Marky.LinkButton = function() {
-  this.name = gettext('Insert a link...');
-  this.classes = 'btn-link';
-  this.openTag = '[http://example.com ';
-  this.closeTag = ']';
-  this.defaultText = gettext('link text');
-  this.everyline = false;
+/**
+ * A button that inserts customized markup, replacing the selected text.
+ * Child classes must implement `openModal(event)`.
+ */
+class InsertButton extends SimpleButton {
+  /**
+   * @param {string} name - Button title.
+   * @param {markup} markup - Markup to be inserted, replacing the selected text.
+   * @param {string} classes - A list of classes to include in the output.
+   */
+  constructor(name, markup, classes = '') {
+    super(name, classes);
 
-  this.origOpenTag = this.openTag;
-  this.origCloseTag = this.closeTag;
-  this.origDefaultText = this.defaultText;
+    this.markup = markup;
+    this.origMarkup = this.markup;
+  }
 
-  this.html = '<button class="markup-toolbar-button" type="button" />';
-};
+  /**
+   * Resets markup.
+   */
+  reset() {
+    this.markup = this.origMarkup;
+  }
 
-Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
-  // Gets the DOM node for the button.
-  node: function() {
-    var me = this,
+  /**
+   * Gets the DOM node for the button.
+   */
+  node() {
+    const me = this,
       $btn = this.render();
-    $btn.on("click", function(e) {
+    $btn.on('click', function (e) {
       me.openModal(e);
     });
     return $btn[0];
-  },
-  reset: function() {
-    this.openTag = this.origOpenTag;
-    this.closeTag = this.origCloseTag;
-    this.defaultText = this.origDefaultText;
-  },
-  openModal: function(ev) {
-    var me = this,
-    // TODO: look at using a js template solution (jquery-tmpl?)
-      $html = $(
-          '<section class="marky">' +
-          '<div class="field">' +
-          '<label>' + gettext('Link text:') + '</label>' +
-          '<input type="text" name="link-text" />' +
-          '</div>' +
-          '<div class="field">' +
-          '<label>' + gettext('Link target:') + '</label>' +
-          '<ol><li class="field"><div class="field radio is-condensed"><input type="radio" name="link-type" id="id_link-type-internal" value="internal" /><label for="id_link-type-internal">' +
-          gettext('Support article:') + '</label></div>' +
-          '<input type="text" name="internal" placeholder="' +
-          gettext('Enter the name of the article') + '" /></li>' +
-          '<li class="field"><div class="field radio is-condensed"><input type="radio" name="link-type" id="id_link-type-external" value="external" /><label for="id_link-type-external">' +
-          gettext('External link:') + '</label></div>' +
-          '<input type="text" name="external" placeholder="' +
-          gettext('Enter the URL of the external link') + '" /></li>' +
-          '</ol><div class="submit sumo-button-wrap align-full reverse-on-desktop"><button type="button" class="sumo-button primary-button"></button>' +
-          '<a href="#cancel" class="kbox-cancel sumo-button secondary-button">' + gettext('Cancel') +
-          '</a></div></section>' // whew, yuck!?
-      ),
-      selectedText = me.getSelectedText(),
-      kbox;
+  }
 
-    $html.find('li input[type="text"]').on('focus', function() {
-      $(this).closest('li').find('input[type="radio"]').trigger("click");
+  /**
+   * Handles the button click.
+   */
+  handleClick(e) {
+    const textarea = this.textarea,
+      scrollTop = $(textarea).scrollTop();
+
+    if (window.codemirror && window.highlighting && window.highlighting.isEnabled()) {
+      const editor = window.highlighting.editor;
+      editor.replaceSelection(this.markup);
+      editor.focus();
+      e.preventDefault();
+      return false;
+    }
+
+    textarea.focus();
+
+    if (typeof textarea.selectionStart === 'number') {
+      const selStart = textarea.selectionStart;
+      const selEnd = textarea.selectionEnd;
+
+      textarea.value =
+        textarea.value.substring(0, textarea.selectionStart) +
+        this.markup +
+        textarea.value.substring(textarea.selectionEnd);
+
+      textarea.selectionStart = selStart + this.markup.length;
+      textarea.selectionEnd = textarea.selectionStart;
+    }
+
+    $(textarea).scrollTop(scrollTop);
+    e.preventDefault();
+    return false;
+  }
+}
+
+/**
+ * A button separator.
+ */
+class Separator {
+  constructor() {
+    this.html = '<span class="separator"></span>';
+  }
+
+  node() {
+    return $(this.html)[0];
+  }
+
+  bind() {
+    return this;
+  }
+}
+
+/**
+ * The link helper.
+ */
+class LinkButton extends InsertButton {
+  constructor() {
+    super(gettext('Insert a link...'), '', 'btn-link');
+  }
+
+  openModal(ev) {
+    const me = this,
+      // TODO: look at using a js template solution (jquery-tmpl?)
+      $html = $(
+        '<form class="marky">' +
+        '<div class="field">' +
+        '<label>' + gettext('Link text:') + '</label>' +
+        '<input type="text" name="link-text" autocomplete="off" />' +
+        '</div>' +
+        '<div class="field">' +
+        '<label>' + gettext('Link target:') + '</label>' +
+        '<ol><li class="field"><div class="field radio is-condensed"><input type="radio" name="link-type" id="id_link-type-internal" value="internal" /><label for="id_link-type-internal">' +
+        gettext('Support article:') + '</label></div>' +
+        '<input type="text" name="internal" placeholder="' +
+        gettext('Enter the name of the article') + '" /></li>' +
+        '<li class="field"><div class="field radio is-condensed"><input type="radio" name="link-type" id="id_link-type-external" value="external" /><label for="id_link-type-external">' +
+        gettext('External link:') + '</label></div>' +
+        '<input type="text" name="external" placeholder="' +
+        gettext('Enter the URL of the external link') + '" autocomplete="off" /></li>' +
+        '</ol></div><div class="submit sumo-button-wrap align-full reverse-on-desktop"><button type="submit" class="sumo-button primary-button">' + gettext('Insert Link') + '</button>' +
+        '<a href="#cancel" class="kbox-cancel sumo-button secondary-button">' + gettext('Cancel') +
+        '</a></div></form>' // whew, yuck!?
+      );
+
+    const $linkText = $html.find('input[name="link-text"]');
+    const $internal = $html.find('input[name="internal"]');
+    const $external = $html.find('input[name="external"]');
+    const $submitButton = $html.find('button[type="submit"]');
+
+    $html.find('li input[type="text"]').on('focus', function () {
+      $(this).closest('li').find('input[type="radio"]').trigger('click');
     });
+
+    // Make the text input of the selected link-type radio required.
+    function updateRequiredTarget() {
+      const val = $html.find('input[name="link-type"]:checked').val();
+
+      $internal.prop('required', val === 'internal');
+      $external.prop('required', val === 'external');
+    }
+
+    $html.find('input[name="link-type"]').prop('required', true);
+    $html.find('input[name="link-type"]').on('change', updateRequiredTarget);
+
+    // Disable the Submit button while the form is invalid.
+    function updateSubmitButton() {
+      $submitButton.prop('disabled', !$html[0].checkValidity());
+    }
+
+    $html.find('li input[type="text"]').on('change', updateSubmitButton);
+    $html.find('input[name="link-type"]').on('change', updateSubmitButton);
 
     // Perform a query for the sections of an article if
     // last character is a pound:
-    var performSectionSearch = function(request) {
-      return (request.term.indexOf('#') === request.term.length - 1);
-    };
+    function performSectionSearch(request) {
+      return request.term.endsWith('#');
+    }
 
-    var results = [];
+    let results = [];
 
     // Get the article URL by providing the article name:
-    var getArticleURL = function(name) {
-      for (var i = 0; i < results.length; i++) {
+    function getArticleURL(name) {
+      for (let i = 0; i < results.length; i++) {
         if (name === results[i].label) {
           return results[i].url;
         }
       }
 
       return null;
-    };
+    }
 
-    var articleSearch = function(request, response) {
+    function articleSearch(request, response) {
       results = [];
       $.ajax({
         url: '/en-US/search',
@@ -356,22 +436,22 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
           q: request.term,
           a: 1,
           w: 1,
-          language: $('html').attr('lang')
+          language: $('html').attr('lang'),
         },
         dataType: 'json',
-        success: function(data, textStatus) {
-          $.map(data.results, function(val, i) {
+        success: function (data, textStatus) {
+          $.map(data.results, function (val, i) {
             results.push({
               label: val.title,
-              url: val.url
+              url: val.url,
             });
           });
           response(results);
-        }
+        },
       });
-    };
+    }
 
-    var sectionSearch = function(request, response) {
+    function sectionSearch(request, response) {
       var articleName = request.term.split('#')[0];
       var articleURL = getArticleURL(articleName);
 
@@ -382,107 +462,79 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
       $.ajax({
         url: articleURL,
         dataType: 'text',
-        success: function(data, status) {
-          var headings = $("[id^='w_']", data);
-          var array = [];
+        success: function (data, status) {
+          const headings = $("[id^='w_']", data);
+          const array = [];
 
           if (headings.length === 0) {
             array.push({
               label: gettext('No sections found'),
               value: request.term.replace('#', ''),
-              target: ''
+              target: '',
             });
           }
 
-          headings.each(function() {
-            var element = this.nodeName;
-            var level = element.substring(1);
-            var label = $(this).text();
-            var target = $(this).attr('id');
-            var value = request.term + target;
+          headings.each(function () {
+            const label = $(this).text();
+            const target = $(this).attr('id');
+            const value = request.term + target;
 
             array.push({
               label: label,
               value: value,
-              target: target
+              target: target,
             });
           });
           response(array);
-        }
+        },
       });
-    };
+    }
 
-    $html.find('input[name="internal"]').autocomplete({
-      source: function(request, response) {
+    $internal.autocomplete({
+      source: function (request, response) {
         if (performSectionSearch(request)) {
           sectionSearch(request, response);
         } else {
           articleSearch(request, response);
         }
       },
-      select: function(event, ui) {
+      select: function (event, ui) {
         if (!ui.item.target) {
           return;
         }
 
-        var $linktext = $html.find('input[name=link-text]');
-        if ($linktext.val() === '') {
-          $linktext.val(ui.item.label);
+        if ($linkText.val() === '') {
+          $linkText.val(ui.item.label);
         }
-      }
+      },
     });
 
-    $html.find('button').text(gettext('Insert Link')).on("click", function(e) {
+    $html.on('submit', function (e) {
       // Generate the wiki markup based on what the user has selected
       // (interval vs external links) and entered into the textboxes,
       // if anything.
-      var val = $html.find('input[type="radio"]:checked').val(),
-        text = $html.find('input[name=link-text]').val(),
-        $internal = $html.find('input[name="internal"]'),
-        $external = $html.find('input[name="external"]');
+      e.preventDefault();
+
+      const val = $html.find('input[type="radio"]:checked').val(),
+        text = $html.find('input[name=link-text]').val();
+
       me.reset();
       if (val === 'internal') {
-        var title = $internal.val();
-        if (title) {
-          if (title === selectedText) {
-            // The title wasn't changed, so lets keep it selected.
-            me.openTag = '[[';
-            me.closeTag = ']]';
-            if (text) {
-              me.closeTag = '|' + text + me.closeTag;
-            }
-          } else {
-            // The title changed, so lets insert link before the cursor.
-            me.openTag = '[[' + title;
-            if (text) {
-              me.openTag += '|' + text;
-            }
-            me.openTag += ']] ';
-            me.closeTag = '';
-            me.defaultText = '';
-          }
+        const title = $internal.val() || gettext('Knowledge Base Article');
+        if (!text || title === text) {
+          me.markup = '[[' + title + ']]';
         } else {
-          me.openTag = '[[';
-          me.closeTag = ']]';
-          if (text) {
-            me.closeTag = '|' + text + ']]';
-          }
-          me.defaultText = gettext('Knowledge Base Article');
+          me.markup = '[[' + title + '|' + text + ']]';
         }
       } else {
-        var link = $external.val();
-        if (link) {
-          if (link.indexOf('http') !== 0) {
-            link = 'http://' + link;
-          }
-          me.openTag = '[' + link + ' ';
-          if (text) {
-            me.openTag += text + '] ';
-            me.closeTag = '';
-            me.defaultText = '';
-          }
-        } else if (text) {
-          me.defaultText = text;
+        let link = $external.val() || 'https://example.com';
+        if (link.indexOf('http') !== 0) {
+          link = 'http://' + link;
+        }
+        if (!text) {
+          me.markup = '[' + link + ']';
+        } else {
+          me.markup = '[' + link + ' ' + text + ']';
         }
       }
 
@@ -490,57 +542,42 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
       kbox.close();
     });
 
+    const selectedText = me.getSelectedText();
     if (selectedText) {
-      // If there user has selected text, lets default to it being
-      // the Article Title.
-      $html.find('input[name="internal"]').val(selectedText).trigger("focus");
+      // If there is selected text, make it the link text.
+      $linkText.val(selectedText);
     }
 
-    kbox = new KBox($html, {
+    const kbox = new KBox($html, {
       title: this.name,
       destroy: true,
       modal: true,
       id: 'link-modal',
       container: $('body'),
-      position: 'none'
+      position: 'none',
     });
     kbox.open();
+
+    updateRequiredTarget();
+    updateSubmitButton();
+
+    // Focus the link text field to remove focus from the editor tools button.
+    $linkText.trigger('focus');
 
     ev.preventDefault();
     return false;
   }
-});
+}
 
-/*
-  * The media helper.
-  */
-Marky.MediaButton = function() {
-  this.name = gettext('Insert media...');
-  this.classes = 'btn-media';
-  this.openTag = '';
-  this.closeTag = '';
-  this.defaultText = gettext('media');
-  this.everyline = false;
+/**
+ * The media helper.
+ */
+class MediaButton extends InsertButton {
+  constructor() {
+    super(gettext('Insert media...'), '', 'btn-media');
+  }
 
-  this.html = '<button class="markup-toolbar-button" type="button" />';
-};
-
-Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
-  // Gets the DOM node for the button.
-  node: function() {
-    var me = this,
-      $btn = this.render();
-    $btn.on("click", function(e) {
-      me.openModal(e);
-    });
-    return $btn[0];
-  },
-  reset: function() {
-    this.openTag = '';
-    this.closeTag = '';
-    this.defaultText = '';
-  },
-  openModal: function(ev) {
+  openModal(ev) {
     var me = this,
       $editor = $(me.textarea).closest('.editor'),
       mediaSearchUrl = $editor.data('media-search-url'),
@@ -615,8 +652,7 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         return false;
       }
 
-      me.openTag = '[[Image';
-      me.openTag += ':' + $selected.find('a').attr('title') + ']] ';
+      me.markup = '[[Image:' + $selected.find('a').attr('title') + ']]';
 
       me.handleClick(e);
       kbox.close();
@@ -668,41 +704,70 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     ev.preventDefault();
     return false;
   }
-});
+}
 
-/*
-  * The canned responses helper
-  */
-Marky.CannedResponsesButton = function() {
-  this.name = gettext('Common responses');
-  this.classes = 'btn-cannedresponses';
-  this.openTag = '';
-  this.closeTag = '';
-  this.defaultText = 'cannedresponses';
-  this.everyline = false;
+/**
+ * The canned responses helper
+ */
+class CannedResponsesButton extends InsertButton {
+  permissionBits = [];
 
-  this.html = '<a class="markup-toolbar-link" href="#"/>';
-};
+  constructor() {
+    super(gettext('Common responses'), '', 'btn-cannedresponses');
 
-Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
-  // Gets the DOM node for the button.
-  node: function() {
-    var me = this,
+    this.html = '<a class="markup-toolbar-link" href="#"/>';
+  }
+
+  /**
+   * Gets the DOM node for the button.
+   */
+  node() {
+    const me = this,
       $btn = this.render();
-    $btn.on("click", function(e) {
+    $btn.on('click', function(e) {
       me.openModal(e);
     });
 
     me.getPermissionBits();
 
     return $btn[0];
-  },
-  reset: function() {
-    this.openTag = '';
-    this.closeTag = '';
-    this.defaultText = '';
-  },
-  openModal: function(e) {
+  }
+
+  getPermissionBits() {
+    var profile_link = $('#aux-nav .user').attr('href'),
+      me = this;
+    if (!profile_link || profile_link === '') {
+      return;
+    }
+
+    $.ajax({
+      url: profile_link,
+      dataType: 'html',
+      success: function(data, status) {
+        var userGroups = $('#groups li', data);
+        userGroups.each(function() {
+          var group = $(this).text();
+
+          // Contributors:
+          if (group === 'Contributors') {
+            me.permissionBits.push('c');
+          }
+
+          // Moderators:
+          if (group === 'Forum Moderators') {
+            me.permissionBits.push('m');
+          }
+
+          // Administrators:
+          if (group === 'Administrators') {
+            me.permissionBits.push('a');
+          }
+        });
+      }
+    });
+  }
+
+  openModal(e) {
     var me = this,
       $editor = $(me.textarea).closest('.editor'),
     // TODO: look at using a js template solution (jquery-tmpl?)
@@ -826,14 +891,11 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
     }
 
     function insertResponse() {
-      var sourceContent = $('#response-content').val();
       var slug = $('#response-content').data('slug');
-      var $responseTextbox = $('#id_content');
-      var targetContent = $responseTextbox.val();
-
       trackEvent('common_forum_response_insert', {slug});
 
-      $responseTextbox.val(targetContent + sourceContent);
+      me.markup = $('#response-content').val();
+      me.handleClick(e);
     }
 
     function searchResponses(term) {
@@ -986,60 +1048,34 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
 
     e.preventDefault();
     return false;
-  },
-
-  permissionBits: [],
-
-  getPermissionBits: function() {
-    var profile_link = $('#aux-nav .user').attr('href'),
-      me = this;
-    if (!profile_link || profile_link === '') {
-      return;
-    }
-
-    $.ajax({
-      url: profile_link,
-      dataType: 'html',
-      success: function(data, status) {
-        var userGroups = $('#groups li', data);
-        userGroups.each(function() {
-          var group = $(this).text();
-
-          // Contributors:
-          if (group === 'Contributors') {
-            me.permissionBits.push('c');
-          }
-
-          // Moderators:
-          if (group === 'Forum Moderators') {
-            me.permissionBits.push('m');
-          }
-
-          // Administrators:
-          if (group === 'Administrators') {
-            me.permissionBits.push('a');
-          }
-        });
-      }
-    });
   }
-});
+}
 
-/*
-  * The quote button helper
-  */
-Marky.QuoteButton = function() {
-  var name = gettext('Quote previous message...');
-  var previousContent = $('#read-message').attr('data-message-content');
-  var previousAuthor = $('.from a').text();
-  var previousAuthorLink = $('.from a').attr('href');
-  var quote = '[' + previousAuthorLink + ' ' + previousAuthor + '] ' +
-    gettext('said') + '\r\n';
-  quote += '<blockquote>\r\n';
-  quote += previousContent + '\r\n';
-  quote += '</blockquote>\r\n';
+/**
+ * The quote button helper (for private messages)
+ */
+class QuoteButton extends InsertButton {
+  constructor() {
+    var previousContent = $('#read-message').attr('data-message-content');
+    var previousAuthor = $('.from a').text();
+    var previousAuthorLink = $('.from a').attr('href');
+    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + '] ' +
+      gettext('said') + '\r\n';
+    quote += '<blockquote>\r\n';
+    quote += previousContent + '\r\n';
+    quote += '</blockquote>\r\n';
 
-  return new Marky.SimpleButton(name, quote, '', '', 'btn-quote', true);
-};
+    super(gettext('Quote previous message...'), quote, 'btn-quote');
+  }
+}
+
+Marky.SimpleButton = SimpleButton;
+Marky.MarkupButton = MarkupButton;
+Marky.InsertButton = InsertButton;
+Marky.Separator = Separator;
+Marky.LinkButton = LinkButton;
+Marky.MediaButton = MediaButton;
+Marky.CannedResponsesButton = CannedResponsesButton;
+Marky.QuoteButton = QuoteButton;
 
 export default Marky;
