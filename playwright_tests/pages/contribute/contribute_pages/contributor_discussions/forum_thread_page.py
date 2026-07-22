@@ -39,7 +39,7 @@ class ForumThreadPage(BasePage):
 
         """Locators belonging to the move thread section."""
         self.move_thread_dropdown = page.locator("select[name='forum']")
-        self.move_thread_button = page.locator("input[value='Move Thread']")
+        self.move_thread_button = page.locator("input[value='Move thread']")
 
         """General thread page locators."""
         self.forum_title = page.locator("p#forum-title")

@@ -1,9 +1,12 @@
+import re
+
 import allure
 import pytest
 from playwright.sync_api import Page, expect
 from pytest_check import check
 
 from playwright_tests.core.utilities import Utilities
+from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.contribute_messages.con_tools.kb_locale_messages import (
     KBLocalePageMessages,
 )
@@ -12,6 +15,9 @@ from playwright_tests.messages.mess_system_pages_messages.inbox_page_messages im
 )
 from playwright_tests.messages.mess_system_pages_messages.new_message_page_messages import (
     NewMessagePageMessages,
+)
+from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
+    MyProfileMessages,
 )
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -51,7 +57,7 @@ def test_locale_list_entry_redirects_to_the_correct_locale_team_page(page: Page)
             KBLocalePageMessages.get_locale_team_heading(LOCALE))
 
 
-# C2643307
+# C3248353,  C2266234, C2266237
 @pytest.mark.kbLocales
 def test_locale_team_edit_options_are_gated_by_permission(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -63,13 +69,21 @@ def test_locale_team_edit_options_are_gated_by_permission(page: Page, create_use
         simple_user = create_user_factory()
         privileged_user = create_user_factory(permissions=["change_locale"])
 
+    with allure.step("Navigating to the locale team page as a signed out user"):
+        utilities.navigate_to_link(KBLocalePageMessages.get_locale_details_url(LOCALE))
+
+    for role in roles:
+        with check, allure.step(f"Verifying that the 'Edit locale {role}s' option is not "
+                                f"available to a signed out user"):
+            expect(sumo_pages.kb_locale_page.edit_role_option(role)).to_be_hidden()
+
     with allure.step("Signing in with the simple user and navigating to the locale team page"):
         utilities.start_existing_session(cookies=simple_user)
         utilities.navigate_to_link(KBLocalePageMessages.get_locale_details_url(LOCALE))
 
     for role in roles:
         with check, allure.step(f"Verifying that the 'Edit locale {role}s' option is not "
-                                f"available to a user without the proper permissions"):
+                                f"available to a signed in user without the proper permissions"):
             expect(sumo_pages.kb_locale_page.edit_role_option(role)).to_be_hidden()
 
     with allure.step("Signing in with the privileged user and navigating to the locale team "
@@ -83,7 +97,7 @@ def test_locale_team_edit_options_are_gated_by_permission(page: Page, create_use
             expect(sumo_pages.kb_locale_page.edit_role_option(role)).to_be_visible()
 
 
-# C2643308
+# C3248355, C2266229
 @pytest.mark.kbLocales
 def test_locale_leader_can_be_added_and_gains_team_edit_permission(page: Page,
                                                                    create_user_factory):
@@ -114,7 +128,7 @@ def test_locale_leader_can_be_added_and_gains_team_edit_permission(page: Page,
         expect(sumo_pages.kb_locale_page.edit_role_option(role)).to_be_visible()
 
 
-# C2643309
+# C2643309, C3248356
 @pytest.mark.kbLocales
 def test_locale_leader_can_be_removed_and_loses_team_edit_permission(page: Page,
                                                                      create_user_factory):
@@ -151,7 +165,7 @@ def test_locale_leader_can_be_removed_and_loses_team_edit_permission(page: Page,
         expect(sumo_pages.kb_locale_page.edit_role_option(role)).to_be_hidden()
 
 
-# C2643310
+# C3248355, C2266230
 @pytest.mark.kbLocales
 def test_locale_reviewer_can_be_added_and_gains_review_permission(page: Page,
                                                                   create_user_factory):
@@ -192,7 +206,7 @@ def test_locale_reviewer_can_be_added_and_gains_review_permission(page: Page,
             "The reviewer was not able to approve the pending revision")
 
 
-# C2643311
+# C2643311, C3248356
 @pytest.mark.kbLocales
 def test_locale_reviewer_can_be_removed_and_loses_review_permission(page: Page,
                                                                     create_user_factory):
@@ -231,7 +245,7 @@ def test_locale_reviewer_can_be_removed_and_loses_review_permission(page: Page,
             translation["revision_id"])).to_be_hidden()
 
 
-# C2643312
+# C3248355, C3248356, C2266231
 @pytest.mark.kbLocales
 def test_locale_editor_can_be_added_and_removed(page: Page, create_user_factory):
     # Note: the locale editor role does not gate any functional permission in Kitsune (it is only
@@ -264,7 +278,7 @@ def test_locale_editor_can_be_added_and_removed(page: Page, create_user_factory)
             role, editor_user["username"])).to_be_hidden()
 
 
-# C2643313
+# C3248354, C2266233,  C2266239
 @pytest.mark.kbLocales
 def test_private_message_can_be_sent_via_the_locale_team_page(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -284,7 +298,18 @@ def test_private_message_can_be_sent_via_the_locale_team_page(page: Page, create
         expect(sumo_pages.kb_locale_page.role_member(
             role, recipient_user["username"])).to_be_visible()
 
-    with allure.step("Clicking on the recipient's 'Private message' link"):
+    with allure.step("Signing out and clicking the recipient's 'Private message' link"):
+        utilities.delete_cookies()
+        sumo_pages.kb_locale_page.click_on_private_message_link_for_user(
+            recipient_user["username"], role)
+
+    with check, allure.step("Verifying that the signed out user is redirected to the auth page"):
+        expect(page).to_have_url(re.compile(f".*{FxAPageMessages.AUTH_PAGE_URL}*"))
+
+    with allure.step("Signing back in with the privileged user and clicking the recipient's "
+                     "'Private message' link"):
+        utilities.start_existing_session(cookies=privileged_user)
+        utilities.navigate_to_link(KBLocalePageMessages.get_locale_details_url(LOCALE))
         sumo_pages.kb_locale_page.click_on_private_message_link_for_user(
             recipient_user["username"], role,
             expected_url=(NewMessagePageMessages.NEW_MESSAGE_PAGE_STAGE_URL
@@ -307,3 +332,33 @@ def test_private_message_can_be_sent_via_the_locale_team_page(page: Page, create
     with allure.step("Deleting the sent message"):
         sumo_pages.messaging_system_flow.delete_message_flow(
             excerpt=message_body, from_sent_list=True)
+
+
+# C2266232
+@pytest.mark.kbLocales
+def test_clicking_a_listed_user_redirects_to_their_profile(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    role = KBLocalePageMessages.EDITOR
+
+    with allure.step("Creating a privileged user and the user to be listed on the locale team "
+                     "page"):
+        privileged_user = create_user_factory(permissions=["change_locale"])
+        listed_user = create_user_factory()
+
+    with allure.step("Signing in with the privileged user and listing the user on the locale "
+                     "team page"):
+        utilities.start_existing_session(cookies=privileged_user)
+        utilities.navigate_to_link(KBLocalePageMessages.get_locale_details_url(LOCALE))
+        sumo_pages.kb_locale_page.add_user_to_role(listed_user["username"], role)
+        expect(sumo_pages.kb_locale_page.role_member(
+            role, listed_user["username"])).to_be_visible()
+
+    with allure.step("Clicking on the listed user's profile link"):
+        sumo_pages.kb_locale_page.click_on_profile_link_for_user(listed_user["username"], role)
+
+    with check, allure.step("Verifying that the correct user profile page is displayed"):
+        expect(page).to_have_url(
+            MyProfileMessages.get_my_profile_stage_url(listed_user["username"]))
+        expect(sumo_pages.my_profile_page.display_name_by_username(
+            listed_user["username"])).to_be_visible()

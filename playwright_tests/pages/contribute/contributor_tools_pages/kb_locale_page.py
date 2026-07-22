@@ -31,6 +31,8 @@ class KBLocalePage(BasePage):
             role, username).locator("a.sumo-delete-button")
         self.role_member_private_message_link = lambda role, username: self.role_member(
             role, username).locator("span.asked-on a")
+        self.role_member_profile_link = lambda role, username: self.role_member(
+            role, username).locator("a.author-name")
 
         """Locators belonging to the remove-from-locale confirmation page."""
         self.confirm_remove_submit_button = page.locator(
@@ -87,3 +89,7 @@ class KBLocalePage(BasePage):
         """Click the 'Private message' link shown for a user listed in a role section."""
         self._click(self.role_member_private_message_link(role, username),
                     expected_url=expected_url)
+
+    def click_on_profile_link_for_user(self, username: str, role: str):
+        """Click the profile (display name) link shown for a user listed in a role section."""
+        self._click(self.role_member_profile_link(role, username))
