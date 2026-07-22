@@ -27,6 +27,14 @@ Chart.register(
   CategoryScale
 );
 
+Tooltip.positioners.cursor = function (active, eventPosition) {
+  const { left, right, top, bottom } = this.chart.chartArea;
+  return {
+    x: Math.max(left, Math.min(eventPosition.x, right)),
+    y: Math.max(top, Math.min(eventPosition.y, bottom)),
+  };
+};
+
 export function renderLineChart(el, config) {
   return new Chart(el, config);
 }

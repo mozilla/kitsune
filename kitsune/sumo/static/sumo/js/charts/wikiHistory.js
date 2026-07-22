@@ -1,6 +1,9 @@
 import { renderLineChart } from "sumo/js/charts";
 import { parseISO } from "date-fns";
 
+const POINT_HOVER_RADIUS = 5;
+const POINT_HIT_RADIUS = 5;
+
 document.addEventListener("DOMContentLoaded", () => {
   const helpfulGraph = document.getElementById("helpful-graph");
   if (!helpfulGraph) return;
@@ -41,6 +44,8 @@ function buildConfig(datums) {
           backgroundColor: "#21de2b",
           yAxisID: "y",
           pointRadius: 0,
+          pointHoverRadius: POINT_HOVER_RADIUS,
+          pointHitRadius: POINT_HIT_RADIUS,
           data: datums.map((d) => ({ x: parseISO(d.date), y: d.yes })),
         },
         {
@@ -49,6 +54,8 @@ function buildConfig(datums) {
           backgroundColor: "#de2b21",
           yAxisID: "y",
           pointRadius: 0,
+          pointHoverRadius: POINT_HOVER_RADIUS,
+          pointHitRadius: POINT_HIT_RADIUS,
           data: datums.map((d) => ({ x: parseISO(d.date), y: d.no })),
         },
         {
@@ -57,6 +64,8 @@ function buildConfig(datums) {
           backgroundColor: "#2b21de",
           yAxisID: "y1",
           pointRadius: 0,
+          pointHoverRadius: POINT_HOVER_RADIUS,
+          pointHitRadius: POINT_HIT_RADIUS,
           data: datums.map((d) => ({
             x: parseISO(d.date),
             // Avoid division by zero for days with no votes
@@ -108,6 +117,11 @@ function buildConfig(datums) {
         },
         tooltip: {
           mode: "index",
+          intersect: true,
+          position: "cursor",
+          animation: {
+            duration: 0,
+          },
         },
       },
     },
