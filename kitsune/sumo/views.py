@@ -47,9 +47,9 @@ def geoip_suggestion(request):
 
         * locales - a form encoded list of locales to translate to.
 
-    Example url: /localize?locales[]=es&locales[]=en-US
+    Example url: /geoip-suggestion?locales=es&locales=en-US
     """
-    locales = request.GET.getlist("locales[]")
+    locales = request.GET.getlist("locales")
 
     response = {"locales": {}}
     for locale in locales:

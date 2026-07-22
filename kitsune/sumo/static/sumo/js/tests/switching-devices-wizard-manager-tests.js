@@ -164,9 +164,17 @@ describe("k", () => {
     });
 
     beforeEach(() => {
-      $("body").empty().html(`
+      // Two subtests below build redirect_to from window.location.href and
+      // expect the "#search" hash. Pin it here so those tests are deterministic
+      // rather than depending on a prior test file (instant_search) happening
+      // to leave that hash on the shared jsdom location.
+      global.jsdom.reconfigure({
+        url: "https://example.com/#search",
+      });
+
+      document.body.innerHTML = `
         <form-wizard fxa-root="${FAKE_FXA_ROOT}"></form-wizard>
-      `);
+      `;
       let wizard = document.querySelector("form-wizard");
       wizard.disqualify = () => {};
       wizard.setStep = () => {};
@@ -817,9 +825,9 @@ describe("k", () => {
     });
 
     beforeEach(() => {
-      $("body").empty().html(`
+      document.body.innerHTML = `
         <form-wizard fxa-root="${FAKE_FXA_ROOT}"></form-wizard>
-      `);
+      `;
       let wizard = document.querySelector("form-wizard");
       wizard.disqualify = () => {};
       wizard.setStep = () => {};

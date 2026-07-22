@@ -567,7 +567,7 @@ body:has(#group-profile) {
           gap: p.$spacing-sm;
           padding: p.$spacing-sm 0 0 0;
 
-          .token-input-list-facebook {
+          .ts-wrapper.user-autocomplete {
             width: 100%;
             margin-bottom: p.$spacing-xs;
           }

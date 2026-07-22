@@ -1,61 +1,33 @@
-import "sumo/js/libs/jquery.tokeninput";
-import { safeString, safeInterpolate } from "sumo/js/main";
+import { initRecipientAutocomplete } from "sumo/js/tomselect-autocomplete";
 
 /*
  * users.autocomplete.js
  * A username autocomplete widget.
  */
 
-(function($) {
+export function renderUserOption(item, escape) {
+  // The "avatar" class is applied for the JS-level fallback in profile-avatars.js
+  var avatar = '<img src="' + escape(item.avatar) + '" class="avatar"/>';
+  var label = item.display_name
+    ? escape(item.display_name) + " [" + escape(item.username) + "]"
+    : escape(item.username);
+  return "<div>" + avatar + '<div class="name_search">' + label + "</div></div>";
+}
 
-  'use strict';
+function init() {
+  document.querySelectorAll("input.user-autocomplete").forEach(function (input) {
+    initRecipientAutocomplete(input, {
+      apiUrl: document.body.dataset.usernamesApi,
+      valueField: "username",
+      labelField: "username",
+      renderOption: renderUserOption,
+      submitFormOnAdd: true,
+    });
+  });
+}
 
-  function init() {
-
-
-    function wrapTerm(string, term) {
-      /*
-      * Wraps the term in <strong> tags.
-      * Crazy regex for characters that have signifigance in regex, not
-      * they they should be in usernames or emails.
-      */
-      term = (term + '').replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
-      var regex = new RegExp( '(' + term + ')', 'gi' );
-      return string.replace(regex, '<strong>$1</strong>');
-    }
-
-    var prefill = [];
-
-    if ($('#id_to').val()) {
-      prefill = $('#id_to').val().split(',').map(function(username) {
-        return {username: safeString(username), display_name: null};
-      });
-    }
-
-    var tokenInputSettings = {
-      theme: 'facebook',
-      hintText: gettext('Search for a user...'),
-      queryParam: 'term',
-      propertyToSearch: 'username',
-      tokenValue: 'username',
-      prePopulate: prefill,
-      preventDuplicates: true,
-      resultsFormatter: function(item) {
-        var term = $('#token-input-id_to').val();
-        // The "avatar" class is applied to avatars for the JS-level fallback in profile-avatars.js
-        if (item.display_name) {
-          return safeInterpolate('<li><img src="%(avatar)s" class="avatar"/><div class="name_search">%(display_name)s [%(username)s]</div></li>', item, true);
-        }
-        return safeInterpolate('<li><img src="%(avatar)s" class="avatar"/><div class="name_search">%(username)s</div></li>', item, true);
-      },
-      onAdd: function (item) {
-        $(this).closest('.single').closest('form').submit();
-      }
-    };
-
-    $('input.user-autocomplete').tokenInput($('body').data('usernames-api'), tokenInputSettings);
-  }
-
-  $(init);
-
-})(jQuery);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}

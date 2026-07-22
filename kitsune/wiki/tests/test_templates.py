@@ -3302,3 +3302,33 @@ class MatomoMzlaDocumentTests(TestCase):
         response = self.client.get(r.document.get_absolute_url())
         self.assertEqual(200, response.status_code)
         self.assertNotContains(response, _MATOMO_MARKER)
+
+
+class ReviewFormTests(TestCase):
+    """Tests for the revision review form (wiki/includes/review_form.html)."""
+
+    def test_reviewer_comment_is_optional(self):
+        """The "leave a message" comment must be optional in the approve and
+        defer modals, matching ReviewForm.comment (required=False). A stray
+        required attribute made it mandatory once the modal started submitting
+        through native validation."""
+        reviewer = UserFactory()
+        add_permission(reviewer, Revision, "review_revision")
+        # An unapproved revision by a different user, so revision_contributors
+        # is non-empty and the review form renders the comment textareas.
+        rev = RevisionFactory(is_approved=False, creator=UserFactory())
+        self.client.login(username=reviewer.username, password="testpass")
+
+        response = self.client.get(
+            reverse("wiki.review_revision", args=[rev.document.slug, rev.id])
+        )
+        self.assertEqual(200, response.status_code)
+
+        doc = pq(response.content)
+        approve = doc("#id-approve-comment")
+        reject = doc("#id-reject-comment")
+        # The textareas render (contributors present) and are not required.
+        self.assertEqual(1, len(approve))
+        self.assertEqual(1, len(reject))
+        self.assertIsNone(approve.attr("required"))
+        self.assertIsNone(reject.attr("required"))

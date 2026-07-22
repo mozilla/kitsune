@@ -1,76 +1,47 @@
-import "sumo/js/libs/jquery.tokeninput";
-import { safeString, safeInterpolate } from "sumo/js/main";
+import { initRecipientAutocomplete } from "sumo/js/tomselect-autocomplete";
 
 /*
- * autocomplete.js
+ * messages.autocomplete.js
  * A generic autocomplete widget for both groups and users.
  */
 
-(function($) {
+export function renderSuggestion(item, escape) {
+  var typeIcon =
+    '<img src="' + escape(item.type_icon) + '" alt="icon for ' + escape(item.type) + '">';
+  // The "avatar" class is applied for the JS-level fallback in profile-avatars.js
+  var avatar = '<img src="' + escape(item.avatar) + '" class="avatar"/>';
+  // NOTE: `item.type === 'user'` is a pre-existing case mismatch - the API
+  // returns 'User'/'Group', so this display_name branch was already dead and
+  // the name-only branch is what actually renders. Preserved as-is.
+  var label =
+    item.display_name && item.type === "user"
+      ? escape(item.display_name) + " [" + escape(item.name) + "]"
+      : escape(item.name);
+  return (
+    '<div class="' + escape(item.type) + '">' +
+    typeIcon +
+    avatar +
+    '<div class="name_search">' + label + "</div>" +
+    "</div>"
+  );
+}
 
-  'use strict';
-
-  function initAutocomplete(options) {
-    function wrapTerm(string, term) {
-      term = (term + '').replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
-      var regex = new RegExp( '(' + term + ')', 'gi' );
-      return string.replace(regex, '<strong>$1</strong>');
-    }
-
-    var prefill = [];
-    var selector = options.selector;
-    var valueField = options.valueField;
-
-    if ($(selector).val()) {
-      prefill = $(selector).val().split(',').map(function(value) {
-        var item = {};
-        item[valueField] = safeString(value);
-        if (options.displayField) {
-          item[options.displayField] = safeString(value);
-        }
-        return item;
-      });
-    }
-
-    var tokenInputSettings = {
-      theme: 'facebook',
-      hintText: gettext(options.hintText),
-      queryParam: 'term',
-      propertyToSearch: valueField,
-      tokenValue: valueField,
-      prePopulate: prefill,
-      resultsFormatter: function(item) {
-        var term = $(`token-input-${selector}`).val();
-        if (options.resultsFormatter) {
-          return options.resultsFormatter(item, term);
-        }
-        return safeInterpolate('<li><div class="name_search">%(value)s</div></li>', {value: item['type']}, true);
-      },
-      onAdd: function (item) {
-        $(this).closest('.single').closest('form').submit();
-      }
-    };
-
-    $(`input${selector}`).tokenInput(options.apiEndpoint, tokenInputSettings);
-  }
-
-  // Initialize autocomplete for users or groups
-  $(function() {
-    initAutocomplete({
-      selector: '.user-autocomplete',
-      apiEndpoint: $('body').data('messages-api'),
-      valueField: 'type_and_name',
-      displayField: 'name',
-      hintText: 'Search for a user or group. Group mail requires Staff group membership.',
-      placeholder: 'Type a user or group name',
-      resultsFormatter: function(item) {
-        // The "avatar" class is applied to avatars for the JS-level fallback in profile-avatars.js
-        if ((item.display_name) && (item.type === 'user')) {
-          return safeInterpolate('<li class="%(type)s"><img src="%(type_icon)s" alt="icon for %(type)s"><img src="%(avatar)s" class="avatar"/><div class="name_search">%(display_name)s [%(name)s]</div></li>', item, true);
-        }
-        return safeInterpolate('<li class="%(type)s"><img src="%(type_icon)s" alt="icon for %(type)s"><img src="%(avatar)s" class="avatar"/><div class="name_search">%(name)s</div></li>', item, true);
-      }
+function init() {
+  document.querySelectorAll("input.user-autocomplete").forEach(function (input) {
+    initRecipientAutocomplete(input, {
+      apiUrl: document.body.dataset.messagesApi,
+      valueField: "type_and_name",
+      // Chip shows the full "User: name" / "Group: name" (matches the old
+      // widget, which displayed the token value).
+      labelField: "type_and_name",
+      renderOption: renderSuggestion,
+      submitFormOnAdd: true,
     });
   });
+}
 
-})(jQuery);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}

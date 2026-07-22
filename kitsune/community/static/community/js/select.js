@@ -1,62 +1,94 @@
-$(function() {
-  var selectTrigger = $('.ts-select-trigger');
-  var options = $('.ts-options');
-  var showSelected = false;
+export function init() {
+  var selectTriggers = document.querySelectorAll('.ts-select-trigger');
+  var optionLists = document.querySelectorAll('.ts-options');
 
   function setSelectedItem(selected) {
-    var items = options.find('a');
-    var parentContainer = selected.parents('.selector');
+    var parentContainer = selected.closest('.selector');
 
-    items.each(function() {
-      $(this).removeClass('selected')
-      .removeAttr('aria-checked');
+    // Clear the selected state across all option lists (matches the original,
+    // which operated on the global $('.ts-options') set).
+    optionLists.forEach(function(list) {
+      list.querySelectorAll('a').forEach(function(item) {
+        item.classList.remove('selected');
+        item.removeAttribute('aria-checked');
+      });
     });
 
-    selected.addClass('selected');
-    selected.attr('aria-checked', 'true');
+    selected.classList.add('selected');
+    selected.setAttribute('aria-checked', 'true');
 
     // Determine whether the widget should behave like a standard
     // select element.
-    if (parentContainer.data('emulate-select')) {
-      parentContainer.find('.currently-selected').text(selected.text());
+    if (parentContainer && parentContainer.dataset.emulateSelect) {
+      var current = parentContainer.querySelector('.currently-selected');
+      if (current) {
+        current.textContent = selected.textContent;
+      }
       // Set the value of the hidden element to the selected value.
-      $('#ts-value').val(selected.data('value'));
+      var hidden = document.getElementById('ts-value');
+      if (hidden) {
+        hidden.value = selected.dataset.value;
+      }
     }
   }
 
   function hideOptions() {
     // Move focus back to the trigger/button
-    selectTrigger[0].focus();
-    options.parents('.select-options').hide();
+    if (selectTriggers[0]) {
+      selectTriggers[0].focus();
+    }
+    optionLists.forEach(function(list) {
+      var container = list.closest('.select-options');
+      if (container) {
+        container.style.display = 'none';
+      }
+    });
   }
 
   // Show/Hide the options
-  selectTrigger.on('click', function(event) {
-    event.preventDefault();
+  selectTriggers.forEach(function(trigger) {
+    trigger.addEventListener('click', function(event) {
+      event.preventDefault();
 
-    var parentContainer = $(this).parents('.selector');
-    var optionsFilter = $('.options-filter');
-    var optionsContainer = parentContainer.find('.select-options');
-    var expanded = optionsContainer.attr('aria-expanded');
+      var parentContainer = trigger.closest('.selector');
+      if (!parentContainer) {
+        return;
+      }
+      var optionsFilter = document.querySelector('.options-filter');
+      var optionsContainer = parentContainer.querySelector('.select-options');
+      if (!optionsContainer) {
+        return;
+      }
+      var expanded = optionsContainer.getAttribute('aria-expanded');
 
-    optionsContainer.toggle();
-    // Update ARIA expanded state
-    optionsContainer.attr('aria-expanded', expanded === 'false' ? 'true' : 'false');
-    // Move focus to options container if expanded
-    if (expanded === 'false') {
-      $('.ts-options', optionsContainer)[0].focus();
-    }
+      toggleDisplay(optionsContainer);
+      // Update ARIA expanded state
+      optionsContainer.setAttribute('aria-expanded', expanded === 'false' ? 'true' : 'false');
+      // Move focus to options container if expanded
+      if (expanded === 'false') {
+        var list = optionsContainer.querySelector('.ts-options');
+        if (list) {
+          list.focus();
+        }
+      }
 
-    // Show or hide the filter field.
-    if (optionsFilter.data('active')) {
-      optionsFilter.toggle();
-    }
+      // Show or hide the filter field.
+      if (optionsFilter && optionsFilter.dataset.active) {
+        toggleDisplay(optionsFilter);
+      }
+    });
   });
 
-  options.on('click', 'a', function(event) {
-    event.stopPropagation();
-    setSelectedItem($(this));
-    hideOptions();
+  optionLists.forEach(function(list) {
+    list.addEventListener('click', function(event) {
+      var link = event.target.closest('a');
+      if (!link || !list.contains(link)) {
+        return;
+      }
+      event.stopPropagation();
+      setSelectedItem(link);
+      hideOptions();
+    });
   });
 
   window.addEventListener('keyup', function(event) {
@@ -69,4 +101,16 @@ $(function() {
       hideOptions();
     }
   });
-});
+}
+
+// Toggle an element hidden-by-CSS-display:none on/off (jQuery .toggle equivalent).
+function toggleDisplay(el) {
+  var hidden = window.getComputedStyle(el).display === 'none';
+  el.style.display = hidden ? 'block' : 'none';
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}

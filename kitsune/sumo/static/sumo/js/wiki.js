@@ -1,11 +1,13 @@
 import spinnerImg from "sumo/img/spinner.gif";
-import "sumo/js/libs/jquery.cookie";
-import "sumo/js/libs/jquery.lazyload";
+import { lazyload, loadAllImages } from "sumo/js/utils/lazyload";
+import { apiFetch } from "sumo/js/utils/fetch";
+import { setCookie, removeCookie } from "sumo/js/utils/cookie";
+import { slideUp, slideDown, slideToggle, serialize } from "sumo/js/utils/dom";
+import { URLify } from "sumo/js/libs/django/urlify";
 import KBox from "sumo/js/kbox";
 import CodeMirror from "codemirror";
 import "codemirror/addon/mode/simple";
 import "codemirror/addon/hint/show-hint";
-import "sumo/js/libs/django/prepopulate";
 import "sumo/js/codemirror.sumo-hint";
 import "sumo/js/codemirror.sumo-mode";
 import "sumo/js/protocol";
@@ -21,352 +23,393 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
  * Scripts for the wiki app.
  */
 
-(function ($) {
-  function init() {
-    var $body = $('body');
+// Show/hide matching jQuery's .show()/.hide(). Several elements here are hidden
+// by the `hidden` attribute (#draft-message) or a CSS rule (#preview-bottom:
+// `display: none`), not inline display - so clearing inline display alone won't
+// reveal them (jQuery's .show() forced an explicit display). Clear the hidden
+// attribute + inline display, and if a stylesheet still hides it, force block.
+function show(el) {
+  if (!el) {
+    return;
+  }
+  el.hidden = false;
+  el.style.display = "";
+  if (window.getComputedStyle(el).display === "none") {
+    el.style.display = "block";
+  }
+}
 
-    $('select.enable-if-js').prop("disabled", false);
+function hide(el) {
+  if (el) {
+    el.style.display = "none";
+  }
+}
 
-    if ($body.is('.new')) {
-      initPrepopulatedSlugs();
-    }
+function init() {
+  var body = document.body;
 
-    initDetailsTags();
+  document.querySelectorAll('select.enable-if-js').forEach(function (el) {
+    el.disabled = false;
+  });
 
-    if ($body.is('.review')) { // Review pages
-      new ShowFor();
-      initNeedsChange();
+  if (body.classList.contains('new')) {
+    initPrepopulatedSlugs();
+  }
 
-      $('img.lazy').loadnow();
+  initDetailsTags();
 
-      // We can enable the buttons now.
-      $('#actions input').prop("disabled", false);
-    }
+  if (body.classList.contains('review')) { // Review pages
+    new ShowFor();
+    initNeedsChange();
 
-    if ($body.is('.edit_metadata, .edit, .new, .translate')) { // Document form page
-      // Submit form
-      $('#id_comment').on('keypress', function (e) {
+    loadAllImages();
+
+    // We can enable the buttons now.
+    document.querySelectorAll('#actions input').forEach(function (el) {
+      el.disabled = false;
+    });
+  }
+
+  if (body.matches('.edit_metadata, .edit, .new, .translate')) { // Document form page
+    // Submit form
+    var comment = document.getElementById('id_comment');
+    if (comment) {
+      comment.addEventListener('keypress', function (e) {
         if (e.which === 13) {
-          $(this).trigger('blur');
-          $(this).closest('form').find('[type=submit]').trigger('click');
-          return false;
+          comment.blur();
+          var form = comment.closest('form');
+          var submit = form && form.querySelector('[type=submit]');
+          if (submit) {
+            submit.click();
+          }
+          e.preventDefault();
         }
       });
-
-      initExitSupportFor();
-      initArticlePreview();
-      initPreviewDiff();
-      initTitleAndSlugCheck();
-      initNeedsChange();
-      initFormLock();
-
-      $('img.lazy').loadnow();
-
-      // We can enable the buttons now.
-      $('.submit input').prop("disabled", false);
     }
 
-    if ($body.is('.edit, .new, .translate')) {
-      initPreValidation();
-      initSummaryCount();
-      initCodeMirrorEditor();
-    }
+    initExitSupportFor();
+    initArticlePreview();
+    initPreviewDiff();
+    initTitleAndSlugCheck();
+    initNeedsChange();
+    initFormLock();
 
-    if ($body.is('.translate')) {  // Translate page
-      initToggleDiff();
-      initTranslationDraft();
-    }
+    loadAllImages();
 
-    initEditingTools();
-
-    initDiffPicker();
-
-    Marky.createFullToolbar('.editor-tools', '#id_content');
-
-    initReadyForL10n();
-
-    initArticleApproveModal();
-
-    initRevisionList();
-
-    collapsibleContributorTools();
-
-    $('img.lazy').lazyload();
+    // We can enable the buttons now.
+    document.querySelectorAll('.submit input').forEach(function (el) {
+      el.disabled = false;
+    });
   }
 
-  function initArticleApproveModal() {
-    if ($('#approve-modal').length > 0) {
-      var onSignificanceClick = function (e) {
-        // Hiding if the significance is typo.
-        // .parent() is because #id_is_ready_for_localization is inside a
-        // <label>, as is the text
-        if (e.target.id === 'id_significance_0') {
-          $('#id_is_ready_for_localization').parent().hide();
-        } else {
-          $('#id_is_ready_for_localization').parent().show();
-        }
-      };
+  if (body.matches('.edit, .new, .translate')) {
+    initPreValidation();
+    initSummaryCount();
+    initCodeMirrorEditor();
+  }
 
-      $('#id_significance_0').on("click", onSignificanceClick);
-      $('#id_significance_1').on("click", onSignificanceClick);
-      $('#id_significance_2').on("click", onSignificanceClick);
+  if (body.classList.contains('translate')) {  // Translate page
+    initToggleDiff();
+    initTranslationDraft();
+  }
+
+  initEditingTools();
+
+  initDiffPicker();
+
+  Marky.createFullToolbar('.editor-tools', '#id_content');
+
+  initReadyForL10n();
+
+  initArticleApproveModal();
+
+  initRevisionList();
+
+  collapsibleContributorTools();
+
+  lazyload();
+}
+
+function initArticleApproveModal() {
+  if (!document.getElementById('approve-modal')) {
+    return;
+  }
+  var onSignificanceClick = function (e) {
+    // Hiding if the significance is typo.
+    // .parentNode is because #id_is_ready_for_localization is inside a
+    // <label>, as is the text
+    var readyForL10n = document.getElementById('id_is_ready_for_localization');
+    var parent = readyForL10n && readyForL10n.parentNode;
+    if (!parent) {
+      return;
+    }
+    if (e.target.id === 'id_significance_0') {
+      parent.style.display = 'none';
+    } else {
+      parent.style.display = '';
+    }
+  };
+
+  ['id_significance_0', 'id_significance_1', 'id_significance_2'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('click', onSignificanceClick);
+    }
+  });
+}
+
+// Note <details> tag support (kept for the .no-details CSS hook). The old
+// jQuery fallback for browsers without native <details> was removed: it was
+// dead (all supported browsers implement <details>) and called $.browser,
+// which jQuery removed in 1.9.
+function initDetailsTags() {
+  if (!('open' in document.createElement('details'))) {
+    document.documentElement.className += ' no-details';
+  }
+}
+
+// Auto-populate the slug field from the title (vanilla replacement for the old
+// Django jquery.prepopulate plugin, which only this file used).
+function initPrepopulatedSlugs() {
+  var slug = document.getElementById('id_slug');
+  var title = document.getElementById('id_title');
+  if (!slug || !title) {
+    return;
+  }
+  var maxLength = 50;
+  slug.classList.add('prepopulated_field');
+
+  // Stop auto-populating once the user edits the slug directly.
+  var slugChanged = false;
+  slug.addEventListener('change', function () {
+    slugChanged = true;
+  });
+
+  title.addEventListener('change', function () {
+    if (slugChanged) {
+      return;
+    }
+    var raw = title.value;
+    slug.value = URLify(raw, maxLength) || raw;
+  });
+}
+
+function initSummaryCount() {
+  var summaryCount = document.getElementById('remaining-characters');
+  var summaryBox = document.getElementById('id_summary');
+  if (!summaryCount || !summaryBox) {
+    return;
+  }
+  // 160 characters is the maximum summary length of a Google result
+  var warningCount = 160;
+  var maxCount = parseInt(summaryCount.textContent, 10);
+
+  function updateCount() {
+    var currentCount = summaryBox.value.length;
+    summaryCount.textContent = warningCount - currentCount;
+    if (warningCount - currentCount >= 0) {
+      summaryCount.style.color = 'black';
+    } else {
+      summaryCount.style.color = 'red';
+      if (currentCount >= maxCount) {
+        summaryBox.value = summaryBox.value.substr(0, maxCount);
+      }
     }
   }
 
-  // Make <summary> and <details> tags work even if the browser doesn't support them.
-  // From http://mathiasbynens.be/notes/html5-details-jquery
-  function initDetailsTags() {
-    // Note <details> tag support.
-    if (!('open' in document.createElement('details'))) {
-      document.documentElement.className += ' no-details';
-    }
+  updateCount();
+  summaryBox.addEventListener('input', updateCount);
+}
 
-    // Execute the fallback only if there's no native `details` support
-    if (!('open' in document.createElement('details'))) {
-      // Loop through all `details` elements
-      $('details').each(function () {
-        // Store a reference to the current `details` element in a variable
-        var $details = $(this),
-          // Store a reference to the `summary` element of the current `details` element (if any) in a variable
-          $detailsSummary = $('summary', $details),
-          // Do the same for the info within the `details` element
-          $detailsNotSummary = $details.children(':not(summary)'),
-          // This will be used later to look for direct child text nodes
-          $detailsNotSummaryContents = $details.contents(':not(summary)');
+/*
+ * Initialize the article preview functionality.
+ */
+export function initArticlePreview() {
+  var previewEl = document.getElementById('preview');
+  var previewBottom = document.getElementById('preview-bottom');
+  var contentEl = document.getElementById('id_content');
 
-        // If there is no `summary` in the current `details` element...
-        if (!$detailsSummary.length) {
-          // ...create one with default text
-          $detailsSummary = $(document.createElement('summary')).text('Details').prependTo($details);
-        }
-
-        // Look for direct child text nodes
-        if ($detailsNotSummary.length !== $detailsNotSummaryContents.length) {
-          // Wrap child text nodes in a `span` element
-          $detailsNotSummaryContents.filter(function () {
-            // Only keep the node in the collection if it's a text node containing more than only whitespace
-            return (this.nodeType === 3) && (/[^\t\n\r ]/.test(this.data));
-          }).wrap('<span>');
-          // There are now no direct child text nodes anymore -- they're wrapped in `span` elements
-          $detailsNotSummary = $details.children(':not(summary)');
-        }
-
-        // Hide content unless there's an `open` attribute
-        if (typeof $details.attr('open') !== 'undefined') {
-          $details.addClass('open');
-          $detailsNotSummary.show();
-        } else {
-          $detailsNotSummary.hide();
-        }
-
-        // Set the `tabindex` attribute of the `summary` element to 0 to make it keyboard accessible
-        $detailsSummary.attr('tabindex', 0).on("click", function () {
-          // Focus on the `summary` element
-          $detailsSummary.trigger('focus');
-          // Toggle the `open` attribute of the `details` element
-          if (typeof $details.attr('open') !== 'undefined') {
-            $details.prop('open', false);
-          } else {
-            $details.attr('open', 'open');
-          }
-          // Toggle the additional information in the `details` element
-          $detailsNotSummary.slideToggle();
-          $details.toggleClass('open');
-        }).on('keyup', function (event) {
-          if (event.keyCode === 13 || event.keyCode === 32) {
-            // Enter or Space is pressed -- trigger the `click` event on the `summary` element
-            // Opera already seems to trigger the `click` event when Enter is pressed
-            if (!($.browser.opera && event.keyCode === 13)) {
-              event.preventDefault();
-              $detailsSummary.trigger("click");
-            }
-          }
+  // AjaxPreview is a native EventTarget; listen with addEventListener and read
+  // success off the CustomEvent detail (was a jQuery $(preview).on).
+  function onDone(e) {
+    if (e.detail.success) {
+      show(previewBottom);
+      new ShowFor();
+      if (previewEl) {
+        previewEl.querySelectorAll('select.enable-if-js').forEach(function (el) {
+          el.disabled = false;
         });
-      });
+        previewEl.querySelectorAll('.kbox').forEach(function (el) {
+          new KBox(el);
+        });
+      }
+      var output = document.querySelector('#preview-diff .output');
+      if (output) {
+        output.innerHTML = '';
+      }
+      collapsibleAccordionInit();
     }
   }
 
-  function initPrepopulatedSlugs() {
-    var fields = {
-      title: {
-        id: '#id_slug',
-        dependency_ids: ['#id_title'],
-        dependency_list: ['#id_title'],
-        maxLength: 50
-      }
-    };
-
-    $.each(fields, function (i, field) {
-      $(field.id).addClass('prepopulated_field');
-      $(field.id).data('dependency_list', field.dependency_list)
-        .prepopulate($(field.dependency_ids.join(',')),
-          field.maxLength);
+  // The submit button bar is rendered twice (top + the #preview-bottom bar
+  // revealed after a preview), so wire a preview to each ".btn-preview"
+  // (jQuery's AjaxPreview($('.btn-preview')) bound them all).
+  document.querySelectorAll('.btn-preview').forEach(function (btn) {
+    var preview = new AjaxPreview(btn, {
+      contentElement: contentEl,
+      previewElement: previewEl
     });
+    preview.addEventListener('done', onDone);
+  });
+}
+
+// Diff Preview of edits
+export function initPreviewDiff() {
+  var diff = document.getElementById('preview-diff');
+  if (diff) {
+    diff.classList.add('diff-this');
   }
-
-  function initSummaryCount() {
-    var $summaryCount = $('#remaining-characters'),
-      $summaryBox = $('#id_summary'),
-      // 160 characters is the maximum summary
-      // length of a Google result
-      warningCount = 160,
-      maxCount = $summaryCount.text(),
-      updateCount = function () {
-        var currentCount = $summaryBox.val().length;
-        $summaryCount.text(warningCount - currentCount);
-        if (warningCount - currentCount >= 0) {
-          $summaryCount.css('color', 'black');
-        } else {
-          $summaryCount.css('color', 'red');
-          if (currentCount >= maxCount) {
-            $summaryBox.val($summaryBox.val().substr(0, maxCount));
-          }
-        }
-      };
-
-    updateCount();
-    $summaryBox.on('input', updateCount);
-  }
-
-  /*
-   * Initialize the article preview functionality.
-   */
-  function initArticlePreview() {
-    var $preview = $('#preview'),
-      $previewBottom = $('#preview-bottom'),
-      preview = new AjaxPreview($('.btn-preview'), {
-        contentElement: $('#id_content'),
-        previewElement: $preview
-      });
-    $(preview).on('done', function (e, success) {
-      if (success) {
-        $previewBottom.show();
-        new ShowFor();
-        $preview.find('select.enable-if-js').prop("disabled", false);
-        $preview.find('.kbox').kbox();
-        $('#preview-diff .output').empty();
-        collapsibleAccordionInit();
+  // The submit button bar is rendered twice (top + the #preview-bottom bar that
+  // is revealed after a preview), so there are two ".btn-diff" buttons; wire
+  // them all (jQuery's $('.btn-diff') bound the handler to every match).
+  document.querySelectorAll('.btn-diff').forEach(function (diffButton) {
+    diffButton.addEventListener('click', function () {
+      var content = document.getElementById('id_content');
+      var to = diff && diff.querySelector('.to');
+      if (to && content) {
+        to.textContent = content.value;
+      }
+      initDiff(diff ? diff.parentNode : undefined);
+      show(document.getElementById('preview-bottom'));
+      var preview = document.getElementById('preview');
+      if (preview) {
+        preview.innerHTML = '';
       }
     });
-  }
+  });
+}
 
-  // Diff Preview of edits
-  function initPreviewDiff() {
-    var $diff = $('#preview-diff'),
-      $previewBottom = $('#preview-bottom'),
-      $diffButton = $('.btn-diff');
-    $diff.addClass('diff-this');
-    $diffButton.on("click", function () {
-      $diff.find('.to').text($('#id_content').val());
-      initDiff($diff.parent());
-      $previewBottom.show();
-      $('#preview').empty();
-    });
-  }
+export function initTitleAndSlugCheck() {
+  var title = document.getElementById('id_title');
+  var slug = document.getElementById('id_slug');
 
-  function initTitleAndSlugCheck() {
-    $('#id_title').on('change', function () {
-      var $this = $(this),
-        $form = $this.closest('form'),
-        title = $this.val(),
-        slug = $('#id_slug').val();
-      verifyTitleUnique(title, $form);
+  if (title) {
+    title.addEventListener('change', function () {
+      var form = title.closest('form');
+      verifyTitleUnique(title.value, form);
       // Check slug too, since it auto-updates and doesn't seem to fire
       // off change event.
-      verifySlugUnique(slug, $form);
+      verifySlugUnique(slug ? slug.value : '', form);
     });
-    $('#id_slug').on('change', function () {
-      var $this = $(this),
-        $form = $this.closest('form'),
-        slug = $('#id_slug').val();
-      verifySlugUnique(slug, $form);
+  }
+  if (slug) {
+    slug.addEventListener('change', function () {
+      var form = slug.closest('form');
+      verifySlugUnique(slug.value, form);
     });
+  }
 
-    function verifyTitleUnique(title, $form) {
-      var errorMsg = gettext('A document with this title already exists in this locale.');
-      verifyUnique('title', title, $('#id_title'), $form, errorMsg);
+  function verifyTitleUnique(title, form) {
+    var errorMsg = gettext('A document with this title already exists in this locale.');
+    verifyUnique('title', title, document.getElementById('id_title'), form, errorMsg);
+  }
+
+  function verifySlugUnique(slug, form) {
+    var errorMsg = gettext('A document with this slug already exists in this locale.');
+    verifyUnique('slug', slug, document.getElementById('id_slug'), form, errorMsg);
+  }
+
+  function verifyUnique(fieldname, value, field, form, errorMsg) {
+    if (!field || !form) {
+      return;
     }
-
-    function verifySlugUnique(slug, $form) {
-      var errorMsg = gettext('A document with this slug already exists in this locale.');
-      verifyUnique('slug', slug, $('#id_slug'), $form, errorMsg);
+    field.classList.remove('error');
+    var existingList = field.parentNode.querySelector('ul.errorlist');
+    if (existingList) {
+      existingList.remove();
     }
-
-    function verifyUnique(fieldname, value, $field, $form, errorMsg) {
-      $field.removeClass('error');
-      $field.parent().find('ul.errorlist').remove();
-      var data = {};
-      data[fieldname] = value;
-      $.ajax({
-        url: $form.data('json-url'),
-        type: 'GET',
-        data: data,
-        dataType: 'json',
-        success: function (json) {
-          // Success means we found an existing doc
-          var docId = $form.data('document-id');
-          if (!docId || (json.id && json.id !== parseInt(docId))) {
-            // Collision !!
-            $field.addClass('error');
-            $field.before(
-              $('<ul class="errorlist"><li/></ul>')
-                .find('li').text(errorMsg).end()
-            );
-          }
-        },
-        error: function (xhr, error) {
-          if (xhr.status === 405) {
-            // We are good!!
-          } else {
-            // Something went wrong, just fallback to server-side
-            // validation.
-          }
+    var data = {};
+    data[fieldname] = value;
+    apiFetch(form.dataset.jsonUrl, {
+      method: 'GET',
+      data: data,
+      dataType: 'json'
+    })
+      .then(function (json) {
+        // Success means we found an existing doc
+        var docId = form.dataset.documentId;
+        if (!docId || (json.id && json.id !== parseInt(docId, 10))) {
+          // Collision !!
+          field.classList.add('error');
+          var list = document.createElement('ul');
+          list.className = 'errorlist';
+          var item = document.createElement('li');
+          item.textContent = errorMsg;
+          list.appendChild(item);
+          field.parentNode.insertBefore(list, field);
         }
+      })
+      .catch(function () {
+        // A 405 means no existing doc (we're good!); any other error just
+        // falls back to server-side validation. Nothing to do either way.
       });
-    }
   }
+}
 
-  // On document edit/translate/new pages, run validation before opening the
-  // submit modal.
-  function initPreValidation() {
-    var $modal = $('#submit-modal'),
-      kbox = $modal.data('kbox');
-    kbox.updateOptions({
-      preOpen: function () {
-        var form = $('.btn-submit').closest('form')[0];
-        if (form.checkValidity && !form.checkValidity()) {
-          // If form isn't valid, click the modal submit button
-          // so the validation error is shown. (I couldn't find a
-          // better way to trigger this.)
-          $modal.find('button[type="submit"]').trigger("click");
-          return false;
+// On document edit/translate/new pages, run validation before opening the
+// submit modal.
+function initPreValidation() {
+  var modal = document.getElementById('submit-modal');
+  var kbox = modal && modal.kbox;
+  if (!kbox) {
+    return;
+  }
+  kbox.updateOptions({
+    preOpen: function () {
+      var submitBtn = document.querySelector('.btn-submit');
+      var form = submitBtn && submitBtn.closest('form');
+      if (form && form.checkValidity && !form.checkValidity()) {
+        // If form isn't valid, click the modal submit button
+        // so the validation error is shown. (I couldn't find a
+        // better way to trigger this.)
+        var modalSubmit = modal.querySelector('button[type="submit"]');
+        if (modalSubmit) {
+          modalSubmit.click();
         }
-        // Add this here because the "Submit for Review" button is
-        // a submit button that triggers validation and fails
-        // because the modal hasn't been displayed yet.
-        $modal.find('#id_comment').prop('required', true);
-        return true;
-      },
-      preClose: function () {
-        // Remove the required attribute so validation doesn't
-        // fail after clicking cancel.
-        $modal.find('#id_comment').prop('required', false);
-        return true;
+        return false;
       }
-    });
-  }
+      // Add this here because the "Submit for Review" button is
+      // a submit button that triggers validation and fails
+      // because the modal hasn't been displayed yet.
+      var comment = modal.querySelector('#id_comment');
+      if (comment) {
+        comment.required = true;
+      }
+      return true;
+    },
+    preClose: function () {
+      // Remove the required attribute so validation doesn't
+      // fail after clicking cancel.
+      var comment = modal.querySelector('#id_comment');
+      if (comment) {
+        comment.required = false;
+      }
+      return true;
+    }
+  });
+}
 
-  // The diff revision picker
-  function initDiffPicker() {
-    $('div.revision-diff').each(function () {
-      var $diff = $(this);
-      $diff.find('div.picker a').off().on("click", function (ev) {
+// The diff revision picker
+function initDiffPicker() {
+  document.querySelectorAll('div.revision-diff').forEach(function (diff) {
+    diff.querySelectorAll('div.picker a').forEach(function (link) {
+      link.addEventListener('click', function (ev) {
         ev.preventDefault();
-        $.ajax({
-          url: $(this).attr('href'),
-          type: 'GET',
-          dataType: 'html',
-          success: function (html) {
+        apiFetch(link.getAttribute('href'), {
+          method: 'GET',
+          dataType: 'html'
+        })
+          .then(function (html) {
             var kbox = new KBox(html, {
               modal: true,
               id: 'diff-picker-kbox',
@@ -375,426 +418,556 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
               title: gettext('Choose revisions to compare')
             });
             kbox.open();
-            ajaxifyDiffPicker(kbox.$kbox.find('form'), kbox, $diff);
-          },
-          error: function () {
-            var message = gettext('There was an error.');
-            alert(message);
-          }
-        });
+            ajaxifyDiffPicker(kbox.kbox.querySelector('form'), kbox, diff);
+          })
+          .catch(function () {
+            alert(gettext('There was an error.'));
+          });
       });
     });
-  }
+  });
+}
 
-  function ajaxifyDiffPicker($form, kbox, $diff) {
-    $form.on("submit", function (ev) {
-      ev.preventDefault();
-      $.ajax({
-        url: $form.attr('action'),
-        type: 'GET',
-        data: $form.serialize(),
-        dataType: 'html',
-        success: function (html) {
-          var $container = $diff.parent();
-          kbox.close();
-          $diff.replaceWith(html);
-          initDiffPicker();
-          initDiff();
-        }
-      });
+function ajaxifyDiffPicker(form, kbox, diff) {
+  if (!form) {
+    return;
+  }
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    apiFetch(form.getAttribute('action'), {
+      method: 'GET',
+      data: serialize(form),
+      dataType: 'html'
+    }).then(function (html) {
+      kbox.close();
+      var template = document.createElement('template');
+      template.innerHTML = html.trim();
+      diff.replaceWith(template.content);
+      initDiffPicker();
+      initDiff();
     });
-  }
+  });
+}
 
-  function initReadyForL10n() {
-    var $watchDiv = $('#revision-list .l10n'),
-      $modal = $('[data-modal-id="ready-for-l10n-modal"]'),
-      post_url, checkbox_id;
+export function initReadyForL10n() {
+  // Select the "mark as ready" links directly across the whole revision list.
+  // The first ".l10n" element is the column header (<th class="l10n">), which
+  // has no link - so the old `querySelector('#revision-list .l10n')` grabbed the
+  // header and found no links. jQuery's `$('#revision-list .l10n')` matched
+  // every cell, so `.find('a.markasready')` found the links.
+  var markAsReadyLinks = document.querySelectorAll('#revision-list .l10n a.markasready');
+  var modal = document.querySelector('[data-modal-id="ready-for-l10n-modal"]');
+  var post_url, checkbox_id;
 
-    $watchDiv.find('a.markasready').on("click", function () {
-      var $check = $(this);
-      post_url = $check.data('url');
-      checkbox_id = $check.attr('id');
-      $modal.find('span.revtime').html('(' + $check.data('revdate') + ')');
-    });
-
-    $modal.find('input[type=submit], button[type=submit]').on("click", function () {
-      var csrf = $modal.find('input[name=csrfmiddlewaretoken]').val();
-      if (post_url !== undefined && checkbox_id !== undefined) {
-        $.ajax({
-          type: 'POST',
-          url: post_url,
-          data: { csrfmiddlewaretoken: csrf },
-          success: function (response) {
-            $('#' + checkbox_id).removeClass('markasready').addClass('yes');
-            $('#' + checkbox_id).off('click');
-            Modal.closeModal()
-          },
-          error: function () {
-            Modal.closeModal()
-          }
-        });
-      }
-    });
-  }
-
-  function initNeedsChange() {
-    // Hide and show the comment box based on the status of the
-    // "Needs change" checkbox. Also, make the textarea required
-    // when checked.
-    var $checkbox = $('#id_needs_change'),
-      $comment = $('#id_needs_change_comment'),
-      $commentlabel = $('label[for="id_needs_change_comment"]'),
-      $kbox = $checkbox.closest('.kbox').data('kbox');
-
-    if ($checkbox.length > 0) {
-      updateComment();
-      $checkbox.on('change', updateComment);
-    }
-
-    function updateComment() {
-      if ($checkbox.is(':checked')) {
-        $comment.slideDown();
-        $commentlabel.slideDown();
-        $comment.find('textarea').prop('required', true);
-      } else {
-        $commentlabel.hide();
-        $comment.hide();
-        $comment.find('textarea').prop('required', false);
-      }
-      if ($kbox && $kbox.isOpen) {
-        $comment.add($commentlabel).promise().done(function () {
-          $kbox.handleOverflow();
-        });
-      }
-    }
-  }
-
-  function watchDiscussion() {
-    // For a thread on the all discussions for a locale.
-    $('.watch-form').on("click", function () {
-      var form = $(this);
-      $.post(form.attr('action'), form.serialize(), function () {
-        form.find('.watchtoggle').toggleClass('on');
-      }).error(function () {
-        // error growl
-      });
-      return false;
-    });
-  }
-
-  function initEditingTools() {
-    // Init the show/hide links for editing tools
-    $('#quick-links .edit a').on("click", function (ev) {
-      ev.preventDefault();
-      $('#doc-tabs').slideToggle('fast', function () {
-        $('body').toggleClass('show-editing-tools');
-      });
-
-      if ($(this).is('.show')) {
-        $.cookie('show-editing-tools', 1, { path: '/' });
-      } else {
-        $.cookie('show-editing-tools', null, { path: '/' });
-      }
-    });
-  }
-
-  function initCodeMirrorEditor() {
-    window.codemirror = true;
-    window.highlighting = {};
-
-    var editor = $("<div id='editor'></div>");
-    var editor_wrapper = $("<div id='editor_wrapper'></div>");
-
-    var updateHighlightingEditor = function () {
-      var currentEditor = window.highlighting.editor;
-      if (!currentEditor) {
+  markAsReadyLinks.forEach(function (check) {
+    check.addEventListener('click', function () {
+      // Once a revision is marked ready it gets the "yes" class; ignore
+      // further clicks (the old code did this via $().off('click')).
+      if (check.classList.contains('yes')) {
         return;
       }
-      var content = $('#id_content').val();
-      currentEditor.setValue(content);
-    };
-    window.highlighting.updateEditor = updateHighlightingEditor;
-
-    var switch_link = $('<a></a>')
-      .text(gettext('Toggle syntax highlighting'))
-      .css({ textAlign: 'right', cursor: 'pointer', display: 'block' })
-      .on("click", function () {
-        if (editor_wrapper.css('display') === 'block') {
-          editor_wrapper.css('display', 'none');
-          $('#id_content').css('display', 'block');
-        } else {
-          updateHighlightingEditor();
-          editor_wrapper.css('display', 'block');
-          $('#id_content').css('display', 'none');
+      post_url = check.dataset.url;
+      checkbox_id = check.getAttribute('id');
+      if (modal) {
+        var revtime = modal.querySelector('span.revtime');
+        if (revtime) {
+          revtime.innerHTML = '(' + check.dataset.revdate + ')';
         }
-      })
+      }
+    });
+  });
 
-    var highlightingEnabled = function () {
-      return editor_wrapper.css('display') === 'block';
-    };
-    window.highlighting.isEnabled = highlightingEnabled;
-
-    editor_wrapper.append(editor);
-    $('#id_content').after(switch_link).after(editor_wrapper).hide();
-
-    document.addEventListener('DOMContentLoaded', function () {
-      var cm_editor = CodeMirror(document.getElementById('editor'), {
-        mode: { 'name': 'sumo' },
-        value: $('#id_content').val(),
-        lineNumbers: true,
-        lineWrapping: true,
-        extraKeys: { 'Ctrl-Space': 'autocomplete' }
-      });
-      window.highlighting.editor = cm_editor;
-
-      $('#id_content').on('keyup', updateHighlightingEditor);
-      updateHighlightingEditor();
-
-      cm_editor.on('change', function (e) {
-        if (!highlightingEnabled()) {
-          return;
+  if (modal) {
+    modal.querySelectorAll('input[type=submit], button[type=submit]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var csrfEl = modal.querySelector('input[name=csrfmiddlewaretoken]');
+        var csrf = csrfEl ? csrfEl.value : '';
+        if (post_url !== undefined && checkbox_id !== undefined) {
+          apiFetch(post_url, {
+            method: 'POST',
+            data: { csrfmiddlewaretoken: csrf }
+          })
+            .then(function () {
+              var cb = document.getElementById(checkbox_id);
+              if (cb) {
+                cb.classList.remove('markasready');
+                cb.classList.add('yes');
+              }
+              Modal.closeModal();
+            })
+            .catch(function () {
+              Modal.closeModal();
+            });
         }
-        $('#id_content').val(cm_editor.getValue());
       });
-    }, false);
+    });
+  }
+}
+
+function initNeedsChange() {
+  // Hide and show the comment box based on the status of the
+  // "Needs change" checkbox. Also, make the textarea required
+  // when checked.
+  var checkbox = document.getElementById('id_needs_change');
+  var comment = document.getElementById('id_needs_change_comment');
+  var commentLabel = document.querySelector('label[for="id_needs_change_comment"]');
+  var kboxEl = checkbox ? checkbox.closest('.kbox') : null;
+  var kbox = kboxEl ? kboxEl.kbox : null;
+
+  if (checkbox) {
+    updateComment();
+    checkbox.addEventListener('change', updateComment);
   }
 
-  function initFormLock() {
-    var $doc = $('#edit-document');
-    if (!$doc.length) {
-      $doc = $('#localize-document');
+  function updateComment() {
+    var textarea = comment ? comment.querySelector('textarea') : null;
+    var animations = [];
+    if (checkbox.checked) {
+      if (comment) {
+        animations.push(slideDown(comment));
+      }
+      if (commentLabel) {
+        animations.push(slideDown(commentLabel));
+      }
+      if (textarea) {
+        textarea.required = true;
+      }
+    } else {
+      hide(commentLabel);
+      hide(comment);
+      if (textarea) {
+        textarea.required = false;
+      }
     }
-    if ($doc.is('.locked')) {
-      var $inputs = $doc.find('input:enabled, textarea:enabled')
-        .prop('disabled', true);
+    if (kbox && kbox.isOpen) {
+      // Let the kbox re-measure once the slide has settled.
+      Promise.all(animations).then(function () {
+        kbox.handleOverflow();
+      });
     }
-    $('#unlock-button').on('click', function () {
-      $inputs.prop('disabled', false);
-      $doc.removeClass('locked');
-      $('#locked-warning').slideUp(500);
+  }
+}
 
-      var doc_slug = $doc.data('slug');
-      var url = window.location.toString();
+function initEditingTools() {
+  // Init the show/hide links for editing tools
+  document.querySelectorAll('#quick-links .edit a').forEach(function (link) {
+    link.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      var docTabs = document.getElementById('doc-tabs');
+      var toggle = docTabs ? slideToggle(docTabs) : Promise.resolve();
+      toggle.then(function () {
+        document.body.classList.toggle('show-editing-tools');
+      });
+
+      if (link.classList.contains('show')) {
+        setCookie('show-editing-tools', 1, { path: '/' });
+      } else {
+        removeCookie('show-editing-tools', { path: '/' });
+      }
+    });
+  });
+}
+
+function initCodeMirrorEditor() {
+  window.codemirror = true;
+  window.highlighting = {};
+
+  var content = document.getElementById('id_content');
+  if (!content) {
+    return;
+  }
+
+  var editor = document.createElement('div');
+  editor.id = 'editor';
+  var editorWrapper = document.createElement('div');
+  editorWrapper.id = 'editor_wrapper';
+
+  var updateHighlightingEditor = function () {
+    var currentEditor = window.highlighting.editor;
+    if (!currentEditor) {
+      return;
+    }
+    currentEditor.setValue(content.value);
+  };
+  window.highlighting.updateEditor = updateHighlightingEditor;
+
+  var switchLink = document.createElement('a');
+  switchLink.textContent = gettext('Toggle syntax highlighting');
+  switchLink.style.textAlign = 'right';
+  switchLink.style.cursor = 'pointer';
+  switchLink.style.display = 'block';
+  switchLink.addEventListener('click', function () {
+    if (editorWrapper.style.display === 'block') {
+      editorWrapper.style.display = 'none';
+      content.style.display = 'block';
+    } else {
+      updateHighlightingEditor();
+      editorWrapper.style.display = 'block';
+      content.style.display = 'none';
+    }
+  });
+
+  var highlightingEnabled = function () {
+    return editorWrapper.style.display === 'block';
+  };
+  window.highlighting.isEnabled = highlightingEnabled;
+
+  editorWrapper.appendChild(editor);
+  // Insert editor_wrapper then switch_link immediately after #id_content (each
+  // insert goes directly after it, so the final order is content, wrapper,
+  // link - matching the old chained jQuery .after().after()). Highlighting is
+  // on by default (wrapper visible, textarea hidden).
+  content.after(switchLink);
+  content.after(editorWrapper);
+  editorWrapper.style.display = 'block';
+  hide(content);
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var cm_editor = CodeMirror(document.getElementById('editor'), {
+      mode: { 'name': 'sumo' },
+      value: content.value,
+      lineNumbers: true,
+      lineWrapping: true,
+      extraKeys: { 'Ctrl-Space': 'autocomplete' }
+    });
+    window.highlighting.editor = cm_editor;
+
+    content.addEventListener('keyup', updateHighlightingEditor);
+    updateHighlightingEditor();
+
+    cm_editor.on('change', function () {
+      if (!highlightingEnabled()) {
+        return;
+      }
+      content.value = cm_editor.getValue();
+    });
+  }, false);
+}
+
+function initFormLock() {
+  var doc = document.getElementById('edit-document') || document.getElementById('localize-document');
+  var inputs = [];
+  if (doc && doc.classList.contains('locked')) {
+    inputs = Array.from(doc.querySelectorAll('input:enabled, textarea:enabled'));
+    inputs.forEach(function (el) {
+      el.disabled = true;
+    });
+  }
+  var unlockButton = document.getElementById('unlock-button');
+  if (unlockButton) {
+    unlockButton.addEventListener('click', function () {
+      inputs.forEach(function (el) {
+        el.disabled = false;
+      });
+      if (doc) {
+        doc.classList.remove('locked');
+      }
+      var lockedWarning = document.getElementById('locked-warning');
+      if (lockedWarning) {
+        slideUp(lockedWarning, 500);
+      }
+
       // Modify the current url, so we get the right locale.
-      url = url.replace(/edit/, 'steal-lock');
+      var url = window.location.toString().replace(/edit/, 'steal-lock');
 
-      let xhr = new XMLHttpRequest();
-      let csrf = document.querySelector('#steal-lock-form input[name=csrfmiddlewaretoken]').value;
-      xhr.open("POST", url)
+      var xhr = new XMLHttpRequest();
+      var csrfEl = document.querySelector('#steal-lock-form input[name=csrfmiddlewaretoken]');
+      var csrf = csrfEl ? csrfEl.value : null;
+      xhr.open("POST", url);
       if (csrf) {
         xhr.setRequestHeader('X-CSRFToken', csrf);
       }
       xhr.send();
     });
   }
+}
 
-  function initToggleDiff() {
-    var $diff = $('#content-diff');
-    var $contentOrDiff = $('#content-or-diff');
+function initToggleDiff() {
+  var diff = document.getElementById('content-diff');
+  var contentOrDiff = document.getElementById('content-or-diff');
 
-    if ($diff.length > 0) {
-      $contentOrDiff
-        .append($diff.clone())
-        .append(
-          $('<a/>')
-            .text(gettext('Toggle Diff'))
-            .on("click", function (e) {
-              e.preventDefault();
-              $contentOrDiff.toggleClass('content diff');
-            }));
-    }
-  }
-
-  function initTranslationDraft() {
-    var $draftButton = $('.btn-draft'),
-      url = $('.btn-draft').data('draft-url'),
-      $draftMessage = $('#draft-message');
-
-    $draftButton.on("click", function () {
-      var message = gettext('<strong>Draft is saving...</strong>'),
-        image = `<img src="${spinnerImg}">`,
-        bothData = $('#both_form').serializeArray(),
-        docData = $('#doc_form').serializeArray(),
-        revData = $('#rev_form').serializeArray(),
-        totalData = $.extend(bothData, docData, revData);
-
-      $draftMessage.html(image + message).removeClass('success error').addClass('info').show()
-      $.post(url, totalData)
-        .done(function () {
-          var time = new Date(),
-            message = interpolate(gettext('<strong>Draft has been saved on:</strong> %s'), [time]);
-          $draftMessage.html(message).toggleClass('info success').show();
-        })
-        .fail(function () {
-          var message = gettext('<strong>Error saving draft</strong>');
-          $draftMessage.html(message).toggleClass('info error').show();
-        });
+  if (diff && contentOrDiff) {
+    contentOrDiff.appendChild(diff.cloneNode(true));
+    var toggle = document.createElement('a');
+    toggle.textContent = gettext('Toggle Diff');
+    toggle.addEventListener('click', function (e) {
+      e.preventDefault();
+      contentOrDiff.classList.toggle('content');
+      contentOrDiff.classList.toggle('diff');
     });
+    contentOrDiff.appendChild(toggle);
+  }
+}
+
+export function initTranslationDraft() {
+  var draftMessage = document.getElementById('draft-message');
+
+  // The submit button bar is rendered twice (top + the #preview-bottom bar
+  // revealed after a preview), so there are two ".btn-draft" buttons; wire them
+  // all (jQuery's $('.btn-draft') bound the handler to every match).
+  document.querySelectorAll('.btn-draft').forEach(function (draftButton) {
+    var url = draftButton.dataset.draftUrl;
+    draftButton.addEventListener('click', function () {
+    var message = gettext('<strong>Draft is saving...</strong>');
+    var image = `<img src="${spinnerImg}">`;
+    // Merge the fields of all three forms by name (the old code used
+    // $.extend on serializeArray() arrays, which merged by index and dropped
+    // fields; this sends every field from all three forms).
+    var serializeById = function (id) {
+      var f = document.getElementById(id);
+      return f ? serialize(f) : {};
+    };
+    var totalData = Object.assign(
+      {},
+      serializeById('both_form'),
+      serializeById('doc_form'),
+      serializeById('rev_form')
+    );
+
+    if (draftMessage) {
+      draftMessage.innerHTML = image + message;
+      draftMessage.classList.remove('success', 'error');
+      draftMessage.classList.add('info');
+      show(draftMessage);
+    }
+    apiFetch(url, { method: 'POST', data: totalData })
+      .then(function () {
+        var time = new Date();
+        var msg = interpolate(gettext('<strong>Draft has been saved on:</strong> %s'), [time]);
+        if (draftMessage) {
+          draftMessage.innerHTML = msg;
+          draftMessage.classList.remove('info');
+          draftMessage.classList.add('success');
+          show(draftMessage);
+        }
+      })
+      .catch(function () {
+        var msg = gettext('<strong>Error saving draft</strong>');
+        if (draftMessage) {
+          draftMessage.innerHTML = msg;
+          draftMessage.classList.remove('info');
+          draftMessage.classList.add('error');
+          show(draftMessage);
+        }
+      });
+    });
+  });
+}
+
+export function initRevisionList() {
+  var form = document.querySelector('#revision-list form.filter');
+  var searchForm = document.querySelector('.simple-search-form');
+
+  if (!form) {
+    return;
   }
 
-  function initRevisionList() {
-    var $form = $('#revision-list form.filter');
-    var $searchForm = $('.simple-search-form');
+  const fragment = document.getElementById('revisions-fragment');
 
-    if (!$form.length) {
+  const initialUrl = window.location.href;
+  window.history.replaceState({ url: initialUrl }, '', initialUrl);
+
+  function serializeForm() {
+    return new URLSearchParams(new FormData(form)).toString();
+  }
+
+  function searchFormOwns(key) {
+    return searchForm && searchForm.querySelector(`[name="${key}"]`);
+  }
+
+  function updateRevisionList(query, pushState = true) {
+    document.querySelectorAll('.loading').forEach(show);
+
+    if (query === undefined) {
+      query = serializeForm();
+    }
+
+    const baseUrl = form.getAttribute('action');
+    const url = new URL(baseUrl, window.location.origin);
+    const params = new URLSearchParams(query);
+
+    // Update URL parameters while preserving search form state
+    for (let [key, value] of params) {
+      url.searchParams.set(key, value);
+    }
+
+    if (pushState) {
+      window.history.pushState({ url: url.toString() }, '', url);
+    }
+
+    if (fragment) {
+      fragment.style.opacity = 0;
+    }
+    apiFetch(url.toString() + (url.search ? '&' : '?') + 'fragment=1', { dataType: 'html' })
+      .then(function (data) {
+        document.querySelectorAll('.loading').forEach(hide);
+        if (fragment) {
+          fragment.innerHTML = data;
+          fragment.style.opacity = 1;
+        }
+      });
+  }
+
+  // Handle browser back/forward
+  window.addEventListener('popstate', function (e) {
+    if (e.state) {
+      const url = new URL(e.state.url);
+      const params = new URLSearchParams();
+
+      // Copy only the parameters that belong to the revision list
+      for (let [key, value] of url.searchParams) {
+        if (!searchFormOwns(key)) {
+          params.set(key, value);
+        }
+      }
+
+      updateRevisionList(params.toString(), false);
+    }
+  });
+
+  var timeout;
+  function onFilterChange(e) {
+    if (!e.target.matches('input, select')) {
       return;
     }
+    clearTimeout(timeout);
+    timeout = setTimeout(function () {
+      updateRevisionList();
+    }, 200);
 
-    const initialUrl = window.location.href;
-    window.history.replaceState({ url: initialUrl }, '', initialUrl);
-
-    function updateRevisionList(query, pushState = true) {
-      $('.loading').show();
-
-      if (query === undefined) {
-        query = $form.serialize();
+    // Save filter state but exclude pagination
+    const currentData = {};
+    for (const [name, value] of new FormData(form)) {
+      if (name !== 'page') {
+        currentData[name] = value;
       }
-
-      const baseUrl = $form.attr('action');
-      const url = new URL(baseUrl, window.location.origin);
-      const params = new URLSearchParams(query);
-
-      // Update URL parameters while preserving search form state
-      for (let [key, value] of params) {
-        url.searchParams.set(key, value);
-      }
-
-      if (pushState) {
-        window.history.pushState({ url: url.toString() }, '', url);
-      }
-
-      $('#revisions-fragment').css('opacity', 0);
-      $.get(url.toString() + (url.search ? '&' : '?') + 'fragment=1', function (data) {
-        $('.loading').hide();
-        $('#revisions-fragment').html(data).css('opacity', 1);
-      });
     }
+    sessionStorage.setItem('revision-list-filter', JSON.stringify(currentData));
+  }
+  form.addEventListener('input', onFilterChange);
+  form.addEventListener('change', onFilterChange);
 
-    // Handle browser back/forward
-    $(window).on('popstate', function (e) {
-      if (e.originalEvent.state) {
-        const url = new URL(e.originalEvent.state.url);
-        const params = new URLSearchParams();
-
-        // Copy only the parameters that belong to the revision list
-        for (let [key, value] of url.searchParams) {
-          if (!$searchForm.find(`[name="${key}"]`).length) {
-            params.set(key, value);
-          }
-        }
-
-        updateRevisionList(params.toString(), false);
+  // Handle pagination clicks
+  if (fragment) {
+    fragment.addEventListener('click', function (e) {
+      const link = e.target.closest('.pagination a');
+      if (!link) {
+        return;
       }
-    });
-
-    var timeout;
-    $form.on('input change', 'input, select', function () {
-      clearTimeout(timeout);
-      timeout = setTimeout(function () {
-        updateRevisionList();
-      }, 200);
-
-      // Save filter state but exclude pagination
-      const currentData = $form.serializeArray()
-        .reduce((obj, item) => {
-          if (item.name !== 'page') {
-            obj[item.name] = item.value;
-          }
-          return obj;
-        }, {});
-      sessionStorage.setItem('revision-list-filter', JSON.stringify(currentData));
-    });
-
-    // Handle pagination clicks
-    $('#revisions-fragment').on('click', '.pagination a', function (e) {
       e.preventDefault();
-      const paginationUrl = new URL($(this).attr('href'), window.location.origin);
+      const paginationUrl = new URL(link.getAttribute('href'), window.location.origin);
 
       // Only take parameters that are not part of the search form
       const params = new URLSearchParams();
       for (let [key, value] of paginationUrl.searchParams) {
-        if (!$searchForm.find(`[name="${key}"]`).length) {
+        if (!searchFormOwns(key)) {
           params.set(key, value);
         }
       }
 
       updateRevisionList(params.toString(), true);
     });
+  }
 
-    // Remove submit button and prevent form submission
-    $form.find('button, [type="submit"]').remove();
-    $form.on('keydown', function (e) {
-      if (e.which === 13) {
-        e.preventDefault();
+  // Remove submit button and prevent form submission
+  form.querySelectorAll('button, [type="submit"]').forEach(function (el) {
+    el.remove();
+  });
+  form.addEventListener('keydown', function (e) {
+    if (e.which === 13) {
+      e.preventDefault();
+    }
+  });
+}
+
+function makeWikiCollapsable() {
+  // Hide the TOC
+  hide(document.getElementById('toc'));
+
+  // Make sections collapsable
+  document.querySelectorAll('#doc-content h1').forEach(function (h1) {
+    var sectionElems = [];
+    var sibling = h1.nextElementSibling;
+    while (sibling) {
+      if (sibling.tagName === 'H1') {
+        break;
       }
-    });
-  }
-
-  init();
-
-  function makeWikiCollapsable() {
-    // Hide the TOC
-    $('#toc').hide();
-
-    // Make sections collapsable
-    $('#doc-content h1').each(function () {
-      var $this = $(this);
-      var $siblings = $(this).nextAll();
-
-      var sectionElems = [];
-      $siblings.each(function () {
-        if ($(this).is('h1')) {
-          return false;
-        }
-        sectionElems.push(this);
-      });
-
-      var $foldingSection = $('<div />');
-      $foldingSection.addClass('wiki-section').addClass('collapsed');
-      $this.before($foldingSection);
-      $foldingSection.append($this);
-
-      var $section = $('<section />');
-      $foldingSection.append($section);
-
-      for (var i = 0; i < sectionElems.length; i++) {
-        $section.append(sectionElems[i]);
-      }
-    });
-
-    // Make the header the trigger for toggling state
-    $('#doc-content').on('click', 'h1', function () {
-      $(this).closest('.wiki-section').toggleClass('collapsed');
-    });
-
-    // Expand section if deeplinked to it
-    $(window.location.hash).closest('.wiki-section').removeClass('collapsed');
-  };
-
-  if ($('#doc-content').is('.collapsible')) {
-    makeWikiCollapsable();
-  }
-
-  function initExitSupportFor() {
-    $('#support-for-exit').on('click', function () {
-      $('#support-for').remove();
-    });
-  }
-
-  function collapsibleContributorTools() {
-    const showMoreLink = document.getElementById('show-more-link');
-    if (showMoreLink) {
-      const collapsibleContent = document.querySelector('.collapsible-content');
-
-      showMoreLink.addEventListener('click', (event) => {
-        event.preventDefault();
-
-        collapsibleContent.classList.toggle('expanded');
-        showMoreLink.classList.toggle('expanded');
-        showMoreLink.textContent = (showMoreLink.classList.contains('expanded')) ? 'Show Less' : 'Show More';
-      });
+      sectionElems.push(sibling);
+      sibling = sibling.nextElementSibling;
     }
 
+    var foldingSection = document.createElement('div');
+    foldingSection.classList.add('wiki-section', 'collapsed');
+    h1.parentNode.insertBefore(foldingSection, h1);
+    foldingSection.appendChild(h1);
+
+    var section = document.createElement('section');
+    foldingSection.appendChild(section);
+
+    sectionElems.forEach(function (el) {
+      section.appendChild(el);
+    });
+  });
+
+  // Make the header the trigger for toggling state
+  var docContent = document.getElementById('doc-content');
+  if (docContent) {
+    docContent.addEventListener('click', function (e) {
+      var h1 = e.target.closest('h1');
+      if (h1 && docContent.contains(h1)) {
+        var section = h1.closest('.wiki-section');
+        if (section) {
+          section.classList.toggle('collapsed');
+        }
+      }
+    });
   }
 
-})(jQuery);
+  // Expand section if deeplinked to it
+  if (window.location.hash.length > 1) {
+    var target = null;
+    try {
+      target = document.querySelector(window.location.hash);
+    } catch (e) {
+      target = null;
+    }
+    var section = target ? target.closest('.wiki-section') : null;
+    if (section) {
+      section.classList.remove('collapsed');
+    }
+  }
+}
+
+function initExitSupportFor() {
+  var exit = document.getElementById('support-for-exit');
+  if (exit) {
+    exit.addEventListener('click', function () {
+      var supportFor = document.getElementById('support-for');
+      if (supportFor) {
+        supportFor.remove();
+      }
+    });
+  }
+}
+
+function collapsibleContributorTools() {
+  const showMoreLink = document.getElementById('show-more-link');
+  if (showMoreLink) {
+    const collapsibleContent = document.querySelector('.collapsible-content');
+
+    showMoreLink.addEventListener('click', (event) => {
+      event.preventDefault();
+
+      collapsibleContent.classList.toggle('expanded');
+      showMoreLink.classList.toggle('expanded');
+      showMoreLink.textContent = (showMoreLink.classList.contains('expanded')) ? 'Show Less' : 'Show More';
+    });
+  }
+}
+
+init();
+
+var docContentEl = document.getElementById('doc-content');
+if (docContentEl && docContentEl.classList.contains('collapsible')) {
+  makeWikiCollapsable();
+}

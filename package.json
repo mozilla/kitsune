@@ -44,8 +44,6 @@
     "date-fns": "^4.4.0",
     "graphql": "^16.13.1",
     "htmx.org": "^1.9.12",
-    "jquery": "^3.6.3",
-    "jquery-ui": "1.14.2",
     "nunjucks": "^3.2.4",
     "svelte": "^5.55.7",
     "tom-select": "^2.5.2",

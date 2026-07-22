@@ -1,4 +1,5 @@
 import BrowserDetect from "./browserdetect";
+import { toElement } from "sumo/js/utils/dom";
 
 /*
  * ShowFor is a system to customize an article for an individual. It
@@ -7,9 +8,11 @@ import BrowserDetect from "./browserdetect";
  * criteria.
  */
 
-export default function ShowFor($container) {
-  this.$container = $container || $('body');
+export default function ShowFor(container) {
+  this.container = toElement(container) || document.body;
   this.state = {};
+  // show-func lookup keyed by DOM element (jQuery stored these via .data()).
+  this.showFuncs = new WeakMap();
 
   this.loadData();
   this.initEvents();
@@ -45,7 +48,8 @@ ShowFor.prototype.platformMap = {
   * desired format. */
 ShowFor.prototype.loadData = function () {
   try {
-    this.data = JSON.parse(this.$container.find('.showfor-data').html());
+    var dataEl = this.container.querySelector('.showfor-data');
+    this.data = JSON.parse(dataEl.textContent);
   } catch (e) {
     this.data = {
       products: [],
@@ -73,7 +77,14 @@ ShowFor.prototype.loadData = function () {
 // Bind events for ShowFor.
 ShowFor.prototype.initEvents = function () {
   window.onpopstate = this.updateUI.bind(this);
-  this.$container.on('change keyup', 'input, select', this.onUIChange.bind(this));
+  var handler = this.onUIChange.bind(this);
+  ['change', 'keyup'].forEach(function (evtName) {
+    this.container.addEventListener(evtName, function (e) {
+      if (e.target && e.target.matches('input, select')) {
+        handler(e);
+      }
+    });
+  }.bind(this));
 };
 
 /* Selects an option from a showfor selectbox, adding it if appropriate.
@@ -87,16 +98,20 @@ ShowFor.prototype.initEvents = function () {
   * include Firefox 18. Users that aren't running Firefox 18 won't see it as an
   * option though
   */
-ShowFor.prototype.ensureSelect = function ($select, type, product, val) {
-  var $opt;
+ShowFor.prototype.ensureSelect = function (select, type, product, val) {
+  var opt;
   var key;
   var extra = {};
   var target;
 
+  if (!select) {
+    return;
+  }
+
   // Version pattern used for parsing product versions (e.g., 'fx114', 'm95')
   const VERSION_PATTERN = /^([a-z]+)(\d+)/;
 
-  function select(searchArray, slug) {
+  function pick(searchArray, slug) {
     for (var i = 0; i < searchArray.length; i++) {
       if (searchArray[i].slug === slug) {
         return searchArray[i];
@@ -107,10 +122,12 @@ ShowFor.prototype.ensureSelect = function ($select, type, product, val) {
 
   if (type === 'version') {
     const exactVersionVal = 'version:' + val;
-    const exactMatch = $select.find('option[value="' + exactVersionVal + '"]');
+    const exactMatch = select.querySelector(
+      'option[value="' + exactVersionVal + '"]'
+    );
 
-    if (exactMatch.length > 0) {
-      $select.val(exactVersionVal);
+    if (exactMatch) {
+      select.value = exactVersionVal;
       return;
     }
 
@@ -122,8 +139,8 @@ ShowFor.prototype.ensureSelect = function ($select, type, product, val) {
       let highestOption = null;
       let highestVersionNum = 0;
 
-      $select.find('option').each(function () {
-        const optVal = $(this).val();
+      select.querySelectorAll('option').forEach(function (option) {
+        const optVal = option.value;
         const optSlug = optVal.split(':')[1];
         const optMatch = optSlug.match(VERSION_PATTERN);
 
@@ -137,20 +154,20 @@ ShowFor.prototype.ensureSelect = function ($select, type, product, val) {
       });
 
       if (highestOption && browserVersion > highestVersionNum) {
-        $select.val(highestOption);
+        select.value = highestOption;
         return;
       }
     }
 
-    target = select(this.data.versions[product], val);
+    target = pick(this.data.versions[product], val);
     if (target !== null) {
       extra['data-min'] = target.min_version;
       extra['data-max'] = target.max_version;
     }
   } else if (type === 'platform') {
-    target = select(this.data.platforms[product], val);
+    target = pick(this.data.platforms[product], val);
   } else if (type === 'product') {
-    target = select(this.data.products, val);
+    target = pick(this.data.products, val);
   } else {
     throw new Error('Unknown showfor select type ' + type);
   }
@@ -163,17 +180,17 @@ ShowFor.prototype.ensureSelect = function ($select, type, product, val) {
 
   val = type + ':' + val;
 
-  if ($select.find('option[value="' + val + '"]').length === 0) {
-    $opt = $('<option>')
-      .attr('value', val)
-      .text(target.name);
+  if (select.querySelector('option[value="' + val + '"]') === null) {
+    opt = document.createElement('option');
+    opt.setAttribute('value', val);
+    opt.textContent = target.name;
     for (key in extra) {
-      $opt.attr(key, extra[key]);
+      opt.setAttribute(key, extra[key]);
     }
-    $select.append($opt);
+    select.appendChild(opt);
   }
 
-  $select.val(val);
+  select.value = val;
 };
 
 /* Set up the UI. This consists of two parts:
@@ -199,27 +216,45 @@ ShowFor.prototype.updateUI = async function () {
   // Well, we got something. Lets try to parse it.
   if (persisted) {
     var itWorked = false;
-    this.$container.find('.product input[type=checkbox]').prop('checked', false);
+    this.container
+      .querySelectorAll('.product input[type=checkbox]')
+      .forEach(function (checkbox) {
+        checkbox.checked = false;
+      });
     persisted.split('&').forEach(function (prodInfo) {
       var data = prodInfo.split(':');
       var product = data[0] || null;
       var platform = data[1] || null;
       var version = data[2] || null;
 
-      var $product = this.$container.find('.product[data-product="' + product + '"]');
-      if ($product.length === 0) {
+      var productEl = this.container.querySelector(
+        '.product[data-product="' + product + '"]'
+      );
+      if (!productEl) {
         return;
       }
       itWorked = true;
-      $product.find('input[type=checkbox][value="product:' + product + '"]')
-        .prop('checked', true);
+      var checkbox = productEl.querySelector(
+        'input[type=checkbox][value="product:' + product + '"]'
+      );
+      if (checkbox) {
+        checkbox.checked = true;
+      }
       if (platform) {
-        var $platform = $product.find('select.platform');
-        this.ensureSelect($platform, 'platform', product, platform);
+        this.ensureSelect(
+          productEl.querySelector('select.platform'),
+          'platform',
+          product,
+          platform
+        );
       }
       if (version) {
-        var $version = $product.find('select.version');
-        this.ensureSelect($version, 'version', product, version);
+        this.ensureSelect(
+          productEl.querySelector('select.version'),
+          'version',
+          product,
+          version
+        );
       }
     }.bind(this));
 
@@ -234,33 +269,43 @@ ShowFor.prototype.updateUI = async function () {
   const platform = await detect.getOS();
   const version = browser.version?.toString("major");
 
-  var $products = this.$container.find('.product');
+  var products = this.container.querySelectorAll('.product');
   var productElems = {};
-  $products.each(function (i, elem) {
-    var $elem = $(elem);
-    productElems[$elem.data('product')] = $elem;
+  products.forEach(function (elem) {
+    productElems[elem.dataset.product] = elem;
   });
 
   if (browser.mozilla && version) {
     if (platform.mobile && this.productSlugs.indexOf('mobile') !== -1) {
       const verSlug = 'm' + version;
-      const $version = productElems.mobile.find('select.version');
-      this.ensureSelect($version, 'version', 'mobile', verSlug);
+      this.ensureSelect(
+        productElems.mobile.querySelector('select.version'),
+        'version',
+        'mobile',
+        verSlug
+      );
     } else if (this.productSlugs.indexOf('firefox') !== -1) {
       const verSlug = 'fx' + version;
-      const $version = productElems.firefox.find('select.version');
-      this.ensureSelect($version, 'version', 'firefox', verSlug);
+      this.ensureSelect(
+        productElems.firefox.querySelector('select.version'),
+        'version',
+        'firefox',
+        verSlug
+      );
     }
   }
 
-  $products.find('select.platform').each((i, elem) => {
-    var $elem = $(elem);
-    var product = $elem.parents('.product').data('product');
+  products.forEach((elem) => {
+    const platformSelect = elem.querySelector('select.platform');
+    if (!platformSelect) {
+      return;
+    }
+    const product = elem.dataset.product;
     let slug = this.platformMap[platform.name] || platform.name.toLowerCase();
     if (typeof slug != "string") {
       slug = slug[platform.version] || slug.default;
     }
-    this.ensureSelect($elem, 'platform', product, slug);
+    this.ensureSelect(platformSelect, 'platform', product, slug);
   });
 };
 
@@ -315,26 +360,28 @@ ShowFor.prototype.persist = function () {
 ShowFor.prototype.updateState = function () {
   this.state = {};
 
-  this.$container.find('.product').each(function (i, productElem) {
-    var $productElem = $(productElem);
-    var slug = $productElem.data('product');
+  this.container.querySelectorAll('.product').forEach(function (productElem) {
+    var slug = productElem.dataset.product;
+    // container defaults to <body>, so this can match non-showfor .product
+    // elements that have no checkbox. jQuery's .prop('checked') returned
+    // undefined for those (empty set); guard to match that instead of throwing.
+    var checkbox = productElem.querySelector('input[type=checkbox]');
     this.state[slug] = {
-      enabled: $productElem.find('input[type=checkbox]').prop('checked')
+      enabled: checkbox ? checkbox.checked : undefined
     };
 
-    $productElem.find('select').each(function (j, selectElem) {
-      var $selectElem = $(selectElem);
-      var combined = $selectElem.val();
+    productElem.querySelectorAll('select').forEach(function (selectElem) {
+      var combined = selectElem.value;
       var parts = combined.split(':');
       var type = parts[0];
       var data = parts[1];
 
       if (type === 'version') {
-        var $option = $selectElem.find('option:selected');
+        var option = selectElem.selectedOptions[0];
         data = {
           slug: data,
-          min: parseFloat($option.data('min')),
-          max: parseFloat($option.data('max'))
+          min: option ? parseFloat(option.dataset.min) : NaN,
+          max: option ? parseFloat(option.dataset.max) : NaN
         };
       }
 
@@ -352,26 +399,25 @@ ShowFor.prototype.wrapTOCs = function () {
     * article is contained in a showfor. If it is, this wraps the TOC
     * element in <span>s that mimic showfor. */
 
-  this.$container.find('#toc a').each(function (i, elem) {
-    var $elem = $(elem);
-    var idSelector = $elem.attr('href');
-    if (idSelector[0] !== '#') {
+  this.container.querySelectorAll('#toc a').forEach(function (elem) {
+    var idSelector = elem.getAttribute('href');
+    if (!idSelector || idSelector[0] !== '#') {
       // No idea what to do here. Give up on this item.
       return;
     }
 
-    var $docSearcher = $(idSelector);
-    var $wrappee = $elem.parent();
+    var docSearcher = document.querySelector(idSelector);
+    var wrappee = elem.parentNode;
 
-    while ($docSearcher.length) {
-      if ($docSearcher.hasClass('for')) {
-        var $wrapper = $('<span/>', {
-          'class': 'for',
-          'data-for': $docSearcher.data('for')
-        });
-        $wrappee = $wrappee.wrap($wrapper);
+    while (docSearcher) {
+      if (docSearcher.classList && docSearcher.classList.contains('for')) {
+        var wrapper = document.createElement('span');
+        wrapper.className = 'for';
+        wrapper.setAttribute('data-for', docSearcher.dataset.for || '');
+        wrappee.parentNode.insertBefore(wrapper, wrappee);
+        wrapper.appendChild(wrappee);
       }
-      $docSearcher = $docSearcher.parent();
+      docSearcher = docSearcher.parentElement;
     }
   });
 };
@@ -379,12 +425,12 @@ ShowFor.prototype.wrapTOCs = function () {
 /* Attach functions to each DOM element that determine whether it should
   /* be shown or hidden. */
 ShowFor.prototype.initShowFuncs = function () {
-  this.$container.find('.for').each(function (i, elem) {
-    var $elem = $(elem);
-    var showFor = $elem.data('for');
+  this.showFuncs = new WeakMap();
+  this.container.querySelectorAll('.for').forEach(function (elem) {
+    var showFor = elem.dataset.for;
     var criteria = showFor.split(/\s*,\s*/);
     var showFunc = this.matchesCriteria.bind(this, criteria);
-    $elem.data('show-func', showFunc);
+    this.showFuncs.set(elem, showFunc);
   }.bind(this));
 };
 
@@ -393,15 +439,15 @@ ShowFor.prototype.initShowFuncs = function () {
   * If no deciding function is attached, the element will be shown as a fallback.
   */
 ShowFor.prototype.showAndHide = function () {
-  this.$container.find('.for').each(function (i, elem) {
-    var $elem = $(elem);
-    var showFuncVal = $elem.data('show-func')();
+  this.container.querySelectorAll('.for').forEach(function (elem) {
+    var showFunc = this.showFuncs.get(elem);
+    var showFuncVal = showFunc ? showFunc() : undefined;
     if (showFuncVal !== undefined) {
-      $elem.toggle(showFuncVal);
+      elem.style.display = showFuncVal ? '' : 'none';
     } else {
-      $elem.show();
+      elem.style.display = '';
     }
-  });
+  }.bind(this));
 };
 
 /* Checks if the current state of this object matches criteria.

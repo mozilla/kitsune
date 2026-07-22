@@ -1,84 +1,104 @@
-import "sumo/js/libs/jquery.lazyload";
-
 /*
  * Wiki content previews - ajaxified.
+ *
+ * AjaxPreview is an EventTarget. It emits native CustomEvents:
+ *   get-preview  - the preview button was clicked
+ *   show-preview - the preview HTML has arrived (detail: {success, html})
+ *   done         - the preview has been rendered (detail: {success})
  */
 
-export default function AjaxPreview(el, options) {
-  /* Args:
-   * el - The button/link DOM element that triggers the preview
-   * options - dict of options
-   *      previewUrl - url to POST the content and get a preview
-   *      contentElement - DOM element or selector that input content
-   *      previewElement - DOM element or selector to insert the preview
-   *      changeHash - Change document.location.hash to the id of
-   *                   previewElemnt (default: true)
-   */
-  AjaxPreview.prototype.init.call(this, el, options);
+import { apiFetch } from "sumo/js/utils/fetch";
+import { toElement } from "sumo/js/utils/dom";
+import { lazyload } from "sumo/js/utils/lazyload";
+
+function fieldValue(form, selector) {
+  if (!form) {
+    return undefined;
+  }
+  const el = form.querySelector(selector);
+  return el ? el.value : undefined;
 }
 
-(function($) {
+// Extend window.EventTarget (not the bare global) so instances and the
+// CustomEvents they dispatch come from the same realm in both the browser and
+// the jsdom test environment.
+export default class AjaxPreview extends window.EventTarget {
+  constructor(el, options) {
+    /* Args:
+     * el - The button/link that triggers the preview (selector, element, or,
+     *      during the jQuery transition, a jQuery object)
+     * options - dict of options
+     *      previewUrl - url to POST the content and get a preview
+     *      contentElement - element or selector for the input content
+     *      previewElement - element or selector to insert the preview into
+     *      changeHash - set document.location.hash to the previewElement id
+     *                   (default: true)
+     */
+    super();
 
-  'use strict';
-
-  AjaxPreview.prototype = {
-    init: function(el, options) {
-      var self = this,
-        $btn = $(el),
-        o = options || {},
-        previewUrl = o.previewUrl || $btn.data('preview-url'),
-        $preview = (o.previewElement && $(o.previewElement)) ||
-                   $('#' + $btn.data('preview-container-id')),
-        $content = (o.contentElement && $(o.contentElement)) ||
-                   $('#' + $btn.data('preview-content-id')),
-        csrftoken = $btn.closest('form')
-        .find('input[name=csrfmiddlewaretoken]').val(),
-        slug = ($btn.closest('form').find('input[name=slug]').val()) ||
-                window.location.pathname,
-        locale = $btn.closest('form').find('[name=locale]').val(),
-        changeHash = o.changeHash === undefined ? true : o.changeHash;
-
-      $btn.on('click', function(e) {
-        e.preventDefault();
-        $(this).attr('disabled', 'disabled');
-        $(self).trigger('get-preview');
-      });
-
-      // Trying to make this event driven for easier testability.
-      $(self).on('get-preview', function(e) {
-        $.ajax({
-          url: previewUrl,
-          type: 'POST',
-          data: {
-            content: $content.val(),
-            slug: slug,
-            locale: locale,
-            csrfmiddlewaretoken: csrftoken
-          },
-          dataType: 'html',
-          success: function(html) {
-            $(self).trigger('show-preview', [true, html]);
-          },
-          error: function(xhr, status, err) {
-            console.log(err);
-            var msg = gettext('There was an error generating the preview.');
-            $(self).trigger('show-preview', [false, msg]);
-          }
-        });
-      });
-
-      $(self).on('show-preview', function(e, success, html) {
-        $preview.html(html);
-        if ($.fn.lazyload) {
-          $preview.find('img.lazy').lazyload();
-        }
-        if (changeHash) {
-          document.location.hash = $preview.attr('id');
-        }
-        $btn.prop("disabled", false);
-        $(self).trigger('done', [success]);
-      });
+    const self = this;
+    const btn = toElement(el);
+    if (!btn) {
+      return;
     }
-  };
+    const o = options || {};
+    const form = btn.closest("form");
+    const previewUrl = o.previewUrl || btn.dataset.previewUrl;
+    const preview =
+      (o.previewElement && toElement(o.previewElement)) ||
+      document.getElementById(btn.dataset.previewContainerId);
+    const content =
+      (o.contentElement && toElement(o.contentElement)) ||
+      document.getElementById(btn.dataset.previewContentId);
+    const csrftoken = fieldValue(form, "input[name=csrfmiddlewaretoken]");
+    const slug =
+      fieldValue(form, "input[name=slug]") || window.location.pathname;
+    const locale = fieldValue(form, "[name=locale]");
+    const changeHash = o.changeHash === undefined ? true : o.changeHash;
 
-})(jQuery);
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      btn.setAttribute("disabled", "disabled");
+      self.dispatchEvent(new CustomEvent("get-preview"));
+    });
+
+    // Trying to make this event driven for easier testability.
+    self.addEventListener("get-preview", function () {
+      apiFetch(previewUrl, {
+        method: "POST",
+        data: {
+          content: content.value,
+          slug: slug,
+          locale: locale,
+          csrfmiddlewaretoken: csrftoken,
+        },
+        dataType: "html",
+      })
+        .then(function (html) {
+          self.dispatchEvent(
+            new CustomEvent("show-preview", { detail: { success: true, html } })
+          );
+        })
+        .catch(function (error) {
+          console.log(error);
+          const msg = gettext("There was an error generating the preview.");
+          self.dispatchEvent(
+            new CustomEvent("show-preview", {
+              detail: { success: false, html: msg },
+            })
+          );
+        });
+    });
+
+    self.addEventListener("show-preview", function (e) {
+      const { success, html } = e.detail;
+      preview.innerHTML = html;
+      lazyload(preview);
+      if (changeHash) {
+        document.location.hash = preview.getAttribute("id");
+      }
+      btn.disabled = false;
+      self.dispatchEvent(new CustomEvent("done", { detail: { success } }));
+    });
+  }
+}

@@ -1,501 +1,573 @@
-import "sumo/js/libs/jquery.ajaxupload";
-import "sumo/js/kbox";
+import { ajaxSubmitInput, abortUpload } from "sumo/js/ajaxupload";
+import KBox from "sumo/js/kbox";
+import { apiFetch } from "sumo/js/utils/fetch";
 
-(function($) {
-  'use strict';
-
-  jQuery(function() {
-    $('#media-type-select').on('change', function() {
-      window.location = $(this).val();
-    });
-  });
-
-  var CONSTANTS = {
-    maxFilenameLength: 70,  // truncated on display, if longer
-    // the remainder are set by input name, not file type
-    messages: {},
-    extensions: {
-      file: ['jpg', 'jpeg', 'png', 'gif']
-    },
-    max_size: {
-      file: $('#gallery-upload-modal').data('max-image-size')
-    }
-  };
-
-  let originalPosX, originalPosY;
-
-  CONSTANTS.messages.server = gettext('Could not upload file. Please try again later.');
-  CONSTANTS.messages.file = {
-    'server': CONSTANTS.messages.server,
-    'invalid': gettext('Invalid image. Please select a valid image file.'),
-    'toolarge': gettext('Image too large. Please select a smaller image file.'),
-    'cancelled': gettext('Upload cancelled. Please select an image file.'),
-    'deleted': gettext('File deleted. Please select an image file.')
-  };
-
-  // Save all initial values of input details:
-  CONSTANTS.messages.initial = {};
-  $('#gallery-upload-modal .upload-media').each(function () {
-    var $self = $(this);
-    var type = $self.find('input').attr('name'),
-      details = $self.find('.details').html();
-    CONSTANTS.messages.initial[type] = details;
-  });
-
-  // jQuery helpers to show/hide content, provide flexibility in animation.
-  $.fn.showFade = function() {
-    this.removeClass('off').addClass('on');
-    return this;
-  };
-  $.fn.hideFade = function() {
-    this.removeClass('on').addClass('off');
-    return this;
-  };
-
-  /*
-  * Tiny helper function returns true/false depending on whether x is in
-  * array arr.
-  */
-  function in_array(needle, haystack) {
-    return (Array.prototype.indexOf.call(haystack, needle) !== -1);
+// Show/hide with fade classes (formerly $.fn.showFade/hideFade). Accepts a
+// single element or a NodeList/array.
+function forEachEl(target, fn) {
+  if (!target) {
+    return;
   }
+  if (target instanceof Element) {
+    fn(target);
+  } else {
+    Array.prototype.forEach.call(target, fn);
+  }
+}
 
-  /*
-  * This is the core of the gallery upload process.
-  *
-  * Summary:
-  * init: initialize DOM events, dispatch on draft vs new upload
-  * validateForm: prevent form submission if data is not valid
-  * isValidFile: boolean result for each type of file, checks extension
-  * isTooLarge: boolean result for each type of file, checks size
-  * startUpload: validates before upload and initiates progress
-  * uploadComplete: once upload is done, dispatch to success or error
-  * uploadSuccess: successful upload is shown in a preview
-  * uploadError: if an error occured, show a message and chance to re-upload
-  * deleteUpload: for already uploaded files, send delete request and
-  *               show the file <input>
-  * cancelUpload: cancel an upload that is in progress
-  * draftSetup: show/hide fields according to an existing draft
-  *             (image drafts take precedence)
-  * modalClose: when closing the modal, delete the draft and reset (below)
-  * modalReset: clean up the form in anticipation of a complete do-over
-  */
-  var GalleryUpload = {
-    forms: {$image: $('#gallery-upload-image')},
-    $modal: $('#gallery-upload-modal'),
-    // some mapping here for what to show/hide and when
-    /*
-    * -- check if a draft exists and open the modal if so
-    * -- set up DOM events: selecting media type, click to cancel upload
-    *    ajax uploads, require metadata, bind modal close event
-    */
-    init: function() {
-      var self = this;
-      self.forms.$image.showFade();
+function showFade(target) {
+  forEachEl(target, function (el) {
+    el.classList.remove('off');
+    el.classList.add('on');
+  });
+}
 
-      // Bind cancel upload event.
-      $('.progress a', self.$modal).on("click", function cancelUpload(ev) {
-        var type = $(this).data('type');
+function hideFade(target) {
+  forEachEl(target, function (el) {
+    el.classList.remove('on');
+    el.classList.add('off');
+  });
+}
+
+// A native bubbling CustomEvent so main.js's disableFormsOnSubmit can re-enable
+// the form once the async upload/delete completes.
+function fireAjaxComplete(form) {
+  if (form) {
+    form.dispatchEvent(new CustomEvent('ajaxComplete', { bubbles: true }));
+  }
+}
+
+// Uploads the user cancels mid-flight: the fetch can't be aborted the way the
+// old iframe src-reset did, so mark the input and ignore its late completion.
+var cancelledUploads = new WeakSet();
+
+function getCsrf() {
+  var el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+  return el ? el.value : '';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  var mediaTypeSelect = document.getElementById('media-type-select');
+  if (mediaTypeSelect) {
+    mediaTypeSelect.addEventListener('change', function () {
+      window.location = mediaTypeSelect.value;
+    });
+  }
+});
+
+var galleryModal = document.getElementById('gallery-upload-modal');
+
+var CONSTANTS = {
+  maxFilenameLength: 70, // truncated on display, if longer
+  // the remainder are set by input name, not file type
+  messages: {},
+  extensions: {
+    file: ['jpg', 'jpeg', 'png', 'gif'],
+  },
+  max_size: {
+    file: galleryModal ? galleryModal.dataset.maxImageSize : undefined,
+  },
+};
+
+var originalPosX, originalPosY;
+
+CONSTANTS.messages.server = gettext('Could not upload file. Please try again later.');
+CONSTANTS.messages.file = {
+  server: CONSTANTS.messages.server,
+  invalid: gettext('Invalid image. Please select a valid image file.'),
+  toolarge: gettext('Image too large. Please select a smaller image file.'),
+  cancelled: gettext('Upload cancelled. Please select an image file.'),
+  deleted: gettext('File deleted. Please select an image file.'),
+};
+
+// Save all initial values of input details:
+CONSTANTS.messages.initial = {};
+document.querySelectorAll('#gallery-upload-modal .upload-media').forEach(function (media) {
+  var input = media.querySelector('input');
+  var details = media.querySelector('.details');
+  if (input) {
+    CONSTANTS.messages.initial[input.getAttribute('name')] = details ? details.innerHTML : '';
+  }
+});
+
+/*
+* Tiny helper function returns true/false depending on whether x is in
+* array arr.
+*/
+function in_array(needle, haystack) {
+  return (Array.prototype.indexOf.call(haystack, needle) !== -1);
+}
+
+/*
+* This is the core of the gallery upload process. (See the original docstring
+* for the method-by-method summary.)
+*/
+var GalleryUpload = {
+  forms: { image: document.getElementById('gallery-upload-image') },
+  modal: document.getElementById('gallery-upload-modal'),
+
+  init: function () {
+    var self = this;
+    if (!self.modal || !self.forms.image) {
+      return;
+    }
+    showFade(self.forms.image);
+
+    // Bind cancel upload event.
+    self.modal.querySelectorAll('.progress a').forEach(function (a) {
+      a.addEventListener('click', function (ev) {
+        var type = a.dataset.type;
         ev.preventDefault();
-        self.cancelUpload($(this));
+        self.cancelUpload(a);
+        var form = a.closest('.upload-form');
         self.setInputMessage(
-          $(this).closest('.upload-form').find('input[name="' + type + '"]'),
+          form ? form.querySelector('input[name="' + type + '"]') : null,
           'cancelled'
         );
-        return false;
       });
+    });
 
-      // Bind ajax uploads for inputs
-      $('input[type="file"]', self.$modal).each(function() {
-        var $file = $(this), $form = $file.closest('.upload-form');
-        $file.ajaxSubmitInput({
-          url: $form.data('post-url'),
-          beforeSubmit: function($input) {
-            if (!self.isValidFile($file)) {
-              self.uploadError($file, 'invalid');
-              return false;
-            }
-            if (self.isTooLarge($file)) {
-              self.uploadError($file, 'toolarge');
-              return false;
-            }
-            return self.startUpload($file);
-          },
-          onComplete: function($input, iframeContent, options) {
-            $input.closest('form')
-            .trigger('ajaxComplete')[0].reset();
-            self.uploadComplete($file, iframeContent, options);
+    // Bind ajax uploads for inputs
+    self.modal.querySelectorAll('input[type="file"]').forEach(function (file) {
+      var uploadForm = file.closest('.upload-form');
+      // Detach the file input from the publish form: the file is uploaded
+      // async, so it must not take part in the form's validation/submission
+      // (the old code moved it into its own <form>). Otherwise, once it's
+      // hidden + emptied after upload, its `required` blocks the native submit
+      // with no visible validation message. `validateForm` still enforces that
+      // an image is uploaded before publishing.
+      file.setAttribute('form', 'gallery-file-detached');
+      ajaxSubmitInput(file, {
+        url: uploadForm ? uploadForm.dataset.postUrl : undefined,
+        beforeSubmit: function (input) {
+          if (!self.isValidFile(input)) {
+            self.uploadError(input, 'invalid');
+            return false;
           }
-        });
+          if (self.isTooLarge(input)) {
+            self.uploadError(input, 'toolarge');
+            return false;
+          }
+          return self.startUpload(input);
+        },
+        onComplete: function (input, content, options) {
+          fireAjaxComplete(input.closest('form'));
+          // Clear just the file input (the old code reset its wrapper form),
+          // leaving the main form's metadata fields intact.
+          input.value = '';
+          if (cancelledUploads.has(input)) {
+            cancelledUploads.delete(input);
+            return;
+          }
+          self.uploadComplete(input, content, options);
+        },
       });
+    });
 
-      // Deleting uploaded files sends ajax request.
-      jQuery.fn.makeCancelUpload = function(options) {
-        var $input = this,
-          field_name = $input.data('name');
-        if (!$input.is('input')) {
-          return $input;
-        }
-        if ($input.length > 1) {
-          // Apply to each individually.
-          $input.each(function() {
-            $(this).makeCancelUpload();
-          });
-          return $input;
-        }
+    // Metadata should be required.
+    self.modal.querySelectorAll('.metadata input, .metadata textarea').forEach(function (el) {
+      el.setAttribute('required', 'required');
+    });
 
-        var $form = $input.wrap('<form class="inline" method="POST" ' +
-        'action=""/>').closest('form');
-        // Also send the csrf token.
-        $form.append($('input[name="csrfmiddlewaretoken"]')
-        .first().clone());
-
-        $input.on('click', function deleteField(ev) {
-          ev.preventDefault();
-          self.deleteUpload($input);
-          return false;
-        });
-      };
-
-      // Metadata should be required.
-      self.$modal.find('.metadata input,.metadata textarea')
-      .attr('required', 'required');
-
-      // Closing the modal with top-right X cancels upload drafts
-      self.$modal.on('click', 'a.close', function(e) {
-        self.$modal.find('input[name="cancel"]:last').trigger("click");
-      });
-
-      // Submitting the form should call for validation first.
-      function validateSubmit(ev) {
-        if (!self.validateForm($(ev.target))) {
-          ev.preventDefault();
-          return false;
-        }
-      }
-      self.forms.$image.find('input[name="upload"]').on("click", validateSubmit);
-
-
-      if (self.forms.$image.hasClass('draft')) {
-        // draft
-        self.draftSetup();
-      } else {
-        // not draft
-        self.modalReset();
-      }
-
-    },
-    /*
-    * Validates the entire upload form before publishing a draft.
-    */
-    validateForm: function($input) {
-      var self = this,
-        $form = $input.closest('.upload-form');
-      // An image must be uploaded
-      if ($form[0] === self.forms.$image[0] &&
-          $form.find('.on input[type="file"]').length) {
-        return false;
-      }
-
-      return true;
-    },
-    /*
-    * Validates uploaded file meets criteria in mapping:
-    * -- correct extension
-    * -- enable submit button if form is ready to submit
-    * TODO: test in IE/no-file-API-supported browser
-    */
-    isValidFile: function ($input) {
-      var file = $input[0].files[0],
-        type = $input.attr('name');
-      var file_ext = file.name.split(/\./).pop().toLowerCase();
-      return (in_array(file_ext, CONSTANTS.extensions[type]));
-    },
-    isTooLarge: function ($input) {
-      var file = $input[0].files[0],
-        type = $input.attr('name');
-      return (file.size >= CONSTANTS.max_size[type]);
-    },
-    /*
-    * Fired when upload starts, if isValidFile and isTooLarge return true
-    * -- hide the file input
-    * -- show progress
-    * -- show metadata
-    * -- disable submit buttons (happens automatically)
-    * -- return the truncated filename for later use
-    */
-    startUpload: function($input) {
-      var $form = $input.closest('.upload-form'),
-        filename = $input.val().split(/[\/\\]/).pop(),
-        $progress = $('.progress', $form).filter(`.${$input.attr('name')}`);
-      // truncate filename
-      if (filename.length > CONSTANTS.maxFilenameLength) {
-        filename = filename.substr(0, CONSTANTS.maxFilenameLength) +
-        '...';
-      }
-      $form.find('.upload-media.' + $input.attr('name')).hideFade();
-      var message = interpolate(gettext('Uploading "%s"...'), [filename]);
-      $progress.find('.progress-message').text(message);
-      $progress.showFade();
-      $form.find('.metadata').show();
-      return {filename: filename};
-    },
-    /*
-    * Dispatches to uploadError or uploadSuccess depending on the
-    * response received from the ajax request.
-    */
-    uploadComplete: function($input, iframeContent, options) {
-      if (!iframeContent) {
+    // Closing the modal with top-right X cancels upload drafts
+    self.modal.addEventListener('click', function (e) {
+      var close = e.target.closest('a.close');
+      if (!close || !self.modal.contains(close)) {
         return;
       }
-      var iframeJSON, self = this;
-      try {
-        iframeJSON = JSON.parse(iframeContent);
-      } catch (err) {
-        self.uploadError($input, 'server');
+      var cancels = self.modal.querySelectorAll('input[name="cancel"]');
+      if (cancels.length) {
+        cancels[cancels.length - 1].click();
       }
+    });
 
-      var upStatus = iframeJSON.status;
-
-      if (upStatus !== 'success') {
-        self.uploadError($input, 'invalid');
-        return;
+    // Submitting the form should call for validation first.
+    function validateSubmit(ev) {
+      if (!self.validateForm(ev.target)) {
+        ev.preventDefault();
       }
-      // Success!
-      self.uploadSuccess($input, iframeJSON, options.filename);
-    },
-    /*
-    * Fired after upload is complete, if isValidFile and isNotLarge
-    * are true, and server returned succes.
-    * -- hide progress
-    * -- generate image preview
-    * -- create cancel button and bind its click event
-    */
-    uploadSuccess: function($input, iframeJSON, filename) {
-      var type = $input.attr('name'),
-        $form = $input.closest('.upload-form'),
-        $cancel_btn = $('input[name="cancel"]', $form),
-        $content,
-        $previewArea,
-        $previewImage,
-        $previewImageContainer,
-        upFile = iframeJSON.file;
-
-      // Upload is no longer in progress.
-      $form.find('.progress.' + type).hideFade();
-
-      // generate preview
-      if (type === 'file') {
-        // create thumbnail
-        $content = $('<img/>').attr({
-          class: 'preview',
-          alt: upFile.name,
-          title: upFile.name,
-          src: upFile.thumbnail_url
-        });
-      }
-      $previewArea = $(`.preview.${type}`, $form);
-      $previewImageContainer = $previewArea.find(".preview-image");
-      $previewImage = $previewImageContainer.find("img");
-      if ($previewImage.length) {
-        $previewImage.replaceWith($content);
-      } else {
-        $previewImageContainer.append($content);
-      }
-      // Create cancel button.
-      $cancel_btn.makeCancelUpload();
-      // Show the preview area and make it a draft
-      $previewArea.showFade();
-      $form.addClass('draft');
-      $form.find('input[name="upload"]').prop('disabled', false);
-    },
-    /*
-    * Little helper function to display a message next to the file input.
-    * Takes the file $input and a reason.
-    */
-    setInputMessage: function($input, reason) {
-      var type = $input.attr('name');
-      var message = CONSTANTS.messages[type][reason];
-      var $uploadDetails = $(`.upload-media.${type}`).find('div.details');
-      $uploadDetails.html(message);
-    },
-    /*
-    * Fired if isValidFile or isTooLarge is false or server returned failure.
-    * -- hide progress (i.e. click the cancel button)
-    * -- show an error message
-    */
-    uploadError: function($input, reason) {
-      var self = this,
-        type = $input.attr('name');
-      // Cancel existing upload.
-      $('.progress.' + type).find('a.' + type).trigger('click');
-      // Show an error message.
-      self.setInputMessage($input, reason);
-    },
-    /*
-    * Fired when deleting an uploaded image.
-    * -- hide preview of image
-    * -- send off an ajax request to remove the uploaded file
-    * -- show file input along with a message
-    */
-    deleteUpload: function($input) {
-      var self = this,
-        $cancelForm = $input.closest('form'),
-        $mediaForm = $input.closest('.upload-form'),
-        type = $input.data('name');
-      // Clean up all the preview and progress information.
-      $mediaForm.find('.preview.' + type).hideFade();
-
-      // Send ajax request over to remove file.
-      $.ajax({
-        url: $input.data('action'),
-        type: 'POST',
-        data: $cancelForm.serialize(),
-        dataType: 'json'
-        // Ignore the response, nothing to do.
-      });
-      self.setInputMessage(
-        $mediaForm.find('input[name="' + type + '"]'),
-        'deleted'
-       );
-      self._reUpload($mediaForm, type);
-    },
-    /*
-    * Fired after user closes modal or clicks to cancel an upload in
-    * progress.
-    * -- hide the progress
-    * -- show the file input
-    */
-    cancelUpload: function($a) {
-      var self = this,
-        type = $a.data('type'),
-        $form = $a.closest('form');
-      var $input = $form.find('input[name="' + type + '"]');
-      var form_target = $input.closest('form').attr('target');
-      $('iframe[name="' + form_target + '"]')[0].src = null;
-      $form.find('.progress.' + type).hideFade();
-      self._reUpload($form, type);
-    },
-    /*
-    * Abstracts common code for re-uploading image
-    * -- if no other uploads are in progress and none have completed,
-    *    hide the metadata fields
-    * -- show the file input
-    */
-    _reUpload: function($form, type) {
-      var hasUpload = $form.find('.preview').hasClass('on');
-      // If nothing else is being or has been uploaded, hide the metadata
-      // and enable the upload input.
-      if (!$form.find('.progress').hasClass('on') &&
-      !hasUpload) {
-        $form.find('.metadata').hide();
-        $form.removeClass('draft');
-      }
-      // finally, show the input again
-      $form.find('.upload-media.' + type).showFade();
-      $form.find('input[name="upload"]').prop('disabled', !hasUpload);
-    },
-    /*
-    * If there is a draft, this will be fired off from init()
-    * -- hide fields that are already set, use the data-[field] on the
-    *    form
-    * -- show metadata
-    * -- make cancel buttons work
-    * -- disable changing upload type
-    */
-    draftSetup: function() {
-      var self = this;
-      self.$modal.find('.progress').hideFade();
-      var $uploads = self.$modal.find('input[type="file"]');
-      $uploads.each(function () {
-        var $self = $(this);
-        var type = $self.attr('name'),
-          $form = $self.closest('.upload-form');
-        if ($form.data(type)) {
-          $form.find('.upload-media.' + type).hideFade();
-        } else {
-          $form.find('.upload-media.' + type).showFade();
-        }
-      });
-      if (self.forms.$image.hasClass('draft')) {
-        self.forms.$image.find('.upload-media').hideFade();
-      }
-      self.$modal.find('input[name="cancel"]').not('.kbox-cancel')
-      .makeCancelUpload();
-    },
-    /*
-    * Fired when user closes modal.
-    * -- delete selected draft or image
-    * -- call modalReset
-    */
-    modalClose: function() {
-      var self = this,
-        csrf = $('input[name="csrfmiddlewaretoken"]').first().val(),
-        $input = $('.upload-action input[name="cancel"]', self.$modal);
-      if (self.$modal.find('.draft').length) {
-        // If there's a draft to cancel.
-        $.ajax({
-          url: $input.data('action'),
-          type: 'POST',
-          data: 'csrfmiddlewaretoken=' + csrf,
-          dataType: 'json'
-          // Ignore the response, nothing to do.
-        });
-      }
-      self.modalReset();
-    },
-    /*
-    * Fired on modal close.
-    * -- reset all form elements and clean up
-    */
-    modalReset: function() {
-      var self = this,
-        $uploads = self.$modal.find('.upload-media');
-      self.$modal.find('.draft').removeClass('draft');
-      // Hide metadata
-      self.$modal.find('.metadata').hide();
-      // Clean up all the preview and progress information.
-      self.$modal.find('.progress,.preview').hideFade();
-      // Show all the file inputs with default messages.
-      $uploads.each(function () {
-        var $input = $(this).find('input[type="file"]'),
-          type = $input.attr('name');
-        $input.closest('form')[0].reset();
-        $(this).find('.details').html(CONSTANTS.messages.initial[type]);
-      }).find('.error').removeClass('error');
-      $uploads.showFade();
-      // Cancel all uploads in progress.
-      self.$modal.find('.progress a').each(function() {
-        self.cancelUpload($(this));
-      });
-      // Reset the forms.
-      self.forms.$image[0].reset();
     }
-  };
+    self.forms.image.querySelectorAll('input[name="upload"]').forEach(function (btn) {
+      btn.addEventListener('click', validateSubmit);
+    });
 
-  // Initialize GalleryUpload and kbox
-  GalleryUpload.init();
+    if (self.forms.image.classList.contains('draft')) {
+      self.draftSetup();
+    } else {
+      self.modalReset();
+    }
+  },
 
-  var kbox = $('#gallery-upload-modal').kbox({
+  /*
+  * Validates the entire upload form before publishing a draft.
+  */
+  validateForm: function (input) {
+    var self = this;
+    var form = input.closest('.upload-form');
+    // An image must be uploaded. Use :scope so the form's OWN `on` class isn't
+    // treated as the `.on` ancestor (native querySelectorAll, unlike jQuery's
+    // .find(), matches the ancestor part against the whole document) - otherwise
+    // this always matches the file input and blocks publishing.
+    if (form === self.forms.image && form.querySelectorAll(':scope .on input[type="file"]').length) {
+      return false;
+    }
+    return true;
+  },
+
+  /*
+  * Validates uploaded file meets criteria (correct extension).
+  */
+  isValidFile: function (input) {
+    var file = input.files[0];
+    var type = input.getAttribute('name');
+    var file_ext = file.name.split(/\./).pop().toLowerCase();
+    return in_array(file_ext, CONSTANTS.extensions[type]);
+  },
+
+  isTooLarge: function (input) {
+    var file = input.files[0];
+    var type = input.getAttribute('name');
+    return file.size >= CONSTANTS.max_size[type];
+  },
+
+  /*
+  * Fired when upload starts. Hides the file input, shows progress + metadata,
+  * returns the truncated filename for later use.
+  */
+  startUpload: function (input) {
+    cancelledUploads.delete(input);
+    var form = input.closest('.upload-form');
+    var type = input.getAttribute('name');
+    var filename = input.value.split(/[/\\]/).pop();
+    var progress = Array.prototype.filter.call(
+      form.querySelectorAll('.progress'),
+      function (p) { return p.classList.contains(type); }
+    )[0];
+    // truncate filename
+    if (filename.length > CONSTANTS.maxFilenameLength) {
+      filename = filename.substr(0, CONSTANTS.maxFilenameLength) + '...';
+    }
+    hideFade(form.querySelector('.upload-media.' + type));
+    var message = interpolate(gettext('Uploading "%s"...'), [filename]);
+    if (progress) {
+      var msgEl = progress.querySelector('.progress-message');
+      if (msgEl) {
+        msgEl.textContent = message;
+      }
+      showFade(progress);
+    }
+    form.querySelectorAll('.metadata').forEach(function (el) {
+      el.style.display = '';
+    });
+    return { filename: filename };
+  },
+
+  /*
+  * Dispatches to uploadError or uploadSuccess depending on the response.
+  */
+  uploadComplete: function (input, content, options) {
+    if (!content) {
+      return;
+    }
+    var self = this;
+    var json;
+    try {
+      json = JSON.parse(content);
+    } catch (err) {
+      self.uploadError(input, 'server');
+      return;
+    }
+
+    if (json.status !== 'success') {
+      self.uploadError(input, 'invalid');
+      return;
+    }
+    // Success!
+    self.uploadSuccess(input, json, options.filename);
+  },
+
+  /*
+  * Fired after a successful upload: hide progress, show an image preview,
+  * create the cancel button.
+  */
+  uploadSuccess: function (input, json, filename) {
+    var self = this;
+    var type = input.getAttribute('name');
+    var form = input.closest('.upload-form');
+    var upFile = json.file;
+
+    // Upload is no longer in progress.
+    hideFade(form.querySelector('.progress.' + type));
+
+    // generate preview
+    var content = null;
+    if (type === 'file') {
+      content = document.createElement('img');
+      content.className = 'preview';
+      content.setAttribute('alt', upFile.name);
+      content.setAttribute('title', upFile.name);
+      content.setAttribute('src', upFile.thumbnail_url);
+    }
+
+    var previewArea = form.querySelector('.preview.' + type);
+    var previewImageContainer = previewArea ? previewArea.querySelector('.preview-image') : null;
+    var previewImage = previewImageContainer ? previewImageContainer.querySelector('img') : null;
+    if (content && previewImageContainer) {
+      if (previewImage) {
+        previewImage.replaceWith(content);
+      } else {
+        previewImageContainer.appendChild(content);
+      }
+    }
+
+    // Create cancel button.
+    form.querySelectorAll('input[name="cancel"]').forEach(function (cancel) {
+      self.makeCancelUpload(cancel);
+    });
+
+    // Show the preview area and make it a draft.
+    showFade(previewArea);
+    form.classList.add('draft');
+    form.querySelectorAll('input[name="upload"]').forEach(function (btn) {
+      btn.disabled = false;
+    });
+  },
+
+  /*
+  * Display a message next to the file input.
+  */
+  setInputMessage: function (input, reason) {
+    if (!input) {
+      return;
+    }
+    var type = input.getAttribute('name');
+    var message = CONSTANTS.messages[type][reason];
+    document.querySelectorAll('.upload-media.' + type + ' div.details').forEach(function (details) {
+      details.innerHTML = message;
+    });
+  },
+
+  /*
+  * Cancel an existing upload and show an error message.
+  */
+  uploadError: function (input, reason) {
+    var self = this;
+    var type = input.getAttribute('name');
+    // Cancel existing upload.
+    document.querySelectorAll('.progress.' + type + ' a.' + type).forEach(function (a) {
+      a.click();
+    });
+    // Show an error message.
+    self.setInputMessage(input, reason);
+  },
+
+  /*
+  * Deleting an uploaded image: hide the preview, POST the delete, show the
+  * file input again with a message.
+  */
+  deleteUpload: function (input) {
+    var self = this;
+    var mediaForm = input.closest('.upload-form');
+    var type = input.dataset.name;
+    // Clean up all the preview and progress information.
+    if (mediaForm) {
+      hideFade(mediaForm.querySelector('.preview.' + type));
+    }
+
+    // Send delete request; ignore the response, nothing to do.
+    apiFetch(input.dataset.action, {
+      method: 'POST',
+      data: { csrfmiddlewaretoken: getCsrf() },
+      dataType: 'json',
+    }).catch(function () {});
+
+    self.setInputMessage(
+      mediaForm ? mediaForm.querySelector('input[name="' + type + '"]') : null,
+      'deleted'
+    );
+    self._reUpload(mediaForm, type);
+  },
+
+  /*
+  * Cancel an upload that's in progress (or just close): hide the progress,
+  * show the file input.
+  */
+  cancelUpload: function (a) {
+    var self = this;
+    var type = a.dataset.type;
+    var form = a.closest('form');
+    var input = form ? form.querySelector('input[name="' + type + '"]') : null;
+    if (input) {
+      // Abort the in-flight upload (the fetch equivalent of the old iframe
+      // src-reset) so the server doesn't save an orphaned draft, and ignore its
+      // completion if the abort lands too late to stop it.
+      cancelledUploads.add(input);
+      abortUpload(input);
+    }
+    var mediaForm = a.closest('.upload-form') || form;
+    if (mediaForm) {
+      hideFade(mediaForm.querySelector('.progress.' + type));
+      self._reUpload(mediaForm, type);
+    }
+  },
+
+  /*
+  * Common code for re-uploading: if nothing else is/has uploaded, hide the
+  * metadata fields; always show the file input again.
+  */
+  _reUpload: function (form, type) {
+    if (!form) {
+      return;
+    }
+    var preview = form.querySelector('.preview');
+    var hasUpload = !!(preview && preview.classList.contains('on'));
+    var progress = form.querySelector('.progress');
+    var uploading = !!(progress && progress.classList.contains('on'));
+    if (!uploading && !hasUpload) {
+      form.querySelectorAll('.metadata').forEach(function (el) {
+        el.style.display = 'none';
+      });
+      form.classList.remove('draft');
+    }
+    // finally, show the input again
+    showFade(form.querySelector('.upload-media.' + type));
+    form.querySelectorAll('input[name="upload"]').forEach(function (btn) {
+      btn.disabled = !hasUpload;
+    });
+  },
+
+  /*
+  * If there is a draft, fired from init().
+  */
+  draftSetup: function () {
+    var self = this;
+    hideFade(self.modal.querySelectorAll('.progress'));
+    self.modal.querySelectorAll('input[type="file"]').forEach(function (fileInput) {
+      var type = fileInput.getAttribute('name');
+      var form = fileInput.closest('.upload-form');
+      if (form.dataset[type]) {
+        hideFade(form.querySelector('.upload-media.' + type));
+      } else {
+        showFade(form.querySelector('.upload-media.' + type));
+      }
+    });
+    if (self.forms.image.classList.contains('draft')) {
+      hideFade(self.forms.image.querySelectorAll('.upload-media'));
+    }
+    self.modal.querySelectorAll('input[name="cancel"]').forEach(function (cancel) {
+      if (!cancel.classList.contains('kbox-cancel')) {
+        self.makeCancelUpload(cancel);
+      }
+    });
+  },
+
+  /*
+  * Wire a cancel <input> to delete its upload on click (formerly the
+  * jQuery.fn.makeCancelUpload extension).
+  */
+  makeCancelUpload: function (input) {
+    var self = this;
+    if (!input || input.tagName !== 'INPUT') {
+      return;
+    }
+    input.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      self.deleteUpload(input);
+    });
+  },
+
+  /*
+  * Fired when the user closes the modal: delete the selected draft, reset.
+  */
+  modalClose: function () {
+    var self = this;
+    // Abort any in-flight uploads first: closing mid-upload otherwise skips the
+    // draft cancel below (there's no `.draft` yet) and the upload would land and
+    // orphan a draft.
+    self.modal.querySelectorAll('input[type="file"]').forEach(function (input) {
+      abortUpload(input);
+    });
+    var cancelInput = self.modal.querySelector('.upload-action input[name="cancel"]');
+    if (self.modal.querySelector('.draft')) {
+      // If there's a draft to cancel.
+      apiFetch(cancelInput ? cancelInput.dataset.action : undefined, {
+        method: 'POST',
+        data: { csrfmiddlewaretoken: getCsrf() },
+        dataType: 'json',
+      }).catch(function () {});
+    }
+    self.modalReset();
+  },
+
+  /*
+  * Reset all form elements and clean up.
+  */
+  modalReset: function () {
+    var self = this;
+    self.modal.querySelectorAll('.draft').forEach(function (el) {
+      el.classList.remove('draft');
+    });
+    // Hide metadata
+    self.modal.querySelectorAll('.metadata').forEach(function (el) {
+      el.style.display = 'none';
+    });
+    // Clean up all the preview and progress information.
+    hideFade(self.modal.querySelectorAll('.progress, .preview'));
+    // Show all the file inputs with default messages.
+    var uploads = self.modal.querySelectorAll('.upload-media');
+    uploads.forEach(function (media) {
+      var input = media.querySelector('input[type="file"]');
+      var type = input ? input.getAttribute('name') : null;
+      var form = input ? input.closest('form') : null;
+      if (form) {
+        form.reset();
+      }
+      var details = media.querySelector('.details');
+      if (details && type) {
+        details.innerHTML = CONSTANTS.messages.initial[type];
+      }
+      media.querySelectorAll('.error').forEach(function (el) {
+        el.classList.remove('error');
+      });
+    });
+    uploads.forEach(showFade);
+    // Cancel all uploads in progress.
+    self.modal.querySelectorAll('.progress a').forEach(function (a) {
+      self.cancelUpload(a);
+    });
+    // Reset the form.
+    self.forms.image.reset();
+  },
+};
+
+// Initialize GalleryUpload and kbox
+GalleryUpload.init();
+
+if (galleryModal) {
+  new KBox(galleryModal, {
     position: 'none',
     preOpen: function () {
       originalPosX = window.scrollX;
       originalPosY = window.scrollY;
-      window.scroll({top: 0});
+      window.scroll({ top: 0 });
       return true;
     },
     preClose: function () {
       window.scroll(originalPosX, originalPosY);
       GalleryUpload.modalClose();
       return true;
-    }
+    },
   });
+}
 
-  // Open modal window from media page
-  if (document.location.hash === '#upload' ||
-  $('#gallery-upload-type').hasClass('draft') ||
-  $('body').hasClass('submitted')) {
-    $('#btn-upload').trigger("click");
+// Open modal window from media page. Use a native click: KBox's open trigger
+// is now a native addEventListener handler, which jQuery's .trigger('click')
+// doesn't reliably invoke.
+if (document.location.hash === '#upload' ||
+  (document.getElementById('gallery-upload-type') && document.getElementById('gallery-upload-type').classList.contains('draft')) ||
+  document.body.classList.contains('submitted')) {
+  var btnUpload = document.getElementById('btn-upload');
+  if (btnUpload) {
+    btnUpload.click();
   }
-
-})(jQuery);
+}

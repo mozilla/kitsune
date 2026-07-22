@@ -1,27 +1,25 @@
 import Marky from "sumo/js/markup";
-import "sumo/js/libs/jquery.lazyload";
+import { lazyload } from "sumo/js/utils/lazyload";
 
 /*
  * JS for Groups app
  */
 
-(function($) {
+'use strict';
 
-  'use strict';
+function init() {
+  // Marky for information edit:
+  var buttons = Marky.allButtons();
+  Marky.createCustomToolbar('.editor-tools', '#id_information', buttons);
 
-  function init() {
-    // Marky for information edit:
-    var buttons = Marky.allButtons();
-    Marky.createCustomToolbar('.editor-tools', '#id_information', buttons);
+  initGroupsTree();
 
-    initGroupsTree();
+  // Initialize lazy loading for images in group information
+  lazyload();
 
-    // Initialize lazy loading for images in group information
-    $("img.lazy").lazyload();
-
-    // Initialize avatar preview functionality
-    initAvatarPreview();
-  }
+  // Initialize avatar preview functionality
+  initAvatarPreview();
+}
 
   function initAvatarPreview() {
     const fileInput = document.getElementById('id_avatar');
@@ -111,6 +109,8 @@ import "sumo/js/libs/jquery.lazyload";
     });
   }
 
-  $(init);
-
-})(jQuery);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}

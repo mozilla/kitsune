@@ -11,6 +11,7 @@ global.self = dom.window;
 global.document = dom.window.document;
 global.navigator = dom.window.navigator;
 global.sessionStorage = dom.window.sessionStorage;
+global.localStorage = dom.window.localStorage;
 global.history = dom.window.history;
 global.Element = dom.window.Element;
 global.HTMLElement = dom.window.HTMLElement;
@@ -23,12 +24,15 @@ global.matchMedia = () => ({
   addListener : () =>{},
   removeListener: () =>{},
 });
-global.jQuery = global.$ = require("jquery");
 require("../kitsune/sumo/static/sumo/js/i18n");
 global.gettext = dom.window.gettext;
 global.interpolate = dom.window.interpolate;
 global.jsdom = dom;
 global.window.fetch = () => {};
+// Mirror the stub onto the Node global so modules calling bare `fetch(...)`
+// (rather than `window.fetch`) don't hit the network, and so both can be
+// replaced with sinon.stub(window, "fetch") / sinon.stub(global, "fetch").
+global.fetch = global.window.fetch;
 global.CustomEvent = dom.window.CustomEvent;
 global.requestAnimationFrame = () => {};
 global.window.URL.createObjectURL = () => {};

@@ -1,4 +1,4 @@
-import "sumo/js/libs/jquery.autoresize";
+import { autoResize } from "sumo/js/utils/autoresize";
 import AjaxPreview from "sumo/js/ajaxpreview";
 import Marky from "sumo/js/markup";
 
@@ -7,54 +7,76 @@ import Marky from "sumo/js/markup";
  * Private messaging.
  */
 
-$(function() {
+function hideAll(selector) {
+  document.querySelectorAll(selector).forEach(function (el) {
+    el.style.display = "none";
+  });
+}
+
+function showAll(selector) {
+  document.querySelectorAll(selector).forEach(function (el) {
+    el.style.display = "";
+  });
+}
+
+function init() {
   // Show the ajax preview on the new message page.
   Marky.createSimpleToolbar('#new-message .editor-tools', '#id_message');
-  new AjaxPreview($('#preview-btn'), {
-    changeHash: false
+  new AjaxPreview(document.getElementById('preview-btn'), {
+    changeHash: false,
   });
 
   // Hide reply button and shrink the textarea.
-  var $area = $('#read-message textarea#id_message');
-  $area.attr('placeholder', gettext('Reply...'));
-  $('#read-message .editor-tools').hide();
-  $('#read-message input[type=submit]').hide();
+  var area = document.querySelector('#read-message textarea#id_message');
+  if (area) {
+    area.setAttribute('placeholder', gettext('Reply...'));
+    hideAll('#read-message .editor-tools');
+    hideAll('#read-message input[type=submit]');
 
-  // Show the orginal button and expanding textarea.
-  $area.one('focus', function() {
-    $area.autoResize({minHeight: 150}).addClass('focused');
-    $('#read-message .editor-tools').show();
-    $('#read-message input[type=submit]').show();
-    Marky.createSimpleToolbar('#read-message .editor-tools', '#id_message', {privateMessaging: true});
-    new AjaxPreview($('#preview-btn'), {
-      changeHash: false
-    });
-  });
+    // Show the original button and expanding textarea.
+    area.addEventListener('focus', function () {
+      autoResize(area, { minHeight: 150 });
+      area.classList.add('focused');
+      showAll('#read-message .editor-tools');
+      showAll('#read-message input[type=submit]');
+      Marky.createSimpleToolbar('#read-message .editor-tools', '#id_message', { privateMessaging: true });
+      new AjaxPreview(document.getElementById('preview-btn'), {
+        changeHash: false,
+      });
+    }, { once: true });
+  }
 
   // Character counter for message box.
-  var $summaryCount = $('#remaining-characters');
-  var $summaryBox = $($summaryCount.data('input'));
-  var maxCount = $summaryCount.data('max-characters');
-  var updateCount = function() {
-    var currentCount = $summaryBox.val().length;
-    var delta = maxCount - currentCount;
-    var message;
+  var summaryCount = document.getElementById('remaining-characters');
+  var summaryBox = summaryCount ? document.querySelector(summaryCount.dataset.input) : null;
+  if (summaryCount && summaryBox) {
+    var maxCount = parseInt(summaryCount.dataset.maxCharacters, 10);
+    var updateCount = function () {
+      var currentCount = summaryBox.value.length;
+      var delta = maxCount - currentCount;
 
-    if (delta < 0) {
-      delta = 0;
-    }
-    message = interpolate(gettext('%s characters remaining'), [delta]);
-    $summaryCount.text(message);
-    if (maxCount - currentCount >= 10) {
-      $summaryCount.css('color', 'black');
-    } else {
-      $summaryCount.css('color', 'red');
-      if (currentCount >= maxCount) {
-        $summaryBox.val($summaryBox.val().substr(0, maxCount));
+      if (delta < 0) {
+        delta = 0;
       }
-    }
-  };
+      var message = interpolate(gettext('%s characters remaining'), [delta]);
+      summaryCount.textContent = message;
+      if (maxCount - currentCount >= 10) {
+        summaryCount.style.color = 'black';
+      } else {
+        summaryCount.style.color = 'red';
+        if (currentCount >= maxCount) {
+          summaryBox.value = summaryBox.value.substr(0, maxCount);
+        }
+      }
+    };
 
-  updateCount();
-  $summaryBox.on('input', updateCount);
-});
+    updateCount();
+    summaryBox.addEventListener('input', updateCount);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}

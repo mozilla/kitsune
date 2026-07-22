@@ -1,151 +1,116 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
-// .editable .edit-mode {
-//   display: none;
-// }
-
-/* Example tokeninput style #2: Facebook style */
-ul.token-input-list-facebook {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  appearance: none;
-  position: relative;
-  padding: p.$spacing-xs;
+// Styling for the user/group recipient autocompletes (users.autocomplete.js and
+// messages.autocomplete.js), which use Tom Select. Scoped under the
+// `user-autocomplete` class that Tom Select copies from the original <input>
+// onto its .ts-wrapper, so these match the app's field style without affecting
+// the app's other Tom Select widgets.
+.ts-wrapper.user-autocomplete {
+  // The old widget was a <ul>, so it inherited Protocol's list bottom margin;
+  // the Tom Select <div> wrapper doesn't, so restore it here.
+  margin-bottom: 1.25em;
   width: 100%;
-  min-height: p.$spacing-2xl;
-  border: 2px solid var(--field-border-color-default);
-  border-radius: var(--global-radius);
-  background-color: var(--color-white);
-  color:#0c0c0d;
-  outline:0;
-  transition-duration:150ms;
-  transition-property:border-color;
-  @include p.font-size(16px);
 
-  &:hover {
-    border-color: var(--field-border-color-hover);
-  }
-
-  &:focus-within {
-    border-color: transparent;
-    box-shadow: var(--focus-shadow);
-  }
-
-  input {
-    &:hover,
-    &:focus {
-      border-color: transparent;
-    }
-
-    &:focus {
-      box-shadow: none;
-    }
-  }
-}
-
-ul.token-input-list-facebook li input {
-    border: 0;
-    width: 100px;
-    padding: 3px p.$spacing-sm;
-    background: white;
-    margin: 2px 0;
-    -webkit-appearance: caret;
-}
-
-li.token-input-token-facebook {
-    overflow: hidden;
-    height: auto !important;
-    height: 15px;
-    margin: 3px !important;
-    padding: 1px 3px;
-    background-color: #eff2f7;
-    color: var(--color-text);
-    cursor: default;
-    border: 1px solid var(--color-border);
-    font-size: 14px;
-    border-radius: var(--global-radius);
-    float: left;
-    white-space: nowrap;
-}
-
-li.token-input-token-facebook p {
-    display: inline;
-    padding: 0;
-    margin: 0;
-}
-
-li.token-input-token-facebook span {
-    margin-left: 5px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-li.token-input-selected-token-facebook {
-  background-color: var(--color-link);
-  color: var(--color-white);
-}
-
-li.token-input-input-token-facebook {
-    float: left;
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-}
-
-div.token-input-dropdown-facebook {
-    @include c.elevation-01;
-    position: absolute;
-    width: 400px;
-    background-color: var(--color-white);
-    overflow: hidden;
-    border-radius: 0 0 var(--global-radius) var(--global-radius);
-    cursor: default;
-    font-size: 14px;
-    z-index: 1;
-    text-align: left;
-}
-
-div.token-input-dropdown-facebook p {
-    margin: 0;
-    padding: p.$spacing-sm;
-    font-weight: bold;
-    color: var(--color-text);
-}
-
-div.token-input-dropdown-facebook ul {
-    margin: 0;
-    padding: 0;
-}
-
-div.token-input-dropdown-facebook ul li {
-    padding: p.$spacing-sm;
-    margin: 0;
-    list-style-type: none;
+  // The control box - matches the app's text-field style (incl. the field's
+  // horizontal padding, so the placeholder/text isn't flush to the border).
+  .ts-control {
     display: flex;
     align-items: center;
-
-    img {
-      width: 40px;
-      height: 40px;
-      margin-right: p.$spacing-sm;
-    }
-}
-
-div.token-input-dropdown-facebook ul li em {
-    font-weight: bold;
-    font-style: normal;
-}
-
-div.token-input-dropdown-facebook ul li.token-input-selected-dropdown-item-facebook {
-    background-color: var(--color-link);
-    color: var(--color-white);
+    padding: p.$spacing-xs p.$spacing-sm;
+    min-height: p.$spacing-2xl;
+    box-shadow: none;
+    border: 2px solid var(--field-border-color-default);
     border-radius: var(--global-radius);
+    background-color: var(--color-white);
+    color: #0c0c0d;
+    flex-wrap: wrap;
+    transition: border-color 150ms;
+    @include p.font-size(16px);
+
+    &:hover {
+      border-color: var(--field-border-color-hover);
+    }
+
+    input {
+      @include p.font-size(16px);
+    }
+  }
+
+  &.focus .ts-control {
+    box-shadow: var(--focus-shadow);
+    border-color: transparent;
+  }
+
+  // Selected recipient chips. Scoped with .plugin-remove_button so these
+  // outrank Tom Select's default item AND active-item rules (its active state
+  // is a bright blue we don't want); resting + active both use a grey pill.
+  &.plugin-remove_button .ts-control .item {
+    display: inline-flex;
+    align-items: center;
+    margin: 3px;
+    padding: 1px p.$spacing-xs;
+    box-shadow: none;
+    border: 0;
+    border-radius: var(--global-radius);
+    background: #eff2f7;
+    color: var(--color-text);
+    text-shadow: none;
+    @include c.text-body-sm;
+
+    &.active {
+      background: #e4e8ee;
+      color: var(--color-text);
+    }
+
+    // The remove_button plugin's "x".
+    .remove {
+      margin-left: 5px;
+      padding: 0 4px;
+      border: 0;
+      font-weight: bold;
+      color: inherit;
+      cursor: pointer;
+    }
+  }
+
+  // Suggestions dropdown.
+  .ts-dropdown {
+    @include c.elevation-01;
+    margin: 0;
+    border: 0;
+    border-radius: 0 0 var(--global-radius) var(--global-radius);
+    background-color: var(--color-white);
+    font-size: 14px;
+
+    .option {
+      display: flex;
+      align-items: center;
+      padding: p.$spacing-sm;
+
+      img {
+        margin-right: p.$spacing-sm;
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    .active {
+      border-radius: var(--global-radius);
+      background-color: var(--color-link);
+      color: var(--color-white);
+    }
+
+    .no-results {
+      padding: p.$spacing-sm;
+      color: var(--color-text);
+    }
+  }
 }
 
+// Shared by both dropdown option renderers (users + messages).
 div.name_search {
-    display: inline-flex;
-    padding: 5px;
-    align-items: center;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px;
 }

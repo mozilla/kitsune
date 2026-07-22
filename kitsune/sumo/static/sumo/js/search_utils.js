@@ -1,83 +1,78 @@
 import CachedXHR from "sumo/js/cached_xhr";
 
+var cxhr = new CachedXHR();
+
 export default function Search(baseUrl, params) {
   this.baseUrl = baseUrl;
-  this.params = $.extend({}, params);
+  this.params = Object.assign({}, params);
 }
 
-(function($) {
+Search.prototype._buildQueryUrl = function(query, params) {
+  var url = this.baseUrl + '?q=' + query;
+  if (params) {
+    url += '&' + params;
+  }
+  return url;
+};
 
-  var cxhr = new CachedXHR();
+Search.prototype.setParam = function(key, value) {
+  this.params[key] = value;
+  return this;
+};
 
-  Search.prototype._buildQueryUrl = function(query, params) {
-    var url = this.baseUrl + '?q=' + query;
-    if (params) {
-      url += '&' + params;
-    }
-    return url;
-  };
+Search.prototype.setParams = function(params) {
+  Object.assign(this.params, params);
+  return this;
+};
 
-  Search.prototype.setParam = function(key, value) {
-    this.params[key] = value;
-    return this;
-  };
+Search.prototype.getParam = function(key) {
+  return this.params[key];
+};
 
-  Search.prototype.setParams = function(params) {
-    $.extend(this.params, params);
-    return this;
-  };
+Search.prototype.unsetParam = function(key) {
+  delete this.params[key];
+  return this;
+};
 
-  Search.prototype.getParam = function(key) {
-    return this.params[key];
-  };
+Search.prototype.clearLastQuery = function() {
+  this.lastQuery = '';
+  this.lastParams = '';
+};
 
-  Search.prototype.unsetParam = function(key) {
-    delete this.params[key];
-    return this;
-  };
+Search.prototype.hasLastQuery = function() {
+  return !!this.lastQuery;
+};
 
-  Search.prototype.clearLastQuery = function() {
-    this.lastQuery = '';
-    this.lastParams = '';
-  };
+Search.prototype.lastQueryUrl = function() {
+  return this._buildQueryUrl(this.lastQuery, this.lastParams);
+};
 
-  Search.prototype.hasLastQuery = function() {
-    return !!this.lastQuery;
-  };
+Search.prototype.queryUrl = function() {
+  return this._buildQueryUrl(this.lastQuery, this.serializeParams());
+};
 
-  Search.prototype.lastQueryUrl = function() {
-    return this._buildQueryUrl(this.lastQuery, this.lastParams);
-  };
+Search.prototype.serializeParams = function(extra) {
+  var params = Object.assign({}, this.params, extra);
+  var paramStrings = [];
+  Object.keys(params).forEach(function(key) {
+    paramStrings.push(key + '=' + params[key]);
+  });
+  return paramStrings.join('&');
+};
 
-  Search.prototype.queryUrl = function() {
-    return this._buildQueryUrl(this.lastQuery, this.serializeParams());
-  };
+Search.prototype.query = function(string, callback) {
+  string ||= this.lastQuery;
+  var data = Object.assign({}, this.params, {q: string});
 
-  Search.prototype.serializeParams = function(extra) {
-    var params = $.extend({}, this.params, extra);
-    var keys = Object.keys(params);
-    var paramStrings = [];
-    $(keys).each(function() {
-      paramStrings.push(this + '=' + params[this]);
-    });
-    return paramStrings.join('&');
-  };
+  this.lastQuery = string;
+  this.lastParams = this.serializeParams({q: string});
 
-  Search.prototype.query = function(string, callback) {
-    string ||= this.lastQuery;
-    var data = $.extend({}, this.params, {q: string});
+  cxhr.request(this.baseUrl, {
+    cacheKey: this.lastParams,
+    data: data,
+    dataType: 'json',
+    success: callback
+  });
 
-    this.lastQuery = string;
-    this.lastParams = this.serializeParams({q: string});
-
-    cxhr.request(this.baseUrl, {
-      cacheKey: this.lastParams,
-      data: data,
-      dataType: 'json',
-      success: callback
-    });
-
-    return this;
-  };
-
-})(jQuery);
+  return this;
+};

@@ -83,6 +83,12 @@ describe('k', () => {
       expect(getSearchQuery(params, referrer)).to.equal('cookies');
     });
 
+    it('should return an empty string for a search referrer with no s param', () => {
+      // Otherwise callers assign undefined to a hidden input's .value, which
+      // stringifies to "undefined".
+      expect(getSearchQuery({as: 's'}, 'search')).to.equal('');
+    });
+
     it('should return an empty string fro inproduct referrers', () => {
       let params = {as: 'u', s: 'wrong'};
       let referrer = 'inproduct';

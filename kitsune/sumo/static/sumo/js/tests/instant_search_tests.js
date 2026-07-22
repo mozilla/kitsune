@@ -7,6 +7,16 @@ import CachedXHR from "sumo/js/cached_xhr";
 
 use(chaiLint);
 
+// The module registers its handlers with native document.addEventListener, and
+// jQuery's .trigger() only invokes jQuery-registered handlers - so drive the
+// module with a real bubbling DOM event instead. Construct it from window.Event
+// (jsdom's class) rather than the bare global Event (Node's), so it passes
+// jsdom's dispatchEvent brand-check; global.Event can't be overridden because
+// chai's plugin system relies on Node's Event.
+function fireInput(el) {
+  el.dispatchEvent(new window.Event('input', { bubbles: true }));
+}
+
 describe('instant search', () => {
   describe('', () => {
     let clock;
@@ -16,15 +26,14 @@ describe('instant search', () => {
       clock = sinon.useFakeTimers();
       cxhrMock = sinon.fake();
       sinon.replace(CachedXHR.prototype, "request", cxhrMock);
-      $('body').empty().html(`
+      document.body.innerHTML = `
         <div>
           <div id="main-content"></div>
           <form data-instant-search="form" action="" method="get" class="simple-search-form">
             <input type="search" name="q" class="searchbox" id="search-q">
             <button type="submit" title="Search" class="submit-button">Search</button>
           </form>
-        </div>`
-      );
+        </div>`;
     });
 
     afterEach(() => {
@@ -33,24 +42,25 @@ describe('instant search', () => {
     });
 
     it('shows and hides the main content correctly', () => {
-      const $searchInput = $('#search-q');
-      expect($('#main-content').css('display')).to.not.equal('none');
+      const searchInput = document.getElementById('search-q');
+      const mainContent = document.getElementById('main-content');
+      expect(mainContent.style.display).to.not.equal('none');
 
-      $searchInput.val('test');
-      $searchInput.trigger('input');
-      expect($('#main-content').css('display')).to.equal('none');
+      searchInput.value = 'test';
+      fireInput(searchInput);
+      expect(mainContent.style.display).to.equal('none');
 
-      $searchInput.val('');
-      $searchInput.trigger('input');
-      expect($('#main-content').css('display')).to.not.equal('none');
+      searchInput.value = '';
+      fireInput(searchInput);
+      expect(mainContent.style.display).to.not.equal('none');
     });
 
     it('shows the search query at the top of the page', () => {
       const query = 'search query';
 
-      const $searchInput = $('#search-q');
-      $searchInput.val(query);
-      $searchInput.trigger('input');
+      const searchInput = document.getElementById('search-q');
+      searchInput.value = query;
+      fireInput(searchInput);
 
       clock.tick(600);
       // call the callback to actually render things
@@ -59,16 +69,16 @@ describe('instant search', () => {
         q: query,
       });
 
-      const $searchResultHeader = $('.search-results-heading');
-      expect($searchResultHeader.find('span').first().text()).to.equal(query);
+      const queryElem = document.querySelector('.search-results-heading span');
+      expect(queryElem.textContent).to.equal(query);
     });
 
     it('escapes the search query at the top of the page', () => {
       const query = '<';
 
-      const $searchInput = $('#search-q');
-      $searchInput.val(query);
-      $searchInput.trigger('input');
+      const searchInput = document.getElementById('search-q');
+      searchInput.value = query;
+      fireInput(searchInput);
 
       clock.tick(600);
       // call the callback to actually render things

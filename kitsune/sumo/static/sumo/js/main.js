@@ -1,7 +1,3 @@
-import "sumo/js/libs/jquery.cookie";
-import "sumo/js/libs/jquery.placeholder";
-import _each from "underscore/modules/each";
-
 export const getQueryParamsAsDict = function (url) {
   // Parse the url's query parameters into a dict. Mostly stolen from:
   // http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript/2880929#2880929
@@ -49,7 +45,9 @@ export const getReferrer = function (urlParams) {
 export const getSearchQuery = function (urlParams, referrer) {
   // If the referrer is a search page, return the search keywords.
   if (referrer === 'search') {
-    return urlParams.s;
+    // Default to "" so callers don't assign undefined to a field's .value
+    // (which would stringify to "undefined").
+    return urlParams.s || '';
   } else if (referrer !== 'inproduct') {
     return getQueryParamsAsDict(referrer).q || '';
   }
@@ -97,36 +95,32 @@ export const safeInterpolate = function (fmt, obj, named) {
 };
 
 
-// Pass CSRF token in XHR header
-$.ajaxSetup({
-  beforeSend: function (xhr, settings) {
-    var csrfElem = document.querySelector('input[name=csrfmiddlewaretoken]');
-    var csrf = $.cookie('csrftoken');
-    if (!csrf && csrfElem) {
-      csrf = csrfElem.value;
-    }
-    if (csrf) {
-      xhr.setRequestHeader('X-CSRFToken', csrf);
-    }
-  }
-});
-
-$(function () {
+function onReady() {
   layoutTweaks();
   /* Focus form field when clicking on error message. */
-  $('#content ul.errorlist a').on("click", function () {
-    $($(this).attr('href')).focus();
-    return false;
+  document.querySelectorAll('#content ul.errorlist a').forEach(function (link) {
+    link.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      var target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        target.focus();
+      }
+    });
   });
 
-  if ($('body').data('readonly')) {
-    var $forms = $('form[method=post]');
-    $forms.find('input, button, select, textarea').attr('disabled', 'disabled');
-    $forms.find('input[type=image]').css('opacity', .5);
-    $('div.editor-tools').remove();
+  if (document.body.dataset.readonly === 'true') {
+    document.querySelectorAll('form[method=post]').forEach(function (form) {
+      form.querySelectorAll('input, button, select, textarea').forEach(function (el) {
+        el.setAttribute('disabled', 'disabled');
+      });
+      form.querySelectorAll('input[type=image]').forEach(function (el) {
+        el.style.opacity = 0.5;
+      });
+    });
+    document.querySelectorAll('div.editor-tools').forEach(function (el) {
+      el.remove();
+    });
   }
-
-  $('input[placeholder]').placeholder();
 
   initAutoSubmitSelects();
   disableFormsOnSubmit();
@@ -134,11 +128,23 @@ $(function () {
   userMessageUI();
 
   /* Skip to search (a11y) */
-  $('#skip-to-search').on('click', function (ev) {
-    ev.preventDefault();
-    $('input[name=q]').last().get(0).focus();
-  });
-});
+  var skip = document.getElementById('skip-to-search');
+  if (skip) {
+    skip.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      var qInputs = document.querySelectorAll('input[name=q]');
+      if (qInputs.length) {
+        qInputs[qInputs.length - 1].focus();
+      }
+    });
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', onReady);
+} else {
+  onReady();
+}
 
 window.addEventListener('popstate', function () {
   setTimeout(layoutTweaks, 0);
@@ -147,9 +153,16 @@ window.addEventListener('popstate', function () {
 /*
   * Initialize some selects so that they auto-submit on change.
   */
-function initAutoSubmitSelects() {
-  $('select.autosubmit').on('change keyup', function () {
-    $(this).closest('form').trigger('submit');
+export function initAutoSubmitSelects() {
+  document.querySelectorAll('select.autosubmit').forEach(function (select) {
+    var submitForm = function () {
+      var form = select.closest('form');
+      if (form) {
+        form.requestSubmit();
+      }
+    };
+    select.addEventListener('change', submitForm);
+    select.addEventListener('keyup', submitForm);
   });
 }
 
@@ -159,34 +172,35 @@ function initAutoSubmitSelects() {
   *
   * NOTE: We can't disable the buttons because it prevents their name/value
   * from being submitted and we depend on those in some views.
+  *
   */
 function disableFormsOnSubmit() {
-  $('form').on("submit", function (ev) {
-    var $this = $(this);
-    // Get method, defaulting to GET if not specified
-    let method = ($this.attr('method') || 'get').toLowerCase();
-
-    if (method === 'post') {
-      if ($this.data('disabled')) {
-        ev.preventDefault();
-      } else {
-        $this.data('disabled', true).addClass('disabled');
+  document.querySelectorAll('form').forEach(function (form) {
+    form.addEventListener('submit', function (ev) {
+      // Only guard POST forms; default to GET if not specified.
+      var method = (form.getAttribute('method') || 'get').toLowerCase();
+      if (method !== 'post') {
+        return;
       }
+
+      // The `disabled` class doubles as the "already submitting" flag.
+      if (form.classList.contains('disabled')) {
+        ev.preventDefault();
+        return;
+      }
+      form.classList.add('disabled');
 
       function enableForm() {
-        $this.data('disabled', false).removeClass('disabled');
+        form.classList.remove('disabled');
       }
 
-      $this.ajaxComplete(function () {
-        enableForm();
-        $this.off('ajaxComplete');
-      });
-
-      // Re-enable the form when users leave the page in case they come back.
-      $(window).on('unload', enableForm);
-      // Re-enable the form after 5 seconds in case something else went wrong.
+      // Re-enable after an async completion (upload/gallery dispatch a native
+      // 'ajaxComplete' event on their forms), when the user leaves the page in
+      // case they come back, and after 5 seconds as a failsafe.
+      form.addEventListener('ajaxComplete', enableForm, { once: true });
+      window.addEventListener('unload', enableForm);
       setTimeout(enableForm, 5000);
-    }
+    });
   });
 }
 
@@ -204,43 +218,53 @@ function remove_item(from_list, match_against) {
   }
 }
 
-function userMessageUI() {
+export function userMessageUI() {
   // Add a close button to all messages.
-  $('.user-messages > li').each(function () {
-    var $msg = $(this);
-    $('<div>', { 'class': 'close-button' }).appendTo($msg);
+  document.querySelectorAll('.user-messages > li').forEach(function (msg) {
+    var closeButton = document.createElement('div');
+    closeButton.className = 'close-button';
+    msg.appendChild(closeButton);
   });
 
-  function key($msg) {
-    return 'user-message::dismissed::' + $msg.attr('id');
+  function key(msg) {
+    return 'user-message::dismissed::' + msg.getAttribute('id');
   }
 
   // Some messages can be dismissed permanently.
-  $('.user-messages .dismissible').each(function () {
-    var $msg = $(this);
-    if (!localStorage.getItem(key($msg))) {
-      $msg.show();
+  document.querySelectorAll('.user-messages .dismissible').forEach(function (msg) {
+    if (!localStorage.getItem(key(msg))) {
+      msg.style.display = '';
     }
   });
-  $('.user-messages').on('click', '.dismissible .dismiss', function (e) {
-    var $msg = $(this).parent();
-    localStorage.setItem(key($msg), true);
-    $msg.hide();
+  document.querySelectorAll('.user-messages').forEach(function (container) {
+    container.addEventListener('click', function (e) {
+      var dismiss = e.target.closest('.dismissible .dismiss');
+      if (!dismiss) {
+        return;
+      }
+      var msg = dismiss.parentNode;
+      localStorage.setItem(key(msg), true);
+      msg.style.display = 'none';
+    });
   });
 }
 
 function layoutTweaks() {
   // Adjust the height of cards to be consistent within a group.
-  $('.card-grid').each(function () {
-    var $cards = $(this).children('li');
+  document.querySelectorAll('.card-grid').forEach(function (grid) {
+    var cards = Array.from(grid.children).filter(function (el) {
+      return el.tagName === 'LI';
+    });
     var max = 0;
-    $cards.each(function () {
-      var h = $(this).height();
+    cards.forEach(function (card) {
+      var h = card.offsetHeight;
       if (h > max) {
         max = h;
       }
     });
-    $cards.height(max);
+    cards.forEach(function (card) {
+      card.style.height = max + 'px';
+    });
   });
 }
 

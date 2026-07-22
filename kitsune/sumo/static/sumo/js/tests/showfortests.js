@@ -10,12 +10,13 @@ use(chaiLint);
 /*
 * Returns an object with the same prototype and properties as a ShowFor
 * object, but for which the ShowFor constructor is not called. It will
-* be bound to the passed $sandbox.
+* be bound to the passed container element.
 */
-function showForNoInit($sandbox) {
+function showForNoInit(sandbox) {
   let sf = Object.create(ShowFor.prototype);
-  sf.$container = $sandbox;
+  sf.container = sandbox;
   sf.state = {};
+  sf.showFuncs = new WeakMap();
   return sf;
 }
 
@@ -31,7 +32,7 @@ describe('ShowFor', () => {
 
   beforeEach(() => {
     // Wow. That's a lot of data. Can we make this smaller?
-    $('body').empty().html(`
+    document.body.innerHTML = `
       <div>
         <span class="for" data-for="fx24"></span>
         <span class="for" data-for="fx24,win"></span>
@@ -114,10 +115,9 @@ describe('ShowFor', () => {
             }
           }
         </script>
-      </div>`
-    );
+      </div>`;
 
-    showFor = showForNoInit($('body'));
+    showFor = showForNoInit(document.body);
 
     sinon.stub(navigator, "userAgent").get(() =>
       "Mozilla/5.0 (Windows NT 5.1;) Gecko/20100101 Firefox/25.0"
@@ -128,6 +128,7 @@ describe('ShowFor', () => {
 
   afterEach(() => {
     sinon.restore();
+    document.body.innerHTML = '';
   });
 
   describe('loadData', () => {
@@ -158,8 +159,8 @@ describe('ShowFor', () => {
       });
 
       it('should populate the UI with the values from BrowserDetect', () => {
-        expect($('.product[data-product=firefox] select.version').val()).to.equal('version:fx26');
-        expect($('.product[data-product=firefox] select.platform').val()).to.equal('platform:winxp');
+        expect(document.querySelector('.product[data-product=firefox] select.version').value).to.equal('version:fx26');
+        expect(document.querySelector('.product[data-product=firefox] select.platform').value).to.equal('platform:winxp');
       });
     });
 
@@ -173,8 +174,8 @@ describe('ShowFor', () => {
       });
 
       it('should populate the UI with the values from BrowserDetect', () => {
-        expect($('.product[data-product=mobile] select.version').val()).to.equal('version:m23');
-        expect($('.product[data-product=mobile] select.platform')).to.have.length(0);
+        expect(document.querySelector('.product[data-product=mobile] select.version').value).to.equal('version:m23');
+        expect(document.querySelectorAll('.product[data-product=mobile] select.platform')).to.have.length(0);
       });
     });
   });
@@ -210,10 +211,9 @@ describe('ShowFor', () => {
     });
 
     it('should update after a change', () => {
-      $('[data-product="mobile"] select.version').val('version:m26');
-      $('[data-product="firefox"] select.platform').val('platform:linux');
+      document.querySelector('[data-product="mobile"] select.version').value = 'version:m26';
+      document.querySelector('[data-product="firefox"] select.platform').value = 'platform:linux';
 
-      // and expect(showFor.matchesCriteria)).to.beGain(
       showFor.updateState();
 
       expect(showFor.state).to.deep.equal({
@@ -236,6 +236,18 @@ describe('ShowFor', () => {
         },
       });
     });
+
+    it('does not throw for a .product without a checkbox (non-showfor element)', () => {
+      // ShowFor's container defaults to <body>, so unrelated .product elements
+      // on the page get scanned too; they have no checkbox.
+      document.body.insertAdjacentHTML(
+        'beforeend',
+        '<div class="product" data-product="stray"></div>'
+      );
+
+      expect(function () { showFor.updateState(); }).to.not.throw();
+      expect(showFor.state.stray.enabled).to.equal(undefined);
+    });
   });
 
   describe('initShowFuncs', () => {
@@ -253,12 +265,10 @@ describe('ShowFor', () => {
     });
 
     it('should bind `show-func` functions to `.for` elements', () => {
-      // Don't use an arrow function here, because jQuery.forEach passes
-      // the element as `this`.
-      $('.for').each(function() {
-        let callFunc = $(this).data('show-func');
+      document.querySelectorAll('.for').forEach((elem) => {
+        let callFunc = showFor.showFuncs.get(elem);
         expect(callFunc).to.be.instanceof(Function);
-        $(this).data('show-func')();
+        callFunc();
       });
       expect(showFor.matchesCriteria.args).to.deep.equal([
         [['fx24']],
@@ -279,21 +289,21 @@ describe('ShowFor', () => {
     });
 
     it('should show and hide elements correctly', () => {
-      let $elems = $('.for');
+      let elems = document.querySelectorAll('.for');
       let yes = () => true;
       let no = () => false;
 
-      $elems.eq(0).data('show-func', yes);
-      $elems.eq(1).data('show-func', no);
-      $elems.eq(2).data('show-func', no);
-      // Number 3 doesn't get a show-func, so it should default to visible
+      showFor.showFuncs.set(elems[0], yes);
+      showFor.showFuncs.set(elems[1], no);
+      showFor.showFuncs.set(elems[2], no);
+      // Number 3 keeps its matchesCriteria show-func, which resolves to visible.
 
       showFor.showAndHide();
 
-      expect($elems.eq(0).css('display')).to.equal('inline');
-      expect($elems.eq(1).css('display')).to.equal('none');
-      expect($elems.eq(2).css('display')).to.equal('none');
-      expect($elems.eq(3).css('display')).to.equal('inline');
+      expect(elems[0].style.display).to.equal('');
+      expect(elems[1].style.display).to.equal('none');
+      expect(elems[2].style.display).to.equal('none');
+      expect(elems[3].style.display).to.equal('');
     });
   });
 

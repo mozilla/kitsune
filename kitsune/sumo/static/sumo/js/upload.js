@@ -1,147 +1,206 @@
-import "sumo/js/libs/jquery.ajaxupload";
+import { ajaxSubmitInput, wrapDeleteInput } from "sumo/js/ajaxupload";
 import dialogSet from "sumo/js/upload-dialog";
 import KBox from "sumo/js/kbox";
 
-$(function () {
-  var UPLOAD = {
-    max_filename_length: 80,  // max filename length in characters
-    error_title_up: gettext('Error uploading image'),
-    error_title_del: gettext('Error deleting image'),
-    error_login: gettext('Please check you are signed in, and try again.')
-  };
+var UPLOAD = {
+  max_filename_length: 80, // max filename length in characters
+  error_title_up: gettext("Error uploading image"),
+  error_title_del: gettext("Error deleting image"),
+  // Shown when the response is OK but unparseable - typically a session-expired
+  // redirect to a login page.
+  error_login: gettext("Please check you are signed in, and try again."),
+  // Shown on an HTTP/transport failure with no usable message.
+  error_server: gettext("There was an error. Please try again in a moment."),
+};
 
-  $('input.delete', 'div.attachments-list').each(function () {
-    var $form = $(this).closest('form');
-    $(this).wrapDeleteInput({
+// A native bubbling CustomEvent so main.js's disableFormsOnSubmit can re-enable
+// the form once the async upload/delete completes.
+function fireAjaxComplete(form) {
+  if (form) {
+    form.dispatchEvent(new CustomEvent("ajaxComplete", { bubbles: true }));
+  }
+}
+
+export function init() {
+  document.querySelectorAll("div.attachments-list input.delete").forEach(function (input) {
+    var form = input.closest("form");
+    wrapDeleteInput(input, {
       error_title_del: UPLOAD.error_title_del,
       error_login: UPLOAD.error_login,
       onComplete: function () {
-        $form.trigger('ajaxComplete');
-      }
+        fireAjaxComplete(form);
+      },
     });
   });
 
   // Upload a file on input value change
-  $('div.attachments-upload input[type="file"]').each(function () {
-    var $form = $(this).closest('form');
-    $form.removeAttr('enctype');
-    $(this).ajaxSubmitInput({
-      url: $(this).closest('.attachments-upload').data('post-url'),
-      beforeSubmit: function ($input) {
-        var $divUpload = $input.closest('.attachments-upload'),
-          $options = {
-            progress: $divUpload.find('.upload-progress'),
-            add: $divUpload.find('.add-attachment'),
-            adding: $divUpload.find('.adding-attachment'),
-            loading: $divUpload.find('.uploaded')
-          };
+  document.querySelectorAll('div.attachments-upload input[type="file"]').forEach(function (fileInput) {
+    var form = fileInput.closest("form");
+    if (form) {
+      form.removeAttribute("enctype");
+    }
+    var uploadDiv = fileInput.closest(".attachments-upload");
+    ajaxSubmitInput(fileInput, {
+      url: uploadDiv ? uploadDiv.dataset.postUrl : undefined,
+      beforeSubmit: function (input) {
+        var divUpload = input.closest(".attachments-upload");
+        var opts = {
+          progress: divUpload.querySelector(".upload-progress"),
+          add: divUpload.querySelector(".add-attachment"),
+          adding: divUpload.querySelector(".adding-attachment"),
+          loading: divUpload.querySelector(".uploaded"),
+        };
 
         // truncate filename
-        $options.filename = $input.val().split(/[\/\\]/).pop();
-        if ($options.filename.length > UPLOAD.max_filename_length) {
-          $options.filename = $options.filename
-            .substr(0, UPLOAD.max_filename_length - 3) + '...';
+        opts.filename = input.value.split(/[/\\]/).pop();
+        if (opts.filename.length > UPLOAD.max_filename_length) {
+          opts.filename = opts.filename.substr(0, UPLOAD.max_filename_length - 3) + "...";
         }
 
-        $options.add.hide();
-        $options.adding.text(interpolate(gettext('Uploading "%s"...'),
-          [$options.filename]))
-          .show();
-        $options.loading.removeClass('empty');
-        $options.progress.addClass('show');
-        return $options;
+        if (opts.add) {
+          opts.add.style.display = "none";
+        }
+        if (opts.adding) {
+          opts.adding.textContent = interpolate(gettext('Uploading "%s"...'), [opts.filename]);
+          opts.adding.style.display = "";
+        }
+        if (opts.loading) {
+          opts.loading.classList.remove("empty");
+        }
+        if (opts.progress) {
+          opts.progress.classList.add("show");
+        }
+        return opts;
       },
-      onComplete: function ($input, iframeContent, $options) {
-        var iframeJSON;
-        var upFile;
-        var $thumbnail;
-        var upStatus;
-
-        $input.closest('form')[0].reset();
-        if (!iframeContent) {
+      onComplete: function (input, content, opts, ok) {
+        // Clear just the file input, not the whole form. The old
+        // jquery.ajaxupload plugin submitted an isolated wrapper form and reset
+        // that; input.closest("form") is now the real form (e.g. the AAQ
+        // question form), so form.reset() would wipe the user's entries. Mirror
+        // gallery.js.
+        input.value = "";
+        if (!content) {
+          // No usable body: silent on a network error (ok is false with a null
+          // body), but surface a generic error on an HTTP failure.
+          if (ok === false) {
+            dialogSet(UPLOAD.error_server, UPLOAD.error_title_up);
+          }
           return;
         }
 
+        var json;
         try {
-          iframeJSON = $.parseJSON(iframeContent);
+          json = JSON.parse(content);
         } catch (err) {
-          if (err.substr(0, 12) === 'Invalid JSON') {
-            dialogSet(UPLOAD.error_login, UPLOAD.error_title_up);
-          }
+          // Unparseable body: a sign-in hint when the response was itself OK (a
+          // session-expired login redirect), a generic error on an HTTP failure.
+          dialogSet(ok ? UPLOAD.error_login : UPLOAD.error_server, UPLOAD.error_title_up);
+          return;
         }
 
-        upStatus = iframeJSON.status;
+        if (opts.progress) {
+          opts.progress.classList.remove("show");
+        }
 
-        $options.progress.removeClass('show');
-        if (upStatus === 'success') {
-          upFile = iframeJSON.file;
+        if (json.status === "success") {
+          var upFile = json.file;
           // HTML decode the name.
-          upFile.name = $('<div/>').html(upFile.name).text();
-          $thumbnail = $('<img/>')
-            .attr({
-              alt: upFile.name, title: upFile.name,
-              width: upFile.width, height: upFile.height,
-              src: upFile.thumbnail_url
-            })
-            .removeClass('upload-progress')
-            .wrap('<a class="image" href="' + upFile.url + '"></a>')
-            .closest('a')
-            .wrap('<div class="attachment"></div>')
-            .closest('div')
-            .addClass('attachment')
-            .insertBefore($options.progress);
-          $thumbnail.prepend(
-            '<input type="submit" class="delete" data-url="' +
-            upFile.delete_url + '" value="&#x2716;"/>');
-          $thumbnail.children().first().wrapDeleteInput({
+          var decoder = document.createElement("div");
+          decoder.innerHTML = upFile.name;
+          upFile.name = decoder.textContent;
+
+          // <div class="attachment"><input class="delete"/><a class="image"><img/></a></div>
+          var attachment = document.createElement("div");
+          attachment.className = "attachment";
+          var anchor = document.createElement("a");
+          anchor.className = "image";
+          anchor.setAttribute("href", upFile.url);
+          var img = document.createElement("img");
+          img.setAttribute("alt", upFile.name);
+          img.setAttribute("title", upFile.name);
+          img.setAttribute("width", upFile.width);
+          img.setAttribute("height", upFile.height);
+          img.setAttribute("src", upFile.thumbnail_url);
+          anchor.appendChild(img);
+          attachment.appendChild(anchor);
+
+          var del = document.createElement("input");
+          del.type = "submit";
+          del.className = "delete";
+          del.setAttribute("data-url", upFile.delete_url);
+          del.value = "✖";
+          attachment.insertBefore(del, attachment.firstChild);
+
+          if (opts.progress && opts.progress.parentNode) {
+            opts.progress.parentNode.insertBefore(attachment, opts.progress);
+          }
+
+          wrapDeleteInput(del, {
             error_title_del: UPLOAD.error_title_del,
             error_login: UPLOAD.error_login,
             onComplete: function () {
-              $form.trigger('ajaxComplete');
-            }
+              fireAjaxComplete(form);
+            },
           });
         } else {
-          dialogSet(iframeJSON.message, UPLOAD.error_title_up);
+          dialogSet(json.message, UPLOAD.error_title_up);
         }
 
-        $options.adding.hide();
-        $options.add.show();
+        if (opts.adding) {
+          opts.adding.style.display = "none";
+        }
+        if (opts.add) {
+          opts.add.style.display = "";
+        }
 
-        $form.trigger('ajaxComplete');
-      }
+        fireAjaxComplete(form);
+      },
     });
   });
 
-  // hijack the click on the thumb and open modal kbox
-  function initImageModal() {
-    $('article').on('click', '.attachments-list a.image', function (ev) {
+  initImageModal();
+}
+
+// hijack the click on the thumb and open modal kbox
+function initImageModal() {
+  document.querySelectorAll("article").forEach(function (article) {
+    article.addEventListener("click", function (ev) {
+      var link = ev.target.closest(".attachments-list a.image");
+      if (!link || !article.contains(link)) {
+        return;
+      }
       ev.preventDefault();
       // There may be more than one article element when bubbling up.
       ev.stopPropagation();
-      let originalPosX, originalPosY;
-      let imgUrl = $(this).attr('href');
-      let html = `<img class="image-attachment" src="${imgUrl}" />`;
-      let kbox = new KBox(html, {
+      var originalPosX, originalPosY;
+      var imgUrl = link.getAttribute("href");
+      var html = `<img class="image-attachment" src="${imgUrl}" />`;
+      var kbox = new KBox(html, {
         modal: true,
-        title: gettext('Image Attachment'),
-        id: 'image-attachment-kbox',
+        title: gettext("Image Attachment"),
+        id: "image-attachment-kbox",
         destroy: true,
-        position: 'none', // Disable automatic positioning
+        position: "none", // Disable automatic positioning
         closeOnOutClick: true,
         closeOnEsc: true,
         preOpen: function () {
           originalPosX = window.scrollX;
           originalPosY = window.scrollY;
-          window.scroll({top: 0});
+          window.scroll({ top: 0 });
           return true;
         },
         preClose: function () {
           window.scroll(originalPosX, originalPosY);
           return true;
-        }
+        },
       });
       kbox.open();
     });
-  }
-  initImageModal();
-});
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}

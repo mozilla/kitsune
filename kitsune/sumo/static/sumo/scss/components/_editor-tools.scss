@@ -183,6 +183,38 @@ section.marky {
     max-width: none;
   }
 
+  // Anchor the type-ahead dropdown (inserted after the article <input>) to its
+  // list item, replacing the old jQuery-UI autocomplete menu.
+  ol li.field {
+    position: relative;
+  }
+
+  .marky-autocomplete {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    max-height: 220px;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--color-white);
+    border: 1px solid var(--field-border-color-default);
+    border-radius: var(--global-radius);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+    li {
+      padding: p.$spacing-xs p.$spacing-sm;
+      cursor: pointer;
+
+      &.active,
+      &:hover {
+        background: var(--color-shade-bg);
+      }
+    }
+  }
+
   .kbox-cancel {
     margin-right: 0;
   }
