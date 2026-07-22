@@ -72,9 +72,12 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
       initCodeMirrorEditor();
     }
 
+    if ($body.is('.edit, .translate')) {
+      initDraft();
+    }
+
     if ($body.is('.translate')) {  // Translate page
       initToggleDiff();
-      initTranslationDraft();
     }
 
     initEditingTools();
@@ -605,7 +608,7 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
     }
   }
 
-  function initTranslationDraft() {
+  function initDraft() {
     var $draftButton = $('.btn-draft'),
       url = $('.btn-draft').data('draft-url'),
       $draftMessage = $('#draft-message');
@@ -616,7 +619,8 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
         bothData = $('#both_form').serializeArray(),
         docData = $('#doc_form').serializeArray(),
         revData = $('#rev_form').serializeArray(),
-        totalData = $.extend(bothData, docData, revData);
+        editData = $('#edit_form').serializeArray(),
+        totalData = $.extend(bothData, docData, revData, editData);
 
       $draftMessage.html(image + message).removeClass('success error').addClass('info').show()
       $.post(url, totalData)
