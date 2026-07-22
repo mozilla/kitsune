@@ -2339,6 +2339,62 @@ class TranslateTests(TestCase):
 
         self.assertEqual(200, response.status_code)
 
+    def test_translate_based_on_unapproved_revision_as_locale_reviewer(self):
+        """
+        A locale reviewer without global wiki permissions can open the
+        translate form pre-filled from an unapproved revision of the
+        translation, e.g. via the pencil link in the revision history.
+
+        The based-on revision lookup spans both the parent and the translation,
+        so it must be told to evaluate the reviewer's permissions in the
+        translation's locale rather than falling back to global Django
+        permissions (which a locale reviewer doesn't have).
+        """
+        translation = DocumentFactory(parent=self.d, locale="fr")
+        # An unapproved revision, authored by someone other than the reviewer,
+        # so only the locale-reviewer permission (not the creator condition)
+        # can make it visible.
+        unapproved_rev = RevisionFactory(document=translation, is_approved=False)
+
+        reviewer = UserFactory()
+        LocaleFactory(locale="fr").reviewers.add(reviewer)
+        self.client.login(username=reviewer.username, password="testpass")
+
+        url = reverse(
+            "wiki.new_revision_based_on",
+            locale="fr",
+            args=[translation.slug, unapproved_rev.id],
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(200, response.status_code)
+
+    def test_translate_based_on_others_unapproved_revision_denied(self):
+        """
+        The based-on revision check stays at the revision level, not the
+        document level. A contributor who can see an unapproved translation
+        (because they authored one of its revisions) still can't base a new
+        translation on a *different* contributor's unapproved revision.
+        """
+        translation = DocumentFactory(parent=self.d, locale="fr")
+        author = UserFactory()
+        other = UserFactory()
+        RevisionFactory(document=translation, creator=author, is_approved=False)
+        others_rev = RevisionFactory(document=translation, creator=other, is_approved=False)
+
+        # "author" gets past the document-level visibility check because they
+        # authored a revision of the (still unapproved) translation.
+        self.client.login(username=author.username, password="testpass")
+
+        url = reverse(
+            "wiki.new_revision_based_on",
+            locale="fr",
+            args=[translation.slug, others_rev.id],
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(404, response.status_code)
+
     def test_skip_unready_when_first_translation(self):
         """Never offer an unready-for-localization revision as initial
         translation source text."""

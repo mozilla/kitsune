@@ -1017,7 +1017,10 @@ def translate(request, document_slug, revision_id=None):
         if revision_id:
             allowed_docs = [parent_doc] if doc is None else [parent_doc, doc]
             base_rev = get_visible_revision_or_404(
-                user, pk=revision_id, document__in=allowed_docs
+                user,
+                pk=revision_id,
+                document__in=allowed_docs,
+                permission_locale=request.LANGUAGE_CODE,
             )
             rev_initial.update(
                 content=base_rev.content, summary=base_rev.summary, keywords=base_rev.keywords
