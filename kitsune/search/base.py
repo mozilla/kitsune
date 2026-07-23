@@ -80,7 +80,7 @@ class SumoDocument(DSLDocument):
     @classmethod
     def migrate_writes(cls, timestamp=None):
         """Create a new index for this document, and point the write alias at it."""
-        timestamp = timestamp or datetime.now(tz=timezone.utc)
+        timestamp = timestamp or datetime.now(tz=UTC)
         name = f"{cls.Index.base_name}_{timestamp.strftime('%Y%m%d%H%M%S')}"
         cls.init(index=name)
         cls._update_alias(cls.Index.write_alias, name)
