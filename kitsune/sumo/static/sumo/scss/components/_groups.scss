@@ -559,7 +559,14 @@ body:has(#group-profile) {
       .action-form {
         max-height: 0;
         overflow: hidden;
-        transition: max-height 300ms ease;
+        // Animate the reveal via max-height, but flip overflow to visible once
+        // expanded so the Tom Select username dropdown can extend past this
+        // container instead of being clipped. The "allow-discrete" keeps overflow
+        // hidden while the box is animating open. Browsers that lack it just reveal
+        // without the slide, and the dropdown still escapes.
+        transition:
+          max-height 300ms ease,
+          overflow 300ms allow-discrete;
 
         form {
           display: flex;
@@ -598,6 +605,7 @@ body:has(#group-profile) {
 
       .action-toggle:checked ~ .action-form {
         max-height: 300px;
+        overflow: visible;
       }
 
       .action-toggle:checked ~ .action-button {
