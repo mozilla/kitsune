@@ -142,7 +142,6 @@ class Question(AAQBase):
     tags = BigVocabTaggableManager(related_name="questions")
 
     html_cache_key = "question:html:%s"
-    tags_cache_key = "question:tags:%s"
     images_cache_key = "question:images:%s"
     contributors_cache_key = "question:contributors:%s"
     moderation_timestamp = models.DateTimeField(default=None, null=True)
@@ -168,12 +167,10 @@ class Question(AAQBase):
     def set_needs_info(self):
         """Mark question as NEEDS_INFO."""
         self.tags.add(config.NEEDS_INFO_TAG_NAME)
-        self.clear_cached_tags()
 
     def unset_needs_info(self):
         """Remove NEEDS_INFO."""
         self.tags.remove(config.NEEDS_INFO_TAG_NAME)
-        self.clear_cached_tags()
 
     @property
     def needs_info(self):
@@ -182,9 +179,6 @@ class Question(AAQBase):
     @property
     def content_parsed(self):
         return _content_parsed(self, self.locale)
-
-    def clear_cached_tags(self):
-        cache.delete(self.tags_cache_key % self.id)
 
     def clear_cached_contributors(self):
         cache.delete(self.contributors_cache_key % self.id)
@@ -227,7 +221,9 @@ class Question(AAQBase):
         """
         for key, value in list(kwargs.items()):
             if update:
-                QuestionMetaData.objects.update_or_create(question=self, name=key, defaults={"value": value})
+                QuestionMetaData.objects.update_or_create(
+                    question=self, name=key, defaults={"value": value}
+                )
             else:
                 QuestionMetaData.objects.create(question=self, name=key, value=value)
         self._metadata = None
@@ -264,7 +260,13 @@ class Question(AAQBase):
         metadata = self.metadata
         # We hard-code slugs here instead of checking whether the fields are
         # in self.product_config.extra_fields to avoid costly requests to the DB.
-        if self.product_slug in ("firefox", "firefox-enterprise", "mobile", "ios", "focus-firefox"):
+        if self.product_slug in (
+            "firefox",
+            "firefox-enterprise",
+            "mobile",
+            "ios",
+            "focus-firefox",
+        ):
             raw_version = metadata.get("ff_version")
         elif self.product_slug in ("thunderbird", "thunderbird-android"):
             raw_version = metadata.get("tb_version")
@@ -652,7 +654,7 @@ class Question(AAQBase):
                 for hit in search[:3].execute().hits
             ]
             cache.set(key, documents, settings.CACHE_LONG_TIMEOUT)
-        except (ApiError, TransportError):
+        except ApiError, TransportError:
             log.exception("ES MLT related_documents")
             documents = []
 
@@ -699,7 +701,7 @@ class Question(AAQBase):
                 for hit in search[:3].execute().hits
             ]
             cache.set(key, questions, settings.CACHE_LONG_TIMEOUT)
-        except (ApiError, TransportError):
+        except ApiError, TransportError:
             log.exception("ES MLT related_questions")
             questions = []
 

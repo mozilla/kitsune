@@ -359,7 +359,7 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     try:
         questions_page = simple_paginate(request, question_qs, per_page=config.QUESTIONS_PER_PAGE)
-    except (PageNotAnInteger, EmptyPage):
+    except PageNotAnInteger, EmptyPage:
         # If we aren't on page 1, redirect there.
         # TODO: Is 404 more appropriate?
         if request.GET.get("page", "1") != "1":
@@ -820,7 +820,7 @@ def edit_details(request, question_id):
         # Ensure that questions are enabled for this product and locale.
         if not (locale and product.questions_enabled(locale)):
             raise ValueError
-    except (Product.DoesNotExist, Topic.DoesNotExist, ValueError):
+    except Product.DoesNotExist, Topic.DoesNotExist, ValueError:
         return HttpResponseBadRequest()
 
     question = get_object_or_404(Question, pk=question_id)
@@ -833,7 +833,6 @@ def edit_details(request, question_id):
     question.locale = locale
     question.save()
     question.auto_tag()
-    question.clear_cached_tags()
     return redirect(reverse("questions.details", kwargs={"question_id": question_id}))
 
 
@@ -1179,7 +1178,6 @@ def edit_question(request, question_id):
             question.update_topic_counter += 1
             question.save()
             question.auto_tag()
-            question.clear_cached_tags()
 
         return JsonResponse({"updated_topic": str(new_topic)})
 
@@ -1211,7 +1209,6 @@ def edit_question(request, question_id):
         question.clear_mutable_metadata()
         question.add_metadata(**form.cleaned_metadata)
 
-        question.clear_cached_tags()
         question.auto_tag()
 
         return HttpResponseRedirect(
@@ -1485,7 +1482,7 @@ def add_tag(request, question_id):
         return HttpResponseRedirect(reverse("questions.details", args=[question_id]))
 
     try:
-        question, canonical_name = _add_tag(request, question_id)
+        _, canonical_name = _add_tag(request, question_id)
     except SumoTag.DoesNotExist:
         template_data = _answers_data(request, question_id)
         template_data["tag_adding_error"] = UNAPPROVED_TAG
@@ -1493,7 +1490,6 @@ def add_tag(request, question_id):
         return render(request, "questions/question_details.html", template_data)
 
     if canonical_name:  # success
-        question.clear_cached_tags()
         return HttpResponseRedirect(reverse("questions.details", args=[question_id]))
 
     # No tag provided
@@ -1512,8 +1508,7 @@ def add_tag_async(request, question_id):
 
     if request.content_type == "application/json":
         tag_ids = json.loads(request.body).get("tags", [])
-        question, tags = _add_tag(request, question_id, tag_ids)
-        question.clear_cached_tags()
+        _, tags = _add_tag(request, question_id, tag_ids)
         if not tags:
             return JsonResponse({"error": "Some tags do not exist or are invalid"}, status=400)
         return JsonResponse({"message": "Tags updated successfully.", "data": {"tags": tags}})
@@ -1526,7 +1521,6 @@ def add_tag_async(request, question_id):
         )
 
     if canonical_name:
-        question.clear_cached_tags()
         tag = SumoTag.objects.get(name=canonical_name)
         tag_url = urlparams(
             reverse("questions.list", args=[question.product_slug]), tagged=tag.slug
@@ -1554,7 +1548,6 @@ def remove_tag(request, question_id):
         name = names[0][len(prefix) :]
         question = get_object_or_404(Question, pk=question_id)
         question.tags.remove(name)
-        question.clear_cached_tags()
 
     return HttpResponseRedirect(reverse("questions.details", args=[question_id]))
 
@@ -1579,13 +1572,11 @@ def remove_tag_async(request, question_id):
             return JsonResponse({"error": "Tag does not exist."}, status=400)
 
         question.tags.remove(tag)
-        question.clear_cached_tags()
         return JsonResponse({"message": f"Tag '{tag.name}' removed successfully."})
 
     name = request.POST.get("name")
     if name:
         question.tags.remove(name)
-        question.clear_cached_tags()
         return HttpResponse("{}", content_type="application/json")
     return HttpResponseBadRequest(
         json.dumps({"error": str(NO_TAG)}), content_type="application/json"
