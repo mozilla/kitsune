@@ -216,7 +216,6 @@ def update_question_fields_from_classification(question, result, sumo_bot):
         for field, value in update_fields.items():
             setattr(question, field, value)
         question.save(update_fields=update_fields.keys())
-        question.clear_cached_tags()
         question.auto_tag()
 
 
