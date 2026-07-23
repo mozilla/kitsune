@@ -267,8 +267,10 @@ def get_visible_document_or_404(
         raise Http404
 
 
-def get_visible_revision_or_404(user, **kwargs):
-    return get_object_or_404(Revision.objects.visible(user, **kwargs))
+def get_visible_revision_or_404(user, permission_locale=None, **kwargs):
+    return get_object_or_404(
+        Revision.objects.visible(user, permission_locale=permission_locale, **kwargs)
+    )
 
 
 def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic]) -> list[dict]:

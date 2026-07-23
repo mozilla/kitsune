@@ -72,16 +72,23 @@ class VisibilityManager(models.Manager):
 
         return qs
 
-    def visible(self, user=None, **kwargs):
+    def visible(self, user=None, permission_locale=None, **kwargs):
         """
         Documents are effectively invisible when they are restricted and the given
         user doesn't meet the restrictions, or they have no approved content and the
         given user is not staff, nor a superuser, nor allowed to delete documents or
         review revisions, nor a creator of one of the (yet unapproved) revisions.
+
+        The locale used to check whether the user is allowed to delete documents or
+        review revisions is normally taken from the "locale" (or, for related models,
+        "<relation>__locale") filter. When the queryset spans multiple locales (for
+        example, when filtering revisions by "document__in"), that locale can't be
+        inferred, so callers can supply it explicitly via "permission_locale". It only
+        affects the permission check, never the filtering.
         """
         prefix = self.document_relation_prefix
 
-        locale = kwargs.get(f"{prefix}locale")
+        locale = permission_locale or kwargs.get(f"{prefix}locale")
 
         qs = self.unrestricted(user, **kwargs)
 
