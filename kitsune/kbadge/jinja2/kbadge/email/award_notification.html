@@ -9,19 +9,23 @@
     height: 256px;
     width: 256px;
   }
+
+  .shifted {
+    margin-left: 10px;
+  }
 {% endblock %}
 
 {% block content %}
-<div class="centered">
-  <h1>{{ _('Congratulations!') }}</h1>
+<div>
+  <h1 class="centered">{{ _('Congratulations!') }}</h1>
 
   {% if badge.image %}
-    <p class="badge">
+    <p class="badge centered">
       <img src="{{ badge.image.url }}" alt="" title="" />
     </p>
   {% endif %}
 
-  <p>
+  <p class="centered">
     {% if award.creator %}
       {% trans awarder=display_name(award.creator), title=display_badge_title(badge.title) %}
         <strong>{{ awarder }}</strong> has awarded you the
@@ -34,12 +38,28 @@
     {% endif %}
   </p>
 
-  {% if award.description %}
-    <p>{{ award.description }}</p>
-  {% endif %}
+  <div class="quote">
+    <i>
+      {% if award.description %}
+        {{ award.description }}
+      {% elif badge.description %}
+        {{ display_badge_description(badge.description) }}
+      {% endif %}
+    </i>
+  </div>
+
+  <p class="shifted">
+    Mozilla Support is made possible by volunteers like you. Thank you for the time, knowledge, and care you've shared with the community.
+  </p>
 
   <p>
-    <a class="button" href="https://{{ host }}{{ award.get_absolute_url() }}">{{ _('See all the details...') }}</a>
+    <a class="button centered" href="https://{{ host }}{{ award.get_absolute_url() }}">{{ _('See all the details...') }}</a>
   </p>
+
+  <div class="centered">
+    {% trans profile_url="https://%s/user/%s" % (host, award.user.username) %}
+      Your badges are displayed on <a href="{{ profile_url }}">your profile page</a>. Check it out!
+    {% endtrans %}
+  </div>
 </div>
 {% endblock %}

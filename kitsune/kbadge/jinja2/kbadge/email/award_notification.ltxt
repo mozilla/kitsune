@@ -1,18 +1,27 @@
 {{ _('Congratulations!') }}
 
-{% if award.creator %}
-{% trans awarder=display_name(award.creator), title=pgettext('DB: kbadge.Badge.title', badge.title) %}
+{% if award.creator -%}
+{% trans awarder=display_name(award.creator), title=pgettext('DB: kbadge.Badge.title', badge.title) -%}
 {{ awarder }} has awarded you the {{ title }} badge!
 {% endtrans %}
-{% else %}
-{% trans title=pgettext('DB: kbadge.Badge.title', badge.title) %}
+
+{% else -%}
+{% trans title=pgettext('DB: kbadge.Badge.title', badge.title) -%}
 You have been awarded the {{ title }} badge!
 {% endtrans %}
-{% endif %}
 
-{% if award.description %}
+{% endif -%}
+{% if award.description -%}
 {{ award.description }}
-{% endif %}
+
+{% elif badge.description -%}
+{{ pgettext('DB: kbadge.Badge.description', badge.description) }}
+
+{% endif -%}
+{{ _("Mozilla Support is made possible by volunteers like you. Thank you for the time, knowledge, and care you've shared with the community.") }}
 
 {{ _('See all the details:') }}
 https://{{ host }}{{ award.get_absolute_url() }}
+
+{{ _('Your badges are displayed on your profile page. Check it out:') }}
+https://{{ host }}/user/{{ award.user.username }}
