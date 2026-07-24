@@ -169,11 +169,11 @@
 
   &.compare-revisions-button-down,
   &.compare-revisions-button-up {
-    padding-left: p.$spacing-xs;
+    padding-inline-start: p.$spacing-xs;
     &:before {
       display: inline-flex;
       align-self: flex-end;
-      margin-right: p.$spacing-sm;
+      margin-inline-end: p.$spacing-sm;
       width: 58px;
       height: 20px;
       background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 1H4.14v9.78M37.63 10.78V1"/><path fill="#5e5e72" d="M4.14 14.4l4.14-7.17H0l4.14 7.17zM37.63 14.4l4.14-7.17h-8.28l4.14 7.17z"/></svg>');
@@ -181,6 +181,9 @@
       background-repeat: no-repeat;
       background-position: center center;
       content: "";
+      .html-rtl & {
+        transform: scaleX(-1);
+      }
     }
   }
 

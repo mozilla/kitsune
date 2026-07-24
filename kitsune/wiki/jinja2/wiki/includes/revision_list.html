@@ -137,7 +137,7 @@
       {% endif %}
       {% endfor %}
       {% if revisions.count() > 1 %}
-        <div class="sumo-button-wrap align-full compare bottom">
+        <div class="sumo-button-wrap">
           <button type="submit" class="sumo-button compare-revisions-button-up">{% if document.parent %}{{ _('Compare Selected Translations') }}{% else %}{{ _('Compare Selected Revisions') }}{% endif %}</button>
         </div>
       {% endif %}

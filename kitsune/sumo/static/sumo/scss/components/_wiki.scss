@@ -16,7 +16,7 @@ figure {
     img {
       width: 24px;
       height: 24px;
-      margin-right: p.$spacing-sm;
+      margin-inline-end: p.$spacing-sm;
     }
 
     figcaption {
@@ -513,23 +513,6 @@ article {
       }
     }
   }
-
-  .compare {
-    height: 20px;
-    padding: 0;
-    text-align: left;
-
-    &.top {
-      background: transparent url(../img/wiki/compare.arrows.png) no-repeat p.$spacing-xs 5px;
-      padding-bottom: 5px;
-    }
-
-    &.bottom {
-      background: transparent url(../img/wiki/compare.arrows.png) no-repeat p.$spacing-xs -40px;
-      padding-top: 10px;
-    }
-  }
-
 
   .loading {
     display: none;
