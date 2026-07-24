@@ -97,11 +97,28 @@ describe("markup: attachTypeahead", () => {
 
   afterEach(() => {
     sinon.restore();
+    delete window.requestAnimationFrame;
+    delete window.cancelAnimationFrame;
     document.body.innerHTML = "";
   });
 
   function list() {
     return document.querySelector("ul.marky-autocomplete");
+  }
+
+  // jsdom has no requestAnimationFrame, and repositioning is throttled through
+  // it, so stand one in whose frames we can run when we want them.
+  function fakeFrames() {
+    let pending = [];
+    window.requestAnimationFrame = (cb) => pending.push(cb);
+    window.cancelAnimationFrame = () => {
+      pending = [];
+    };
+    return function runFrames() {
+      const frames = pending;
+      pending = [];
+      frames.forEach((cb) => cb());
+    };
   }
 
   // Type a term and let the 300ms debounce fire against fake timers.
@@ -200,6 +217,168 @@ describe("markup: attachTypeahead", () => {
 
     const labels = Array.prototype.map.call(list().children, (li) => li.textContent);
     expect(labels).to.deep.equal(["ab-result"]);
+  });
+
+  it("shows the list on <body> and puts it back by the input on close", () => {
+    // Nested so there's somewhere other than <body> for the list to return to,
+    // like the link modal it's really used in.
+    document.body.innerHTML = '<div id="modal"><input id="nested-input"></div>';
+    input = document.getElementById("nested-input");
+
+    type("f", (term, cb) => cb([{ label: "Firefox" }]));
+    expect(list().parentNode).to.equal(document.body);
+
+    key("Escape");
+    expect(list().parentNode.id).to.equal("modal");
+    expect(input.nextElementSibling).to.equal(list());
+  });
+
+  it("closes the list when its handle is closed, without waiting for a blur", () => {
+    const typeahead = attachTypeahead(input, (term, cb) => cb([{ label: "Firefox" }]));
+    const clock = sinon.useFakeTimers();
+    input.value = "f";
+    input.dispatchEvent(new window.Event("input"));
+    clock.tick(300);
+    clock.restore();
+    expect(list().parentNode).to.equal(document.body);
+
+    typeahead.close();
+    expect(list().hidden).to.equal(true);
+    expect(input.nextElementSibling).to.equal(list());
+  });
+
+  it("returns a usable handle even without an input", () => {
+    expect(() => attachTypeahead(null, () => {}).close()).to.not.throw();
+  });
+
+  it("follows the input while open and stops once closed", () => {
+    const runFrames = fakeFrames();
+    type("f", (term, cb) => cb([{ label: "Firefox" }]));
+    const ul = list();
+    const top = ul.style.top;
+
+    // Nudge the list off its measured position: a scroll should measure again
+    // and put it back.
+    ul.style.top = "999px";
+    window.dispatchEvent(new window.Event("scroll"));
+    runFrames();
+    expect(ul.style.top).to.equal(top);
+
+    key("Escape");
+    ul.style.top = "999px";
+    window.dispatchEvent(new window.Event("scroll"));
+    runFrames();
+    expect(ul.style.top).to.equal("999px");
+  });
+
+  it("opens above the input when it doesn't fit below, right up against it", () => {
+    // jsdom does no layout, so describe it ourselves: a 30px input near the
+    // bottom of the 768px viewport, and a dropdown 90px tall.
+    input.getBoundingClientRect = () => ({ top: 700, bottom: 730, left: 20, width: 200 });
+    attachTypeahead(input, (term, cb) => cb([{ label: "Firefox" }]), () => {});
+    Object.defineProperty(list(), "scrollHeight", { value: 90, configurable: true });
+
+    const clock = sinon.useFakeTimers();
+    input.value = "f";
+    input.dispatchEvent(new window.Event("input"));
+    clock.tick(300);
+    clock.restore();
+
+    // Pinned a gap above the input's top edge rather than a max-height above it.
+    expect(list().style.top).to.equal("auto");
+    expect(list().style.bottom).to.equal(window.innerHeight - 700 + 4 + "px");
+  });
+
+  it("hides the list while the input is scrolled out of its container", () => {
+    document.body.innerHTML = '<div id="scroller"><input id="nested-input"></div>';
+    input = document.getElementById("nested-input");
+    const scroller = document.getElementById("scroller");
+    // Again, jsdom won't lay this out: a container scrolled far enough that the
+    // input has gone off the top of it.
+    sinon
+      .stub(window, "getComputedStyle")
+      .callsFake((el) => ({ overflowY: el === scroller ? "auto" : "visible" }));
+    scroller.getBoundingClientRect = () => ({ top: 100, bottom: 300 });
+    input.getBoundingClientRect = () => ({ top: 40, bottom: 60, left: 0, width: 200 });
+
+    type("f", (term, cb) => cb([{ label: "Firefox" }]));
+    expect(list().hidden).to.equal(false);
+    expect(list().style.visibility).to.equal("hidden");
+  });
+
+  it("points the input at the list and its active option", () => {
+    type("f", (term, cb) => cb([{ label: "Firefox" }, { label: "Focus" }]));
+    expect(input.getAttribute("role")).to.equal("combobox");
+    expect(input.getAttribute("aria-controls")).to.equal(list().id);
+    expect(input.getAttribute("aria-expanded")).to.equal("true");
+    expect(list().getAttribute("role")).to.equal("listbox");
+    expect(list().children[0].getAttribute("role")).to.equal("option");
+
+    key("ArrowDown");
+    expect(input.getAttribute("aria-activedescendant")).to.equal(list().children[0].id);
+    expect(list().children[0].getAttribute("aria-selected")).to.equal("true");
+    expect(list().children[1].getAttribute("aria-selected")).to.equal("false");
+
+    key("Escape");
+    expect(input.getAttribute("aria-expanded")).to.equal("false");
+    expect(input.hasAttribute("aria-activedescendant")).to.equal(false);
+  });
+});
+
+describe("markup: LinkButton article dropdown", () => {
+  afterEach(() => {
+    sinon.restore();
+    document.body.innerHTML = "";
+  });
+
+  function jsonResponse(body) {
+    return {
+      ok: true,
+      status: 200,
+      headers: { get: () => "application/json" },
+      text: async () => JSON.stringify(body),
+    };
+  }
+
+  // Open the link modal and get the article dropdown showing.
+  async function openModalWithSuggestions() {
+    document.body.innerHTML = '<textarea id="id_content"></textarea>';
+    sinon
+      .stub(window, "fetch")
+      .resolves(jsonResponse({ results: [{ title: "Firefox", url: "/kb/firefox" }] }));
+
+    const btn = new Marky.LinkButton();
+    btn.bind(document.getElementById("id_content"));
+    btn.openModal({ preventDefault() {} });
+
+    const internal = document.querySelector('#link-modal input[name="internal"]');
+    const clock = sinon.useFakeTimers();
+    internal.value = "fire";
+    internal.dispatchEvent(new window.Event("input"));
+    clock.tick(300); // the search runs on the far side of the debounce
+    clock.restore();
+    // Back on real timers, let the search's promises settle before we look.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return internal;
+  }
+
+  it("shows suggestions outside the modal, where they won't be clipped", async () => {
+    await openModalWithSuggestions();
+
+    const list = document.querySelector("ul.marky-autocomplete");
+    expect(list.parentNode).to.equal(document.body);
+    expect(list.children[0].textContent).to.equal("Firefox");
+  });
+
+  it("takes the dropdown with it when the modal is dismissed", async () => {
+    await openModalWithSuggestions();
+
+    // Nothing here moves focus out of the input (jsdom won't, and neither will
+    // some browsers), so the dropdown's own blur handling never runs.
+    document.querySelector("#link-modal .kbox-cancel").click();
+
+    expect(document.querySelector("#link-modal")).to.equal(null);
+    expect(document.querySelector("ul.marky-autocomplete")).to.equal(null);
   });
 });
 
