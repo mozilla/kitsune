@@ -309,7 +309,7 @@ def test_contributor_tools_side_navbar(page: Page, create_user_factory, user):
     sumo_pages = SumoPages(page)
     common_web_elements = sumo_pages.common_web_elements
     media_gallery_url = utilities.different_endpoints["media_gallery"]
-    contributor_tools = ["Knowledge base dashboards", "Guides", "Templates", "Media gallery",
+    contributor_tools = ["Knowledge base dashboards", "Guides", "Templates", "Image gallery",
                          "Recent revisions", "Community hub", "Locales", "Locale metrics",
                          "Aggregated metrics"]
 
@@ -333,10 +333,10 @@ def test_contributor_tools_side_navbar(page: Page, create_user_factory, user):
         expect(common_web_elements.contributor_tools_side_navbar_heading).to_have_text(
             "Contributor tools")
 
-    with check, allure.step("Verifying that the 'Media gallery' option is highlighted by default "
+    with check, allure.step("Verifying that the 'Image gallery' option is highlighted by default "
                             "when landing on the media gallery page"):
         expect(common_web_elements.contributor_tools_side_navbar_selected_option).to_have_text(
-            "Media gallery")
+            "Image gallery")
 
     with allure.step("Expanding the collapsible 'Show More' section of the side navbar"):
         common_web_elements.click_on_contributor_tools_side_navbar_show_more_button()

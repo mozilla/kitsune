@@ -430,7 +430,7 @@ describe("markup: MediaButton upload link", () => {
     };
   }
 
-  it("opens the gallery in a new tab and closes the modal when Upload Media is clicked", () => {
+  it("opens the gallery in a new tab and closes the modal when Upload Image is clicked", () => {
     document.body.innerHTML =
       '<div class="editor" data-media-search-url="/gallery/async" data-media-gallery-url="/gallery/">' +
       '<textarea id="id_content"></textarea></div>';

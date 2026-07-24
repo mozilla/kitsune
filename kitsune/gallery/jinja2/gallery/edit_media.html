@@ -2,9 +2,9 @@
 {% from "layout/errorlist.html" import errorlist %}
 {% set edit_this = _('Edit image') %}
 {% set save_this = _('Save image') %}
-{% set title = _('Edit image | {t} | Media Gallery')|f(t=media.title) %}
+{% set title = _('Edit image | {t} | Image Gallery')|f(t=media.title) %}
 
-{% set crumbs = [(url('gallery.gallery'), _('Media Gallery')),
+{% set crumbs = [(url('gallery.gallery'), _('Image Gallery')),
                  (url('gallery.media', media.id), media.title),
                  (None, edit_this)] %}
 

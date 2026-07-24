@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% if not title %}
-  {% set title = _('{title} | Media Gallery')|f(title=media.title) %}
+  {% set title = _('{title} | Image Gallery')|f(title=media.title) %}
 {% endif %}
 {% set scripts = ('wiki',) %}
 {% if not crumbs %}
-  {% set crumbs = [(url('gallery.gallery'), _('Media Gallery')),
+  {% set crumbs = [(url('gallery.gallery'), _('Image Gallery')),
                    (None, media.title)] %}
 {% endif %}
 {% set delete_this = _('Delete this image') %}

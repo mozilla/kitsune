@@ -759,11 +759,11 @@ Marky.LinkButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
   * The media helper.
   */
 Marky.MediaButton = function () {
-  this.name = gettext("Insert media...");
+  this.name = gettext("Insert image...");
   this.classes = "btn-media";
   this.openTag = "";
   this.closeTag = "";
-  this.defaultText = gettext("media");
+  this.defaultText = gettext("image");
   this.everyline = false;
 
   this.html = '<button class="markup-toolbar-button" type="button"></button>';
@@ -797,14 +797,14 @@ Marky.MediaButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
         '<button type="submit" class="submit-button search-button" title="' + gettext("Search Gallery") + '">' +
         gettext("Search Gallery") + "</button>" +
         "</form>" +
-        '<div class="locale-filter">' + gettext("Show media for:") + " <select></select>" +
+        '<div class="locale-filter">' + gettext("Show images for:") + " <select></select>" +
         "</div>" +
         "</div>" +
         '<div class="placeholder"></div>' +
         '<div class="submit sumo-button-wrap reverse-on-desktop align-end">' +
-        '<button class="sumo-button primary-button">' + gettext("Insert Media") + "</button>" +
+        '<button class="sumo-button primary-button">' + gettext("Insert Image") + "</button>" +
         '<a href="' + galleryUrl + '#upload" class="upload sumo-button secondary-button" target="_blank">' +
-        gettext("Upload Media") + "</a>" +
+        gettext("Upload Image") + "</a>" +
         '<a href="#cancel" class="kbox-cancel sumo-button push-left">' + gettext("Cancel") + "</a>" +
         "</div>" +
         "</section>"
@@ -856,7 +856,7 @@ Marky.MediaButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
       e.preventDefault();
     });
 
-    // Handle 'Insert Media' button click
+    // Handle 'Insert Image' button click
     html.querySelector("div.submit button").addEventListener("click", function (e) {
       // Generate the wiki markup based on what the user has selected.
       me.reset();

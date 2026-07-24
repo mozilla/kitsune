@@ -387,7 +387,7 @@ class SumoPages:
     def most_visited_translations_page(self):
         return MostVisitedTranslations(self._page)
 
-    # Media Gallery page.
+    # Image Gallery page.
     @cached_property
     def media_gallery(self):
         return MediaGallery(self._page)
