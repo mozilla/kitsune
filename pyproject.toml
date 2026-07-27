@@ -51,7 +51,7 @@ dependencies = [
     "Werkzeug==3.1.5",
     "commonware>=0.6.0,<0.7",
     "django-statici18n>=2.4.0,<3",
-    "django-timezone-field~=7.1",
+    "django-timezone-field~=7.2",
     "djangorestframework>=3.15.2,<4",
     "django-activity-stream>=2.0.0,<3",
     "django-jsonfield-compat>=0.4.4,<0.5",
