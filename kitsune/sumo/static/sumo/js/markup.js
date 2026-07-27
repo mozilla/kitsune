@@ -61,39 +61,180 @@ function isVisible(el) {
   return !!(el && el.offsetParent !== null);
 }
 
+// Type-ahead dropdown sizes, in pixels. These live here rather than in the
+// stylesheet because we size the dropdown to the room around its input.
+var TYPEAHEAD_GAP = 4; // between the input and the dropdown
+var TYPEAHEAD_VIEWPORT_MARGIN = 8; // between the dropdown and the viewport edge
+var TYPEAHEAD_MAX_HEIGHT = 220;
+// How short we're willing to squeeze the dropdown when there's little room. A
+// dropdown that overhangs the viewport is better than one squeezed to nothing.
+var TYPEAHEAD_MIN_HEIGHT = 60;
+
+// Used to give each dropdown an id, so its input can point at it.
+var typeaheadCount = 0;
+
+// How much of the viewport `el` can actually be seen in, given any ancestors
+// that clip or scroll their content. The link modal scrolls its own content, so
+// the input can be scrolled out of sight while the dropdown, over on <body>,
+// knows nothing about it.
+function clipBounds(el) {
+  var top = 0;
+  var bottom = window.innerHeight;
+  var node = el.parentElement;
+  while (node && node !== document.body) {
+    if (window.getComputedStyle(node).overflowY !== "visible") {
+      var rect = node.getBoundingClientRect();
+      top = Math.max(top, rect.top);
+      bottom = Math.min(bottom, rect.bottom);
+    }
+    node = node.parentElement;
+  }
+  return { top: top, bottom: bottom };
+}
+
 // A small type-ahead for a text <input>: fetch suggestions via `source(term,
 // cb)`, show them in a dropdown with keyboard/mouse selection, and call
-// `onSelect(item)` when one is chosen. Replaces the old jQuery-UI autocomplete.
+// `onSelect(item)` when one is chosen. Returns a handle with a close() that the
+// owner of the input should call before removing it from the page (see open()).
 function attachTypeahead(input, source, onSelect) {
   if (!input) {
-    return;
+    // Same shape, so callers don't have to null-check the handle.
+    return { close: function () {} };
   }
   var list = document.createElement("ul");
   list.className = "marky-autocomplete";
+  list.id = "marky-autocomplete-" + ++typeaheadCount;
   list.hidden = true;
+  list.setAttribute("role", "listbox");
+  // We build the list next to the input, but it only shows up after we move it
+  // onto <body> (see open() and close()). The link modal is fixed, uses a
+  // transform, and scrolls its own content, so a dropdown left inside it gets
+  // cut off at the modal's edge. Moving it out to <body> lets it overlay the
+  // page freely instead.
   input.insertAdjacentElement("afterend", list);
+
+  // Once the list moves to <body> it's nowhere near the input in the document
+  // anymore, so these are all a screen reader has to go on.
+  input.setAttribute("role", "combobox");
+  input.setAttribute("aria-autocomplete", "list");
+  input.setAttribute("aria-expanded", "false");
+  input.setAttribute("aria-controls", list.id);
+  input.setAttribute("autocomplete", "off");
 
   var items = [];
   var activeIndex = -1;
   var debounceTimer;
+  var repositionFrame = null;
   // Monotonic request id. Debouncing throttles how often requests start, but
-  // several can still be in flight and finish out of order; only the newest
-  // request's response is rendered (jQuery UI guarded this with a request
-  // index).
+  // several can still be in flight and finish out of order, so we render only
+  // the newest request's response.
   var latestRequestId = 0;
 
+  // Place the dropdown against the article input. It lives on <body> while open,
+  // so we position it with viewport coordinates (position: fixed). We cap its
+  // height to the space available so it can't run off the screen, and open it
+  // above the input instead when there's more room up there (short or mobile
+  // viewports).
+  function positionList() {
+    var rect = input.getBoundingClientRect();
+    var bounds = clipBounds(input);
+    var spaceBelow =
+      window.innerHeight - rect.bottom - TYPEAHEAD_GAP - TYPEAHEAD_VIEWPORT_MARGIN;
+    var spaceAbove = rect.top - TYPEAHEAD_GAP - TYPEAHEAD_VIEWPORT_MARGIN;
+    var placeAbove =
+      spaceBelow < Math.min(TYPEAHEAD_MAX_HEIGHT, list.scrollHeight) &&
+      spaceAbove > spaceBelow;
+    var height = Math.min(
+      TYPEAHEAD_MAX_HEIGHT,
+      Math.max(TYPEAHEAD_MIN_HEIGHT, placeAbove ? spaceAbove : spaceBelow)
+    );
+    list.style.left = rect.left + "px";
+    list.style.width = rect.width + "px";
+    list.style.maxHeight = height + "px";
+    if (placeAbove) {
+      // Pin the bottom edge rather than the top, so a list with only a couple of
+      // results still sits right above the input instead of a gap away from it.
+      list.style.top = "auto";
+      list.style.bottom = window.innerHeight - rect.top + TYPEAHEAD_GAP + "px";
+    } else {
+      list.style.bottom = "auto";
+      list.style.top = rect.bottom + TYPEAHEAD_GAP + "px";
+    }
+    // If the input itself has been scrolled out of view, hide the dropdown too,
+    // rather than leave it hovering over the page by itself.
+    var offscreen = rect.bottom < bounds.top || rect.top > bounds.bottom;
+    list.style.visibility = offscreen ? "hidden" : "";
+  }
+
+  // Scroll and resize events fire much faster than we can paint, so measure at
+  // most once a frame, like kbox does when it repositions.
+  function reposition() {
+    if (list.hidden || repositionFrame) {
+      return;
+    }
+    repositionFrame = window.requestAnimationFrame(function () {
+      repositionFrame = null;
+      if (!list.hidden) {
+        positionList();
+      }
+    });
+  }
+
+  function open() {
+    if (list.hidden) {
+      // Move onto <body> so the modal's overflow can't clip the dropdown. That
+      // also takes it out of the modal, so the handle we return has to close it
+      // before the modal goes away.
+      document.body.appendChild(list);
+      list.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+      // Follow the input if the modal or window scrolls or resizes while we're
+      // open.
+      window.addEventListener("scroll", reposition, true);
+      window.addEventListener("resize", reposition);
+    }
+    // Also reposition on later renders, since new results change how tall the
+    // dropdown wants to be.
+    positionList();
+  }
+
   function close() {
+    // Drop any search that hasn't started yet, and make sure the responses to
+    // the ones already out there don't get rendered. Otherwise a search from
+    // just before the modal closed can reopen the dropdown after it's gone.
+    clearTimeout(debounceTimer);
+    latestRequestId++;
+    window.removeEventListener("scroll", reposition, true);
+    window.removeEventListener("resize", reposition);
+    if (repositionFrame) {
+      window.cancelAnimationFrame(repositionFrame);
+      repositionFrame = null;
+    }
     list.hidden = true;
     list.innerHTML = "";
+    list.style.visibility = "";
     items = [];
     activeIndex = -1;
+    input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant");
+    // Put it back next to the input so it's torn down together with the modal
+    // (which uses destroy: true) instead of being left behind on <body>.
+    input.insertAdjacentElement("afterend", list);
   }
 
   function highlight(idx) {
     activeIndex = idx;
     Array.prototype.forEach.call(list.children, function (li, i) {
-      li.classList.toggle("active", i === idx);
+      var isActive = i === idx;
+      li.classList.toggle("active", isActive);
+      li.setAttribute("aria-selected", isActive ? "true" : "false");
     });
+    var active = list.children[idx];
+    if (active) {
+      input.setAttribute("aria-activedescendant", active.id);
+    } else {
+      input.removeAttribute("aria-activedescendant");
+    }
   }
 
   function pick(idx) {
@@ -114,6 +255,9 @@ function attachTypeahead(input, source, onSelect) {
     }
     items.forEach(function (item, i) {
       var li = document.createElement("li");
+      li.id = list.id + "-option-" + i;
+      li.setAttribute("role", "option");
+      li.setAttribute("aria-selected", "false");
       li.textContent = item.label;
       // mousedown (not click) so it fires before the input's blur closes the list.
       li.addEventListener("mousedown", function (e) {
@@ -123,7 +267,8 @@ function attachTypeahead(input, source, onSelect) {
       list.appendChild(li);
     });
     activeIndex = -1;
-    list.hidden = false;
+    input.removeAttribute("aria-activedescendant");
+    open();
   }
 
   input.addEventListener("input", function () {
@@ -169,6 +314,8 @@ function attachTypeahead(input, source, onSelect) {
   input.addEventListener("blur", function () {
     setTimeout(close, 150);
   });
+
+  return { close: close };
 }
 
 var Marky = {
@@ -498,7 +645,7 @@ Marky.LinkButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
     };
 
     var internalInput = html.querySelector('input[name="internal"]');
-    attachTypeahead(
+    var typeahead = attachTypeahead(
       internalInput,
       function (term, response) {
         if (performSectionSearch(term)) {
@@ -592,6 +739,14 @@ Marky.LinkButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
       id: "link-modal",
       container: document.body,
       position: "none",
+      preClose: function () {
+        // Close the dropdown ourselves instead of waiting for the input to lose
+        // focus. Not every way of dismissing this modal blurs the input, and the
+        // ones that do only close the dropdown after a short delay, so it can
+        // otherwise be left behind on the page once the modal is gone.
+        typeahead.close();
+        return true;
+      },
     });
     kbox.open();
 
