@@ -199,6 +199,11 @@ function attachTypeahead(input, source, onSelect) {
   }
 
   function close() {
+    // Drop any search that hasn't started yet, and make sure the responses to
+    // the ones already out there don't get rendered. Otherwise a search from
+    // just before the modal closed can reopen the dropdown after it's gone.
+    clearTimeout(debounceTimer);
+    latestRequestId++;
     window.removeEventListener("scroll", reposition, true);
     window.removeEventListener("resize", reposition);
     if (repositionFrame) {

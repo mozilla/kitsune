@@ -247,6 +247,38 @@ describe("markup: attachTypeahead", () => {
     expect(input.nextElementSibling).to.equal(list());
   });
 
+  it("drops a search that hasn't gone out yet when the list is closed", () => {
+    const source = sinon.spy();
+    const typeahead = attachTypeahead(input, source, () => {});
+    const clock = sinon.useFakeTimers();
+    input.value = "fire";
+    input.dispatchEvent(new window.Event("input"));
+    typeahead.close(); // still inside the debounce window
+    clock.tick(300);
+    clock.restore();
+    expect(source.called).to.equal(false);
+  });
+
+  it("ignores a response that lands after the list was closed", () => {
+    document.body.innerHTML = '<div id="modal"><input id="nested-input"></div>';
+    input = document.getElementById("nested-input");
+    const responses = [];
+    const typeahead = attachTypeahead(input, (term, cb) => responses.push(cb), () => {});
+    const clock = sinon.useFakeTimers();
+    input.value = "fire";
+    input.dispatchEvent(new window.Event("input"));
+    clock.tick(300); // the search goes out
+    clock.restore();
+
+    typeahead.close();
+    responses[0]([{ label: "Firefox" }]);
+
+    // Nothing rendered, and nothing back on <body> where the dropdown shows.
+    expect(list().hidden).to.equal(true);
+    expect(list().children.length).to.equal(0);
+    expect(list().parentNode.id).to.equal("modal");
+  });
+
   it("returns a usable handle even without an input", () => {
     expect(() => attachTypeahead(null, () => {}).close()).to.not.throw();
   });
