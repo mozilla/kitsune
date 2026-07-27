@@ -840,7 +840,11 @@ Marky.CannedResponsesButton.prototype = Object.assign({}, Marky.SimpleButton.pro
     var kbox;
 
     var cannedResponsesUrl = "/kb/common-forum-responses";
-    var previewUrl = "answer-preview-async";
+    var previewBtn = document.getElementById("preview");
+    var siteLanguage = window.location.pathname.split("/")[1];
+    var previewUrl = previewBtn
+      ? previewBtn.dataset.previewUrl
+      : "/" + siteLanguage + "/questions/answer-preview-async";
 
     function updatePreview() {
       var response = html.querySelector("#response-content").value;
