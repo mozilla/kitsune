@@ -350,6 +350,12 @@ ES_BULK_MAX_RETRIES = config("ES_BULK_MAX_RETRIES", default=1, cast=int)
 ES_DEFAULT_SQL_CHUNK_SIZE = config("ES_DEFAULT_SQL_CHUNK_SIZE", default=1000, cast=int)
 ES_DEFAULT_ELASTIC_CHUNK_SIZE = config("ES_DEFAULT_ELASTIC_CHUNK_SIZE", default=50, cast=int)
 
+# Retrieval (RAG) embeddings — default to the offline fake backend (safe for dev/CI).
+RETRIEVAL_EMBEDDING_BACKEND = config("RETRIEVAL_EMBEDDING_BACKEND", default="fake")
+RETRIEVAL_EMBEDDING_MODEL = config("RETRIEVAL_EMBEDDING_MODEL", default="")
+RETRIEVAL_EMBEDDING_DIMENSIONS = config("RETRIEVAL_EMBEDDING_DIMENSIONS", default=768, cast=int)
+RETRIEVAL_EMBEDDING_BATCH_SIZE = config("RETRIEVAL_EMBEDDING_BATCH_SIZE", default=250, cast=int)
+
 TEXT_DOMAIN = "messages"
 
 SITE_ID = 1

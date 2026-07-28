@@ -11,6 +11,15 @@ from kitsune.retrieval.chunking import (
 from kitsune.wiki.parser import WikiParser
 
 
+class ChunkingGenerationTests(SimpleTestCase):
+    def test_chunking_generation_is_exported_positive_int(self):
+        from kitsune.retrieval import chunking
+
+        self.assertIn("CHUNKING_GENERATION", chunking.__all__)
+        self.assertIsInstance(chunking.CHUNKING_GENERATION, int)
+        self.assertGreater(chunking.CHUNKING_GENERATION, 0)
+
+
 class ChunkKBTests(SimpleTestCase):
     def test_single_paragraph_becomes_one_unconditional_chunk(self):
         chunks = chunk_kb(

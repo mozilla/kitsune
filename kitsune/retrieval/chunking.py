@@ -17,12 +17,22 @@ from dataclasses import dataclass
 
 from lxml import html as lxml_html
 
-__all__ = ["Chunk", "ShowForScope", "chunk", "chunk_kb", "count_tokens", "parse_data_for"]
+__all__ = [
+    "CHUNKING_GENERATION",
+    "Chunk",
+    "ShowForScope",
+    "chunk",
+    "chunk_kb",
+    "count_tokens",
+    "parse_data_for",
+]
 
 HEADING_TAGS = ("h1", "h2", "h3")
 CONTAINER_TAGS = ("div", "section")
 MAX_TOKENS = 512
 OVERLAP_TOKENS = 64
+# Bump on any change that can alter chunk text, order, boundaries, headings, or scope.
+CHUNKING_GENERATION: int = 1
 _SEGMENT_BOUNDARY = re.compile(r"(\n+|(?<=[.!?])\s+)")
 
 # Each item is one element's selector clause; tuple order represents DOM nesting (logical AND).
