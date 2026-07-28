@@ -18,6 +18,19 @@ export function init() {
             return;
           }
 
+          // The radios are positioned off-screen by our styles, so the
+          // browser's own validation bubble would be invisible. Report the
+          // problem in the modal instead, and leave the form up to retry.
+          if (!form.checkValidity()) {
+            var invalidField = form.querySelector(':invalid');
+            showMessage(
+              form,
+              (invalidField && invalidField.validationMessage) ||
+                gettext('Please complete all required fields.')
+            );
+            return;
+          }
+
           apiFetch(form.getAttribute('action'), {
             method: 'POST',
             data: serialize(form),
@@ -27,12 +40,12 @@ export function init() {
               showMessage(form, data.message);
               slideUp(form);
             })
-            .catch(function () {
+            .catch(function (error) {
               showMessage(
                 form,
-                gettext('There was an error. Please try again in a moment.')
+                (error && error.body && error.body.message) ||
+                  gettext('There was an error. Please try again in a moment.')
               );
-              slideUp(form);
             });
         });
       });
