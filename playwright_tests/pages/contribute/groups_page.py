@@ -23,7 +23,7 @@ class GroupsPage(BasePage):
         self.pm_a_group_user = lambda username: page.locator("div.info").get_by_role(
             "link", name=username, exact=True).locator("+ p a")
         self.search_username = lambda username: page.locator(
-            f"//div[@class='name_search']/b[text()='{username}']")
+            f"//div[@class='name_search']/span[text()='{username}']")
         self.listed_group_member = lambda username: page.locator(
             f"//div[@id='group-members']//a[text()='{username}']")
         self.listed_group_leader = lambda username: page.locator(
@@ -44,8 +44,8 @@ class GroupsPage(BasePage):
         self.manage_group_section = page.locator(
             "//h3[@class='card--title' and text()='Manage Group']/..")
         self.add_users_button = page.locator(
-            "//h3[@class='card--title']/..//label[@class='action-button']")
-        self.username_field = page.locator("//input[@id='token-input-id_users']")
+            "//div[@class='quick-action']//label[@class='action-button']")
+        self.username_field = page.locator("//input[@id='id_users-ts-control']")
         self.add_to_members_button = page.locator("//button[@value='member']")
         self.add_to_leaders_button = page.locator("//button[@value='leader']")
 

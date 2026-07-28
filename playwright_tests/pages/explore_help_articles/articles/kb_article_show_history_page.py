@@ -48,7 +48,7 @@ class KBArticleShowHistoryPage(BasePage):
         self.all_contributors_list_items = page.locator("ul[class='avatar-wrap'] li")
         self.all_contributors_usernames = page.locator("ul[class='avatar-wrap'] a span")
         self.edit_contributors_option = page.locator("section#contributors a[class='edit']")
-        self.add_contributor_input_field = page.locator("input#token-input-id_users")
+        self.add_contributor_input_field = page.locator("input#id_users-ts-control")
         self.add_contributor_button = page.locator("input[value='Add Contributor']")
         self.delete_contributor_confirmation_page_header = page.locator(
             "h1[class='title sumo-page-subheading']")
@@ -57,7 +57,7 @@ class KBArticleShowHistoryPage(BasePage):
         self.delete_contributor_confirmation_page_submit_button = page.locator(
             "input[value='Remove contributor']")
         self.new_contributor_search_button = lambda username: page.locator(
-            f"//div[@class='name_search']/b[contains(text(), '{username}')]")
+            f"//div[@class='name_search']/span[contains(text(), '{username}')]")
         self.contributor = lambda username: page.locator(f"//span[text()='{username}']/..")
         self.delete_contributor = lambda username: page.locator(
             f"//span[text()='{username}']/../..//a[@class='remove-button']")

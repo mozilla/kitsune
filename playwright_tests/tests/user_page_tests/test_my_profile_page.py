@@ -1,19 +1,27 @@
 import random
+import re
 import string
+
 import allure
 import pytest
+from playwright.sync_api import Page, expect
 from pytest_check import check
-from playwright.sync_api import expect, Page
+
 from playwright_tests.core.utilities import Utilities
-from playwright_tests.messages.contribute_messages.con_discussions.off_topic import \
-    OffTopicForumMessages
+from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
+from playwright_tests.messages.contribute_messages.con_discussions.off_topic import (
+    OffTopicForumMessages,
+)
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright_tests.messages.my_profile_pages_messages.edit_my_profile_page_messages import \
-    EditMyProfilePageMessages
+from playwright_tests.messages.my_profile_pages_messages.edit_my_profile_page_messages import (
+    EditMyProfilePageMessages,
+)
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
-    MyProfileMessages)
+    MyProfileMessages,
+)
 from playwright_tests.messages.my_profile_pages_messages.user_profile_navbar_messages import (
-    UserProfileNavbarMessages)
+    UserProfileNavbarMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -397,3 +405,34 @@ def test_private_message_button_redirects_signed_out_users_to_fxa_login_flow(pag
                      "in user is redirected to the fxa page"):
         sumo_pages.my_profile_page.click_on_private_message_button()
         expect(sumo_pages.auth_page.continue_with_firefox_accounts_button).to_be_visible()
+
+
+@pytest.mark.smokeTest
+@pytest.mark.userProfile
+def test_profile_endpoint_redirects_to_the_correct_profile_page(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    test_user = create_user_factory()
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with check, allure.step("Navigating to the '/profile' endpoint and verifying that the user "
+                            "is redirected directly to their own profile page"):
+        response = utilities.navigate_to_link(f"{HomepageMessages.STAGE_HOMEPAGE_URL}/en-US/profile")
+        assert response is not None and response.status < 400
+        expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(test_user["username"]))
+
+    with check, allure.step("Navigating to the '/profile' endpoint while on a non en-US locale "
+                            "and verifying that the user is redirected to the correct locale "
+                            "profile page"):
+        response = utilities.navigate_to_link(f"{HomepageMessages.STAGE_HOMEPAGE_URL}/ro/profile")
+        assert response is not None and response.status < 400
+        expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(
+            test_user["username"], locale="ro"))
+
+    with check, allure.step("Signing out and navigating to the '/profile' endpoint, verifying "
+                            "that the signed out user is redirected to the auth page"):
+        utilities.delete_cookies()
+        response = utilities.navigate_to_link(f"{HomepageMessages.STAGE_HOMEPAGE_URL}/en-US/profile")
+        assert response is not None and response.status < 400
+        expect(page).to_have_url(re.compile(f".*{FxAPageMessages.AUTH_PAGE_URL}*"))

@@ -11,16 +11,14 @@ class NewMessagePage(BasePage):
         self.page_header = page.locator("h1.sumo-page-heading")
 
         """Locators belonging to the New Message page input fields."""
-        self.to_input_field = page.locator("input#token-input-id_to")
-        self.search_for_a_user_dropdown = page.locator("div.token-input-dropdown-facebook")
-        self.user_search_results_bolded_characters = page.locator("div.name_search b")
+        self.to_input_field = page.locator("input#id_to-ts-control")
+        self.search_for_a_user_dropdown = page.locator("#id_to-ts-dropdown")
         self.user_search_results_text = page.locator("div.name_search")
-        self.added_to_user_text = page.locator("li.token-input-token-facebook p")
-        self.no_user_search_results_text = page.locator(
-            "div.token-input-dropdown-facebook p").filter(has_text="No results")
-        self.added_user_delete_button = page.locator("span.token-input-delete-token-facebook")
+        self.added_to_user_text = page.locator("div.ts-control div.item")
+        self.no_user_search_results_text = page.locator("#id_to-ts-dropdown div.no-results")
+        self.added_user_delete_button = page.locator("div.ts-control div.item a.remove")
         self.searched_user = lambda username: page.locator(
-            f"//div[@class='name_search' and text()='{username}']")
+            f"//div[@class='name_search']/span[text()='{username}']")
         self.textarea_input_field = page.locator("textarea#id_message")
         self.textarea_remaining_characters_message = page.locator("div#remaining-characters")
         self.cancel_button = page.get_by_role("link").filter(has_text="Cancel")
