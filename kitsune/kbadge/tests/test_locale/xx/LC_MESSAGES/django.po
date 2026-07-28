@@ -1,0 +1,9 @@
+# Test kbadge l10n
+
+msgctxt "DB: kbadge.Badge.title"
+msgid "Test Badge"
+msgstr "Localized Test Badge"
+
+msgctxt "DB: kbadge.Badge.description"
+msgid "Test Badge description"
+msgstr "Localized Test Badge description"
