@@ -21,6 +21,7 @@ describe("reportabuse", () => {
     document.body.innerHTML = `
       <a data-sumo-modal="ra">Report</a>
       <div data-modal-id="ra">
+        <div class="validation-error mzp-c-notification-bar mzp-t-error" hidden></div>
         <form action="/report" method="post">
           <input type="hidden" name="csrfmiddlewaretoken" value="tok">
           <input type="text" name="text" value="spam">
@@ -50,7 +51,9 @@ describe("reportabuse", () => {
     document.querySelector('[data-modal-id="ra"] [type="submit"]').click();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(document.querySelector(".message").textContent).to.equal("Reported!");
+    const message = document.querySelector(".message");
+    expect(message.textContent).to.equal("Reported!");
+    expect(message.classList.contains("mzp-c-notification-bar")).to.equal(false);
   });
 
   it("shows an error message when the report fails", async () => {
@@ -90,6 +93,7 @@ describe("reportabuse", () => {
     document.body.innerHTML = `
       <a data-sumo-modal="ra">Report</a>
       <div data-modal-id="ra">
+        <div class="validation-error mzp-c-notification-bar mzp-t-error" hidden></div>
         <form action="/report" method="post">
           <div class="field radio">
             <input type="radio" name="reason" value="spam" required>
@@ -103,8 +107,11 @@ describe("reportabuse", () => {
 
     document.querySelector('[data-modal-id="ra"] [type="submit"]').click();
 
+    const validationError = document.querySelector(".validation-error");
     expect(fetchStub.called).to.equal(false);
-    expect(document.querySelector(".message").textContent).to.not.equal("");
+    expect(validationError.hidden).to.equal(false);
+    expect(validationError.textContent).to.not.equal("");
+    expect(document.querySelector(".message").textContent).to.equal("");
     expect(document.querySelector("form").style.display).to.not.equal("none");
   });
 });
