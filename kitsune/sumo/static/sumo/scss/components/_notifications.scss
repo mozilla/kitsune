@@ -76,3 +76,27 @@
     margin-top: p.$spacing-xs;
   }
 }
+
+// The default .mzp-c-notification-bar margin (24px 16px 0) indents it from the
+// modal's own edges and leaves no gap below, so it butts straight into the
+// first radio field. Flush it to the modal's padding and give it breathing
+// room on both sides instead. Protocol also caps it at max-width: 688px
+// starting at $mq-sm without the auto side-margins to center it, leaving it
+// narrower than the textarea below — match the textarea's own 100% instead.
+[data-modal-id^="report-abuse-"] .validation-error.mzp-c-notification-bar {
+  margin: p.$spacing-md 0;
+  max-width: 100%;
+}
+
+// One step lighter than .mzp-t-error's default red-30 — same Protocol red ramp,
+// scoped to the report-abuse modal only.
+[data-modal-id^="report-abuse-"] .validation-error.mzp-t-error {
+  background-color: p.$color-red-20;
+}
+
+// .mzp-c-notification-bar sets display: flex unconditionally, which matches
+// the browser's [hidden] { display: none } at equal specificity — as an
+// author rule it wins the tie, so [hidden] alone stops hiding the element.
+[data-modal-id^="report-abuse-"] .validation-error[hidden] {
+  display: none;
+}
