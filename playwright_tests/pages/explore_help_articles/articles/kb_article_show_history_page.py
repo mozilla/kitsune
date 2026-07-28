@@ -110,7 +110,7 @@ class KBArticleShowHistoryPage(BasePage):
         self._click(self.delete_this_document_confirmation_cancel_button)
 
     def get_last_revision_id(self) -> str:
-        self._wait_for_locator(self.article_revision_list_items.first)
+        self._wait_for_locator(self.article_revision_list_items.first, timeout=10000)
         revisions = self.article_revision_list_items.all()
         return self._get_element_attribute_value(
             revisions[0], "id"

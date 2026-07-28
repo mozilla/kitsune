@@ -33,8 +33,8 @@ class KBArticlePage(BasePage):
                                                              exact=True)
         self.editing_tools_edit_article_option = page.get_by_role("link", name="Edit Article",
                                                                   exact=True)
-        self.editing_tools_edit_article_metadata_option = page.get_by_role(
-            "link", name="Edit Article Metadata")
+        self.editing_tools_edit_article_metadata_option = page.locator(
+            "#editing-tools-sidebar a[href$='/edit/metadata']")
         self.editing_tools_translate_article = page.get_by_role(
             "link", name="Translate Article", exact=True)
         self.editing_tools_discussion_option = page.locator("ul.sidebar-nav--list").get_by_role(

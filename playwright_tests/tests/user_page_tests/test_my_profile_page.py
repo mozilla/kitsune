@@ -407,6 +407,7 @@ def test_private_message_button_redirects_signed_out_users_to_fxa_login_flow(pag
         expect(sumo_pages.auth_page.continue_with_firefox_accounts_button).to_be_visible()
 
 
+# C4218478
 @pytest.mark.smokeTest
 @pytest.mark.userProfile
 def test_profile_endpoint_redirects_to_the_correct_profile_page(page: Page, create_user_factory):
