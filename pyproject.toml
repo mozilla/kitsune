@@ -56,7 +56,7 @@ dependencies = [
     "django-activity-stream>=2.0.0,<3",
     "django-jsonfield-compat>=0.4.4,<0.5",
     "django-jsonfield-backport>=1.0.5,<2",
-    "cffi>=2.0.0,<3",
+    "cffi>=2.1.0,<3",
     "django-mozilla-product-details>=1.0.3,<2",
     "django-csp==4.0",
     "oauthlib>=3.2.2,<4",
