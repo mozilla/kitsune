@@ -140,7 +140,7 @@ export function wrapDeleteInput(input, options) {
     url: input.getAttribute("data-url"),
     inputEvent: "click",
     beforeSubmit: function () {
-      if (confirm(gettext("Are you sure you want delete the image?"))) {
+      if (confirm(gettext("Are you sure you want to delete this image?"))) {
         if (attachment) {
           var overlay = attachment.querySelector(".overlay");
           if (!overlay) {
