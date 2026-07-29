@@ -274,6 +274,40 @@ class CacheHeadersMiddleware(MiddlewareMixin):
         return response
 
 
+class StripNulCharactersMiddleware(MiddlewareMixin):
+    """Remove NUL characters from the query string.
+
+    Postgres rejects NUL in text values, so a NUL that reaches a query
+    parameter used in a lookup turns the request into a 500.
+
+    Nothing else changes. The cleaned query string decodes to exactly what the
+    client sent, minus the NULs.
+
+    Cleaning QUERY_STRING rather than request.GET means get_full_path() is
+    cleaned too, and that reassigning request.encoding later (which discards
+    the parsed GET) re-parses from the cleaned string.
+
+    This should be the very first MIDDLEWARE in the chain, so we prevent
+    anything else reading request.GET before the cleaning happens. The first
+    read of request.GET caches the parsed QUERY_STRING, so if it wasn't clean,
+    any NUL character would be locked in.
+    """
+
+    # A NUL arrives percent-encoded, as a raw byte, or as a mix of the two. A "%" that
+    # isn't starting a real escape is a literal percent sign, and it's replaced with
+    # "%25" (the escape for a literal "%") because dropping the NUL next to it would
+    # otherwise leave it reading as the start of an escape:
+    #   "%<NUL>00"  ->  "%2500", the text "%00", rather than a fresh NUL
+    NUL_OR_LITERAL_PERCENT_REGEX = re.compile(r"%00|\x00|%(?![0-9A-Fa-f]{2})")
+
+    def process_request(self, request):
+        query_string = request.META.get("QUERY_STRING", "")
+        if "%00" in query_string or "\x00" in query_string:
+            request.META["QUERY_STRING"] = self.NUL_OR_LITERAL_PERCENT_REGEX.sub(
+                lambda m: "%25" if m[0] == "%" else "", query_string
+            )
+
+
 class PlusToSpaceMiddleware(MiddlewareMixin):
     """Replace old-style + with %20 in URLs."""
 

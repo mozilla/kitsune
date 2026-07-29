@@ -13,6 +13,8 @@ class SumoConfig(AppConfig):
     default_auto_field = "django.db.models.AutoField"
 
     def ready(self):
+        from kitsune.sumo import checks  # noqa: F401  (registers system checks)
+
         for lang, fallback in settings.FALLBACK_LANGUAGES.items():
             translation(lang)._fallback = translation(fallback)
 
