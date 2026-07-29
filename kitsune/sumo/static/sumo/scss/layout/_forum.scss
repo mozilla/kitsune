@@ -344,10 +344,15 @@
     background-color: var(--color-light-gray-03);
   }
 
-  a {
-    color: var(--color-text);
-    text-decoration: none;
+  li:has(a) {
     padding: 0;
+  }
+
+  a {
+    padding: p.$spacing-xs p.$spacing-md;
+    border-radius: inherit;
+    text-decoration: none;
+    color: var(--color-text);
   }
 
   .remover {
