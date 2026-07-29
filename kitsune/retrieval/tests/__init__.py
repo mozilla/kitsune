@@ -1,4 +1,6 @@
-from kitsune.retrieval.index import ChunkDocument
+from datetime import UTC, datetime
+
+from kitsune.retrieval.index import ChunkDocument, configured_index_meta, create_write_generation
 from kitsune.search.es_utils import es_client
 from kitsune.search.tests import ElasticTestCase
 
@@ -12,7 +14,7 @@ class ChunkIndexTestCase(ElasticTestCase):
         super().setUpClass()
         # a crashed run can leave an alias-less orphan index; start from a clean slate
         cls._delete_indices()
-        ChunkDocument.migrate_writes()
+        create_write_generation(timestamp=datetime.now(tz=UTC), meta=configured_index_meta())
         ChunkDocument.migrate_reads()
 
     @classmethod

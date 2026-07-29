@@ -10,7 +10,21 @@ from elasticsearch.dsl.types import DenseVectorIndexOptions
 from elasticsearch.helpers import bulk
 
 from kitsune.retrieval.chunking import CHUNKING_GENERATION, Chunk
-from kitsune.retrieval.fingerprints import content_hash, index_state_hash, scope_envelope
+from kitsune.retrieval.embeddings import (
+    EmbeddingRecipe,
+    configured_embedding_recipe,
+    recipe_from_payload,
+)
+from kitsune.retrieval.fingerprints import (
+    InvalidIndexMeta,
+    build_index_meta,
+    content_hash,
+    index_state_hash,
+    mapping_fingerprint,
+    read_index_meta,
+    scope_envelope,
+    write_index_meta,
+)
 from kitsune.search.base import SumoDocument
 from kitsune.search.es_utils import es_client
 from kitsune.search.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
@@ -18,6 +32,11 @@ from kitsune.search.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTe
 # Single source of truth for the vector dimensionality, shared with the embedding recipe
 # (settings.RETRIEVAL_EMBEDDING_DIMENSIONS) so the mapping and the vectors can't disagree.
 VECTOR_DIMS = settings.RETRIEVAL_EMBEDDING_DIMENSIONS
+# Vector-mapping properties, shared by the mapping and its fingerprint so they can't drift.
+SIMILARITY = "cosine"
+VECTOR_INDEX_OPTIONS = {"type": "hnsw", "m": 16, "ef_construction": 100}
+# Bump when an index-time mapping change requires a copy-vector rebuild (§7.4).
+SCHEMA_VERSION = 1
 
 CHUNK_KIND = "chunk"
 MANIFEST_KIND = "manifest"
@@ -106,9 +125,9 @@ class ChunkDocument(SumoDocument):
     content_text = SumoLocaleAwareTextField()
     content_vector = field.DenseVector(
         dims=VECTOR_DIMS,
-        similarity="cosine",
+        similarity=SIMILARITY,
         index=True,
-        index_options=DenseVectorIndexOptions(type="hnsw", m=16, ef_construction=100),
+        index_options=DenseVectorIndexOptions(**VECTOR_INDEX_OPTIONS),
     )
     scope = field.Object(enabled=False)  # lossless, opaque; _source only (§4.3)
     scope_clause_count = field.Integer()
@@ -365,3 +384,98 @@ def delete_chunks_for(*, content_type: str, object_id: str, locale: str) -> None
         },
         refresh=settings.TEST,
     )
+
+
+class RetrievalIndexUnavailable(Exception):
+    """No usable physical index is bound to the requested alias."""
+
+
+def configured_index_meta() -> dict:
+    """The `_meta` payload the current configuration expects on an active index."""
+    return build_index_meta(
+        configured_embedding_recipe(),
+        similarity=SIMILARITY,
+        index_options=VECTOR_INDEX_OPTIONS,
+        schema_version=SCHEMA_VERSION,
+    )
+
+
+def create_write_generation(*, timestamp: datetime, meta: dict) -> str:
+    """Create a physical index, stamp its `_meta`, then move the write alias to it.
+
+    Stamping precedes the alias move, so a live task can never reach a generation through
+    the write alias before it has a validated recipe; a crash in between leaves an
+    un-aliased orphan, not a reachable un-stamped index.
+    """
+    mapping_payload, mapping_digest = mapping_fingerprint(
+        dims=VECTOR_DIMS,
+        similarity=SIMILARITY,
+        index_options=VECTOR_INDEX_OPTIONS,
+        schema_version=SCHEMA_VERSION,
+    )
+    expected_mapping_meta = {**mapping_payload, "digest": mapping_digest}
+    if not isinstance(meta, Mapping) or meta.get("mapping") != expected_mapping_meta:
+        raise InvalidIndexMeta(
+            "generation _meta mapping does not describe the ChunkDocument mapping"
+        )
+
+    name = f"{ChunkDocument.Index.base_name}_{timestamp.strftime('%Y%m%d%H%M%S')}"
+    ChunkDocument.init(index=name)
+    write_index_meta(name, meta)
+    _point_alias(ChunkDocument.Index.write_alias, name)
+    return name
+
+
+def resolve_active_targets() -> tuple[str, ...]:
+    """The concrete indexes the read and write aliases point at — de-duplicated, with
+    absent aliases removed — resolved once so a mid-operation alias move can't split a
+    caller's reads and writes across generations."""
+    candidates = (
+        ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias),
+        ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias),
+    )
+    return tuple(dict.fromkeys(target for target in candidates if target))
+
+
+def resolve_read_target_and_recipe() -> tuple[str, EmbeddingRecipe]:
+    """Bind a query to one concrete read index and the recipe stamped on it.
+
+    Fails closed: a missing read alias raises rather than silently querying the write
+    alias, and an un-stamped or tampered `_meta` raises through ``read_index_meta``.
+    """
+    read_index = ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias)
+    if not read_index:
+        raise RetrievalIndexUnavailable("the retrieval read alias points at no index")
+    return read_index, _recipe_from_meta(read_index_meta(read_index))
+
+
+def _recipe_from_meta(meta: dict) -> EmbeddingRecipe:
+    embedding = meta["embedding"]
+    return recipe_from_payload(
+        {
+            "provider": embedding["provider"],
+            "model": embedding["model"],
+            "dimensions": embedding["dimensions"],
+            "document_task": embedding["document_task"],
+            "query_task": meta["query"]["query_task"],
+            "normalization": embedding["normalization"],
+        }
+    )
+
+
+def _point_alias(alias: str, index: str) -> None:
+    """Atomically move `alias` to `index` (retrieval owns this so it can stamp `_meta`
+    before the write alias moves, which base `migrate_writes` does not do)."""
+    client = es_client()
+    current = ChunkDocument.alias_points_at(alias)
+    if current == index:
+        return
+    if current:
+        client.indices.update_aliases(
+            actions=[
+                {"remove": {"index": current, "alias": alias}},
+                {"add": {"index": index, "alias": alias}},
+            ]
+        )
+    else:
+        client.indices.put_alias(index=index, name=alias)
