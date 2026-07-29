@@ -231,9 +231,10 @@ class QuestionPage(BasePage):
             "div[class='mzp-c-modal-inner'] button[type='submit']")
         self.report_abuse_textarea = page.locator("div[class='mzp-c-modal-inner'] textarea")
         # The reason radio options ('spam', 'language', 'abuse', 'other') inside the currently
-        # open report-abuse modal. 'spam' is preselected by default. The radio <input>s are
-        # visually hidden by the styled-radio CSS, so the (clickable) <label> is targeted
-        # instead - matched by its 'for' attribute suffix, since the id prefix is dynamic.
+        # open report-abuse modal. None is preselected - one must be explicitly clicked or the
+        # form fails client-side validation. The radio <input>s are visually hidden by the
+        # styled-radio CSS, so the (clickable) <label> is targeted instead - matched by its
+        # 'for' attribute suffix, since the id prefix is dynamic.
         self.report_abuse_reason_option = lambda reason_value: page.locator(
             "div[class='mzp-c-modal-inner']").locator(f"label[for$='_{reason_value}']")
         self.report_abuse_flagged_this_content_message = page.locator(
