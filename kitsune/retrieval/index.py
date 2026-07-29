@@ -5,11 +5,12 @@ from datetime import UTC, datetime
 from typing import ClassVar
 
 from django.conf import settings
+from elasticsearch import NotFoundError
 from elasticsearch.dsl import field
 from elasticsearch.dsl.types import DenseVectorIndexOptions
-from elasticsearch.helpers import bulk
+from elasticsearch.helpers import bulk, scan
 
-from kitsune.retrieval.chunking import CHUNKING_GENERATION, Chunk
+from kitsune.retrieval.chunking import Chunk
 from kitsune.retrieval.embeddings import (
     EmbeddingRecipe,
     configured_embedding_recipe,
@@ -317,24 +318,77 @@ def parse_manifest(source: Mapping) -> ExpectedDocumentState:
     )
 
 
-def index_chunks(chunks: list[Chunk], source: ChunkSource) -> None:
+@dataclass(frozen=True)
+class IndexedDocumentState:
+    """What one concrete index holds for a document: its manifest (``None`` when missing)
+    and its chunk ``_source`` dicts, sorted by position."""
+
+    manifest: ExpectedDocumentState | None
+    chunks: list[dict]
+
+
+class IndexWriteError(Exception):
+    """An Elasticsearch write or delete did not fully succeed."""
+
+
+def _require_concrete_index(index: str) -> None:
+    _require_string(index, "index", nonempty=True)
+    prefix = f"{ChunkDocument.Index.base_name}_"
+    generation = index.removeprefix(prefix)
+    if (
+        not index.startswith(prefix)
+        or len(generation) != 14
+        or not generation.isascii()
+        or not generation.isdigit()
+    ):
+        raise InvalidDocumentState(
+            f"{index!r} is not a concrete {ChunkDocument.Index.base_name!r} generation"
+        )
+
+
+def _identity_filters(identity: ChunkIdentity) -> list[dict]:
+    return [
+        {"term": {"content_type": identity.content_type}},
+        {"term": {"object_id": identity.object_id}},
+        {"term": {"locale": identity.locale}},
+    ]
+
+
+def write_chunks(
+    *,
+    index: str,
+    chunks: list[Chunk],
+    vectors: list[list[float]],
+    source: ChunkSource,
+    expected_state: ExpectedDocumentState,
+) -> None:
+    """Bulk-write and verify one chunk document per chunk to a concrete index. Vectors are
+    supplied by the caller — the write path never calls the embedding adapter."""
+    _require_concrete_index(index)
+    if len(vectors) != len(chunks):
+        raise InvalidDocumentState("write_chunks requires exactly one vector per chunk")
+    if [chunk.position for chunk in chunks] != list(range(len(chunks))):
+        raise InvalidDocumentState("chunk positions must be contiguous and start at zero")
+    if expected_state.chunk_count != len(chunks):
+        raise InvalidDocumentState("expected_state.chunk_count must equal the number of chunks")
+    if expected_state.content_hash != content_hash(chunks):
+        raise InvalidDocumentState("expected_state.content_hash does not match the chunks")
+    if expected_state.index_state_hash != index_state_hash(chunks, source):
+        raise InvalidDocumentState(
+            "expected_state.index_state_hash does not match the chunks and source"
+        )
+    if expected_state.updated != source.updated:
+        raise InvalidDocumentState("expected_state.updated does not match the source")
+
     locale = source.locale
     identity = source.identity
-    positions = [chunk.position for chunk in chunks]
-    for position in positions:
-        _require_int(position, "chunk position", minimum=0)
-    if positions != list(range(len(chunks))):
-        raise InvalidDocumentState("chunk positions must be contiguous and start at zero")
-
-    # Worker-computed per-document state (§7); repeated on every chunk for recovery.
-    document_hash = content_hash(chunks)
-    state_hash = index_state_hash(chunks, source)
     indexed_on = datetime.now(tz=UTC)
     actions = []
-    for chunk in chunks:
+    for chunk, vector in zip(chunks, vectors, strict=True):
         doc = ChunkDocument(
             kind=CHUNK_KIND,
             content_text={locale: chunk.text},
+            content_vector=list(vector),
             content_type=source.content_type,
             object_id=source.object_id,
             family_id=source.family_id,
@@ -346,9 +400,9 @@ def index_chunks(chunks: list[Chunk], source: ChunkSource) -> None:
             position=chunk.position,
             visibility=source.visibility,
             access_group_ids=list(source.access_group_ids),
-            content_hash=document_hash,
-            index_state_hash=state_hash,
-            chunking_generation=CHUNKING_GENERATION,
+            content_hash=expected_state.content_hash,
+            index_state_hash=expected_state.index_state_hash,
+            chunking_generation=expected_state.chunking_generation,
             indexed_on=indexed_on,
             title={locale: source.title},
             summary={locale: source.summary},
@@ -360,30 +414,164 @@ def index_chunks(chunks: list[Chunk], source: ChunkSource) -> None:
             updated=source.updated,
         )
         doc.meta.id = chunk_id(identity, chunk.position)
-        actions.append(doc.to_action(action="index", is_bulk=True))
+        action = doc.to_action(action="index", is_bulk=True)
+        action["_index"] = index  # target the concrete generation, never the alias default
+        actions.append(action)
 
-    bulk(
-        es_client(),
-        actions,
-        chunk_size=settings.ES_DEFAULT_ELASTIC_CHUNK_SIZE,
-        refresh=settings.TEST,
+    _verified_bulk(actions)
+
+
+def commit_manifest(
+    *, index: str, identity: ChunkIdentity, expected_state: ExpectedDocumentState
+) -> None:
+    """Write the per-document manifest as the final commit marker (§4.1)."""
+    _require_concrete_index(index)
+    doc = manifest_doc(identity, expected_state)
+    result = es_client().index(
+        index=index, id=manifest_id(identity), document=doc.to_dict(), refresh=settings.TEST
+    )
+    if result.get("result") not in ("created", "updated"):
+        raise IndexWriteError(f"manifest commit for {manifest_id(identity)} returned {result!r}")
+
+
+def delete_orphan_chunks(
+    *, index: str, identity: ChunkIdentity, expected_positions: range | set[int]
+) -> None:
+    """Delete this document's chunk docs whose position is not in ``expected_positions``
+    (positions left over from a larger previous generation). The manifest is untouched."""
+    _require_concrete_index(index)
+    _verified_delete_by_query(
+        index,
+        {
+            "bool": {
+                "filter": [*_identity_filters(identity), {"term": {"kind": CHUNK_KIND}}],
+                "must_not": [{"terms": {"position": sorted(expected_positions)}}],
+            }
+        },
     )
 
 
-def delete_chunks_for(*, content_type: str, object_id: str, locale: str) -> None:
-    es_client().delete_by_query(
-        index=ChunkDocument.Index.write_alias,
-        query={
+def replace_chunks(
+    *,
+    index: str,
+    chunks: list[Chunk],
+    vectors: list[list[float]],
+    source: ChunkSource,
+    expected_state: ExpectedDocumentState,
+) -> None:
+    """Two-phase commit (§4.1): write+verify chunks, delete+verify orphan positions, then the
+    manifest as the final marker — so a crash before the marker reads as incomplete and
+    replays safely. Index-new-then-delete leaves no zero-chunk window."""
+    _require_concrete_index(index)
+    write_chunks(
+        index=index, chunks=chunks, vectors=vectors, source=source, expected_state=expected_state
+    )
+    delete_orphan_chunks(
+        index=index, identity=source.identity, expected_positions=range(len(chunks))
+    )
+    commit_manifest(index=index, identity=source.identity, expected_state=expected_state)
+
+
+def read_indexed_document(*, index: str, identity: ChunkIdentity) -> IndexedDocumentState:
+    """Read a document's manifest and every one of its chunks (scanned, then sorted by
+    position — never limited to Elasticsearch's default page)."""
+    _require_concrete_index(index)
+    return IndexedDocumentState(
+        manifest=_read_manifest(index, identity),
+        chunks=_read_chunks(index, identity),
+    )
+
+
+def _read_manifest(index: str, identity: ChunkIdentity) -> ExpectedDocumentState | None:
+    try:
+        response = es_client().get(index=index, id=manifest_id(identity))
+    except NotFoundError:
+        return None
+    source = response["_source"]
+    state = parse_manifest(source)
+    stored_identity = ChunkIdentity(
+        content_type=source["content_type"],
+        object_id=source["object_id"],
+        locale=source["locale"],
+    )
+    if stored_identity != identity:
+        raise InvalidDocumentState(
+            f"manifest {manifest_id(identity)!r} contains identity {stored_identity!r}"
+        )
+    return state
+
+
+def _read_chunks(index: str, identity: ChunkIdentity) -> list[dict]:
+    body = {
+        "query": {
+            "bool": {"filter": [*_identity_filters(identity), {"term": {"kind": CHUNK_KIND}}]}
+        },
+        # dense_vector is excluded from _source by default in ES 9.x; opt it back in so the
+        # sync core can verify each chunk's stored vector.
+        "_source": {"exclude_vectors": False},
+    }
+    hits = scan(es_client(), index=index, query=body)
+    return sorted((hit["_source"] for hit in hits), key=lambda chunk: chunk["position"])
+
+
+def delete_chunks_for(*, index: str, identity: ChunkIdentity) -> None:
+    """Remove a document's chunks and manifest from one concrete index."""
+    _require_concrete_index(index)
+    _verified_delete_by_query(index, {"bool": {"filter": _identity_filters(identity)}})
+
+
+def delete_chunks_for_object(*, index: str, content_type: str, object_id: str) -> None:
+    """Missing-locale fallback: remove every locale's chunks and manifests for an object,
+    used when a delayed deletion cannot recover the locale from the vanished source row."""
+    _require_concrete_index(index)
+    _require_identity_component(content_type, "content_type")
+    _require_identity_component(object_id, "object_id")
+    _verified_delete_by_query(
+        index,
+        {
             "bool": {
                 "filter": [
                     {"term": {"content_type": content_type}},
                     {"term": {"object_id": object_id}},
-                    {"term": {"locale": locale}},
                 ]
             }
         },
+    )
+
+
+def _verified_bulk(actions: list[dict]) -> None:
+    if not actions:
+        return
+    succeeded, errors = bulk(
+        es_client(),
+        actions,
+        raise_on_error=False,
+        chunk_size=settings.ES_DEFAULT_ELASTIC_CHUNK_SIZE,
         refresh=settings.TEST,
     )
+    if errors or succeeded != len(actions):
+        raise IndexWriteError(f"{len(actions) - succeeded} of {len(actions)} bulk items failed")
+
+
+def _verified_delete_by_query(index: str, query: dict) -> None:
+    response = es_client().delete_by_query(
+        index=index, query=query, conflicts="abort", refresh=settings.TEST
+    )
+    total = response.get("total")
+    deleted = response.get("deleted")
+    version_conflicts = response.get("version_conflicts")
+    valid_counts = all(
+        isinstance(value, int) and not isinstance(value, bool) and value >= 0
+        for value in (total, deleted, version_conflicts)
+    )
+    if (
+        response.get("timed_out") is not False
+        or response.get("failures") != []
+        or not valid_counts
+        or version_conflicts != 0
+        or deleted != total
+    ):
+        raise IndexWriteError(f"delete_by_query on {index} did not complete cleanly")
 
 
 class RetrievalIndexUnavailable(Exception):

@@ -1,5 +1,6 @@
 from dataclasses import FrozenInstanceError
 from datetime import UTC, datetime
+from unittest import mock
 
 from django.conf import settings
 from django.test import SimpleTestCase
@@ -7,17 +8,24 @@ from django.test import SimpleTestCase
 from kitsune.retrieval.chunking import CHUNKING_GENERATION, Chunk, chunk_kb
 from kitsune.retrieval.fingerprints import content_hash, index_state_hash, scope_envelope
 from kitsune.retrieval.index import (
+    VECTOR_DIMS,
     ChunkDocument,
     ChunkIdentity,
     ChunkSource,
     ExpectedDocumentState,
+    IndexWriteError,
     InvalidDocumentState,
     chunk_id,
+    commit_manifest,
     delete_chunks_for,
-    index_chunks,
+    delete_chunks_for_object,
+    delete_orphan_chunks,
     manifest_doc,
     manifest_id,
     parse_manifest,
+    read_indexed_document,
+    replace_chunks,
+    write_chunks,
 )
 from kitsune.retrieval.tests import ChunkIndexTestCase
 from kitsune.search.es_utils import es_client
@@ -244,7 +252,8 @@ class ManifestSerializationTests(SimpleTestCase):
 
 
 class ChunkPositionValidationTests(SimpleTestCase):
-    def test_index_chunks_requires_contiguous_zero_based_positions(self):
+    def test_write_chunks_requires_contiguous_zero_based_positions(self):
+        source = _source()
         malformed = [
             [Chunk(text="a", position=-1, heading_path="H")],
             [Chunk(text="a", position=1, heading_path="H")],
@@ -256,7 +265,13 @@ class ChunkPositionValidationTests(SimpleTestCase):
         for chunks in malformed:
             with self.subTest(positions=[chunk.position for chunk in chunks]):
                 with self.assertRaises(InvalidDocumentState):
-                    index_chunks(chunks, _source())
+                    write_chunks(
+                        index=_physical_index_name(),
+                        chunks=chunks,
+                        vectors=[_vector(i) for i in range(len(chunks))],
+                        source=source,
+                        expected_state=_expected(chunks, source),
+                    )
 
 
 class ChunkDocumentMappingTests(ChunkIndexTestCase):
@@ -304,79 +319,420 @@ class ChunkDocumentMappingTests(ChunkIndexTestCase):
         self.assertFalse(props["scope"].get("enabled", True))
 
 
-class IndexChunksTests(ChunkIndexTestCase):
-    def test_writes_a_doc_per_chunk_with_deterministic_ids_and_metadata(self):
-        html = (
-            "<h1>Install</h1>"
-            "<p>Download and run the installer to get started.</p>"
-            '<div class="for" data-for="win"><p>On Windows, double-click the setup file.</p></div>'
+def _vector(seed):
+    # Unit vector: distinct per seed and non-zero (cosine rejects zero-magnitude vectors).
+    vector = [0.0] * VECTOR_DIMS
+    vector[seed % VECTOR_DIMS] = 1.0
+    return vector
+
+
+def _expected(chunks, source, **overrides):
+    fields = {
+        "content_hash": content_hash(chunks),
+        "index_state_hash": index_state_hash(chunks, source),
+        "chunking_generation": CHUNKING_GENERATION,
+        "chunk_count": len(chunks),
+        "indexed_revision_id": 1,
+        "updated": source.updated,
+    }
+    fields.update(overrides)
+    return ExpectedDocumentState(**fields)
+
+
+def _physical_index_name():
+    return f"{ChunkDocument.Index.base_name}_20260101000000"
+
+
+class WriteReadRoundTripTests(ChunkIndexTestCase):
+    def setUp(self):
+        super().setUp()
+        self.index = ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
+
+    def _replace(self, chunks, source, **expected_kwargs):
+        vectors = [_vector(i) for i in range(len(chunks))]
+        replace_chunks(
+            index=self.index,
+            chunks=chunks,
+            vectors=vectors,
+            source=source,
+            expected_state=_expected(chunks, source, **expected_kwargs),
         )
-        chunks = chunk_kb(html, title="Install Firefox")
+        return vectors
+
+    def test_replace_then_read_round_trips_every_field(self):
+        chunks = chunk_kb(
+            "<h1>Install</h1><p>Download and run it.</p>"
+            '<div class="for" data-for="win"><p>Windows steps.</p></div>',
+            title="Install",
+        )
         source = _source()
+        vectors = self._replace(chunks, source)
 
-        index_chunks(chunks, source)
-
-        self.assertEqual(ChunkDocument.search().count(), len(chunks))
-
-        first = es_client().get(index=ChunkDocument.Index.read_alias, id="kb:1:en-US:0")["_source"]
+        state = read_indexed_document(index=self.index, identity=source.identity)
+        self.assertEqual(state.manifest, _expected(chunks, source))
+        self.assertEqual([c["position"] for c in state.chunks], list(range(len(chunks))))
+        first = state.chunks[0]
         self.assertEqual(first["kind"], "chunk")
         self.assertEqual(first["content_text"]["en-US"], chunks[0].text)
-        self.assertEqual(first["content_type"], "kb")
-        self.assertEqual(first["object_id"], "1")
-        self.assertEqual(first["family_id"], "1")
+        self.assertEqual(first["content_vector"], vectors[0])
+        self.assertEqual(first["content_type"], source.content_type)
+        self.assertEqual(first["object_id"], source.object_id)
+        self.assertEqual(first["family_id"], source.family_id)
+        self.assertEqual(first["locale"], source.locale)
         self.assertEqual(first["position"], 0)
+        self.assertEqual(first["heading_path"], chunks[0].heading_path)
+        self.assertEqual(first["applies_to"], sorted(chunks[0].applies_to))
+        self.assertEqual(first["scope"], scope_envelope(chunks[0].scope))
+        self.assertEqual(first["scope_clause_count"], len(chunks[0].scope))
+        self.assertEqual(first["visibility"], source.visibility)
+        self.assertEqual(first["access_group_ids"], list(source.access_group_ids))
         self.assertEqual(first["content_hash"], content_hash(chunks))
         self.assertEqual(first["index_state_hash"], index_state_hash(chunks, source))
         self.assertEqual(first["chunking_generation"], CHUNKING_GENERATION)
-        self.assertEqual(first["visibility"], "public")
-        self.assertEqual(first["access_group_ids"], [])
-        self.assertEqual(first["scope"], scope_envelope(chunks[0].scope))
-        self.assertEqual(first["scope_clause_count"], 0)
-        self.assertEqual(first["title"]["en-US"], "Install Firefox")
-        # chunk docs carry no manifest-only fields
+        self.assertEqual(first["title"][source.locale], source.title)
+        self.assertEqual(first["summary"][source.locale], source.summary)
+        self.assertEqual(first["keywords"][source.locale], source.keywords)
+        self.assertEqual(first["slug"][source.locale], source.slug)
+        self.assertEqual(first["category"], source.category)
+        self.assertEqual(first["product_ids"], list(source.product_ids))
+        self.assertEqual(first["topic_ids"], list(source.topic_ids))
+        self.assertIn("indexed_on", first)
+        self.assertIn("updated", first)
+        # chunk docs never carry manifest-only fields
         self.assertNotIn("chunk_count", first)
         self.assertNotIn("indexed_revision_id", first)
 
-        scoped = es_client().get(index=ChunkDocument.Index.read_alias, id="kb:1:en-US:1")[
-            "_source"
-        ]
+        scoped = state.chunks[1]
+        self.assertEqual(scoped["content_vector"], vectors[1])
         self.assertEqual(scoped["applies_to"], ["win"])
-        self.assertEqual(scoped["scope"], scope_envelope(chunks[1].scope))
         self.assertEqual(scoped["scope"], {"version": 1, "clauses": [["win"]]})
         self.assertEqual(scoped["scope_clause_count"], 1)
 
-    def test_restricted_source_writes_access_metadata(self):
-        chunks = chunk_kb("<h1>H</h1><p>Body text here.</p>", title="T")
+    def test_restricted_source_round_trips_canonical_access_metadata(self):
         source = _source(
             product_ids=["9", "3"],
             topic_ids=["4", "2"],
             visibility="group_restricted",
             access_group_ids=[9, 7],
         )
-        index_chunks(chunks, source)
-        stored = es_client().get(index=ChunkDocument.Index.read_alias, id="kb:1:en-US:0")[
-            "_source"
-        ]
+        chunks = [Chunk(text="body", position=0, heading_path="H")]
+        self._replace(chunks, source)
+
+        stored = read_indexed_document(index=self.index, identity=source.identity).chunks[0]
         self.assertEqual(stored["visibility"], "group_restricted")
-        # _source preserves integer group IDs; all unordered IDs use canonical order.
         self.assertEqual(stored["access_group_ids"], [7, 9])
         self.assertEqual(stored["product_ids"], ["3", "9"])
         self.assertEqual(stored["topic_ids"], ["2", "4"])
 
+    def test_reads_every_chunk_beyond_the_default_page(self):
+        source = _source()
+        chunks = [Chunk(text=f"body {i}", position=i, heading_path="H") for i in range(15)]
+        self._replace(chunks, source)
+        state = read_indexed_document(index=self.index, identity=source.identity)
+        self.assertEqual([c["position"] for c in state.chunks], list(range(15)))
+        self.assertEqual(state.manifest.chunk_count, 15)
 
-class DeleteChunksForTests(ChunkIndexTestCase):
-    def test_deletes_only_the_targeted_documents_chunks(self):
-        html = (
-            "<h1>Sync</h1>"
-            "<p>Turn on sync to share tabs across devices.</p>"
-            "<h2>Devices</h2>"
-            "<p>Manage your connected devices here.</p>"
+    def test_shrink_removes_orphan_chunks(self):
+        source = _source()
+        self._replace(
+            [Chunk(text=f"b{i}", position=i, heading_path="H") for i in range(5)], source
         )
-        chunks = chunk_kb(html, title="Sync")
-        index_chunks(chunks, _source(object_id="1"))
-        index_chunks(chunks, _source(object_id="2"))
+        self._replace(
+            [Chunk(text=f"b{i}", position=i, heading_path="H") for i in range(3)], source
+        )
+        state = read_indexed_document(index=self.index, identity=source.identity)
+        self.assertEqual([c["position"] for c in state.chunks], [0, 1, 2])
+        self.assertEqual(state.manifest.chunk_count, 3)
 
-        delete_chunks_for(content_type="kb", object_id="1", locale="en-US")
+    def test_zero_chunks_commits_a_zero_manifest(self):
+        source = _source()
+        self._replace([Chunk(text="x", position=0, heading_path="H")], source)
+        self._replace([], source)
+        state = read_indexed_document(index=self.index, identity=source.identity)
+        self.assertEqual(state.chunks, [])
+        self.assertIsNotNone(state.manifest)  # "processed, empty" is not "missing"
+        self.assertEqual(state.manifest.chunk_count, 0)
 
-        self.assertEqual(ChunkDocument.search().filter("term", object_id="1").count(), 0)
-        self.assertEqual(ChunkDocument.search().filter("term", object_id="2").count(), len(chunks))
+    def test_write_path_never_calls_the_embedding_adapter(self):
+        with mock.patch("kitsune.retrieval.embeddings.get_embeddings") as embed:
+            self._replace([Chunk(text="x", position=0, heading_path="H")], _source())
+        embed.assert_not_called()
+
+    def test_write_chunks_requires_one_vector_per_chunk(self):
+        source = _source()
+        chunks = [Chunk(text=t, position=i, heading_path="H") for i, t in enumerate("ab")]
+        with self.assertRaises(InvalidDocumentState):
+            write_chunks(
+                index=self.index,
+                chunks=chunks,
+                vectors=[_vector(0)],
+                source=source,
+                expected_state=_expected(chunks, source),
+            )
+
+    def test_write_chunks_rejects_expected_state_that_does_not_match_inputs(self):
+        source = _source()
+        chunks = [Chunk(text="a", position=0, heading_path="H")]
+        mismatches = (
+            {"chunk_count": 2},
+            {"content_hash": "f" * 64},
+            {"index_state_hash": "e" * 64},
+            {"updated": datetime(2026, 1, 2, tzinfo=UTC)},
+        )
+        for overrides in mismatches:
+            with self.subTest(overrides=overrides), self.assertRaises(InvalidDocumentState):
+                write_chunks(
+                    index=self.index,
+                    chunks=chunks,
+                    vectors=[_vector(0)],
+                    source=source,
+                    expected_state=_expected(chunks, source, **overrides),
+                )
+
+    def test_manifest_identity_must_match_the_requested_document(self):
+        requested = _source(object_id="1").identity
+        wrong = _source(object_id="2").identity
+        doc = manifest_doc(wrong, _expected([], _source(object_id="2")))
+        es_client().index(
+            index=self.index,
+            id=manifest_id(requested),
+            document=doc.to_dict(),
+            refresh=True,
+        )
+
+        with self.assertRaises(InvalidDocumentState):
+            read_indexed_document(index=self.index, identity=requested)
+
+
+class ManifestCommitOrderingTests(ChunkIndexTestCase):
+    def setUp(self):
+        super().setUp()
+        self.index = ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
+
+    def test_partial_bulk_failure_leaves_the_manifest_uncommitted(self):
+        source = _source()
+        chunks = [Chunk(text="a", position=0, heading_path="H")]
+        with (
+            mock.patch(
+                "kitsune.retrieval.index.bulk",
+                return_value=(0, [{"index": {"status": 500}}]),
+            ),
+            self.assertRaises(IndexWriteError),
+        ):
+            replace_chunks(
+                index=self.index,
+                chunks=chunks,
+                vectors=[_vector(0)],
+                source=source,
+                expected_state=_expected(chunks, source),
+            )
+        # a crash during the chunk write must never leave a committed-looking manifest
+        state = read_indexed_document(index=self.index, identity=source.identity)
+        self.assertIsNone(state.manifest)
+
+    def test_failed_replacement_keeps_the_previous_manifest_stale(self):
+        source = _source()
+        old_chunks = [Chunk(text="old", position=0, heading_path="H")]
+        old_state = _expected(old_chunks, source, indexed_revision_id=1)
+        replace_chunks(
+            index=self.index,
+            chunks=old_chunks,
+            vectors=[_vector(0)],
+            source=source,
+            expected_state=old_state,
+        )
+
+        new_chunks = [Chunk(text="new", position=0, heading_path="H")]
+        with (
+            mock.patch(
+                "kitsune.retrieval.index.bulk",
+                return_value=(0, [{"index": {"status": 500}}]),
+            ),
+            self.assertRaises(IndexWriteError),
+        ):
+            replace_chunks(
+                index=self.index,
+                chunks=new_chunks,
+                vectors=[_vector(1)],
+                source=source,
+                expected_state=_expected(new_chunks, source, indexed_revision_id=2),
+            )
+
+        stored = read_indexed_document(index=self.index, identity=source.identity)
+        self.assertEqual(stored.manifest, old_state)
+
+    def test_failed_orphan_delete_does_not_advance_the_manifest(self):
+        source = _source()
+        old_chunks = [
+            Chunk(text=f"old {position}", position=position, heading_path="H")
+            for position in range(2)
+        ]
+        old_state = _expected(old_chunks, source, indexed_revision_id=1)
+        replace_chunks(
+            index=self.index,
+            chunks=old_chunks,
+            vectors=[_vector(0), _vector(1)],
+            source=source,
+            expected_state=old_state,
+        )
+
+        new_chunks = [Chunk(text="new", position=0, heading_path="H")]
+        with (
+            mock.patch(
+                "kitsune.retrieval.index._verified_delete_by_query",
+                side_effect=IndexWriteError("delete failed"),
+            ),
+            self.assertRaises(IndexWriteError),
+        ):
+            replace_chunks(
+                index=self.index,
+                chunks=new_chunks,
+                vectors=[_vector(2)],
+                source=source,
+                expected_state=_expected(new_chunks, source, indexed_revision_id=2),
+            )
+
+        stored = read_indexed_document(index=self.index, identity=source.identity)
+        self.assertEqual(stored.manifest, old_state)
+
+
+class DeleteTests(ChunkIndexTestCase):
+    def setUp(self):
+        super().setUp()
+        self.index = ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
+
+    def _seed(self, source):
+        chunks = [Chunk(text="x", position=0, heading_path="H")]
+        replace_chunks(
+            index=self.index,
+            chunks=chunks,
+            vectors=[_vector(0)],
+            source=source,
+            expected_state=_expected(chunks, source),
+        )
+
+    def test_delete_chunks_for_removes_chunks_and_manifest(self):
+        target, other = _source(object_id="1"), _source(object_id="2")
+        self._seed(target)
+        self._seed(other)
+
+        delete_chunks_for(index=self.index, identity=target.identity)
+
+        gone = read_indexed_document(index=self.index, identity=target.identity)
+        self.assertEqual(gone.chunks, [])
+        self.assertIsNone(gone.manifest)
+        kept = read_indexed_document(index=self.index, identity=other.identity)
+        self.assertEqual(len(kept.chunks), 1)
+        self.assertIsNotNone(kept.manifest)
+
+    def test_delete_chunks_for_object_removes_all_locales_of_one_object(self):
+        english, german = (
+            _source(object_id="1", locale="en-US"),
+            _source(object_id="1", locale="de"),
+        )
+        other = _source(object_id="2", locale="en-US")
+        other_type = _source(content_type="question", object_id="1", locale="en-US")
+        for source in (english, german, other, other_type):
+            self._seed(source)
+
+        delete_chunks_for_object(index=self.index, content_type="kb", object_id="1")
+
+        deleted_english = read_indexed_document(index=self.index, identity=english.identity)
+        deleted_german = read_indexed_document(index=self.index, identity=german.identity)
+        kept_other = read_indexed_document(index=self.index, identity=other.identity)
+        kept_other_type = read_indexed_document(index=self.index, identity=other_type.identity)
+        for deleted in (deleted_english, deleted_german):
+            self.assertEqual(deleted.chunks, [])
+            self.assertIsNone(deleted.manifest)
+        for kept in (kept_other, kept_other_type):
+            self.assertEqual(len(kept.chunks), 1)
+            self.assertIsNotNone(kept.manifest)
+
+    def test_delete_chunks_for_object_rejects_malformed_identity(self):
+        for content_type, object_id in (("", "1"), ("kb", ""), ("kb:wiki", "1"), ("kb", "1:2")):
+            with (
+                self.subTest(content_type=content_type, object_id=object_id),
+                self.assertRaises(InvalidDocumentState),
+            ):
+                delete_chunks_for_object(
+                    index=self.index, content_type=content_type, object_id=object_id
+                )
+
+    def test_delete_fails_closed_when_delete_by_query_is_not_fully_successful(self):
+        responses = (
+            {
+                "timed_out": True,
+                "failures": [],
+                "version_conflicts": 0,
+                "total": 1,
+                "deleted": 1,
+            },
+            {
+                "timed_out": False,
+                "failures": [{"shard": 1}],
+                "version_conflicts": 0,
+                "total": 1,
+                "deleted": 0,
+            },
+            {
+                "timed_out": False,
+                "failures": [],
+                "version_conflicts": 1,
+                "total": 1,
+                "deleted": 0,
+            },
+            {},
+        )
+        for response in responses:
+            client = mock.Mock()
+            client.delete_by_query.return_value = response
+            with (
+                self.subTest(response=response),
+                mock.patch("kitsune.retrieval.index.es_client", return_value=client),
+                self.assertRaises(IndexWriteError),
+            ):
+                delete_chunks_for(index=self.index, identity=_source().identity)
+
+
+class ConcreteIndexGuardTests(SimpleTestCase):
+    def test_physical_primitives_reject_aliases_and_non_generation_names(self):
+        source = _source()
+        chunks = [Chunk(text="x", position=0, heading_path="H")]
+        state = _expected(chunks, source)
+        invalid_indexes = (
+            ChunkDocument.Index.write_alias,
+            ChunkDocument.Index.read_alias,
+            "some-other-alias",
+            "",
+        )
+
+        for index in invalid_indexes:
+            with self.subTest(index=index):
+                with self.assertRaises(InvalidDocumentState):
+                    write_chunks(
+                        index=index,
+                        chunks=chunks,
+                        vectors=[_vector(0)],
+                        source=source,
+                        expected_state=state,
+                    )
+                with self.assertRaises(InvalidDocumentState):
+                    replace_chunks(
+                        index=index,
+                        chunks=chunks,
+                        vectors=[_vector(0)],
+                        source=source,
+                        expected_state=state,
+                    )
+                with self.assertRaises(InvalidDocumentState):
+                    commit_manifest(index=index, identity=source.identity, expected_state=state)
+                with self.assertRaises(InvalidDocumentState):
+                    delete_orphan_chunks(
+                        index=index, identity=source.identity, expected_positions={0}
+                    )
+                with self.assertRaises(InvalidDocumentState):
+                    read_indexed_document(index=index, identity=source.identity)
+                with self.assertRaises(InvalidDocumentState):
+                    delete_chunks_for(index=index, identity=source.identity)
+                with self.assertRaises(InvalidDocumentState):
+                    delete_chunks_for_object(index=index, content_type="kb", object_id="1")
