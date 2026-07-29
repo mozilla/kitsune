@@ -36,7 +36,8 @@ VECTOR_DIMS = settings.RETRIEVAL_EMBEDDING_DIMENSIONS
 # Vector-mapping properties, shared by the mapping and its fingerprint so they can't drift.
 SIMILARITY = "cosine"
 VECTOR_INDEX_OPTIONS = {"type": "hnsw", "m": 16, "ef_construction": 100}
-# Bump when an index-time mapping change requires a copy-vector rebuild (§7.4).
+# Bump when an index-time mapping change requires a new physical index while allowing
+# existing vectors to be copied.
 SCHEMA_VERSION = 1
 
 CHUNK_KIND = "chunk"
@@ -130,7 +131,7 @@ class ChunkDocument(SumoDocument):
         index=True,
         index_options=DenseVectorIndexOptions(**VECTOR_INDEX_OPTIONS),
     )
-    scope = field.Object(enabled=False)  # lossless, opaque; _source only (§4.3)
+    scope = field.Object(enabled=False)  # lossless, opaque; stored in _source only
     scope_clause_count = field.Integer()
     applies_to = field.Keyword(multi=True)  # lossy flattened union; coarse selection only
     heading_path = field.Text()
@@ -189,8 +190,8 @@ class ChunkIdentity:
 class ChunkSource:
     """Identity, family, and denormalized source metadata shared across a document's chunks.
 
-    Structurally satisfies ``fingerprints.ChunkStateSource``. Hashes are worker-computed
-    (§7), never caller-supplied, so this carries no ``content_hash``.
+    Structurally satisfies ``fingerprints.ChunkStateSource``. Hashes are computed from
+    chunks and source metadata, never supplied by callers, so this carries no hash fields.
     """
 
     content_type: str
@@ -333,14 +334,8 @@ class IndexWriteError(Exception):
 
 def _require_concrete_index(index: str) -> None:
     _require_string(index, "index", nonempty=True)
-    prefix = f"{ChunkDocument.Index.base_name}_"
-    generation = index.removeprefix(prefix)
-    if (
-        not index.startswith(prefix)
-        or len(generation) != 14
-        or not generation.isascii()
-        or not generation.isdigit()
-    ):
+    pattern = rf"{re.escape(ChunkDocument.Index.base_name)}_[0-9]{{14}}"
+    if not re.fullmatch(pattern, index):
         raise InvalidDocumentState(
             f"{index!r} is not a concrete {ChunkDocument.Index.base_name!r} generation"
         )
@@ -424,7 +419,7 @@ def write_chunks(
 def commit_manifest(
     *, index: str, identity: ChunkIdentity, expected_state: ExpectedDocumentState
 ) -> None:
-    """Write the per-document manifest as the final commit marker (§4.1)."""
+    """Write the per-document manifest as the final commit marker."""
     _require_concrete_index(index)
     doc = manifest_doc(identity, expected_state)
     result = es_client().index(
@@ -459,9 +454,11 @@ def replace_chunks(
     source: ChunkSource,
     expected_state: ExpectedDocumentState,
 ) -> None:
-    """Two-phase commit (§4.1): write+verify chunks, delete+verify orphan positions, then the
-    manifest as the final marker — so a crash before the marker reads as incomplete and
-    replays safely. Index-new-then-delete leaves no zero-chunk window."""
+    """Write and verify chunks, delete and verify orphans, then commit the manifest.
+
+    A crash before the final marker leaves the document detectably incomplete and safe to
+    replay. Writing replacements before deleting orphans avoids a zero-chunk window.
+    """
     _require_concrete_index(index)
     write_chunks(
         index=index, chunks=chunks, vectors=vectors, source=source, expected_state=expected_state
@@ -610,7 +607,7 @@ def create_write_generation(*, timestamp: datetime, meta: dict) -> str:
     name = f"{ChunkDocument.Index.base_name}_{timestamp.strftime('%Y%m%d%H%M%S')}"
     ChunkDocument.init(index=name)
     write_index_meta(name, meta)
-    _point_alias(ChunkDocument.Index.write_alias, name)
+    ChunkDocument._update_alias(ChunkDocument.Index.write_alias, name)
     return name
 
 
@@ -634,12 +631,9 @@ def resolve_read_target_and_recipe() -> tuple[str, EmbeddingRecipe]:
     read_index = ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias)
     if not read_index:
         raise RetrievalIndexUnavailable("the retrieval read alias points at no index")
-    return read_index, _recipe_from_meta(read_index_meta(read_index))
-
-
-def _recipe_from_meta(meta: dict) -> EmbeddingRecipe:
+    meta = read_index_meta(read_index)
     embedding = meta["embedding"]
-    return recipe_from_payload(
+    recipe = recipe_from_payload(
         {
             "provider": embedding["provider"],
             "model": embedding["model"],
@@ -649,21 +643,4 @@ def _recipe_from_meta(meta: dict) -> EmbeddingRecipe:
             "normalization": embedding["normalization"],
         }
     )
-
-
-def _point_alias(alias: str, index: str) -> None:
-    """Atomically move `alias` to `index` (retrieval owns this so it can stamp `_meta`
-    before the write alias moves, which base `migrate_writes` does not do)."""
-    client = es_client()
-    current = ChunkDocument.alias_points_at(alias)
-    if current == index:
-        return
-    if current:
-        client.indices.update_aliases(
-            actions=[
-                {"remove": {"index": current, "alias": alias}},
-                {"add": {"index": index, "alias": alias}},
-            ]
-        )
-    else:
-        client.indices.put_alias(index=index, name=alias)
+    return read_index, recipe

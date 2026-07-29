@@ -9,6 +9,7 @@ change (ADR 0006).
 
 from django.db.models import Q, QuerySet
 
+from kitsune.retrieval.index import PUBLIC_VISIBILITY, RESTRICTED_VISIBILITY
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.indexing import EXCLUDED_CATEGORIES, is_indexable_content
 from kitsune.wiki.models import Document
@@ -77,4 +78,4 @@ def access_group_ids_for(document) -> list[int]:
 
 
 def visibility_for(document) -> str:
-    return "group_restricted" if access_group_ids_for(document) else "public"
+    return RESTRICTED_VISIBILITY if access_group_ids_for(document) else PUBLIC_VISIBILITY

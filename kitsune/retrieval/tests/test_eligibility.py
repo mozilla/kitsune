@@ -1,4 +1,4 @@
-"""Task 3 — shared content exclusions, retrieval eligibility predicates, access metadata.
+"""Tests for shared content exclusions, retrieval eligibility, and access metadata.
 
 The security-critical guarantee here is that the bulk ``eligible_documents()`` queryset
 selects exactly the documents for which the object predicate ``is_retrieval_indexable``
@@ -88,19 +88,22 @@ class SharedContentExclusionsTests(TestCase):
         restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
         self.assertTrue(is_indexable_content(_reload(restricted)))
 
-    def test_redirect_is_not_indexable_content(self):
-        self.assertFalse(is_indexable_content(_make_redirect(_approved())))
+    def test_content_exclusions_are_not_indexable(self):
+        excluded = (
+            _make_redirect(_approved()),
+            _reload(TemplateDocumentFactory()),
+            _reload(DocumentFactory(is_archived=True)),
+            _reload(DocumentFactory(category=CANNED_RESPONSES_CATEGORY)),
+            _reload(DocumentFactory(category=ADMINISTRATION_CATEGORY)),
+        )
+        for document in excluded:
+            with self.subTest(document=document):
+                self.assertFalse(is_indexable_content(document))
 
     def test_redirect_marker_is_allowed_when_not_at_the_start(self):
         doc = _approved()
         Document.objects.filter(pk=doc.pk).update(html=f"<p>Prefix</p>{REDIRECT_HTML}")
         self.assertTrue(is_indexable_content(_reload(doc)))
-
-    def test_template_is_not_indexable_content(self):
-        self.assertFalse(is_indexable_content(_reload(TemplateDocumentFactory())))
-
-    def test_archived_is_not_indexable_content(self):
-        self.assertFalse(is_indexable_content(_reload(DocumentFactory(is_archived=True))))
 
     def test_translation_inherits_archived_exclusion(self):
         parent = DocumentFactory(is_archived=True)
@@ -108,30 +111,24 @@ class SharedContentExclusionsTests(TestCase):
         self.assertTrue(translation.is_archived)
         self.assertFalse(is_indexable_content(translation))
 
-    def test_canned_response_category_is_not_indexable_content(self):
-        doc = DocumentFactory(category=CANNED_RESPONSES_CATEGORY)
-        self.assertFalse(is_indexable_content(_reload(doc)))
-
-    def test_administration_category_is_not_indexable_content(self):
-        doc = DocumentFactory(category=ADMINISTRATION_CATEGORY)
-        self.assertFalse(is_indexable_content(_reload(doc)))
-
     def test_parent_category_propagation_leaves_stale_template_translation_fail_closed(self):
         translation = _stale_template_translation()
         self.assertTrue(translation.is_template)
         self.assertEqual(translation.category, TROUBLESHOOTING_CATEGORY)
         self.assertFalse(is_indexable_content(translation))
 
-    def test_public_indexing_allowed_for_normal_document(self):
-        self.assertTrue(is_public_indexing_allowed(_approved()))
-
-    def test_public_indexing_not_allowed_when_restricted(self):
+    def test_public_indexing_combines_content_and_access_rules(self):
+        public = _approved()
         restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
         ApprovedRevisionFactory(document=restricted)
-        self.assertFalse(is_public_indexing_allowed(_reload(restricted)))
-
-    def test_public_indexing_not_allowed_when_excluded_content(self):
-        self.assertFalse(is_public_indexing_allowed(_reload(TemplateDocumentFactory())))
+        cases = (
+            (public, True),
+            (_reload(restricted), False),
+            (_reload(TemplateDocumentFactory()), False),
+        )
+        for document, expected in cases:
+            with self.subTest(document=document):
+                self.assertEqual(is_public_indexing_allowed(document), expected)
 
 
 class RetrievalPredicateTests(TestCase):
@@ -151,11 +148,10 @@ class RetrievalPredicateTests(TestCase):
         ApprovedRevisionFactory(document=template)
         self.assertFalse(is_retrieval_content_eligible(_reload(template)))
 
-    def test_publicly_accessible_for_unrestricted(self):
-        self.assertTrue(is_publicly_accessible(_approved()))
-
-    def test_not_publicly_accessible_when_restricted(self):
+    def test_public_accessibility_reflects_restrictions(self):
+        public = _approved()
         restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        self.assertTrue(is_publicly_accessible(public))
         self.assertFalse(is_publicly_accessible(_reload(restricted)))
 
     def test_translation_inherits_parent_restriction(self):
@@ -168,16 +164,18 @@ class RetrievalPredicateTests(TestCase):
         parent = _approved()
         self.assertTrue(is_publicly_accessible(_translation(parent)))
 
-    def test_retrieval_indexable_is_content_eligible_and_public(self):
-        self.assertTrue(is_retrieval_indexable(_approved()))
-
-    def test_retrieval_indexable_false_when_restricted(self):
+    def test_retrieval_indexable_combines_content_revision_and_access_rules(self):
+        public = _approved()
         restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
         ApprovedRevisionFactory(document=restricted)
-        self.assertFalse(is_retrieval_indexable(_reload(restricted)))
-
-    def test_retrieval_indexable_false_without_revision(self):
-        self.assertFalse(is_retrieval_indexable(DocumentFactory()))
+        cases = (
+            (public, True),
+            (_reload(restricted), False),
+            (DocumentFactory(), False),
+        )
+        for document, expected in cases:
+            with self.subTest(document=document):
+                self.assertEqual(is_retrieval_indexable(document), expected)
 
 
 class EligibleDocumentsQuerysetTests(TestCase):
@@ -260,21 +258,17 @@ class FamilyHelperTests(TestCase):
 
 
 class AccessMetadataTests(TestCase):
-    def test_access_group_ids_are_sorted(self):
+    def test_public_and_restricted_access_metadata(self):
         g1 = GroupFactory()
         g2 = GroupFactory()
         # Add out of id order to prove the helper sorts.
         higher, lower = sorted((g1, g2), key=lambda g: g.id, reverse=True)
-        doc = DocumentFactory(restrict_to_groups=[higher, lower])
-        self.assertEqual(access_group_ids_for(_reload(doc)), sorted([g1.id, g2.id]))
-
-    def test_visibility_reflects_restriction(self):
-        restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
-        self.assertEqual(visibility_for(_reload(restricted)), "group_restricted")
-        self.assertEqual(visibility_for(_approved()), "public")
-
-    def test_public_document_has_no_access_group_ids(self):
-        self.assertEqual(access_group_ids_for(_approved()), [])
+        restricted = _reload(DocumentFactory(restrict_to_groups=[higher, lower]))
+        public = _approved()
+        self.assertEqual(access_group_ids_for(restricted), sorted([g1.id, g2.id]))
+        self.assertEqual(visibility_for(restricted), "group_restricted")
+        self.assertEqual(access_group_ids_for(public), [])
+        self.assertEqual(visibility_for(public), "public")
 
     def test_translation_inherits_access_metadata_from_original(self):
         g1 = GroupFactory()

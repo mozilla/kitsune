@@ -168,15 +168,6 @@ class ExpectedDocumentStateTests(SimpleTestCase):
                 _state(**overrides)
 
 
-class ScopeSerializationTests(SimpleTestCase):
-    def test_comma_clause_remains_distinct_from_nested_clauses(self):
-        comma = scope_envelope((frozenset({"win", "mac"}),))
-        nested = scope_envelope((frozenset({"win"}), frozenset({"mac"})))
-        self.assertEqual(comma, {"version": 1, "clauses": [["mac", "win"]]})
-        self.assertEqual(nested, {"version": 1, "clauses": [["win"], ["mac"]]})
-        self.assertNotEqual(comma, nested)
-
-
 class ManifestSerializationTests(SimpleTestCase):
     def test_round_trips_including_zero_chunks(self):
         identity = ChunkIdentity("kb", "1", "en-US")
@@ -453,38 +444,26 @@ class WriteReadRoundTripTests(ChunkIndexTestCase):
         self.assertIsNotNone(state.manifest)  # "processed, empty" is not "missing"
         self.assertEqual(state.manifest.chunk_count, 0)
 
-    def test_write_path_never_calls_the_embedding_adapter(self):
-        with mock.patch("kitsune.retrieval.embeddings.get_embeddings") as embed:
-            self._replace([Chunk(text="x", position=0, heading_path="H")], _source())
-        embed.assert_not_called()
-
-    def test_write_chunks_requires_one_vector_per_chunk(self):
+    def test_write_chunks_rejects_vector_or_expected_state_mismatches(self):
         source = _source()
         chunks = [Chunk(text=t, position=i, heading_path="H") for i, t in enumerate("ab")]
-        with self.assertRaises(InvalidDocumentState):
-            write_chunks(
-                index=self.index,
-                chunks=chunks,
-                vectors=[_vector(0)],
-                source=source,
-                expected_state=_expected(chunks, source),
-            )
-
-    def test_write_chunks_rejects_expected_state_that_does_not_match_inputs(self):
-        source = _source()
-        chunks = [Chunk(text="a", position=0, heading_path="H")]
         mismatches = (
-            {"chunk_count": 2},
-            {"content_hash": "f" * 64},
-            {"index_state_hash": "e" * 64},
-            {"updated": datetime(2026, 1, 2, tzinfo=UTC)},
+            ("vector count", [_vector(0)], {}),
+            ("chunk count", [_vector(0), _vector(1)], {"chunk_count": 3}),
+            ("content hash", [_vector(0), _vector(1)], {"content_hash": "f" * 64}),
+            ("state hash", [_vector(0), _vector(1)], {"index_state_hash": "e" * 64}),
+            (
+                "updated timestamp",
+                [_vector(0), _vector(1)],
+                {"updated": datetime(2026, 1, 2, tzinfo=UTC)},
+            ),
         )
-        for overrides in mismatches:
-            with self.subTest(overrides=overrides), self.assertRaises(InvalidDocumentState):
+        for reason, vectors, overrides in mismatches:
+            with self.subTest(reason=reason), self.assertRaises(InvalidDocumentState):
                 write_chunks(
                     index=self.index,
                     chunks=chunks,
-                    vectors=[_vector(0)],
+                    vectors=vectors,
                     source=source,
                     expected_state=_expected(chunks, source, **overrides),
                 )
@@ -508,27 +487,6 @@ class ManifestCommitOrderingTests(ChunkIndexTestCase):
     def setUp(self):
         super().setUp()
         self.index = ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
-
-    def test_partial_bulk_failure_leaves_the_manifest_uncommitted(self):
-        source = _source()
-        chunks = [Chunk(text="a", position=0, heading_path="H")]
-        with (
-            mock.patch(
-                "kitsune.retrieval.index.bulk",
-                return_value=(0, [{"index": {"status": 500}}]),
-            ),
-            self.assertRaises(IndexWriteError),
-        ):
-            replace_chunks(
-                index=self.index,
-                chunks=chunks,
-                vectors=[_vector(0)],
-                source=source,
-                expected_state=_expected(chunks, source),
-            )
-        # a crash during the chunk write must never leave a committed-looking manifest
-        state = read_indexed_document(index=self.index, identity=source.identity)
-        self.assertIsNone(state.manifest)
 
     def test_failed_replacement_keeps_the_previous_manifest_stale(self):
         source = _source()

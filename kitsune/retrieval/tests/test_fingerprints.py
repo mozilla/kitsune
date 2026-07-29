@@ -1,4 +1,4 @@
-"""Task 4 — canonical serialization, per-document hashes, and index-level fingerprints."""
+"""Tests for canonical serialization, document hashes, and index fingerprints."""
 
 import hashlib
 import os
@@ -77,29 +77,20 @@ def _redigest(block):
 
 
 class CanonicalJsonTests(SimpleTestCase):
-    def test_sorts_object_keys_with_fixed_separators(self):
-        self.assertEqual(canonical_json({"b": 1, "a": 2}), b'{"a":2,"b":1}')
-
-    def test_preserves_list_order(self):
-        self.assertEqual(canonical_json([3, 1, 2]), b"[3,1,2]")
-
-    def test_is_deterministic_for_equivalent_nested_values(self):
-        left = canonical_json({"x": [1, 2], "y": {"b": 1, "a": 2}})
-        right = canonical_json({"y": {"a": 2, "b": 1}, "x": [1, 2]})
+    def test_sorts_object_keys_without_reordering_lists(self):
+        left = canonical_json({"x": [3, 1, 2], "y": {"b": 1, "a": 2}})
+        right = canonical_json({"y": {"a": 2, "b": 1}, "x": [3, 1, 2]})
         self.assertEqual(left, right)
+        self.assertEqual(left, b'{"x":[3,1,2],"y":{"a":2,"b":1}}')
 
 
 class ScopeEnvelopeTests(SimpleTestCase):
-    def test_unconditional_scope_has_no_clauses(self):
+    def test_encodes_empty_scope_and_preserves_clause_order(self):
         self.assertEqual(scope_envelope(()), {"version": 1, "clauses": []})
-
-    def test_selectors_are_sorted_within_a_clause(self):
-        envelope = scope_envelope((frozenset({"win", "mac", "lin"}),))
-        self.assertEqual(envelope["clauses"], [["lin", "mac", "win"]])
-
-    def test_outer_clause_order_is_preserved(self):
-        envelope = scope_envelope((frozenset({"win"}), frozenset({"fx"})))
-        self.assertEqual(envelope["clauses"], [["win"], ["fx"]])
+        self.assertEqual(
+            scope_envelope((frozenset({"win", "mac"}), frozenset({"fx"}))),
+            {"version": 1, "clauses": [["mac", "win"], ["fx"]]},
+        )
 
 
 class ContentHashTests(SimpleTestCase):
@@ -169,15 +160,6 @@ class IndexStateHashTests(SimpleTestCase):
             index_state_hash([_chunk()], _source(updated=plus2)),
         )
 
-    def test_timestamp_change_flips_hash(self):
-        a = index_state_hash(
-            [_chunk()], _source(updated=datetime(2026, 7, 28, 12, 0, 0, tzinfo=UTC))
-        )
-        b = index_state_hash(
-            [_chunk()], _source(updated=datetime(2026, 7, 28, 12, 0, 5, tzinfo=UTC))
-        )
-        self.assertNotEqual(a, b)
-
     def test_subsecond_timestamp_change_flips_hash(self):
         a = index_state_hash(
             [_chunk()],
@@ -206,17 +188,15 @@ class EmbeddingFingerprintTests(SimpleTestCase):
         self.assertEqual(payload["dimensions"], 768)
         self.assertEqual(len(digest), 64)
 
-    def test_query_task_change_does_not_flip_document_fingerprint(self):
+    def test_task_types_only_affect_their_own_fingerprint(self):
         _, before = document_embedding_fingerprint(RECIPE)
         _, after = document_embedding_fingerprint(replace(RECIPE, query_task="OTHER"))
         self.assertEqual(before, after)
 
-    def test_document_task_change_does_not_flip_query_fingerprint(self):
         _, before = query_embedding_fingerprint(RECIPE)
         _, after = query_embedding_fingerprint(replace(RECIPE, document_task="OTHER"))
         self.assertEqual(before, after)
 
-    def test_document_task_change_flips_document_fingerprint(self):
         _, before = document_embedding_fingerprint(RECIPE)
         _, after = document_embedding_fingerprint(replace(RECIPE, document_task="OTHER"))
         self.assertNotEqual(before, after)
@@ -270,22 +250,24 @@ class MappingFingerprintTests(SimpleTestCase):
 
 
 class ClassifyMismatchTests(SimpleTestCase):
-    def test_no_change_is_none(self):
-        self.assertEqual(classify_meta_mismatch(_meta(), _meta()), IndexMetaAction.NONE)
-
-    def test_query_only_change_updates_meta(self):
-        desired = _meta(replace(RECIPE, query_task="OTHER"))
-        self.assertEqual(
-            classify_meta_mismatch(_meta(), desired), IndexMetaAction.QUERY_META_UPDATE
+    def test_selects_the_cheapest_safe_action(self):
+        cases = (
+            ("unchanged", _meta(), IndexMetaAction.NONE),
+            (
+                "query recipe",
+                _meta(replace(RECIPE, query_task="OTHER")),
+                IndexMetaAction.QUERY_META_UPDATE,
+            ),
+            ("mapping", _meta(schema_version=2), IndexMetaAction.COPY_VECTORS),
+            (
+                "embedding",
+                _meta(replace(RECIPE, model="other-model")),
+                IndexMetaAction.REEMBED,
+            ),
         )
-
-    def test_mapping_only_change_copies_vectors(self):
-        desired = _meta(schema_version=2)
-        self.assertEqual(classify_meta_mismatch(_meta(), desired), IndexMetaAction.COPY_VECTORS)
-
-    def test_embedding_change_reembeds(self):
-        desired = _meta(replace(RECIPE, model="other-model"))
-        self.assertEqual(classify_meta_mismatch(_meta(), desired), IndexMetaAction.REEMBED)
+        for reason, desired, expected in cases:
+            with self.subTest(reason=reason):
+                self.assertEqual(classify_meta_mismatch(_meta(), desired), expected)
 
     def test_dimensions_change_reembeds_even_when_mapping_also_differs(self):
         # A dims change flips embedding *and* mapping fingerprints; document precedence wins.

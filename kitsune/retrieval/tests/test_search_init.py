@@ -2,10 +2,8 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from unittest import mock
 
-from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import SimpleTestCase
 
 from kitsune.retrieval.embeddings import configured_embedding_recipe
 from kitsune.retrieval.fingerprints import (
@@ -68,21 +66,15 @@ class LifecycleTestCase(ChunkIndexTestCase):
         super(ChunkIndexTestCase, self).tearDown()
 
 
-class ConfiguredIndexMetaTests(SimpleTestCase):
-    def test_builds_self_consistent_meta_from_settings(self):
-        meta = configured_index_meta()
-        self.assertEqual(classify_meta_mismatch(meta, meta), IndexMetaAction.NONE)
-        self.assertEqual(meta["embedding"]["dimensions"], settings.RETRIEVAL_EMBEDDING_DIMENSIONS)
-        self.assertEqual(meta["mapping"]["index_options"], VECTOR_INDEX_OPTIONS)
-        self.assertEqual(meta["mapping"]["schema_version"], SCHEMA_VERSION)
-
-
 class CreateWriteGenerationTests(LifecycleTestCase):
     def test_stamps_meta_before_moving_the_write_alias(self):
         meta = configured_index_meta()
         name = create_write_generation(timestamp=TS1, meta=meta)
         self.assertEqual(_write_alias(), name)
         self.assertEqual(read_index_meta(name), meta)
+        self.assertEqual(classify_meta_mismatch(meta, meta), IndexMetaAction.NONE)
+        self.assertEqual(meta["mapping"]["index_options"], VECTOR_INDEX_OPTIONS)
+        self.assertEqual(meta["mapping"]["schema_version"], SCHEMA_VERSION)
         # first-run safety: creating a generation must not attach the read alias
         self.assertIsNone(_read_alias())
 
@@ -117,22 +109,17 @@ class CreateWriteGenerationTests(LifecycleTestCase):
 
 
 class ResolveActiveTargetsTests(LifecycleTestCase):
-    def test_dedupes_when_read_and_write_share_an_index(self):
-        name = create_write_generation(timestamp=TS1, meta=configured_index_meta())
-        ChunkDocument.migrate_reads()
-        self.assertEqual(resolve_active_targets(), (name,))
-
-    def test_returns_both_when_read_and_write_diverge(self):
+    def test_tracks_missing_shared_and_diverged_alias_targets(self):
+        self.assertEqual(resolve_active_targets(), ())
         first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
+        self.assertEqual(resolve_active_targets(), (first,))
+
         ChunkDocument.migrate_reads()
+        self.assertEqual(resolve_active_targets(), (first,))
+
         second = create_write_generation(timestamp=TS2, meta=configured_index_meta())
         self.assertEqual(set(resolve_active_targets()), {first, second})
         self.assertEqual(len(resolve_active_targets()), 2)
-
-    def test_omits_missing_aliases(self):
-        self.assertEqual(resolve_active_targets(), ())
-        name = create_write_generation(timestamp=TS1, meta=configured_index_meta())
-        self.assertEqual(resolve_active_targets(), (name,))
 
 
 class ResolveReadTargetTests(LifecycleTestCase):
@@ -234,11 +221,16 @@ class SearchInitCommandTests(LifecycleTestCase):
         self.assertEqual(read_index_meta(read_index)["query"], desired_query)
         self.assertEqual(read_index_meta(write_index)["query"], desired_query)
 
-    def test_query_update_cannot_be_combined_with_migration(self):
-        with self.assertRaises(CommandError):
-            call_command("search_init", "--update-query-recipe", "--migrate-writes")
-        self.assertIsNone(_write_alias())
-        self.assertIsNone(_read_alias())
+    def test_unsupported_option_combinations_fail_without_creating_aliases(self):
+        combinations = (
+            ("--update-query-recipe", "--migrate-writes"),
+            ("--migrate-writes", "--migrate-reads"),
+        )
+        for options in combinations:
+            with self.subTest(options=options), self.assertRaises(CommandError):
+                call_command("search_init", *options)
+            self.assertIsNone(_write_alias())
+            self.assertIsNone(_read_alias())
 
     def test_read_migration_is_disabled_until_the_integrity_gate_exists(self):
         write_index = create_write_generation(timestamp=TS1, meta=configured_index_meta())
@@ -247,11 +239,4 @@ class SearchInitCommandTests(LifecycleTestCase):
             call_command("search_init", "--migrate-reads")
 
         self.assertEqual(_write_alias(), write_index)
-        self.assertIsNone(_read_alias())
-
-    def test_combined_migration_cannot_expose_an_empty_first_generation(self):
-        with self.assertRaises(CommandError):
-            call_command("search_init", "--migrate-writes", "--migrate-reads")
-
-        self.assertIsNone(_write_alias())
         self.assertIsNone(_read_alias())

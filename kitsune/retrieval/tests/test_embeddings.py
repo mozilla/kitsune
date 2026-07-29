@@ -57,12 +57,11 @@ class GetEmbeddingsFakeTests(SimpleTestCase):
             self.assertEqual(len(vector), FAKE.dimensions)
             self.assertTrue(all(math.isfinite(x) for x in vector))
 
-    def test_deterministic_across_calls(self):
+    def test_is_deterministic_and_text_sensitive(self):
         first = get_embeddings(["reset password"], task="document", recipe=FAKE)
         second = get_embeddings(["reset password"], task="document", recipe=FAKE)
         self.assertEqual(first, second)
 
-    def test_distinct_text_gives_distinct_vector(self):
         [alpha] = get_embeddings(["alpha"], task="document", recipe=FAKE)
         [beta] = get_embeddings(["beta"], task="document", recipe=FAKE)
         self.assertNotEqual(alpha, beta)
@@ -175,13 +174,10 @@ class ValidateEmbeddingsTests(SimpleTestCase):
         with self.assertRaises(InvalidEmbeddingResponse):
             validate_embeddings([[0.0] * 7], ["a"], FAKE)
 
-    def test_rejects_non_finite(self):
-        with self.assertRaises(InvalidEmbeddingResponse):
-            validate_embeddings([[float("nan"), *([0.0] * 7)]], ["a"], FAKE)
-
-    def test_rejects_infinity(self):
-        with self.assertRaises(InvalidEmbeddingResponse):
-            validate_embeddings([[float("inf"), *([0.0] * 7)]], ["a"], FAKE)
+    def test_rejects_non_finite_values(self):
+        for value in (float("nan"), float("inf"), float("-inf")):
+            with self.subTest(value=value), self.assertRaises(InvalidEmbeddingResponse):
+                validate_embeddings([[value, *([0.0] * 7)]], ["a"], FAKE)
 
     def test_rejects_non_numeric_values(self):
         with self.assertRaises(InvalidEmbeddingResponse):
@@ -240,9 +236,6 @@ class ConfiguredRecipeTests(SimpleTestCase):
 
 
 class RecipePayloadTests(SimpleTestCase):
-    def test_round_trip_reconstructs_the_recipe(self):
-        self.assertEqual(recipe_from_payload(recipe_to_payload(VERTEX)), VERTEX)
-
     def test_payload_is_json_serializable(self):
         payload = recipe_to_payload(VERTEX)
         self.assertEqual(recipe_from_payload(json.loads(json.dumps(payload))), VERTEX)

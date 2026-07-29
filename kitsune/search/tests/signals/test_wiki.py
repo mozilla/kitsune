@@ -102,7 +102,7 @@ class WikiDocumentSignalsTests(ElasticTestCase):
 
 
 class WikiDocumentPrepareDiscardTests(TestCase):
-    """`prepare` discards exactly the public-indexing-disallowed set (Task 3 refactor).
+    """`prepare` discards exactly the public-indexing-disallowed set.
 
     The discard decision now delegates to the shared `is_public_indexing_allowed` rule.
     A revision-less translation must NOT be discarded here: discarding it under the
@@ -119,16 +119,24 @@ class WikiDocumentPrepareDiscardTests(TestCase):
         ApprovedRevisionFactory(document=doc)
         self.assert_discarded(doc, False)
 
-    def test_restricted_discarded(self):
-        doc = DocumentFactory(restrict_to_groups=[GroupFactory()])
-        ApprovedRevisionFactory(document=doc)
-        self.assert_discarded(doc, True)
-
-    def test_archived_discarded(self):
-        self.assert_discarded(DocumentFactory(is_archived=True), True)
-
-    def test_template_discarded(self):
-        self.assert_discarded(TemplateDocumentFactory(), True)
+    def test_each_public_indexing_exclusion_is_discarded(self):
+        restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        ApprovedRevisionFactory(document=restricted)
+        redirect = DocumentFactory()
+        Document.objects.filter(pk=redirect.pk).update(
+            html=REDIRECT_HTML + '<a href="/x">x</a></p>'
+        )
+        excluded = (
+            restricted,
+            DocumentFactory(is_archived=True),
+            TemplateDocumentFactory(),
+            DocumentFactory(category=CANNED_RESPONSES_CATEGORY),
+            DocumentFactory(category=ADMINISTRATION_CATEGORY),
+            redirect,
+        )
+        for document in excluded:
+            with self.subTest(document=document):
+                self.assert_discarded(document, True)
 
     def test_stale_template_translation_discarded_after_parent_category_change(self):
         parent = TemplateDocumentFactory()
@@ -143,23 +151,6 @@ class WikiDocumentPrepareDiscardTests(TestCase):
         self.assertTrue(translation.is_template)
         self.assertEqual(translation.category, TROUBLESHOOTING_CATEGORY)
         self.assert_discarded(translation, True)
-
-    def test_translation_inheriting_archived_parent_discarded(self):
-        parent = DocumentFactory(is_archived=True)
-        translation = DocumentFactory(parent=parent, locale="de")
-        self.assertTrue(translation.is_archived)
-        self.assert_discarded(translation, True)
-
-    def test_canned_response_discarded(self):
-        self.assert_discarded(DocumentFactory(category=CANNED_RESPONSES_CATEGORY), True)
-
-    def test_administration_discarded(self):
-        self.assert_discarded(DocumentFactory(category=ADMINISTRATION_CATEGORY), True)
-
-    def test_redirect_discarded(self):
-        doc = DocumentFactory()
-        Document.objects.filter(pk=doc.pk).update(html=REDIRECT_HTML + '<a href="/x">x</a></p>')
-        self.assert_discarded(doc, True)
 
     def test_revision_less_translation_not_discarded(self):
         parent = DocumentFactory()

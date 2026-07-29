@@ -2,8 +2,8 @@
 
 Pure functions on explicit inputs so this module carries no dependency on the sync core
 or the ES mapping value objects. Two per-document hashes drive the worker's cheapest
-correct outcome (§7.1/§7.2); three index-level fingerprints classify whether an index
-change needs a re-embed, a vector copy, or only a `_meta` update (§7.3).
+correct outcome; three index-level fingerprints classify whether an index change needs
+a re-embed, a vector copy, or only a `_meta` update.
 """
 
 import hashlib
@@ -52,8 +52,8 @@ _INDEX_OPTION_FIELDS = {"type": str, "m": int, "ef_construction": int}
 class ChunkStateSource(Protocol):
     """The shared per-document metadata `index_state_hash` reads off a source.
 
-    Structural contract satisfied by Task 5's `ChunkSource`; kept here as a Protocol so
-    this module does not depend on that concrete type.
+    ``ChunkSource`` satisfies this structural contract. Keeping it as a Protocol avoids
+    making the pure fingerprint module depend on the concrete Elasticsearch model.
     """
 
     @property
@@ -100,9 +100,11 @@ def _digest(payload: object) -> str:
 
 
 def scope_envelope(scope: Sequence[frozenset[str]]) -> dict:
-    """Canonical, versioned scope encoding (§4.3): outer clause order preserved, selectors
-    sorted within each clause. Shared by the state hash and Task 5's stored `_source` so the
-    hashed scope and the stored scope cannot drift."""
+    """Encode scope canonically while preserving clause order and sorting selectors.
+
+    The state hash and stored ``_source`` share this function so their scope
+    representations cannot drift.
+    """
     return {"version": SCOPE_ENVELOPE_VERSION, "clauses": [sorted(clause) for clause in scope]}
 
 
@@ -114,13 +116,12 @@ def _normalize_timestamp(value: datetime) -> str:
 
 
 def content_hash(chunks: Sequence[Chunk]) -> str:
-    """Hash of exactly the embedding inputs — the ordered chunk texts (§7.1)."""
+    """Hash exactly the embedding inputs: the ordered chunk texts."""
     return _digest([chunk.text for chunk in chunks])
 
 
 def index_state_hash(chunks: Sequence[Chunk], source: ChunkStateSource) -> str:
-    """Hash of the non-vector, non-text metadata that reconciliation must detect drift in
-    (§7.2): ordered per-chunk heading/scope plus shared source metadata."""
+    """Hash metadata whose drift requires reindexing without recomputing vectors."""
     payload = {
         "chunks": [
             {"heading_path": chunk.heading_path, "scope": scope_envelope(chunk.scope)}
@@ -145,7 +146,7 @@ def index_state_hash(chunks: Sequence[Chunk], source: ChunkStateSource) -> str:
 
 def document_embedding_fingerprint(recipe: EmbeddingRecipe) -> tuple[dict, str]:
     """Identity of the stored vectors' embedding space. Excludes the query task so a
-    query-only recipe change does not force a re-embed (§7.3)."""
+    query-only recipe change does not force a re-embed."""
     payload = {
         "provider": recipe.provider,
         "model": recipe.model,
@@ -172,8 +173,11 @@ def query_embedding_fingerprint(recipe: EmbeddingRecipe) -> tuple[dict, str]:
 def mapping_fingerprint(
     *, dims: int, similarity: str, index_options: dict, schema_version: int
 ) -> tuple[dict, str]:
-    """Identity of the rebuild-requiring vector-mapping properties (§7.3). Analyzers and
-    synonyms are deliberately excluded — a synonym tweak must not re-embed the corpus."""
+    """Identity of vector-mapping properties that require a new physical index.
+
+    Analyzers and synonyms are deliberately excluded: changing lexical analysis must not
+    re-embed the corpus.
+    """
     payload = {
         "dimensions": dims,
         "similarity": similarity,
@@ -186,8 +190,7 @@ def mapping_fingerprint(
 def build_index_meta(
     recipe: EmbeddingRecipe, *, similarity: str, index_options: dict, schema_version: int
 ) -> dict:
-    """The per-physical-index `_meta` payload (§4.4): readable fields plus a digest per
-    section. `dimensions` derives from the model (single source of truth)."""
+    """Build readable per-index `_meta` with a digest for each compatibility boundary."""
     doc_payload, doc_digest = document_embedding_fingerprint(recipe)
     query_payload, query_digest = query_embedding_fingerprint(recipe)
     mapping_payload, mapping_digest = mapping_fingerprint(
@@ -211,9 +214,11 @@ class IndexMetaAction(Enum):
 
 
 def classify_meta_mismatch(current: dict, desired: dict) -> IndexMetaAction:
-    """Cheapest correct response to a `_meta` difference, in precedence order (§7.3):
-    an embedding-space change wins (re-embed), else a mapping change (copy vectors),
-    else a query-recipe change (`_meta` update only)."""
+    """Choose the cheapest safe response to an index `_meta` difference.
+
+    An embedding-space change wins (re-embed), followed by a vector-mapping change
+    (copy vectors), then a query-recipe change (`_meta` update only).
+    """
     if current["embedding"]["digest"] != desired["embedding"]["digest"]:
         return IndexMetaAction.REEMBED
     if current["mapping"]["digest"] != desired["mapping"]["digest"]:

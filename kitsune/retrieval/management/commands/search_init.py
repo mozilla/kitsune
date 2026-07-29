@@ -61,13 +61,12 @@ class Command(BaseCommand):
             self._update_query_recipe(meta)
             return
 
-        if not (migrate_writes or migrate_reads):
+        if not migrate_writes:
             self._gate_or_initialize(meta)
             return
 
-        if migrate_writes:
-            name = create_write_generation(timestamp=datetime.now(tz=UTC), meta=meta)
-            self.stdout.write(f"Migrated writes to {name}.")
+        name = create_write_generation(timestamp=datetime.now(tz=UTC), meta=meta)
+        self.stdout.write(f"Migrated writes to {name}.")
 
     def _gate_or_initialize(self, meta):
         write_index = ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
