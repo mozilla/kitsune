@@ -1,325 +1,83 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code (claude.ai/code) working in this repository.
 
-## Development Environment Setup
+**Kitsune** is the Django platform behind SuMo (support.mozilla.org). Development is Docker-based.
 
-This is **Kitsune**, the Django platform that powers SuMo (support.mozilla.org). The project uses Docker for development.
+This file holds **cross-cutting, non-obvious** knowledge. Discoverable detail is intentionally *not* duplicated here — read the source of truth instead:
+- Commands → `Makefile` · services → `docker-compose.yml` · env vars → `.env-dist` · frontend build → `package.json` · dev scripts → `bin/`.
+- **Versions** (Python, Django, Elasticsearch, …) → `pyproject.toml` and `package.json`. Don't hardcode version numbers in docs — they drift.
+- **App-specific guidance** lives in per-app `CLAUDE.md` files (see *Per-app guides*); they load on demand when you work in that app.
 
-### Quick Start Commands
+## Stack (orientation — versions live in pyproject.toml / package.json)
 
-```bash
-# Initial setup (creates .env, builds images, installs dependencies)
-make init                    # Run bootstrap script, migrations, node setup
-make build                  # Build Docker images
+Django + Python · PostgreSQL · Elasticsearch · Redis (cache + Celery broker) · Webpack / SCSS / vanilla JS + jQuery · uv (Python packaging) · ruff (lint + format) · Django TestCase + Playwright (E2E).
 
-# Run the application
-make start                  # Start all services via docker-compose
+## App map
 
-# Development shells
-make shell                  # Bash shell in container
-make runshell              # Bash shell with ports bound
-make djshell               # Django shell (ipython)
-make dbshell               # PostgreSQL shell
-```
+**Primary:** `wiki` (KB articles) · `questions` (Q&A / AAQ) · `forums` · `users` (profiles, auth) · `search` (Elasticsearch) · `gallery` (media) · `products` (products & topics) · `kpi` (metrics).
+**Supporting:** `sumo` (core: `ModelBase`, base templates, middleware, jinja helpers) · `customercare` (Zendesk) · `flagit` (moderation) · `inproduct` (Firefox in-product redirects) · `llm` (AI: moderation / categorization / translation) · `messages` · `notifications` · `tidings` (email subscriptions) · `kbadge` · `groups` · `dashboards`.
 
-### Testing Commands
+## Conventions
 
-```bash
-# Python tests (via Docker - recommended)
-make test                   # Run Django unit tests via ./bin/run-unit-tests.sh
-make djshell               # Django shell for interactive testing
+- **Models** inherit `kitsune.sumo.models.ModelBase`. Use `LocaleField` for locale fields. Celery tasks in `tasks.py`; REST in `api.py`; routes in `urls.py` / `urls_api.py`.
+- **Imports at the top of the file, always** — the only exception is breaking a genuine circular import, with a one-line note naming the cycle. Applies to test files too.
+- **No environment-specific IDs** in code, comments, or migrations — DB primary keys differ per environment. Reference rows by slug / name.
+- **Test factories** live in each app's `tests/__init__.py` (e.g. `kitsune/questions/tests/__init__.py`) — there are no `factories.py` files.
+- **All user-facing strings** are translated with `_()` / `_lazy()`.
+- Templating is **Django-Jinja** (not stock Django templates); helpers in `kitsune.sumo.templatetags.jinja_helpers`; mobile via the `mobile_template()` decorator.
+- **Cache / Celery** run on Redis; use app-specific cache-key prefixes.
 
-# Python tests (direct commands - Docker container only)
-python manage.py test       # Direct Django test command (inside container)
-python manage.py test path.to.specific.test --verbosity=2
+## Manager-method naming
 
-# Python tests (with uv venv - local development)
-uv run python manage.py test                              # Run all tests in uv environment
-uv run python manage.py test path.to.specific.test       # Run specific test
-uv run python manage.py test --verbosity=2 --keepdb      # Verbose output, keep test DB
+Prefer concise, verb-based names that read naturally when chained — `GroupProfile.objects.visible(user)`, `Article.objects.active()`. Use a more verbose descriptive name only when concision would be unclear.
 
-# JavaScript tests
-make test-js               # Run JS tests via npm run webpack:test
+## Routing
 
-# Lint and format
-make lint                  # Run pre-commit hooks (includes ruff)
-ruff format                # Format Python code with ruff (recommended)
-npm run stylelint          # Lint SCSS files
-```
+i18n URL patterns. KB `/kb/` · questions `/questions/` · forums `/forums/` · gallery `/gallery/` · groups `/groups/`; users / products at root (`/users/`, `/firefox/`). APIs: v1 `/api/1/{app}/` (legacy), v2 `/api/2/{app}/` (current); GraphQL at `/graphql`. In-product integration under `/1/` (see the `inproduct` guide). Feature-flag JS at `/wafflejs`.
 
-## Application Architecture
+## Frontend
 
-### Core Django Apps Structure
+Webpack entrypoints are referenced by **name** from Jinja templates (`base.html` includes `entrypoints/{name}.html`). When removing an entry from `webpack/entrypoints.js`, grep templates for its name (`grep -rn '<name>' kitsune --include='*.html'`) and remove every reference — a missed one fails the build with `TemplateNotFound`.
 
-**Primary Applications:**
-- `wiki/` - Knowledge Base articles and documentation
-- `questions/` - Support questions and answers (Q&A system)
-- `forums/` - Discussion forums
-- `users/` - User profiles, authentication, and account management
-- `search/` - Elasticsearch-powered search functionality
-- `gallery/` - Media management (images, videos)
-- `products/` - Mozilla product definitions and topics
-- `kpi/` - Metrics and analytics dashboard
+## Security — GroupProfile visibility (CRITICAL)
 
-**Supporting Applications:**
-- `sumo/` - Core utilities, base templates, middleware
-- `flagit/` - Content moderation system
-- `messages/` - Private messaging between users
-- `notifications/` - Event notification system
-- `tidings/` - Email notification subscription management
-- `kbadge/` - Badge system for user achievements
-- `groups/` - User group management
-- `dashboards/` - Analytics and reporting dashboards
-- `llm/` - AI/ML features (moderation, translations)
-
-### Key Technologies
-
-- **Backend:** Django 5.2+, Python 3.14
-- **Package Management:** uv (replaced poetry in July 2025)
-- **Database:** PostgreSQL
-- **Search:** Elasticsearch 9.0+
-- **Cache:** Redis
-- **Task Queue:** Celery with Redis broker
-- **Frontend:** Webpack, SCSS, vanilla JavaScript + jQuery
-- **Testing:** Django TestCase, pytest for E2E (Playwright)
-- **Linting:** ruff (replaced flake8/black in July 2025)
-
-### Environment Variables
-
-Essential environment variables are defined in `.env-dist`. Key ones include:
-- `DATABASE_URL` - PostgreSQL connection
-- `ES_URLS` - Elasticsearch endpoints
-- `REDIS_*` - Redis configuration for cache and Celery
-- `DEBUG`, `DEV` - Development mode flags
-
-### Docker Services
-
-The `docker-compose.yml` defines:
-- `web` - Main Django application (port 8000)
-- `postgres` - Database (port 5432)
-- `elasticsearch` - Search engine (port 9200)
-- `redis` - Cache and message broker
-- `celery` - Background task worker
-- `mailcatcher` - Email testing (port 1080)
-
-### Package Management with uv
-
-```bash
-# Install dependencies
-uv sync                    # Install all dependencies
-uv sync --frozen           # Install from lockfile without updates
-uv add package-name        # Add new dependency
-uv pip install package     # Install package in current environment
-```
-
-### Database Migrations
-
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
-### Elasticsearch Management
-
-```bash
-python manage.py es_init --migrate-writes --migrate-reads  # Initialize ES
-python manage.py es_reindex --count 10 --verbosity 2       # Reindex content
-```
-
-### Localization (L10n)
-
-Kitsune supports 100+ locales. Key files:
-- `kitsune/lib/sumo_locales.py` - Locale definitions
-- `locale/` - Translation files
-- Language-specific synonyms in `search/dictionaries/synonyms/`
-
-### Frontend Build System
-
-```bash
-# Webpack commands
-npm run webpack:build      # Production build
-npm run webpack:watch      # Development with file watching
-npm run build:styleguide   # Generate CSS styleguide
-
-# Browser development
-npm run start             # Webpack + BrowserSync
-npm run browser-sync      # Live reload server
-```
-
-### Common Development Patterns
-
-- Models use `ModelBase` from sumo.models for common fields
-- Views often use `mobile_template()` decorator for mobile templates
-- Search uses custom Elasticsearch Document classes in `search/documents.py`
-- All user-facing strings should be marked for translation with `_()` or `_lazy()`
-- Cache keys use app-specific prefixes (defined in individual apps)
-
-### Testing Guidelines
-
-- Python tests live in `tests/` directories within each app
-- Use factories from `factory_boy` for test data creation
-- Search tests often need `@mock.patch` for Elasticsearch
-- E2E tests use Playwright and are in `playwright_tests/`
-- Tests run in isolated database with `TESTING=True`
-
-### Key Configuration Files
-
-- `pyproject.toml` - Python dependencies and ruff configuration
-- `uv.lock` - Locked dependency versions (replaces poetry.lock)
-- `package.json` - Node.js dependencies, build scripts
-- `webpack.*.js` - Frontend build configuration
-- `Makefile` - Development commands wrapper
-- `docker-compose.yml` - Local development stack
-- `.github/dependabot.yml` - Automated dependency updates for uv and npm
-
-### URL Structure and Routing
-
-Kitsune uses Django's i18n URL patterns with specific routing conventions:
-
-**Primary URL Patterns:**
-- Knowledge Base: `/kb/` (wiki articles)
-- Search: `/search/`
-- Forums: `/forums/`
-- Questions: `/questions/` (Q&A system)
-- Gallery: `/gallery/` (media)
-- Groups: `/groups/`
-- Users: Root level paths like `/users/`
-- Products: Root level paths like `/firefox/`
-
-**API Endpoints:**
-- v1 APIs: `/api/1/{app}/` (legacy)
-- v2 APIs: `/api/2/{app}/` (current)
-- Mixed APIs: `/api/{app}/` (users API supports both versions)
-- GraphQL: `/graphql` (with GraphiQL interface)
-
-**Special Routes:**
-- `/1/` - In-product integration endpoints
-- `/wafflejs` - Feature flag JavaScript
-- `contribute.json` - Mozilla contribution metadata
-
-### Model Architecture Patterns
-
-**Base Model Usage:**
-- All models inherit from `kitsune.sumo.models.ModelBase`
-- Provides common functionality: `objects_range()`, `update()` methods
-- Use `LocaleField` for language/locale fields (max_length=7, uses LANGUAGE_CHOICES)
-- Models define `updated_column_name` property for date range queries
-
-**Common Model Patterns:**
-- Use `factory_boy` factories for test data (located in each app)
-- Celery tasks defined in `tasks.py` files within apps
-- API endpoints follow REST conventions in `api.py` files
-- Each app has dedicated `urls.py` and often `urls_api.py`
-
-### Security Patterns
-
-**GroupProfile Visibility - CRITICAL:**
-
-GroupProfile has three visibility levels (PUBLIC, PRIVATE, MODERATED) that control who can see a group. **Never bypass these checks:**
-
-**DANGER - Privacy Leak:**
-```python
-# WRONG - Exposes ALL groups, ignoring visibility settings
-user.groups.all()  # Leaks PRIVATE groups!
-profile.user.groups.all()  # Leaks PRIVATE groups!
-
-# WRONG - Direct Group queryset bypasses GroupProfile visibility
-Group.objects.filter(user=some_user)  # No visibility filtering!
-```
-
-**SAFE - Respects visibility:**
-```python
-# Correct - Use Profile.visible_group_profiles()
-profile.visible_group_profiles(viewer=request.user)
-
-# Correct - Use GroupProfile manager
-GroupProfile.objects.visible(viewer).filter(group__user=some_user)
-
-# Correct - Check individual group visibility
-group_profile.can_view(request.user)
-```
-
-**Why this matters:**
-- Django's `User.groups` relationship returns ALL Group objects, ignoring GroupProfile visibility
-- PRIVATE groups would be exposed to anyone viewing a user profile
-- Search indexing would leak private group membership
-- API responses would expose sensitive group information
-
-**Safe patterns implemented:**
-- `Profile.visible_group_profiles(viewer)` - Get groups respecting visibility
-- `GroupProfile.objects.visible(viewer)` - Manager method for filtering
-- Search indexing excludes PRIVATE groups automatically
-- All views use visibility-aware methods
+`GroupProfile` has three visibility levels (PUBLIC, PRIVATE, MODERATED). Django's `User.groups` returns **all** groups, ignoring visibility — so bypassing the visibility layer leaks PRIVATE group membership into profiles, search indexing, and API responses.
 
 **Never:**
-- Use `user.groups.all()` in templates, views, or API serializers
-- Query `Group` model directly when GroupProfile visibility matters
-- Bypass `.visible()` filtering for user-facing data
-
-### Template System
-
-**Template Architecture:**
-- Uses Django-Jinja templating engine (not standard Django templates)
-- Mobile-specific templates supported via `mobile_template()` decorator
-- Template tags in `kitsune.sumo.templatetags.jinja_helpers`
-- Localization: All user-facing strings use `_()` or `_lazy()` for translation
-
-### Search Integration
-
-**Elasticsearch Setup:**
-- Version 9.0+ required
-- Custom Document classes in `search/documents.py`
-- Management commands for index operations:
-  - `es_init --migrate-writes --migrate-reads` - Initialize
-  - `es_reindex --count 10 --verbosity 2` - Reindex content
-- Language-specific synonyms in `search/dictionaries/synonyms/`
-
-### Cache and Performance
-
-**Caching Strategy:**
-- Redis-backed caching and session storage
-- App-specific cache key prefixes (defined in individual apps)
-- Celery uses Redis as message broker
-- Cache configuration via `REDIS_*` environment variables
-
-### Development Scripts
-
-**Useful Scripts in `bin/`:**
-- `run-unit-tests.sh` - Main test runner (used by `make test`)
-- `run-web-bootstrap.sh` - Initial Django setup (migrations, collectstatic)
-- `run-node-bootstrap.sh` - Node.js dependency installation
-- `run-celery-worker.sh` - Background task worker
-- `run-celery-beat.sh` - Scheduled task runner
-
-### Development Best Practices
-
-- Always format Python files after changes with `ruff format`
-- Use `ruff check` for linting python files
-- Run `make lint` before committing (uses pre-commit hooks)
-- Use uv for Python package management
-- Dependabot automatically updates dependencies weekly
-- **Do not add trailing spaces at the end of files**
-- **Exception handling:** Be specific with exception types. Avoid catching plain `Exception` when the specific exception that could occur is known. For example, use `Model.DoesNotExist` when calling `.get()` on a Django queryset, or `KeyError` when accessing dictionary keys. This makes error handling more explicit and allows unexpected exceptions to be raised rather than silently caught.
-
-### Naming Conventions
-
-**Manager Methods:**
-- Custom manager methods should balance conciseness with explicitness
-- **Preferred:** Concise, verb-based names following Django's queryset API patterns: `all()`, `filter()`, `exclude()`, `visible()`, `active()`
-- **Alternative:** Verbose descriptive names when explicitness adds clarity (per "explicit is better than implicit")
-- Choose based on context: if the method name alone isn't clear, add descriptive prefixes
-- If a method returns a queryset, the name should read naturally when chained
-
-**Example:**
 ```python
-# Preferred - concise, follows Django patterns, clear in context
-GroupProfile.objects.visible(user)
-Article.objects.active()
-Question.objects.recent()
-
-# Alternative - more explicit, acceptable when clarity is prioritized
-GroupProfile.objects.filter_by_visibility(user)
-Article.objects.get_active_articles()
-Question.objects.filter_by_recent()
+user.groups.all()                     # leaks PRIVATE groups
+profile.user.groups.all()             # leaks PRIVATE groups
+Group.objects.filter(user=some_user)  # bypasses visibility
 ```
+**Always** use the visibility-aware paths:
+```python
+profile.visible_group_profiles(viewer=request.user)
+GroupProfile.objects.visible(viewer).filter(group__user=some_user)
+group_profile.can_view(request.user)
+```
+This applies equally in views, templates, API serializers, and search indexing.
+
+## Testing
+
+- Run tests **through Docker**, not `uv run`: targeted — `docker compose run --rm web ./manage.py test <dotted.path> --keepdb -v 2`; full suite — `make test`.
+- Factories from `factory_boy` (in `tests/__init__.py`). Mock Elasticsearch on code paths that don't need a live index. E2E in `playwright_tests/`. Tests run with `TESTING=True`.
+- Elasticsearch round-trip and index tests have real gotchas — see the `search` guide.
+
+## Development practices
+
+- Format with `ruff format`; lint with `ruff check`; run `make lint` (pre-commit) before committing.
+- Be **specific with exception types** — catch `Model.DoesNotExist`, `KeyError`, etc., not bare `Exception`, so unexpected errors still surface.
+- **Preserve functional parity** in dependency upgrades and cleanups — don't drop features to shrink a diff; a dropped feature is a regression.
+- **No AI-planning references in code** — never leave `# per Plan 3`, step numbers, or ticket-scaffolding comments. An issue/PR reference that captures a real *why* is fine.
+- This repo targets **Python 3.14** (ruff `target-version = py314`). Note `except A, B:` (unparenthesized multi-exception) is valid 3.14 syntax — don't flag it as an error.
+- Don't add trailing whitespace or trailing blank lines at end of files.
+- **`.env` gotcha:** `bin/dc_ci.sh` (and `.env-build`) overwrite `.env` — back up any local `.env` before running CI setup scripts.
+
+## Localization
+
+100+ locales. Locale definitions in `kitsune/lib/sumo_locales.py`; translations in `locale/`; per-language ES synonyms in `kitsune/search/dictionaries/synonyms/`.
+
+## Per-app guides (load on demand)
+
+Deeper, app-specific notes live in `kitsune/<app>/CLAUDE.md` and load only when you work in that app: **search**, **wiki**, **llm**, **retrieval**, **questions**, **users**, **customercare**, **inproduct**.
