@@ -1,5 +1,6 @@
 import json
 import math
+from types import SimpleNamespace
 from unittest import mock
 
 from django.core.exceptions import ImproperlyConfigured
@@ -43,6 +44,27 @@ VERTEX = EmbeddingRecipe(
 def _marker_vectors(batch, **kwargs):
     """A stand-in embedder: vector[0] = ord(first char), so order is checkable."""
     return [[float(ord(text[0])), *([0.0] * 7)] for text in batch]
+
+
+def _vertex_response(batch, *, truncated=False):
+    vectors = _marker_vectors(batch)
+    return SimpleNamespace(
+        embeddings=[
+            SimpleNamespace(
+                values=vector,
+                statistics=SimpleNamespace(truncated=truncated),
+            )
+            for vector in vectors
+        ]
+    )
+
+
+def _mock_vertex_client():
+    client = mock.Mock()
+    client.model_name = VERTEX.model
+    request = client.client.models.embed_content
+    request.side_effect = lambda **kwargs: _vertex_response(kwargs["contents"])
+    return client, request
 
 
 class GetEmbeddingsFakeTests(SimpleTestCase):
@@ -96,8 +118,7 @@ class GetEmbeddingsFakeTests(SimpleTestCase):
 class VertexBackendTests(SimpleTestCase):
     @override_settings(RETRIEVAL_EMBEDDING_BATCH_SIZE=2)
     def test_batches_and_preserves_order(self):
-        client = mock.Mock()
-        client.embed.side_effect = _marker_vectors
+        client, request = _mock_vertex_client()
 
         with mock.patch(
             "kitsune.retrieval.embeddings._vertex_client", return_value=client
@@ -105,20 +126,21 @@ class VertexBackendTests(SimpleTestCase):
             vectors = get_embeddings(["a", "b", "c", "d", "e"], task="document", recipe=VERTEX)
 
         self.assertEqual([v[0] for v in vectors], [97.0, 98.0, 99.0, 100.0, 101.0])
-        self.assertEqual(client.embed.call_count, 3)  # 5 texts, batch size 2
+        self.assertEqual(request.call_count, 3)  # 5 texts, batch size 2
         vertex_client.assert_called_once_with("text-embedding-005")
-        first_call = client.embed.call_args_list[0]
-        self.assertEqual(first_call.kwargs["embeddings_task_type"], "RETRIEVAL_DOCUMENT")
-        self.assertEqual(first_call.kwargs["dimensions"], 8)
+        first_call = request.call_args_list[0]
+        self.assertEqual(first_call.kwargs["model"], "text-embedding-005")
+        self.assertEqual(first_call.kwargs["config"].task_type, "RETRIEVAL_DOCUMENT")
+        self.assertEqual(first_call.kwargs["config"].output_dimensionality, 8)
+        self.assertIs(first_call.kwargs["config"].auto_truncate, False)
 
     def test_query_uses_query_task_type(self):
-        client = mock.Mock()
-        client.embed.side_effect = _marker_vectors
+        client, request = _mock_vertex_client()
 
         with mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client):
             get_embeddings(["how to reset"], task="query", recipe=VERTEX)
 
-        self.assertEqual(client.embed.call_args.kwargs["embeddings_task_type"], "RETRIEVAL_QUERY")
+        self.assertEqual(request.call_args.kwargs["config"].task_type, "RETRIEVAL_QUERY")
 
     def test_empty_input_never_builds_a_client(self):
         with mock.patch(
@@ -144,8 +166,9 @@ class VertexBackendTests(SimpleTestCase):
         vertex_client.assert_not_called()
 
     def test_malformed_batch_stops_before_later_provider_calls(self):
-        client = mock.Mock()
-        client.embed.return_value = []
+        client, request = _mock_vertex_client()
+        request.side_effect = None
+        request.return_value = SimpleNamespace(embeddings=[])
 
         with (
             override_settings(RETRIEVAL_EMBEDDING_BATCH_SIZE=1),
@@ -154,7 +177,26 @@ class VertexBackendTests(SimpleTestCase):
         ):
             get_embeddings(["a", "b"], task="document", recipe=VERTEX)
 
-        client.embed.assert_called_once()
+        request.assert_called_once()
+
+    def test_rejects_estimated_input_over_the_provider_limit_before_calling_vertex(self):
+        client, request = _mock_vertex_client()
+        with (
+            mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
+            self.assertRaisesRegex(InvalidEmbeddingResponse, "per-input token limit"),
+        ):
+            get_embeddings(["漢" * 2049], task="document", recipe=VERTEX)
+        request.assert_not_called()
+
+    def test_rejects_provider_reported_truncation(self):
+        client, request = _mock_vertex_client()
+        request.side_effect = None
+        request.return_value = _vertex_response(["truncated"], truncated=True)
+        with (
+            mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
+            self.assertRaisesRegex(InvalidEmbeddingResponse, "truncated token statistics"),
+        ):
+            get_embeddings(["truncated"], task="document", recipe=VERTEX)
 
     def test_client_disables_its_nested_retry_loop(self):
         _vertex_client.cache_clear()
@@ -202,7 +244,7 @@ class ConfiguredRecipeTests(SimpleTestCase):
         RETRIEVAL_EMBEDDING_MODEL="",
         RETRIEVAL_EMBEDDING_DIMENSIONS=768,
     )
-    def test_defaults_to_fake_backend(self):
+    def test_builds_fake_recipe_from_settings(self):
         recipe = configured_embedding_recipe()
         self.assertEqual(recipe.provider, FAKE_BACKEND)
         self.assertEqual(recipe.dimensions, 768)
@@ -226,6 +268,11 @@ class ConfiguredRecipeTests(SimpleTestCase):
 
     @override_settings(RETRIEVAL_EMBEDDING_BACKEND="bogus", RETRIEVAL_EMBEDDING_MODEL="x")
     def test_unknown_backend_fails_closed(self):
+        with self.assertRaises(ImproperlyConfigured):
+            configured_embedding_recipe()
+
+    @override_settings(RETRIEVAL_EMBEDDING_BACKEND="")
+    def test_empty_backend_fails_closed(self):
         with self.assertRaises(ImproperlyConfigured):
             configured_embedding_recipe()
 
@@ -263,11 +310,11 @@ class RecipePayloadTests(SimpleTestCase):
 
 class VertexRetryTests(SimpleTestCase):
     def test_retries_transient_then_succeeds(self):
-        client = mock.Mock()
-        client.embed.side_effect = [
+        client, request = _mock_vertex_client()
+        request.side_effect = [
             ServerError(503, {"message": "busy"}),
             ServerError(503, {"message": "busy"}),
-            [[1.0, *([0.0] * 7)]],
+            _vertex_response(["a"]),
         ]
         with (
             mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
@@ -276,14 +323,14 @@ class VertexRetryTests(SimpleTestCase):
             vectors = get_embeddings(["a"], task="document", recipe=VERTEX)
 
         self.assertEqual(len(vectors), 1)
-        self.assertEqual(client.embed.call_count, 3)
+        self.assertEqual(request.call_count, 3)
         self.assertEqual(sleep.call_count, 2)
 
     def test_retries_rate_limit_then_succeeds(self):
-        client = mock.Mock()
-        client.embed.side_effect = [
+        client, request = _mock_vertex_client()
+        request.side_effect = [
             ClientError(429, {"message": "rate limited"}),
-            [[1.0, *([0.0] * 7)]],
+            _vertex_response(["a"]),
         ]
         with (
             mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
@@ -291,11 +338,11 @@ class VertexRetryTests(SimpleTestCase):
         ):
             get_embeddings(["a"], task="document", recipe=VERTEX)
 
-        self.assertEqual(client.embed.call_count, 2)
+        self.assertEqual(request.call_count, 2)
 
     def test_permanent_error_fails_without_retry(self):
-        client = mock.Mock()
-        client.embed.side_effect = ClientError(403, {"message": "nope"})
+        client, request = _mock_vertex_client()
+        request.side_effect = ClientError(403, {"message": "nope"})
         with (
             mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
             mock.patch("kitsune.retrieval.embeddings.time.sleep"),
@@ -303,11 +350,11 @@ class VertexRetryTests(SimpleTestCase):
         ):
             get_embeddings(["a"], task="document", recipe=VERTEX)
 
-        self.assertEqual(client.embed.call_count, 1)
+        self.assertEqual(request.call_count, 1)
 
     def test_gives_up_after_max_attempts(self):
-        client = mock.Mock()
-        client.embed.side_effect = ServerError(503, {"message": "busy"})
+        client, request = _mock_vertex_client()
+        request.side_effect = ServerError(503, {"message": "busy"})
         with (
             mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
             mock.patch("kitsune.retrieval.embeddings.time.sleep"),
@@ -315,4 +362,4 @@ class VertexRetryTests(SimpleTestCase):
         ):
             get_embeddings(["a"], task="document", recipe=VERTEX)
 
-        self.assertEqual(client.embed.call_count, _MAX_ATTEMPTS)
+        self.assertEqual(request.call_count, _MAX_ATTEMPTS)

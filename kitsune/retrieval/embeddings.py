@@ -11,6 +11,8 @@ from typing import Literal, cast
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+from kitsune.retrieval.chunking import count_tokens
+
 FAKE_BACKEND = "fake"
 VERTEX_BACKEND = "vertex"
 
@@ -21,6 +23,11 @@ DEFAULT_NORMALIZATION = "none"
 _MAX_ATTEMPTS = 4
 _BACKOFF_BASE = 0.5
 _NORMALIZATIONS = frozenset({"none", "l2"})
+# Vertex allows 250 inputs and 2,048 tokens per input for the currently supported
+# Google embedding models. The provider remains authoritative because this estimate
+# deliberately avoids a separate remote token-count request.
+_VERTEX_MAX_BATCH_SIZE = 250
+_VERTEX_MAX_INPUT_TOKENS = 2_048
 _RECIPE_FIELDS = frozenset(
     {
         "provider",
@@ -196,7 +203,12 @@ def _fake_embed(texts: list[str], *, task_type: str, recipe: EmbeddingRecipe) ->
 def _vertex_embed(
     texts: list[str], *, task_type: str, recipe: EmbeddingRecipe
 ) -> list[list[float]]:
-    batch_size = _configured_batch_size()
+    if any(count_tokens(text) > _VERTEX_MAX_INPUT_TOKENS for text in texts):
+        raise InvalidEmbeddingResponse(
+            "embedding input exceeds Vertex's estimated per-input token limit"
+        )
+
+    batch_size = min(_configured_batch_size(), _VERTEX_MAX_BATCH_SIZE)
     client = _vertex_client(recipe.model)
     vectors: list[list[float]] = []
     for start in range(0, len(texts), batch_size):
@@ -234,7 +246,9 @@ def _embed_batch_with_retry(
     )
     for attempt in range(_MAX_ATTEMPTS):
         try:
-            return client.embed(batch, embeddings_task_type=task_type, dimensions=dimensions)
+            return _request_vertex_embeddings(
+                client, batch, task_type=task_type, dimensions=dimensions
+            )
         except provider_errors as exc:
             if isinstance(exc, genai_errors.APIError) and not (
                 exc.code == 429 or 500 <= exc.code < 600
@@ -244,6 +258,35 @@ def _embed_batch_with_retry(
                 raise
             time.sleep(_BACKOFF_BASE * 2**attempt + random.uniform(0, _BACKOFF_BASE))
     raise AssertionError("retry loop exited unexpectedly")
+
+
+def _request_vertex_embeddings(
+    client, batch: list[str], *, task_type: str, dimensions: int
+) -> list[list[float]]:
+    """Call Google Gen AI directly so truncation cannot be hidden by the LangChain wrapper."""
+    from google.genai.types import EmbedContentConfig
+
+    response = client.client.models.embed_content(
+        model=client.model_name,
+        contents=batch,
+        config=EmbedContentConfig(
+            task_type=task_type,
+            output_dimensionality=dimensions,
+            auto_truncate=False,
+        ),
+    )
+    embeddings = response.embeddings or []
+    vectors: list[list[float]] = []
+    for embedding in embeddings:
+        statistics = embedding.statistics
+        if statistics is None or statistics.truncated is not False:
+            raise InvalidEmbeddingResponse(
+                "Vertex embedding response has invalid or truncated token statistics"
+            )
+        if embedding.values is None:
+            raise InvalidEmbeddingResponse("Vertex embedding response has no vector values")
+        vectors.append(list(embedding.values))
+    return vectors
 
 
 @cache

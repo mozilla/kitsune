@@ -461,6 +461,11 @@ class ChunkSizeTests(SimpleTestCase):
             count_tokens("a considerably longer stretch of text here indeed"),
         )
 
+    def test_count_tokens_is_conservative_for_non_ascii_scripts(self):
+        self.assertEqual(count_tokens("a" * 8), 2)
+        self.assertEqual(count_tokens("漢" * 8), 8)
+        self.assertEqual(count_tokens("🙂" * 8), 8)
+
     def test_short_section_stays_single_chunk(self):
         chunks = chunk_kb("<p>A short paragraph.</p>", title="Small")
         self.assertEqual(len(chunks), 1)
@@ -488,6 +493,17 @@ class ChunkSizeTests(SimpleTestCase):
         self.assertGreater(len(chunks), 1)
         for chunk_obj in chunks:
             self.assertLessEqual(count_tokens(chunk_obj.text), MAX_TOKENS)
+
+    def test_unbroken_cjk_run_is_hard_split_within_limit(self):
+        chunks = chunk_kb("<p>" + "漢" * 1200 + "</p>", title="CJK")
+
+        self.assertGreater(len(chunks), 1)
+        for chunk_obj in chunks:
+            self.assertLessEqual(count_tokens(chunk_obj.text), MAX_TOKENS)
+
+    def test_heading_path_cannot_consume_the_entire_chunk_budget(self):
+        with self.assertRaisesRegex(ValueError, "heading path exceeds"):
+            chunk_kb("<p>Body must not disappear.</p>", title="x" * (MAX_TOKENS * 4))
 
     def test_oversized_pre_block_preserves_line_breaks(self):
         code = "\n".join(f"    indented line {i} of code" for i in range(400))
