@@ -102,15 +102,25 @@ def _canonical_string_ids(values, name: str) -> tuple[str, ...]:
     return tuple(sorted(items))
 
 
-def _canonical_group_ids(values) -> tuple[int, ...]:
+def _int_items(values, name: str, *, minimum: int) -> tuple[int, ...]:
     if isinstance(values, str | bytes):
-        raise InvalidDocumentState("access_group_ids must be a sequence of integers")
+        raise InvalidDocumentState(f"{name} must be a sequence of integers")
     try:
         items = tuple(values)
     except TypeError as exc:
-        raise InvalidDocumentState("access_group_ids must be a sequence of integers") from exc
+        raise InvalidDocumentState(f"{name} must be a sequence of integers") from exc
     for value in items:
-        _require_int(value, "access_group_ids item", minimum=1)
+        _require_int(value, f"{name} item", minimum=minimum)
+    return items
+
+
+def _canonical_positions(values) -> tuple[int, ...]:
+    # A position set: repeats carry no meaning, so they collapse rather than fail.
+    return tuple(sorted(set(_int_items(values, "orphan_positions", minimum=0))))
+
+
+def _canonical_group_ids(values) -> tuple[int, ...]:
+    items = _int_items(values, "access_group_ids", minimum=1)
     if len(set(items)) != len(items):
         raise InvalidDocumentState("access_group_ids must not contain duplicates")
     return tuple(sorted(items))
@@ -349,19 +359,10 @@ def _identity_filters(identity: ChunkIdentity) -> list[dict]:
     ]
 
 
-def write_chunks(
-    *,
-    index: str,
-    chunks: list[Chunk],
-    vectors: list[list[float]],
-    source: ChunkSource,
-    expected_state: ExpectedDocumentState,
+def _verify_expected_state(
+    chunks: list[Chunk], source: ChunkSource, expected_state: ExpectedDocumentState
 ) -> None:
-    """Bulk-write and verify one chunk document per chunk to a concrete index. Vectors are
-    supplied by the caller — the write path never calls the embedding adapter."""
-    _require_concrete_index(index)
-    if len(vectors) != len(chunks):
-        raise InvalidDocumentState("write_chunks requires exactly one vector per chunk")
+    """Prove the expected commit was derived from exactly these chunks and this source."""
     if [chunk.position for chunk in chunks] != list(range(len(chunks))):
         raise InvalidDocumentState("chunk positions must be contiguous and start at zero")
     if expected_state.chunk_count != len(chunks):
@@ -375,6 +376,57 @@ def write_chunks(
     if expected_state.updated != source.updated:
         raise InvalidDocumentState("expected_state.updated does not match the source")
 
+
+def _chunk_metadata(
+    chunk: Chunk, source: ChunkSource, expected_state: ExpectedDocumentState
+) -> dict:
+    """Every per-chunk field a metadata-only update owns.
+
+    Shared by the full write and the metadata-only update so the two cannot drift into
+    disagreeing about what a chunk's recovery state should look like. Deliberately excluded:
+    ``kind``, ``content_type``, ``object_id``, ``locale`` and ``position`` (they identify the
+    document, and changing one means a different chunk), ``content_text``/``content_vector``
+    (only a re-embed may rewrite those), and ``indexed_on``, which keeps meaning "when this
+    chunk's text and vector were written" rather than "last touched".
+    """
+    locale = source.locale
+    return {
+        "heading_path": chunk.heading_path,
+        "applies_to": sorted(chunk.applies_to),
+        "scope": scope_envelope(chunk.scope),
+        "scope_clause_count": len(chunk.scope),
+        "family_id": source.family_id,
+        "visibility": source.visibility,
+        "access_group_ids": list(source.access_group_ids),
+        "content_hash": expected_state.content_hash,
+        "index_state_hash": expected_state.index_state_hash,
+        "chunking_generation": expected_state.chunking_generation,
+        "title": {locale: source.title},
+        "summary": {locale: source.summary},
+        "keywords": {locale: source.keywords},
+        "slug": {locale: source.slug},
+        "category": source.category,
+        "product_ids": list(source.product_ids),
+        "topic_ids": list(source.topic_ids),
+        "updated": source.updated,
+    }
+
+
+def write_chunks(
+    *,
+    index: str,
+    chunks: list[Chunk],
+    vectors: list[list[float]],
+    source: ChunkSource,
+    expected_state: ExpectedDocumentState,
+) -> None:
+    """Bulk-write and verify one chunk document per chunk to a concrete index. Vectors are
+    supplied by the caller — the write path never calls the embedding adapter."""
+    _require_concrete_index(index)
+    if len(vectors) != len(chunks):
+        raise InvalidDocumentState("write_chunks requires exactly one vector per chunk")
+    _verify_expected_state(chunks, source, expected_state)
+
     locale = source.locale
     identity = source.identity
     indexed_on = datetime.now(tz=UTC)
@@ -386,27 +438,10 @@ def write_chunks(
             content_vector=list(vector),
             content_type=source.content_type,
             object_id=source.object_id,
-            family_id=source.family_id,
             locale=locale,
-            applies_to=sorted(chunk.applies_to),
-            scope=scope_envelope(chunk.scope),
-            scope_clause_count=len(chunk.scope),
-            heading_path=chunk.heading_path,
             position=chunk.position,
-            visibility=source.visibility,
-            access_group_ids=list(source.access_group_ids),
-            content_hash=expected_state.content_hash,
-            index_state_hash=expected_state.index_state_hash,
-            chunking_generation=expected_state.chunking_generation,
             indexed_on=indexed_on,
-            title={locale: source.title},
-            summary={locale: source.summary},
-            keywords={locale: source.keywords},
-            slug={locale: source.slug},
-            category=source.category,
-            product_ids=list(source.product_ids),
-            topic_ids=list(source.topic_ids),
-            updated=source.updated,
+            **_chunk_metadata(chunk, source, expected_state),
         )
         doc.meta.id = chunk_id(identity, chunk.position)
         action = doc.to_action(action="index", is_bulk=True)
@@ -446,6 +481,30 @@ def delete_orphan_chunks(
     )
 
 
+def delete_chunk_positions(
+    *, index: str, identity: ChunkIdentity, positions: range | set[int] | tuple[int, ...]
+) -> None:
+    """Delete only the named chunk positions. The manifest is untouched.
+
+    The complement of ``delete_orphan_chunks``: naming the doomed positions instead of the
+    surviving ones keeps a caller working from a stale view of the document from evicting
+    chunks it never saw.
+    """
+    _require_concrete_index(index)
+    _verified_delete_by_query(
+        index,
+        {
+            "bool": {
+                "filter": [
+                    *_identity_filters(identity),
+                    {"term": {"kind": CHUNK_KIND}},
+                    {"terms": {"position": sorted(positions)}},
+                ]
+            }
+        },
+    )
+
+
 def replace_chunks(
     *,
     index: str,
@@ -467,6 +526,68 @@ def replace_chunks(
         index=index, identity=source.identity, expected_positions=range(len(chunks))
     )
     commit_manifest(index=index, identity=source.identity, expected_state=expected_state)
+
+
+def update_chunks_metadata_for(
+    *,
+    index: str,
+    chunks: list[Chunk],
+    source: ChunkSource,
+    expected_state: ExpectedDocumentState,
+) -> None:
+    """Rewrite each existing position's metadata and state in place, delete orphans, commit.
+
+    The cheapest correct path when only scope or non-access source metadata changed: it
+    preserves each chunk's stored text and vector and makes no embedding call. Access-control
+    transitions instead use the embargoed evict, rerender, and resync workflow. The caller
+    must already have verified that every expected position's stored text, vector, and content
+    hash are correct — this never creates a missing position, because a chunk without text and
+    a vector would be indistinguishable from a real one.
+    """
+    _require_concrete_index(index)
+    _verify_expected_state(chunks, source, expected_state)
+
+    identity = source.identity
+    actions = []
+    for chunk in chunks:
+        doc = ChunkDocument(**_chunk_metadata(chunk, source, expected_state))
+        doc.meta.id = chunk_id(identity, chunk.position)
+        # Partial doc + no doc_as_upsert: text/vector are absent from the payload so they
+        # survive the merge, and a missing position fails instead of being created.
+        action = doc.to_action(action="update", is_bulk=True)
+        action["_index"] = index
+        actions.append(action)
+
+    _verified_bulk(actions)
+    delete_orphan_chunks(index=index, identity=identity, expected_positions=range(len(chunks)))
+    commit_manifest(index=index, identity=identity, expected_state=expected_state)
+
+
+def repair_document_commit(
+    *,
+    index: str,
+    identity: ChunkIdentity,
+    expected_state: ExpectedDocumentState,
+    orphan_positions,
+) -> None:
+    """Delete an enumerated set of leftover positions, then commit the manifest.
+
+    The narrow recovery for a crash between verified chunk writes and their manifest: it
+    writes no chunk content and makes no embedding call. Legal only once the caller has
+    validated every expected position's text, vector, hash, and state. Deleting an explicit
+    list rather than everything unexpected keeps a stale caller from evicting live chunks.
+    """
+    _require_concrete_index(index)
+    orphans = _canonical_positions(orphan_positions)
+    conflicting = sorted(set(orphans) & set(range(expected_state.chunk_count)))
+    if conflicting:
+        raise InvalidDocumentState(
+            f"orphan positions {conflicting!r} are expected by the manifest being committed"
+        )
+
+    if orphans:
+        delete_chunk_positions(index=index, identity=identity, positions=orphans)
+    commit_manifest(index=index, identity=identity, expected_state=expected_state)
 
 
 def read_indexed_document(*, index: str, identity: ChunkIdentity) -> IndexedDocumentState:

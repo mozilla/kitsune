@@ -358,6 +358,13 @@ RETRIEVAL_EMBEDDING_MODEL = config("RETRIEVAL_EMBEDDING_MODEL", default="")
 RETRIEVAL_EMBEDDING_DIMENSIONS = config("RETRIEVAL_EMBEDDING_DIMENSIONS", default=768, cast=int)
 RETRIEVAL_EMBEDDING_BATCH_SIZE = config("RETRIEVAL_EMBEDDING_BATCH_SIZE", default=250, cast=int)
 
+# Retrieval document leases. The ttl bounds how long a crashed worker blocks a document;
+# the heartbeat must stay well under it so a lease survives a slow embedding call.
+RETRIEVAL_LOCK_TTL_SECONDS = config("RETRIEVAL_LOCK_TTL_SECONDS", default=300, cast=float)
+RETRIEVAL_LOCK_HEARTBEAT_SECONDS = config(
+    "RETRIEVAL_LOCK_HEARTBEAT_SECONDS", default=30, cast=float
+)
+
 TEXT_DOMAIN = "messages"
 
 SITE_ID = 1
