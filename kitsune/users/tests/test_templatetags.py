@@ -3,6 +3,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from markupsafe import Markup
 from pyquery import PyQuery as pq
 
+from kitsune.sumo.parser import BASE_ALLOWED_ATTRIBUTES, wiki_to_html
 from kitsune.sumo.tests import TestCase
 from kitsune.users.templatetags.jinja_helpers import (
     display_name,
@@ -23,17 +24,25 @@ class HelperTestCase(TestCase):
 
     def test_public_email(self):
         self.assertEqual(
-            '<span class="email">'
+            '<span class="email" data-public-email>'
             "&#109;&#101;&#64;&#100;&#111;&#109;&#97;&#105;&#110;&#46;&#99;"
             "&#111;&#109;</span>",
             public_email("me@domain.com"),
         )
         self.assertEqual(
-            '<span class="email">'
+            '<span class="email" data-public-email>'
             "&#110;&#111;&#116;&#46;&#97;&#110;&#46;&#101;&#109;&#97;&#105;"
             "&#108;</span>",
             public_email("not.an.email"),
         )
+
+    def test_public_email_hook_is_not_forgeable_in_user_content(self):
+        """The sanitizer must strip the attribute makeEmailsClickable() keys off of."""
+        parsed = wiki_to_html(
+            '<span class="email" data-public-email>x</span>',
+            attributes=BASE_ALLOWED_ATTRIBUTES,
+        )
+        self.assertNotIn("data-public-email", parsed)
 
     def test_display_name(self):
         self.assertEqual(self.u.profile.name, display_name(self.u))
