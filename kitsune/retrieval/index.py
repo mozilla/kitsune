@@ -102,27 +102,25 @@ def _canonical_string_ids(values, name: str) -> tuple[str, ...]:
     return tuple(sorted(items))
 
 
-def _canonical_positions(values) -> tuple[int, ...]:
+def _int_items(values, name: str, *, minimum: int) -> tuple[int, ...]:
     if isinstance(values, str | bytes):
-        raise InvalidDocumentState("orphan_positions must be a sequence of integers")
+        raise InvalidDocumentState(f"{name} must be a sequence of integers")
     try:
         items = tuple(values)
     except TypeError as exc:
-        raise InvalidDocumentState("orphan_positions must be a sequence of integers") from exc
+        raise InvalidDocumentState(f"{name} must be a sequence of integers") from exc
     for value in items:
-        _require_int(value, "orphan_positions item", minimum=0)
-    return tuple(sorted(set(items)))
+        _require_int(value, f"{name} item", minimum=minimum)
+    return items
+
+
+def _canonical_positions(values) -> tuple[int, ...]:
+    # A position set: repeats carry no meaning, so they collapse rather than fail.
+    return tuple(sorted(set(_int_items(values, "orphan_positions", minimum=0))))
 
 
 def _canonical_group_ids(values) -> tuple[int, ...]:
-    if isinstance(values, str | bytes):
-        raise InvalidDocumentState("access_group_ids must be a sequence of integers")
-    try:
-        items = tuple(values)
-    except TypeError as exc:
-        raise InvalidDocumentState("access_group_ids must be a sequence of integers") from exc
-    for value in items:
-        _require_int(value, "access_group_ids item", minimum=1)
+    items = _int_items(values, "access_group_ids", minimum=1)
     if len(set(items)) != len(items):
         raise InvalidDocumentState("access_group_ids must not contain duplicates")
     return tuple(sorted(items))
@@ -382,10 +380,14 @@ def _verify_expected_state(
 def _chunk_metadata(
     chunk: Chunk, source: ChunkSource, expected_state: ExpectedDocumentState
 ) -> dict:
-    """Every per-chunk field except identity, text, and vector.
+    """Every per-chunk field a metadata-only update owns.
 
     Shared by the full write and the metadata-only update so the two cannot drift into
-    disagreeing about what a chunk's recovery state should look like.
+    disagreeing about what a chunk's recovery state should look like. Deliberately excluded:
+    ``kind``, ``content_type``, ``object_id``, ``locale`` and ``position`` (they identify the
+    document, and changing one means a different chunk), ``content_text``/``content_vector``
+    (only a re-embed may rewrite those), and ``indexed_on``, which keeps meaning "when this
+    chunk's text and vector were written" rather than "last touched".
     """
     locale = source.locale
     return {
@@ -479,6 +481,30 @@ def delete_orphan_chunks(
     )
 
 
+def delete_chunk_positions(
+    *, index: str, identity: ChunkIdentity, positions: range | set[int] | tuple[int, ...]
+) -> None:
+    """Delete only the named chunk positions. The manifest is untouched.
+
+    The complement of ``delete_orphan_chunks``: naming the doomed positions instead of the
+    surviving ones keeps a caller working from a stale view of the document from evicting
+    chunks it never saw.
+    """
+    _require_concrete_index(index)
+    _verified_delete_by_query(
+        index,
+        {
+            "bool": {
+                "filter": [
+                    *_identity_filters(identity),
+                    {"term": {"kind": CHUNK_KIND}},
+                    {"terms": {"position": sorted(positions)}},
+                ]
+            }
+        },
+    )
+
+
 def replace_chunks(
     *,
     index: str,
@@ -560,18 +586,7 @@ def repair_document_commit(
         )
 
     if orphans:
-        _verified_delete_by_query(
-            index,
-            {
-                "bool": {
-                    "filter": [
-                        *_identity_filters(identity),
-                        {"term": {"kind": CHUNK_KIND}},
-                        {"terms": {"position": list(orphans)}},
-                    ]
-                }
-            },
-        )
+        delete_chunk_positions(index=index, identity=identity, positions=orphans)
     commit_manifest(index=index, identity=identity, expected_state=expected_state)
 
 

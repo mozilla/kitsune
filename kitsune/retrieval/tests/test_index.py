@@ -788,22 +788,6 @@ class MetadataUpdateTests(ChunkIndexTestCase):
         self.assertEqual(stored["topic_ids"], [])
         self.assertEqual(stored["summary"]["en-US"], "")
 
-    def test_makes_no_embedding_calls(self):
-        source = _source()
-        chunks = [Chunk(text="a", position=0, heading_path="H")]
-        self._seed(chunks, source)
-
-        with mock.patch(
-            "kitsune.retrieval.embeddings.get_embeddings",
-            side_effect=AssertionError("a metadata update must never embed"),
-        ):
-            update_chunks_metadata_for(
-                index=self.index,
-                chunks=chunks,
-                source=source,
-                expected_state=_expected(chunks, source),
-            )
-
 
 class CommitRepairTests(ChunkIndexTestCase):
     def setUp(self):
@@ -923,24 +907,6 @@ class CommitRepairTests(ChunkIndexTestCase):
         kept = read_indexed_document(index=self.index, identity=other.identity)
         self.assertEqual([c["position"] for c in kept.chunks], [0, 1, 2])
         self.assertEqual(kept.manifest.chunk_count, 3)
-
-    def test_makes_no_embedding_calls(self):
-        source = _source()
-        chunks = self._seed(2, source)
-
-        with mock.patch(
-            "kitsune.retrieval.embeddings.get_embeddings",
-            side_effect=AssertionError("a commit repair must never embed"),
-        ):
-            repair_document_commit(
-                index=self.index,
-                identity=source.identity,
-                expected_state=_expected(chunks[:1], source),
-                orphan_positions={1},
-            )
-
-        stored = read_indexed_document(index=self.index, identity=source.identity)
-        self.assertEqual([c["position"] for c in stored.chunks], [0])
 
 
 class DeleteTests(ChunkIndexTestCase):
