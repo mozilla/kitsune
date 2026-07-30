@@ -3,7 +3,21 @@ from elasticsearch import NotFoundError
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.search.documents import WikiDocument
 from kitsune.search.tests import ElasticTestCase
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory
+from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import GroupFactory
+from kitsune.wiki.config import (
+    ADMINISTRATION_CATEGORY,
+    CANNED_RESPONSES_CATEGORY,
+    REDIRECT_HTML,
+    TROUBLESHOOTING_CATEGORY,
+)
+from kitsune.wiki.models import Document
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    DocumentFactory,
+    RevisionFactory,
+    TemplateDocumentFactory,
+)
 
 
 class WikiDocumentSignalsTests(ElasticTestCase):
@@ -85,3 +99,62 @@ class WikiDocumentSignalsTests(ElasticTestCase):
 
         with self.assertRaises(NotFoundError):
             self.get_doc()
+
+
+class WikiDocumentPrepareDiscardTests(TestCase):
+    """`prepare` discards exactly the public-indexing-disallowed set.
+
+    The discard decision now delegates to the shared `is_public_indexing_allowed` rule.
+    A revision-less translation must NOT be discarded here: discarding it under the
+    parent's ES id could unindex the whole merged-locale family.
+    """
+
+    def assert_discarded(self, doc, expected):
+        prepared = Document.objects.get(pk=doc.pk)
+        WikiDocument.prepare(prepared)
+        self.assertEqual(hasattr(prepared, "es_discard_doc"), expected)
+
+    def test_normal_document_not_discarded(self):
+        doc = DocumentFactory()
+        ApprovedRevisionFactory(document=doc)
+        self.assert_discarded(doc, False)
+
+    def test_each_public_indexing_exclusion_is_discarded(self):
+        restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        ApprovedRevisionFactory(document=restricted)
+        redirect = DocumentFactory()
+        Document.objects.filter(pk=redirect.pk).update(
+            html=REDIRECT_HTML + '<a href="/x">x</a></p>'
+        )
+        excluded = (
+            restricted,
+            DocumentFactory(is_archived=True),
+            TemplateDocumentFactory(),
+            DocumentFactory(category=CANNED_RESPONSES_CATEGORY),
+            DocumentFactory(category=ADMINISTRATION_CATEGORY),
+            redirect,
+        )
+        for document in excluded:
+            with self.subTest(document=document):
+                self.assert_discarded(document, True)
+
+    def test_stale_template_translation_discarded_after_parent_category_change(self):
+        parent = TemplateDocumentFactory()
+        translation = TemplateDocumentFactory(parent=parent, locale="de")
+        ApprovedRevisionFactory(document=translation)
+
+        parent.title = "Former template"
+        parent.category = TROUBLESHOOTING_CATEGORY
+        parent.save()
+        translation.refresh_from_db()
+
+        self.assertTrue(translation.is_template)
+        self.assertEqual(translation.category, TROUBLESHOOTING_CATEGORY)
+        self.assert_discarded(translation, True)
+
+    def test_revision_less_translation_not_discarded(self):
+        parent = DocumentFactory()
+        ApprovedRevisionFactory(document=parent)
+        translation = DocumentFactory(parent=Document.objects.get(pk=parent.pk), locale="de")
+        # No approved revision → revision-less; prepare must not discard it.
+        self.assert_discarded(translation, False)

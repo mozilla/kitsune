@@ -9,12 +9,7 @@ from kitsune.search.es_utils import es_client
 from kitsune.search.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
 from kitsune.users.models import Profile
 from kitsune.wiki import models as wiki_models
-from kitsune.wiki.config import (
-    ADMINISTRATION_CATEGORY,
-    CANNED_RESPONSES_CATEGORY,
-    REDIRECT_HTML,
-    TEMPLATES_CATEGORY,
-)
+from kitsune.wiki.indexing import is_public_indexing_allowed
 
 connections.add_connection(config.DEFAULT_ES_CONNECTION, es_client())
 
@@ -51,19 +46,7 @@ class WikiDocument(SumoDocument):
     @classmethod
     def prepare(cls, instance):
         """Override super method to merge docs for KB."""
-        # Add a discard field in the document if the following conditions are met
-        # Wiki document is a redirect
-        # Wiki document is archived
-        # Wiki document is a template
-        if any(
-            [
-                instance.html.startswith(REDIRECT_HTML),
-                instance.is_archived,
-                instance.category
-                in [TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY],
-                instance.is_restricted,
-            ]
-        ):
+        if not is_public_indexing_allowed(instance):
             instance.es_discard_doc = "unindex_me"
 
         return super().prepare(instance, parent_id=instance.parent_id)

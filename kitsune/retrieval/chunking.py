@@ -17,12 +17,22 @@ from dataclasses import dataclass
 
 from lxml import html as lxml_html
 
-__all__ = ["Chunk", "ShowForScope", "chunk", "chunk_kb", "count_tokens", "parse_data_for"]
+__all__ = [
+    "CHUNKING_GENERATION",
+    "Chunk",
+    "ShowForScope",
+    "chunk",
+    "chunk_kb",
+    "count_tokens",
+    "parse_data_for",
+]
 
 HEADING_TAGS = ("h1", "h2", "h3")
 CONTAINER_TAGS = ("div", "section")
 MAX_TOKENS = 512
 OVERLAP_TOKENS = 64
+# Bump on any change that can alter chunk text, order, boundaries, headings, or scope.
+CHUNKING_GENERATION: int = 1
 _SEGMENT_BOUNDARY = re.compile(r"(\n+|(?<=[.!?])\s+)")
 
 # Each item is one element's selector clause; tuple order represents DOM nesting (logical AND).
@@ -75,7 +85,14 @@ def parse_data_for(value: str) -> frozenset[str]:
 
 
 def count_tokens(text: str) -> int:
-    return len(text) // 4
+    """Estimate tokens locally without coupling chunking to the embedding provider.
+
+    ASCII averages roughly four characters per token. CJK and other non-ASCII scripts
+    are commonly closer to one code point per token, so count those individually.
+    Provider-side truncation remains disabled as the final safety boundary.
+    """
+    ascii_count = sum(character.isascii() for character in text)
+    return (ascii_count + 3) // 4 + len(text) - ascii_count
 
 
 def _is_showfor(element) -> bool:
@@ -204,13 +221,15 @@ def _atomize(text: str, max_tokens: int) -> list[str]:
         words = segment.split()
         for offset, word in enumerate(words):
             tail = delimiter if offset == len(words) - 1 else " "
-            if count_tokens(word) <= max_tokens:
-                atoms.append(word + tail)
+            atom = word + tail
+            if count_tokens(atom) <= max_tokens:
+                atoms.append(atom)
                 continue
-            limit = max_tokens * 4
-            for start in range(0, len(word), limit):
-                chunk_ = word[start : start + limit]
-                atoms.append(chunk_ + (tail if start + limit >= len(word) else ""))
+            # A code-point limit is conservative for every script and only applies to
+            # unbroken text that could not be split at a natural boundary.
+            atoms.extend(
+                atom[start : start + max_tokens] for start in range(0, len(atom), max_tokens)
+            )
     return atoms
 
 
@@ -311,6 +330,8 @@ def chunk_kb(html: str, *, title: str) -> list[Chunk]:
     for (_, path, signature), texts in groups.items():
         prefix = f"{path}\n"
         budget = MAX_TOKENS - count_tokens(prefix) - 1
+        if budget <= 0:
+            raise ValueError(f"heading path exceeds the {MAX_TOKENS}-token chunk budget: {path!r}")
         for piece in _split_oversized(" ".join(texts), budget):
             chunks.append(
                 Chunk(
