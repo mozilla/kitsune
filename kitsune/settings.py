@@ -1278,7 +1278,8 @@ CONTENT_SECURITY_POLICY = {
             "https://*.webservices.mozgcp.net",
             "https://www.googletagmanager.com",
             "https://www.google-analytics.com",
-            f"https://{MATOMO_MZLA_CDN_HOST}",
+            # cdn.matomo.cloud is multi-tenant; a bare host source would defeat NONCE.
+            f"https://{MATOMO_MZLA_CDN_HOST}/{MATOMO_MZLA_TRACKER_HOST}/matomo.js",
             "https://pontoon.mozilla.org",
             NONCE,
         ],

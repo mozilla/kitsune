@@ -50,7 +50,8 @@ def display_name(user):
 @library.filter
 def public_email(email):
     """Email address -> publicly displayable email."""
-    return Markup('<span class="email">{}</span>'.format(unicode_to_html(email)))
+    # JS hooks the attribute, not the class: the sanitizer strips it from user content.
+    return Markup('<span class="email" data-public-email>{}</span>'.format(unicode_to_html(email)))
 
 
 def unicode_to_html(text):

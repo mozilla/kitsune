@@ -5,7 +5,7 @@
 import Modal from "protocol/js/modal";
 
 function makeEmailsClickable() {
-  document.querySelectorAll('.email').forEach(function (el) {
+  document.querySelectorAll('[data-public-email]').forEach(function (el) {
     var emailVal = el.textContent;
     var a = document.createElement('a');
     a.setAttribute('href', 'mailto:' + emailVal);
