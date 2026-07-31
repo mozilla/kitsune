@@ -357,13 +357,15 @@ RETRIEVAL_EMBEDDING_BACKEND = config("RETRIEVAL_EMBEDDING_BACKEND", default="")
 RETRIEVAL_EMBEDDING_MODEL = config("RETRIEVAL_EMBEDDING_MODEL", default="")
 RETRIEVAL_EMBEDDING_DIMENSIONS = config("RETRIEVAL_EMBEDDING_DIMENSIONS", default=768, cast=int)
 RETRIEVAL_EMBEDDING_BATCH_SIZE = config("RETRIEVAL_EMBEDDING_BATCH_SIZE", default=250, cast=int)
-
-# Retrieval document leases. The ttl bounds how long a crashed worker blocks a document;
-# the heartbeat must stay well under it so a lease survives a slow embedding call.
-RETRIEVAL_LOCK_TTL_SECONDS = config("RETRIEVAL_LOCK_TTL_SECONDS", default=300, cast=float)
-RETRIEVAL_LOCK_HEARTBEAT_SECONDS = config(
-    "RETRIEVAL_LOCK_HEARTBEAT_SECONDS", default=30, cast=float
+# Per-request deadline. Retrieval-specific Celery limits added with the ingestion tasks bound
+# the complete operation across retries and batches.
+RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS = config(
+    "RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS", default=30, cast=float
 )
+
+# Retrieval document leases have no background renewer. Keep each retrieval task's Celery
+# time limit below this ttl so the lease cannot lapse while the task is running.
+RETRIEVAL_LOCK_TTL_SECONDS = config("RETRIEVAL_LOCK_TTL_SECONDS", default=300, cast=float)
 
 TEXT_DOMAIN = "messages"
 

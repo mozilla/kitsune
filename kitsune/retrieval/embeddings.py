@@ -209,16 +209,33 @@ def _vertex_embed(
         )
 
     batch_size = min(_configured_batch_size(), _VERTEX_MAX_BATCH_SIZE)
+    timeout_ms = _configured_timeout_ms()
     client = _vertex_client(recipe.model)
     vectors: list[list[float]] = []
     for start in range(0, len(texts), batch_size):
         batch = texts[start : start + batch_size]
         batch_vectors = _embed_batch_with_retry(
-            client, batch, task_type=task_type, dimensions=recipe.dimensions
+            client, batch, task_type=task_type, dimensions=recipe.dimensions, timeout_ms=timeout_ms
         )
         validate_embeddings(batch_vectors, batch, recipe)
         vectors.extend(batch_vectors)
     return vectors
+
+
+def _configured_timeout_ms() -> int:
+    """Return the configured request deadline in provider milliseconds."""
+    timeout = settings.RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS
+    if (
+        isinstance(timeout, bool)
+        or not isinstance(timeout, int | float)
+        or not math.isfinite(timeout)
+        or timeout < 0.001
+    ):
+        raise ImproperlyConfigured(
+            "RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS must be a finite number of seconds "
+            "of at least one millisecond"
+        )
+    return int(timeout * 1000)
 
 
 def _configured_batch_size() -> int:
@@ -229,10 +246,12 @@ def _configured_batch_size() -> int:
 
 
 def _embed_batch_with_retry(
-    client, batch: list[str], *, task_type: str, dimensions: int
+    client, batch: list[str], *, task_type: str, dimensions: int, timeout_ms: int
 ) -> list[list[float]]:
     from google.api_core import exceptions as gexc
     from google.genai import errors as genai_errors
+    from httpx import TimeoutException as HttpxTimeout
+    from requests import Timeout as RequestsTimeout
 
     provider_errors = (
         genai_errors.APIError,
@@ -243,11 +262,13 @@ def _embed_batch_with_retry(
         gexc.DeadlineExceeded,
         gexc.GatewayTimeout,
         gexc.BadGateway,
+        HttpxTimeout,
+        RequestsTimeout,
     )
     for attempt in range(_MAX_ATTEMPTS):
         try:
             return _request_vertex_embeddings(
-                client, batch, task_type=task_type, dimensions=dimensions
+                client, batch, task_type=task_type, dimensions=dimensions, timeout_ms=timeout_ms
             )
         except provider_errors as exc:
             if isinstance(exc, genai_errors.APIError) and not (
@@ -261,10 +282,10 @@ def _embed_batch_with_retry(
 
 
 def _request_vertex_embeddings(
-    client, batch: list[str], *, task_type: str, dimensions: int
+    client, batch: list[str], *, task_type: str, dimensions: int, timeout_ms: int
 ) -> list[list[float]]:
     """Call Google Gen AI directly so truncation cannot be hidden by the LangChain wrapper."""
-    from google.genai.types import EmbedContentConfig
+    from google.genai.types import EmbedContentConfig, HttpOptions
 
     response = client.client.models.embed_content(
         model=client.model_name,
@@ -273,6 +294,7 @@ def _request_vertex_embeddings(
             task_type=task_type,
             output_dimensionality=dimensions,
             auto_truncate=False,
+            http_options=HttpOptions(timeout=timeout_ms),
         ),
     )
     embeddings = response.embeddings or []
