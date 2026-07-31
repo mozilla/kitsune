@@ -5,6 +5,10 @@ from pydantic import BaseModel, Field
 
 from kitsune.llm.prompt import ADDITIONAL_FORMAT_INSTRUCTIONS, USER_CONTENT_TEMPLATE, model_to_dict
 
+# Must stay between LOW_ and HIGH_CONFIDENCE_THRESHOLD, so an uncertain product relevance
+# judgement is routed to a human reviewer instead of being auto-actioned as spam.
+UNCERTAIN_RELEVANCE_CONFIDENCE_CEILING = 70
+
 SPAM_CRITERIA_TEMPLATE = Template("""- Attempts to sell, advertise, or promote products or services.
 {% if not has_ticketing %}
 - Encourages contacting phone numbers, emails, or external businesses.
@@ -22,7 +26,7 @@ SPAM_CRITERIA_TEMPLATE = Template("""- Attempts to sell, advertise, or promote p
 - Its intent cannot be determined.
 - Contains excessive random symbols, emojis, or gibberish text.
 - Contains QR codes or links/images directing users off-site.
-- Clearly unrelated to Mozilla's "{{ product }}" product features, functionality or purpose.""")
+- Clearly unrelated to Mozilla's "{{ product }}" product features, functionality or purpose. Consult the "Judging product relevance" section before applying this criterion.""")
 
 PRODUCT_DESCRIPTION_TEMPLATE = """
 # Product description for Mozilla's "{product}" product
@@ -30,14 +34,28 @@ PRODUCT_DESCRIPTION_TEMPLATE = """
 
 """
 
+LEGITIMATE_EXAMPLES_TEMPLATE = """
+# Known-legitimate requests for Mozilla's "{product}" product
+Each of the following is a genuine {content_name}, however unusual it may look. Do not classify a {content_name} as spam because it resembles one of these:
+{examples}
+
+"""
+
 SPAM_INSTRUCTIONS = """
 # Role and goal
 You are a content moderation agent specialized in Mozilla's "{product}" product {content_type}.
 Your task is to determine whether a user-submitted {content_name} should be classified as spam.
-{product_description}
+{product_description}{legitimate_examples}
 # What Constitutes Spam?
 A {content_name} is spam if **at least one** of these criteria applies:
 {criteria}
+
+# Judging product relevance
+The product relevance criterion is the easiest one to misapply, so hold it to a high bar.
+- Any product description above is a summary, not a complete feature list, and "{product}" gains, renames, and redesigns features in every release. A feature you cannot recall is not evidence that the feature does not exist.
+- Users describe what they see in their own words rather than in official terminology. Informal, approximate, or unfamiliar names for screens, buttons, panels, and other interface elements are normal in genuine support requests.
+- Apply the criterion only when the {content_name} is evidently about an altogether different subject. If it plausibly describes any part of "{product}" or its interface, however it is worded, the criterion does not apply.
+- Never justify a spam classification by asserting that "{product}" lacks a feature the user describes.
 
 # Task Instructions
 Given a user {content_name} ({content_fields}), follow these steps:
@@ -46,6 +64,7 @@ Given a user {content_name} ({content_fields}), follow these steps:
 3. Indicate your **confidence** in your classification (0-100). A higher score indicates a stronger match to the spam definitions.
    - `0` = Extremely uncertain.
    - `100` = Completely certain.
+   - If the product relevance criterion is the only one that applies, and you are not certain the {content_name} is about an altogether different subject, your confidence **must not exceed {uncertain_relevance_confidence_ceiling}**, so that a person reviews it rather than it being actioned automatically.
 4. Provide a concise explanation supporting your decision.
 5. **Wrong product check:** Set to true only if this is a legitimate Mozilla support {content_name} for a different Mozilla product.
 
@@ -82,10 +101,29 @@ def build_spam_prompt(product):
     content_name = "support ticket" if has_ticketing else "question"
     content_fields = "subject and description" if has_ticketing else "title and content"
 
-    product_description = (product.metadata or {}).get("description", "").strip()
+    # Product.metadata is an unvalidated JSONField, so treat anything unexpected as absent.
+    metadata = product.metadata if isinstance(product.metadata, dict) else {}
+
+    description = metadata.get("description")
+    product_description = description.strip() if isinstance(description, str) else ""
     if product_description:
         product_description = PRODUCT_DESCRIPTION_TEMPLATE.format(
             product=product.title, description=product_description
+        )
+
+    examples = metadata.get("legitimate_examples")
+    if isinstance(examples, str):
+        examples = [examples]
+    elif not isinstance(examples, list):
+        examples = []
+    examples = [item.strip() for item in examples if isinstance(item, str) and item.strip()]
+
+    legitimate_examples = ""
+    if examples:
+        legitimate_examples = LEGITIMATE_EXAMPLES_TEMPLATE.format(
+            product=product.title,
+            content_name=content_name,
+            examples="\n".join(f"- {example}" for example in examples),
         )
 
     # Render criteria using Jinja2 template
@@ -105,6 +143,8 @@ def build_spam_prompt(product):
         criteria=criteria,
         content_fields=content_fields,
         product_description=product_description,
+        legitimate_examples=legitimate_examples,
+        uncertain_relevance_confidence_ceiling=UNCERTAIN_RELEVANCE_CONFIDENCE_CEILING,
         format_instructions=spam_pydantic_parser.get_format_instructions()
         + ADDITIONAL_FORMAT_INSTRUCTIONS,
     )

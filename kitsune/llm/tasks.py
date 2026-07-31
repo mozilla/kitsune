@@ -96,4 +96,3 @@ def process_moderation_queue(batch_size=10):
         flagged_obj.save()
 
     return f"Processed {processed_count} stale flagged objects"
-    return f"Processed {processed_count} stale flagged objects"
