@@ -24,6 +24,8 @@ class KBArticlePageMessages:
                                           "Document with this Slug and Locale already exists."]
     KB_ARTICLE_PRODUCT_ERROR = "Please select at least one product."
     KB_ARTICLE_TOPIC_ERROR = "Please select at least one topic."
+    KB_ARTICLE_RELATED_DOCUMENTS_DISALLOWED_ERROR = (
+        "Related documents are not allowed for Templates and Canned Responses.")
     KB_ARTICLE_RESTRICTED_BANNER = "This document is restricted."
     KB_ARTICLE_NOT_READY_FOR_TRANSLATION_BANNER = ("Traduci un document în engleză care nu este "
                                                    "încă gata de localizare.")

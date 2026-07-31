@@ -30,7 +30,8 @@ class EditKBArticlePage(BasePage):
     """Actions against the edit kb article page locators."""
     # Edit kb article page actions.
     def click_on_edit_anyway_option(self):
-        self._click(self.edit_by_another_user_edit_anyway_option)
+        with self.page.expect_response(lambda response: "steal-lock" in response.url):
+            self._click(self.edit_by_another_user_edit_anyway_option)
 
     def is_edit_anyway_option_visible(self) -> bool:
         return self._is_element_visible(self.edit_by_another_user_edit_anyway_option)

@@ -236,6 +236,9 @@ class AddKbArticleFlow:
 
         self.kb_article_page.click_on_edit_article_option()
 
+        if self.edit_kb_article_page.is_edit_anyway_option_visible():
+            self.edit_kb_article_page.click_on_edit_anyway_option()
+
         # Only admin accounts can update article keywords.
         if is_admin:
             self.edit_kb_article_page.fill_edit_article_keywords_field(

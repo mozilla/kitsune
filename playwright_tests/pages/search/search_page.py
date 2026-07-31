@@ -1,4 +1,5 @@
 from playwright.sync_api import Locator, Page, ElementHandle
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from playwright_tests.core.basepage import BasePage
 
@@ -148,7 +149,17 @@ class SearchPage(BasePage):
             self.clear_the_searchbar(is_aaq=True)
             self._fill(self.searchbar_aaq, text)
         elif is_sidebar:
-            self._fill(self.searchbar_sidebar, text)
+            for attempt in range(3):
+                self._fill(self.searchbar_sidebar, text)
+                try:
+                    self.search_results_section.wait_for(state="visible", timeout=6000)
+                    self.page.wait_for_timeout(500)
+                    self.search_results_section.wait_for(state="visible", timeout=1000)
+                    self.search_results_titles.first.wait_for(state="visible", timeout=6000)
+                    break
+                except PlaywrightTimeoutError:
+                    if attempt == 2:
+                        raise
         else:
             self.clear_the_searchbar()
             self._fill(self.searchbar_homepage, text)

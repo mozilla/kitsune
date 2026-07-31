@@ -1776,14 +1776,15 @@ def test_voting_the_same_article_twice_is_not_possible(page: Page, context: Brow
         expect(sumo_pages.kb_article_page.helpfulness_widget).to_be_hidden()
 
 
-# C3065908 C3065909
+# C3065908, C3065909, C3176814, C3176816, C3177169
 @pytest.mark.kbArticleCreationAndAccess
 def test_adding_and_removing_related_documents(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_articles_url = []
     test_article_titles = []
-    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"],
+                                        permissions=["delete_document"])
 
     with allure.step(f"Signing in with {test_user_two['username']} user account"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -1836,6 +1837,73 @@ def test_adding_and_removing_related_documents(page: Page, create_user_factory):
         utilities.navigate_to_link(test_articles_url[1])
         expect(sumo_pages.kb_article_page.related_articles_section).to_be_hidden()
 
+    with allure.step(f"Deleting the f{test_article_titles[2]} article, which is still linked as "
+                     f"a related document to the f{test_article_titles[0]} article"):
+        utilities.navigate_to_link(test_articles_url[2])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    with check, allure.step(f"Navigating to the f{test_article_titles[0]} article and verifying "
+                            f"that the deleted f{test_article_titles[2]} article is no longer "
+                            f"listed inside the 'Related Articles' section"):
+        utilities.navigate_to_link(test_articles_url[0])
+        expect(sumo_pages.kb_article_page.related_articles_section).to_be_hidden()
+
+
+# C3177047
+@pytest.mark.kbArticleCreationAndAccess
+def test_obsolete_related_document_no_longer_visible(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_articles_url = []
+    test_article_titles = []
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
+
+    with allure.step("Creating 2 test articles"):
+        counter = 1
+        while counter <= 2:
+            article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
+            test_article_titles.append(article_info["article_title"])
+            test_articles_url.append(article_info["article_url"])
+            counter += 1
+            utilities.reindex_document("WikiDocument", article_info["article_id"])
+
+    with allure.step(f"Navigating to the f{test_article_titles[0]} and adding the "
+                     f"f{test_article_titles[1]} article as a related document"):
+        utilities.navigate_to_link(test_articles_url[0])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            related_documents=test_article_titles[1:]
+        )
+
+    with check, allure.step(f"Verifying that the f{test_article_titles[1]} article is displayed "
+                            f"inside the 'Related Articles' section"):
+        assert test_article_titles[1] in sumo_pages.kb_article_page.get_list_of_related_articles()
+
+    with allure.step(f"Navigating to the f{test_article_titles[1]} article and marking it as "
+                     f"Obsolete via the 'Edit Article Metadata' page"):
+        utilities.navigate_to_link(test_articles_url[1])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=True)
+
+    with check, allure.step(f"Navigating back to the f{test_article_titles[0]} article and "
+                            f"verifying that the f{test_article_titles[1]} article is no longer "
+                            f"displayed inside the 'Related Articles' section"):
+        utilities.navigate_to_link(test_articles_url[0])
+        expect(sumo_pages.kb_article_page.related_articles_section).to_be_hidden()
+
+    with allure.step(f"Navigating to the f{test_article_titles[1]} article and removing the "
+                     f"Obsolete flag via the 'Edit Article Metadata' page"):
+        utilities.navigate_to_link(test_articles_url[1])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=False)
+
+    with check, allure.step(f"Navigating back to the f{test_article_titles[0]} article and "
+                            f"verifying that the f{test_article_titles[1]} article is displayed "
+                            f"again inside the 'Related Articles' section"):
+        utilities.navigate_to_link(test_articles_url[0])
+        assert test_article_titles[1] in sumo_pages.kb_article_page.get_list_of_related_articles()
+
 
 # C3059081
 @pytest.mark.kbArticleCreationAndAccess
@@ -1861,7 +1929,314 @@ def test_same_article_cannot_be_added_as_related_article(page: Page, create_user
         expect(sumo_pages.kb_article_edit_article_metadata_page.
                no_results_found_related_documents_message).to_be_visible()
 
-#  C3065910
+
+# C3179935
+@pytest.mark.kbArticleCreationAndAccess
+def test_obsolete_article_cannot_be_added_as_related_article(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating 2 test articles"):
+        first_article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
+        utilities.reindex_document("WikiDocument", first_article_info["article_id"])
+
+        second_article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
+        utilities.reindex_document("WikiDocument", second_article_info["article_id"])
+
+    with allure.step("Marking the second article as Obsolete via the 'Edit Article Metadata' "
+                     "page"):
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=True)
+        utilities.reindex_document("WikiDocument", second_article_info["article_id"])
+
+    with check, allure.step("Navigating to the first article, clicking on the 'Edit Article "
+                            "Metadata' option and verifying that the obsolete article cannot be "
+                            "added inside the 'Related documents' field"):
+        utilities.navigate_to_link(first_article_info["article_url"])
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
+        sumo_pages.kb_article_edit_article_metadata_page.add_related_documents(
+            second_article_info["article_title"], submit=False)
+        expect(sumo_pages.kb_article_edit_article_metadata_page.
+               no_results_found_related_documents_message).to_be_visible()
+
+
+# C3179936
+@pytest.mark.kbArticleCreationAndAccess
+def test_redirect_article_cannot_be_added_as_related_article(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating a KB article"):
+        article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
+        utilities.reindex_document("WikiDocument", article_info["article_id"])
+
+    with allure.step("Creating a second article whose content redirects to the first one"):
+        redirect_article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            product="MDN Plus", article_topic="MDN test topic",
+            article_content=f"REDIRECT [[{article_info['article_title']}]]",
+            approve_first_revision=True)
+
+    with check, allure.step("Navigating to the first article, clicking on the 'Edit Article "
+                            "Metadata' option and verifying that the REDIRECT article cannot be "
+                            "added inside the 'Related documents' field"):
+        utilities.navigate_to_link(article_info["article_url"])
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
+        sumo_pages.kb_article_edit_article_metadata_page.add_related_documents(
+            redirect_article_info["article_title"], submit=False)
+        expect(sumo_pages.kb_article_edit_article_metadata_page.
+               no_results_found_related_documents_message).to_be_visible()
+
+
+# C3180075
+@pytest.mark.kbArticleCreationAndAccess
+def test_related_document_kept_visible_after_transitioning_to_redirect(page: Page,
+                                                                        create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_articles_url = []
+    test_article_titles = []
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating 2 test articles"):
+        counter = 1
+        while counter <= 2:
+            article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
+            test_article_titles.append(article_info["article_title"])
+            test_articles_url.append(article_info["article_url"])
+            counter += 1
+            utilities.reindex_document("WikiDocument", article_info["article_id"])
+
+    with allure.step(f"Navigating to the f{test_article_titles[0]} and adding the "
+                     f"f{test_article_titles[1]} article as a related document"):
+        utilities.navigate_to_link(test_articles_url[0])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            related_documents=test_article_titles[1:]
+        )
+
+    with check, allure.step(f"Verifying that the f{test_article_titles[1]} article is displayed "
+                            f"inside the 'Related Articles' section"):
+        assert test_article_titles[1] in sumo_pages.kb_article_page.get_list_of_related_articles()
+
+    with allure.step(f"Navigating to the f{test_article_titles[1]} article and submitting a new "
+                     f"revision which turns it into a REDIRECT article"):
+        utilities.navigate_to_link(test_articles_url[1])
+        sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            content=f"REDIRECT [[{test_article_titles[0]}]]", approve_revision=True
+        )
+
+    with check, allure.step(f"Navigating back to the f{test_article_titles[0]} article and "
+                            f"verifying that the now-REDIRECT f{test_article_titles[1]} article "
+                            f"is still displayed inside the 'Related Articles' section"):
+        utilities.navigate_to_link(test_articles_url[0])
+        assert test_article_titles[1] in sumo_pages.kb_article_page.get_list_of_related_articles()
+
+
+# C3177168
+@pytest.mark.kbArticleCreationAndAccess
+def test_related_document_title_change_reflected_in_related_articles_section(
+        page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_articles_url = []
+    test_article_titles = []
+    updated_title = "This related document title has been updated"
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating 2 test articles"):
+        counter = 1
+        while counter <= 2:
+            article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
+            test_article_titles.append(article_info["article_title"])
+            test_articles_url.append(article_info["article_url"])
+            counter += 1
+            utilities.reindex_document("WikiDocument", article_info["article_id"])
+
+    with allure.step(f"Navigating to the f{test_article_titles[0]} and adding the "
+                     f"f{test_article_titles[1]} article as a related document"):
+        utilities.navigate_to_link(test_articles_url[0])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            related_documents=test_article_titles[1:]
+        )
+
+    with check, allure.step(f"Verifying that the f{test_article_titles[1]} article is displayed "
+                            f"inside the 'Related Articles' section"):
+        assert test_article_titles[1] in sumo_pages.kb_article_page.get_list_of_related_articles()
+
+    with allure.step(f"Navigating to the f{test_article_titles[1]} article and updating its "
+                     f"title"):
+        utilities.navigate_to_link(test_articles_url[1])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(title=updated_title)
+
+    with check, allure.step(f"Navigating back to the f{test_article_titles[0]} article and "
+                            f"verifying that the 'Related Articles' section reflects the updated "
+                            f"title"):
+        utilities.navigate_to_link(test_articles_url[0])
+        related_articles = sumo_pages.kb_article_page.get_list_of_related_articles()
+        assert updated_title in related_articles
+        assert test_article_titles[1] not in related_articles
+
+
+# C3177064
+@pytest.mark.kbArticleCreationAndAccess
+def test_template_article_cannot_be_added_as_related_article(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating a KB article"):
+        article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
+        utilities.reindex_document("WikiDocument", article_info["article_id"])
+
+    with allure.step("Creating a KB template article"):
+        template_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            is_template=True, approve_first_revision=True)
+
+    with check, allure.step("Navigating to the article, clicking on the 'Edit Article Metadata' "
+                            "option and verifying that the template article cannot be added "
+                            "inside the 'Related documents' field"):
+        utilities.navigate_to_link(article_info["article_url"])
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
+        sumo_pages.kb_article_edit_article_metadata_page.add_related_documents(
+            template_info["article_title"], submit=False)
+        expect(sumo_pages.kb_article_edit_article_metadata_page.
+               no_results_found_related_documents_message).to_be_visible()
+
+
+# C3177075
+@pytest.mark.kbArticleCreationAndAccess
+def test_related_documents_field_not_available_for_template_articles(page: Page,
+                                                                      create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating a KB template article"):
+        template_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            is_template=True, approve_first_revision=True)
+
+    with check, allure.step("Navigating to the template article, clicking on the 'Edit Article "
+                            "Metadata' option and verifying that the 'Related documents' field "
+                            "is not available for template articles"):
+        utilities.navigate_to_link(template_info["article_url"])
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
+        expect(sumo_pages.kb_article_edit_article_metadata_page.
+               related_documents_field).to_be_hidden()
+
+
+# C3177076
+@pytest.mark.kbArticleCreationAndAccess
+@pytest.mark.parametrize(
+    "article_category, use_template_title",
+    [
+        pytest.param("60", True, id="Templates"),
+        pytest.param("70", False, id="Canned Responses"),
+    ],
+)
+def test_related_documents_disallowed_for_templates_and_canned_responses(
+        page: Page, create_user_factory, article_category, use_template_title):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating a KB article to use as a related document"):
+        related_article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
+        utilities.reindex_document("WikiDocument", related_article_info["article_id"])
+
+    with allure.step("Navigating to the create KB article page and filling in the form without "
+                     "submitting it"):
+        utilities.navigate_to_link(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
+        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            article_category=article_category, is_template=use_template_title,
+            submit_article=False
+        )
+
+    with allure.step("Adding a related document via the 'Related documents' field"):
+        sumo_pages.kb_article_edit_article_metadata_page.add_related_documents(
+            related_article_info["article_title"])
+
+    with check, allure.step("Submitting the article and verifying that the correct error "
+                            "message is displayed"):
+        sumo_pages.kb_submit_kb_article_form_page.click_on_submit_for_review_button()
+        sumo_pages.kb_submit_kb_article_form_page.add_text_to_changes_description_field(
+            utilities.kb_article_test_data["changes_description"]
+        )
+        sumo_pages.kb_submit_kb_article_form_page.click_on_changes_submit_button()
+        expect(sumo_pages.kb_submit_kb_article_form_page.all_kb_errors).to_contain_text(
+            [KBArticlePageMessages.KB_ARTICLE_RELATED_DOCUMENTS_DISALLOWED_ERROR])
+
+
+# C3177077
+@pytest.mark.kbArticleCreationAndAccess
+@pytest.mark.parametrize(
+    "article_category",
+    [
+        pytest.param("40", id="Administration"),
+        pytest.param("50", id="Navigation"),
+    ],
+)
+def test_administration_and_navigation_articles_can_be_added_as_related_articles(
+        page: Page, create_user_factory, article_category):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating a KB article"):
+        article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
+        utilities.reindex_document("WikiDocument", article_info["article_id"])
+
+    with allure.step("Creating a second KB article with the target category"):
+        related_article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            product="MDN Plus", article_topic="MDN test topic", article_category=article_category,
+            approve_first_revision=True)
+        utilities.reindex_document("WikiDocument", related_article_info["article_id"])
+
+    with allure.step("Navigating to the first article and adding the second article as a "
+                     "related document"):
+        utilities.navigate_to_link(article_info["article_url"])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            related_documents=[related_article_info["article_title"]]
+        )
+
+    with check, allure.step("Verifying that the related document is successfully displayed "
+                            "inside the 'Related Articles' section"):
+        assert (related_article_info["article_title"] in
+                sumo_pages.kb_article_page.get_list_of_related_articles())
+
+
+#  C3065910, C3177063, C3177062
 @pytest.mark.kbArticleCreationAndAccess
 def test_restricted_visibility_related_document_in_article_page(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -1914,3 +2289,51 @@ def test_restricted_visibility_related_document_in_article_page(page: Page, crea
         utilities.start_existing_session(cookies=test_user_three)
         utilities.navigate_to_link(test_articles_url[0])
         assert test_article_titles[1] in sumo_pages.kb_article_page.get_list_of_related_articles()
+
+
+# C3180081
+@pytest.mark.kbArticleCreationAndAccess
+def test_unreviewed_related_document_visibility_and_permissions(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user = create_user_factory()
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
+
+    with allure.step("Creating and approving a KB article"):
+        article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
+        utilities.reindex_document("WikiDocument", article_info["article_id"])
+
+    with allure.step("Creating a second KB article without approving its first revision"):
+        unreviewed_article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            product="MDN Plus", article_topic="MDN test topic")
+        utilities.reindex_document("WikiDocument", unreviewed_article_info["article_id"])
+
+    with check, allure.step("Navigating to the first article and verifying that a user with the "
+                            "necessary permissions can successfully add the unreviewed article "
+                            "as a related document"):
+        utilities.navigate_to_link(article_info["article_url"])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            related_documents=[unreviewed_article_info["article_title"]]
+        )
+        assert (unreviewed_article_info["article_title"] in
+                sumo_pages.kb_article_page.get_list_of_related_articles())
+
+    with check, allure.step("Signing in with a user account that doesn't have the necessary "
+                            "permissions and verifying that the unreviewed related document is "
+                            "not displayed inside the 'Related Articles' section"):
+        utilities.start_existing_session(cookies=test_user)
+        utilities.navigate_to_link(article_info["article_url"])
+        expect(sumo_pages.kb_article_page.related_articles_section).to_be_hidden()
+
+    with check, allure.step(f"Signing back in with the {test_user_two['username']} account and "
+                            f"verifying that the unreviewed related document is displayed again "
+                            f"inside the 'Related Articles' section"):
+        utilities.start_existing_session(cookies=test_user_two)
+        utilities.navigate_to_link(article_info["article_url"])
+        assert (unreviewed_article_info["article_title"] in
+                sumo_pages.kb_article_page.get_list_of_related_articles())
+
