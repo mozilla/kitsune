@@ -537,12 +537,16 @@ def update_chunks_metadata_for(
 ) -> None:
     """Rewrite each existing position's metadata and state in place, delete orphans, commit.
 
-    The cheapest correct path when only scope or non-access source metadata changed: it
-    preserves each chunk's stored text and vector and makes no embedding call. Access-control
-    transitions instead use the embargoed evict, rerender, and resync workflow. The caller
-    must already have verified that every expected position's stored text, vector, and content
-    hash are correct — this never creates a missing position, because a chunk without text and
-    a vector would be indistinguishable from a real one.
+    The cheapest correct path when only scope or source metadata changed: it preserves each
+    chunk's stored text and vector and makes no embedding call. The caller must already have
+    verified that every expected position's stored text, vector, and content hash are correct
+    — this never creates a missing position, because a chunk without text and a vector would
+    be indistinguishable from a real one.
+
+    While ingestion is public-only, an access change never reaches here: it flips the
+    document's eligibility, so the sync core evicts it or indexes it afresh instead. Once
+    restricted ingestion is enabled, a change to `visibility`/`access_group_ids` becomes an
+    ordinary metadata change and this is the path it takes (ADR 0006).
     """
     _require_concrete_index(index)
     _verify_expected_state(chunks, source, expected_state)
