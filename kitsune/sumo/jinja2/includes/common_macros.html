@@ -52,93 +52,41 @@
 {% endmacro %}
 
 {% macro browse_by_topic(product=True) %}
-  {% set row_one_left_slug="settings" %}
-  {% set row_one_right_slug="installation-and-updates" %}
-  {% set row_two_left_slug="email-and-messaging" %}
-  {% set row_two_right_slug="performance-and-connectivity" %}
-  {% set row_three_left_slug="privacy-and-security" %}
-  {% set row_three_right_slug="browse" %}
+  {% set slugs = [
+        ["settings", "installation-and-updates"],
+        ["email-and-messaging", "performance-and-connectivity"],
+        ["privacy-and-security", "browse"],
+  ] %}
 
   {% if product %}
     {% set link_name = "main-menu.topic-home" %}
-    {% set row_one_left_url = url('products.topic_documents', topic_slug=row_one_left_slug ) %}
-    {% set row_one_right_url = url('products.topic_documents', topic_slug=row_one_right_slug ) %}
-    {% set row_two_left_url = url('products.topic_documents', topic_slug=row_two_left_slug ) %}
-    {% set row_two_right_url = url('products.topic_documents', topic_slug=row_two_right_slug ) %}
-    {% set row_three_left_url = url('products.topic_documents', topic_slug=row_three_left_slug ) %}
-    {% set row_three_right_url = url('products.topic_documents', topic_slug=row_three_right_slug ) %}
-
+    {% set viewname = "products.topic_documents" %}
   {% else %}
     {% set link_name = "main-menu.support-forum-home" %}
-    {% set row_one_left_url = url('questions.list_by_topic', topic_slug=row_one_left_slug ) %}
-    {% set row_one_right_url = url('questions.list_by_topic', topic_slug=row_one_right_slug ) %}
-    {% set row_two_left_url = url('questions.list_by_topic', topic_slug=row_two_left_slug ) %}
-    {% set row_two_right_url = url('questions.list_by_topic', topic_slug=row_two_right_slug ) %}
-    {% set row_three_left_url = url('questions.list_by_topic', topic_slug=row_three_left_slug ) %}
-    {% set row_three_right_url = url('questions.list_by_topic', topic_slug=row_three_right_slug ) %}
+    {% set viewname = "questions.list_by_topic" %}
   {% endif %}
 
+  {% set urls = [
+        [url(viewname, topic_slug=slugs[0][0]), url(viewname, topic_slug=slugs[0][1])],
+        [url(viewname, topic_slug=slugs[1][0]), url(viewname, topic_slug=slugs[1][1])],
+        [url(viewname, topic_slug=slugs[2][0]), url(viewname, topic_slug=slugs[2][1])],
+  ] %}
+
   <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-    <li>
-      <a href="{{ row_one_left_url }}"
-          data-event-name="link_click"
-          data-event-parameters='{
-          "link_name": "{{ link_name }}",
-          "link_detail": "{{ row_one_left_slug }}"
-        }'>
-          {{ _(row_one_left_slug|slug_to_title) }}
-      </a>
-    </li>
-    <li>
-      <a href="{{ row_one_right_url }}"
-          data-event-name="link_click"
-          data-event-parameters='{
-          "link_name": "{{ link_name }}",
-          "link_detail": "{{ row_one_right_slug }}"
-        }'>
-          {{ _(row_one_right_slug|slug_to_title) }}
-      </a>
-    </li>
-    <li>
-      <a href="{{ row_two_left_url }}"
-          data-event-name="link_click"
-          data-event-parameters='{
-          "link_name": "{{ link_name }}",
-          "link_detail": "{{ row_two_left_slug }}"
-        }'>
-          {{ _(row_two_left_slug|slug_to_title) }}
-      </a>
-    </li>
-    <li>
-      <a href="{{ row_two_right_url }}"
-          data-event-name="link_click"
-          data-event-parameters='{
-          "link_name": "{{ link_name }}",
-          "link_detail": "{{ row_two_right_slug }}"
-        }'>
-          {{ _(row_two_right_slug|slug_to_title) }}
-      </a>
-    </li>
-    <li>
-      <a href="{{ row_three_left_url }}"
-          data-event-name="link_click"
-          data-event-parameters='{
-          "link_name": "{{ link_name }}",
-          "link_detail": "{{ row_three_left_slug }}"
-        }'>
-          {{ _(row_three_left_slug|slug_to_title) }}
-      </a>
-    </li>
-    <li>
-      <a href="{{ row_three_right_url }}"
-          data-event-name="link_click"
-          data-event-parameters='{
-          "link_name": "{{ link_name }}",
-          "link_detail": "{{ row_three_right_slug }}"
-        }'>
-          {{ _(row_three_right_slug|slug_to_title) }}
-      </a>
-    </li>
+    {% for i in range(3) %}
+      {% for j in range(2) %}
+        <li>
+          <a href="{{ urls[i][j] }}"
+             data-event-name="link_click"
+             data-event-parameters='{
+                "link_name": "{{ link_name }}",
+                "link_detail": "{{ slugs[i][j] }}"
+              }'>
+            {{ pgettext("DB: products.Topic.title", slugs[i][j]|slug_to_title) }}
+          </a>
+        </li>
+      {% endfor %}
+    {% endfor %}
   </ul>
 {% endmacro %}
 
