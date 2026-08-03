@@ -63,6 +63,8 @@ def _stored(chunks, source, state, *, count=None, **overrides):
                 "content_hash": state.content_hash,
                 "index_state_hash": state.index_state_hash,
                 "chunking_generation": state.chunking_generation,
+                "visibility": source.visibility,
+                "access_group_ids": list(source.access_group_ids),
                 **overrides,
             }
         )

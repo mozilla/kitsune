@@ -67,15 +67,15 @@ def sync_document(document_id: int):
 
 @shared_task(**_LIMITS, **_SINGLE_DOCUMENT_RETRY)
 @skip_if_read_only_mode
-def delete_document(content_type: str, object_id: str, locale: str):
-    """Evict one document from every active index.
+def delete_document(content_type: str, object_id: str, locale: str, target_indexes=None):
+    """Evict one document from the named indexes, or from every active index by default.
 
     Deliberately not gated on ``RETRIEVAL_LIVE_INDEXING``: removing content that should no
-    longer be served is not a freshness optimization. Reused by reconciliation and by the sync
-    core's eviction path.
+    longer be served is not a freshness optimization. Reconciliation pins the target, because
+    evicting from one generation must not empty the other.
     """
     identity = ChunkIdentity(content_type=content_type, object_id=object_id, locale=locale)
-    delete_document_chunks(identity)
+    delete_document_chunks(identity, target_indexes=target_indexes)
 
 
 def enqueue_document_sync(document_id: int) -> None:
@@ -89,8 +89,13 @@ def enqueue_document_sync(document_id: int) -> None:
     sync_document.delay(document_id)
 
 
-def enqueue_document_delete(identity: ChunkIdentity) -> None:
-    delete_document.delay(identity.content_type, identity.object_id, identity.locale)
+def enqueue_document_delete(identity: ChunkIdentity, *, target_indexes=None) -> None:
+    delete_document.delay(
+        identity.content_type,
+        identity.object_id,
+        identity.locale,
+        target_indexes=list(target_indexes) if target_indexes is not None else None,
+    )
 
 
 @shared_task(**_LIMITS, **_RETRY)

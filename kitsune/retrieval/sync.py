@@ -43,6 +43,7 @@ from kitsune.retrieval.index import (
     ChunkSource,
     ExpectedDocumentState,
     IndexedDocumentState,
+    access_metadata_matches,
     delete_chunks_for,
     delete_chunks_for_object,
     read_indexed_document,
@@ -99,7 +100,12 @@ def _stored_is_newer(indexed: IndexedDocumentState, expected: ExpectedDocumentSt
     )
 
 
-def _is_usable_vector(vector, recipe: EmbeddingRecipe) -> bool:
+def is_usable_vector(vector, recipe: EmbeddingRecipe) -> bool:
+    """Whether a stored vector is one this recipe would have written.
+
+    Public so the integrity gate applies the writer's own definition rather than a second one
+    that could pass a vector the writer would reject.
+    """
     if not isinstance(vector, list):
         return False
     try:
@@ -129,7 +135,7 @@ def _is_recoverable(
         and stored_text.get(source.locale) == chunk.text
         and stored.get("content_hash") == expected.content_hash
         and stored.get("chunking_generation") == expected.chunking_generation
-        and _is_usable_vector(stored.get("content_vector"), recipe)
+        and is_usable_vector(stored.get("content_vector"), recipe)
     )
 
 
@@ -162,6 +168,7 @@ def plan_target(
 
     if any(
         by_position[position].get("index_state_hash") != expected_state.index_state_hash
+        or not access_metadata_matches(by_position[position], source)
         for position in expected_positions
     ):
         # Scope or source metadata moved while the text did not; rewriting it is free.
@@ -239,7 +246,14 @@ def build_source(document) -> ChunkSource:
     )
 
 
-def _expected_state(chunks: list[Chunk], source: ChunkSource, document) -> ExpectedDocumentState:
+def expected_state_for(
+    chunks: list[Chunk], source: ChunkSource, document
+) -> ExpectedDocumentState:
+    """The state a healthy commit of this document would hold.
+
+    Public for the same reason as ``is_usable_vector``: the gate has to compare against exactly
+    what the writer would have produced.
+    """
     return ExpectedDocumentState(
         content_hash=content_hash(chunks),
         index_state_hash=index_state_hash(chunks, source),
@@ -385,7 +399,7 @@ def _plan_document(document, targets, recipes) -> _DocumentWork | SyncReport:
     identity = _identity_for(document)
     source = build_source(document)
     chunks = chunk(CONTENT_TYPE, document.html, title=document.title)
-    expected = _expected_state(chunks, source, document)
+    expected = expected_state_for(chunks, source, document)
     plans = {
         index: plan_target(
             chunks=chunks,
@@ -424,7 +438,7 @@ def _revalidate(
         lease.renew()
         return _evict(work.identity, targets, embedding_calls)
     fresh_chunks = chunk(CONTENT_TYPE, document.html, title=document.title)
-    if _expected_state(fresh_chunks, build_source(document), document) != work.expected:
+    if expected_state_for(fresh_chunks, build_source(document), document) != work.expected:
         return _report(
             work.identity, dict.fromkeys(targets, SyncOutcome.ABORTED_STALE), embedding_calls
         )

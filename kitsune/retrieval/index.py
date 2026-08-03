@@ -248,6 +248,13 @@ class ChunkSource:
         return ChunkIdentity(self.content_type, self.object_id, self.locale)
 
 
+def access_metadata_matches(stored: Mapping, source: ChunkSource) -> bool:
+    """Whether one stored chunk has the access fields this source requires."""
+    stored_groups = stored.get("access_group_ids")
+    expected_groups = list(source.access_group_ids)
+    return stored.get("visibility") == source.visibility and stored_groups == expected_groups
+
+
 @dataclass(frozen=True)
 class ExpectedDocumentState:
     """One worker-computed expected commit, stored authoritatively on the manifest."""

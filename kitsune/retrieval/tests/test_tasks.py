@@ -93,7 +93,13 @@ class TaskBehaviourTests(SimpleTestCase):
     def test_delete_takes_json_safe_arguments_and_rebuilds_the_identity(self):
         with mock.patch("kitsune.retrieval.tasks.delete_document_chunks") as core:
             delete_document("kb", "42", "en-US")
-        core.assert_called_once_with(self.identity)
+        core.assert_called_once_with(self.identity, target_indexes=None)
+
+    def test_delete_evicts_only_the_pinned_index_when_reconciliation_names_one(self):
+        # Reconciling one generation must not empty the other.
+        with mock.patch("kitsune.retrieval.tasks.delete_document_chunks") as core:
+            delete_document("kb", "42", "en-US", target_indexes=["chunks_n_plus_one"])
+        core.assert_called_once_with(self.identity, target_indexes=["chunks_n_plus_one"])
 
     def test_transient_and_replayable_errors_are_retried(self):
         errors = (

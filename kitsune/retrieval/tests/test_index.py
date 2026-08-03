@@ -15,6 +15,7 @@ from kitsune.retrieval.index import (
     ExpectedDocumentState,
     IndexWriteError,
     InvalidDocumentState,
+    access_metadata_matches,
     chunk_id,
     commit_manifest,
     delete_chunks_for,
@@ -139,6 +140,34 @@ class ChunkSourceStateContractTests(SimpleTestCase):
         for overrides in invalid:
             with self.subTest(overrides=overrides), self.assertRaises(InvalidDocumentState):
                 _source(**overrides)
+
+    def test_stored_access_metadata_must_match_canonical_source_values(self):
+        public = _source()
+        restricted = _source(visibility="group_restricted", access_group_ids=[2, 1])
+        cases = (
+            (
+                "exact public metadata",
+                {"visibility": "public", "access_group_ids": []},
+                public,
+                True,
+            ),
+            ("missing groups", {"visibility": "public"}, public, False),
+            (
+                "canonical groups",
+                {"visibility": "group_restricted", "access_group_ids": [1, 2]},
+                restricted,
+                True,
+            ),
+            (
+                "noncanonical groups",
+                {"visibility": "group_restricted", "access_group_ids": [2, 1]},
+                restricted,
+                False,
+            ),
+        )
+        for name, stored, source, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(access_metadata_matches(stored, source), expected)
 
     def test_source_rejects_malformed_metadata(self):
         invalid = (
