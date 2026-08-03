@@ -11,3 +11,16 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+
+  # Updates the hook versions in .pre-commit-config.yaml, plus the packages
+  # pinned under additional_dependencies. Grouped into one PR because some tools
+  # are pinned in both places and should move together.
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      pre-commit:
+        patterns:
+          - "*"
