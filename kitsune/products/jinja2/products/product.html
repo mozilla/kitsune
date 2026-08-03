@@ -29,8 +29,10 @@
   <div class="mzp-l-content narrow">
     <div class="home-search-section--content">
       <h1 class="sumo-page-heading-xl">
-        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
-        <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
+        {# L10n: Alt text for a product logo. #}
+        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="{{ _('{product} logo')|f(product=pgettext('DB: products.Product.title', product.title)) }}" />
+        {# L10n: A header displayed on product pages, such as https://support.mozilla.org/products/firefox #}
+        <span class="product-title-text">{{ _('{product} Support')|f(product=pgettext('DB: products.Product.title', product.title)) }}</span>
       </h1>
       {{ search_box(settings, id='support-search-masthead', params=search_params) }}
 
