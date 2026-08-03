@@ -57,7 +57,7 @@ services:
     build:
       context: .
       target: dev
-    command: bash -c "source /app/.venv/bin/activate && python -m celery -A kitsune worker -l info -n default@%h -Q celery,email"
+    command: bash -c "source /app/.venv/bin/activate && python -m celery -A kitsune worker -l info -n default@%h -Q celery,email,retrieval,retrieval_bulk"
     env_file: .env
     volumes:
       - ./:/app:delegated

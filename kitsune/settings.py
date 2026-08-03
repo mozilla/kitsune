@@ -379,6 +379,13 @@ RETRIEVAL_TASK_TIME_LIMIT_SECONDS = config(
     "RETRIEVAL_TASK_TIME_LIMIT_SECONDS", default=240, cast=float
 )
 
+# Bounds on one bulk retrieval task. Documents past either bound move to a follow-up task;
+# one document may exceed the input bound so an unusually long article cannot starve forever.
+RETRIEVAL_BULK_MAX_DOCUMENTS = config("RETRIEVAL_BULK_MAX_DOCUMENTS", default=50, cast=int)
+RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS = config(
+    "RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS", default=500, cast=int
+)
+
 TEXT_DOMAIN = "messages"
 
 SITE_ID = 1
