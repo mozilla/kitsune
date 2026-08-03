@@ -1,8 +1,32 @@
+from django.contrib.auth.models import Group
 from django.db import transaction
-from django.db.models.signals import m2m_changed, post_save
+from django.db.models.signals import m2m_changed, post_save, pre_delete
 from django.dispatch import receiver
 
+from kitsune.wiki import tasks
 from kitsune.wiki.models import Document
+
+
+def cascade_render_on_commit(document_ids):
+    """
+    Queue a cascade re-render of the given documents and their translations, once the
+    current transaction commits. Dispatching any earlier lets a worker pick up the task
+    and render against restrictions that haven't been committed yet.
+    """
+    if not document_ids:
+        return
+
+    translation_ids = Document.objects.filter(parent_id__in=document_ids).values_list(
+        "id", flat=True
+    )
+    render_ids = sorted(set(document_ids) | set(translation_ids))
+
+    def render_documents():
+        for document_id in render_ids:
+            # Resolved through the module so that tests can patch the task.
+            tasks.render_document_cascade.delay(document_id)
+
+    transaction.on_commit(render_documents)
 
 
 @receiver(
@@ -33,18 +57,26 @@ def render_on_restrict_to_groups_change(sender, instance, action, reverse, pk_se
     else:
         return
 
-    translation_ids = Document.objects.filter(parent_id__in=document_ids).values_list(
-        "id", flat=True
-    )
-    render_ids = sorted(document_ids | set(translation_ids))
+    cascade_render_on_commit(document_ids)
 
-    from kitsune.wiki.tasks import render_document_cascade
 
-    def render_documents():
-        for document_id in render_ids:
-            render_document_cascade.delay(document_id)
+@receiver(
+    pre_delete,
+    sender=Group,
+    dispatch_uid="wiki.render_on_restricting_group_deletion",
+)
+def render_on_restricting_group_deletion(sender, instance, **kwargs):
+    """
+    Trigger a cascade re-render of the documents a group restricts when that group is
+    deleted. Django's delete collector drops the "restrict_to_groups" rows as a fast
+    delete without sending "m2m_changed", so those documents would otherwise keep HTML
+    rendered against restrictions that no longer apply.
 
-    transaction.on_commit(render_documents)
+    This reads the documents in "pre_delete" because by "post_delete" the rows linking
+    them to the group are already gone. It hangs off a signal rather than Group.delete()
+    so that bulk deletes are covered too.
+    """
+    cascade_render_on_commit(set(instance.restricted_documents.values_list("id", flat=True)))
 
 
 @receiver(
