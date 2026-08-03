@@ -18,7 +18,7 @@ class AddKbMediaFlow:
                                       path_to_file=None, submit=True, image_bytes=None,
                                       file_name=None):
         """
-        Add a new media file to the Media Gallery.
+        Add a new media file to the Image Gallery.
 
         By default the uploaded image is generated in memory, so no image fixture needs to be
         committed to the project. Pass ``path_to_file`` to upload a specific on-disk image instead
@@ -66,7 +66,7 @@ class AddKbMediaFlow:
 
     def delete_media_file(self, media_file_title="None"):
         """
-            Deletes and uploaded test image from the Media Gallery.
+            Deletes and uploaded test image from the Image Gallery.
             Args:
                 media_file_title (str): Optional. To be added if the current location is inside the
                 media gallery and not inside the media preview.

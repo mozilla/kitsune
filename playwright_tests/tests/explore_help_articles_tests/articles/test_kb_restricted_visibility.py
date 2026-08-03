@@ -304,7 +304,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
             is_template=is_template
         )
 
-    with allure.step("Navigating to the 'Media Gallery' page"):
+    with allure.step("Navigating to the 'Image Gallery' page"):
         sumo_pages.top_navbar.click_on_media_gallery_option()
 
     with check, allure.step("Searching for the added image and verifying that the article is "
@@ -350,7 +350,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
             single_group=whitelisted_groups[1]
         )
 
-    with allure.step("Navigating to the 'Media Gallery' page"):
+    with allure.step("Navigating to the 'Image Gallery' page"):
         sumo_pages.top_navbar.click_on_media_gallery_option()
 
     with check, allure.step("Searching for the added image and verifying that the article is "

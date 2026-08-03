@@ -78,7 +78,7 @@ class TopNavbar(BasePage):
             has_text="Knowledge base dashboards")
         self.media_gallery_option = page.locator(
             "ul[class='mzp-c-menu-item-list sumo-nav--sublist']").get_by_role("link").filter(
-            has_text="Media gallery")
+            has_text="Image gallery")
         self.guides_option = page.locator(
             "ul[class='mzp-c-menu-item-list sumo-nav--sublist']").get_by_role("link").filter(
             has_text="Guides")
@@ -251,7 +251,7 @@ class TopNavbar(BasePage):
         self._click(self.dashboards_option)
 
     def click_on_media_gallery_option(self):
-        """Click on the 'Media gallery' option"""
+        """Click on the 'Image gallery' option"""
         self.hover_over_contribute_top_navbar()
         self._click(self.media_gallery_option)
 

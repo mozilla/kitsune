@@ -29,7 +29,7 @@ MSG_IMAGE_LONG = _lazy(
 MSG_TITLE_DRAFT = _lazy("Please select a different title.")
 
 TITLE_HELP_TEXT = _lazy("Include this in wiki syntax with [[Image:title]]")
-DESCRIPTION_HELP_TEXT = _lazy("Provide a brief description of this media.")
+DESCRIPTION_HELP_TEXT = _lazy("Provide a brief description of this image.")
 
 
 class MediaForm(forms.ModelForm):

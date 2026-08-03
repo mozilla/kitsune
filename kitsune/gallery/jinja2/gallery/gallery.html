@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
-{% set title = _('Media Gallery') %}
+{% set title = _('Image Gallery') %}
 {% if submitted %}
   {% set classes = 'submitted' %}
 {% endif %}
 {% set scripts = ('wiki', 'gallery') %}
-{% set crumbs = [(None, _('Media Gallery'))] %}
+{% set crumbs = [(None, _('Image Gallery'))] %}
 
 {% block masthead %}
 <section class="sumo-page-section--lg shade-bg">
@@ -14,7 +14,7 @@
     <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
       <div class="sumo-l-two-col--main">
         <h1 class="sumo-page-heading no-logo">
-          <span class="product-title-text">{{ _('Media Gallery') }}</span>
+          <span class="product-title-text">{{ _('Image Gallery') }}</span>
         </h1>
       </div>
       <div class="sumo-l-two-col--sidebar">
@@ -48,7 +48,7 @@
           <div id="locale-filter">
             <form action="#" method="get">
               <div class="field">
-                <label for="select-locale">{{ _('Show media for:') }}</label>
+                <label for="select-locale">{{ _('Show images for:') }}</label>
                 <select id="select-locale" name="lang" class="autosubmit">
                   {% for lang in settings.LANGUAGE_CHOICES %}
                     <option value="{{ lang[0] }}" {% if lang[0] == request.LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang[1] }} ({{ lang[0] }})</option>

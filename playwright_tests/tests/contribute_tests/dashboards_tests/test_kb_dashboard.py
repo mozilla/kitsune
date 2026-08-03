@@ -768,7 +768,7 @@ def test_kb_dashboard_contributor_tools_sidebar(page: Page, create_user_factory)
         ("Knowledge base dashboards", "/contributors", False),
         ("Guides", "/contributor", False),
         ("Templates", "/kb/category/60", False),
-        ("Media gallery", "/gallery/images", False),
+        ("Image gallery", "/gallery/images", False),
         ("Recent revisions", "/kb/revisions", False),
         ("Community hub", "/community", False),
         ("Locales", "/kb/locales", True),

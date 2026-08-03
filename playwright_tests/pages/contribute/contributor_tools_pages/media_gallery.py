@@ -6,7 +6,7 @@ class MediaGallery(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """General page locators belonging to the Media Gallery page."""
+        """General page locators belonging to the Image Gallery page."""
         self.upload_a_new_media_file_button = page.locator("a#btn-upload")
         self.search_gallery_searchbox = page.locator("form#gallery-search input")
         self.search_gallery_search_button = page.locator("form#gallery-search button")
@@ -46,7 +46,7 @@ class MediaGallery(BasePage):
         self.cancel_media_insert_button = page.locator("a[href='#cancel']")
         self.upload_media_button = page.locator("//form[@id='gallery-upload-image']//"
                                                 "input[@name='upload']")
-        self.insert_media_button = page.get_by_role("button", name="Insert Media", exact=True)
+        self.insert_media_button = page.get_by_role("button", name="Insert Image", exact=True)
         self.linked_in_document = lambda document_name: page.locator(
             "div[class='documents'] li").get_by_role("link", name=document_name, exact=True)
         self.media_file = lambda media_file_name: page.locator(
@@ -55,7 +55,7 @@ class MediaGallery(BasePage):
         """Locators belonging to the delete image confirmation page."""
         self.delete_this_image_button = page.locator("//button[text()='Delete this image']")
 
-        """Locators belonging to the Media Gallery pagination.
+        """Locators belonging to the Image Gallery pagination.
         Note: the rendered markup is <ol class="pagination cf">, so the 'pagination' class is
         targeted via the CSS class selector (which matches multi-class elements) rather than an
         exact @class match.
@@ -69,14 +69,14 @@ class MediaGallery(BasePage):
         self.previous_pagination_button = page.locator("ol.pagination a.btn-page-prev")
 
 
-    """General actions against the Media Gallery page."""
+    """General actions against the Image Gallery page."""
     def click_on_upload_a_new_media_file_button(self):
-        """Click on the 'Upload' button inside the Media Gallery page."""
+        """Click on the 'Upload' button inside the Image Gallery page."""
         self._click(self.upload_a_new_media_file_button)
 
     def click_on_a_media_file_from_gallery(self, media_file_name: str):
         """
-        Click on a media file displayed inside the Media Gallery page.
+        Click on a media file displayed inside the Image Gallery page.
         Args:
             media_file_name (str): The name of the media file.
         """
@@ -171,20 +171,20 @@ class MediaGallery(BasePage):
         """Click on the 'Save image' button from the edit image description page."""
         self._click(self.edit_image_save_image_button)
 
-    """Actions against the Media Gallery's search functionality."""
+    """Actions against the Image Gallery's search functionality."""
     def fill_search_media_gallery_searchbox_input_field(self, text: str):
         """
-            Fill data inside the Media Gallery's search box.
+            Fill data inside the Image Gallery's search box.
             Args:
                 text (str): Search string.
         """
         self._fill(self.search_gallery_searchbox, text)
 
     def click_on_media_gallery_searchbox_search_button(self):
-        """Click on the search button next to the Media Gallery's search box."""
+        """Click on the search button next to the Image Gallery's search box."""
         self._click(self.search_gallery_search_button)
 
-    """Actions against the Media Gallery pagination."""
+    """Actions against the Image Gallery pagination."""
     def get_displayed_media_files_links(self) -> list[str]:
         """
         Return the list of media file links (href) displayed on the current pagination page.
@@ -209,10 +209,10 @@ class MediaGallery(BasePage):
         """Click on the 'Previous' pagination button."""
         self._click(self.previous_pagination_button)
 
-    """Actions against the 'Insert Media...' kb panel."""
+    """Actions against the 'Insert Image...' kb panel."""
     def fill_search_modal_gallery_searchbox_input_field(self, text: str):
         """
-        Fill data inside search box available inside the 'Insert media...' panel.
+        Fill data inside search box available inside the 'Insert image...' panel.
         Args:
             text(): Search string.
         """
@@ -220,30 +220,30 @@ class MediaGallery(BasePage):
 
     def click_on_search_modal_gallery_search_button(self):
         """
-        Click on the search button next to the search box available inside the 'Insert media...'
+        Click on the search button next to the search box available inside the 'Insert image...'
         panel.
         """
         self._click(self.search_gallery_search_button_modal)
 
     def click_on_cancel_media_insert(self):
-        """Click on the 'Cancel' button from the 'Insert media...' modal."""
+        """Click on the 'Cancel' button from the 'Insert image...' modal."""
         self._click(self.insert_media_button)
 
     def click_on_insert_media_button(self):
-        """Click on the 'Insert Media' button from the 'Insert media...' modal."""
+        """Click on the 'Insert Image' button from the 'Insert image...' modal."""
         self._click(self.insert_media_button)
 
     def click_on_upload_media_button(self):
-        """Click on the 'Upload Media' button from the 'Insert media...' modal."""
+        """Click on the 'Upload Image' button from the 'Insert image...' modal."""
         self._click(self.upload_media_button)
 
     def select_media_file_from_list(self, media_file_name: str, is_modal=False):
         """
-        Select a media item from the 'Insert media...' modal.
+        Select a media item from the 'Insert image...' modal.
         Args:
             media_file_name (str): The name of the media item to be selected.
-            is_modal (bool): If (True) we are targeting the 'Insert media...'kb article panel. If
-            (False) we are targeting the search box available inside the 'Media Gallery' page.
+            is_modal (bool): If (True) we are targeting the 'Insert image...'kb article panel. If
+            (False) we are targeting the search box available inside the 'Image Gallery' page.
         """
         if is_modal:
             self.click_on_search_modal_gallery_search_button()

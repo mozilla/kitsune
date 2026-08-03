@@ -28,7 +28,7 @@ class SubmitKBArticlePage(BasePage):
         self.kb_article_insert_media = page.locator("button[class*='btn-media']")
         self.kb_article_insert_media_modal_images = page.locator("div#media-modal img")
         self.kb_article_insert_media_modal_insert_button = page.get_by_role(
-            "button").filter(has_text="Insert Media")
+            "button").filter(has_text="Insert Image")
         self.kb_article_toggle_syntax_highlighting = page.locator(
             "//div[@id='editor_wrapper']/following-sibling::a"
         )
