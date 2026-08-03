@@ -1,10 +1,13 @@
+from contextlib import contextmanager
 from dataclasses import replace
 from datetime import UTC, datetime
+from io import StringIO
 from unittest import mock
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
+from kitsune.retrieval.chunking import CHUNKING_GENERATION
 from kitsune.retrieval.embeddings import configured_embedding_recipe
 from kitsune.retrieval.fingerprints import (
     IndexMetaAction,
@@ -12,26 +15,34 @@ from kitsune.retrieval.fingerprints import (
     build_index_meta,
     classify_meta_mismatch,
     read_index_meta,
+    write_index_meta,
 )
 from kitsune.retrieval.index import (
     SCHEMA_VERSION,
     SIMILARITY,
     VECTOR_INDEX_OPTIONS,
     ChunkDocument,
+    ChunkIdentity,
     RetrievalIndexUnavailable,
     configured_index_meta,
     create_write_generation,
+    read_indexed_document,
     resolve_active_targets,
     resolve_read_target_and_recipe,
 )
+from kitsune.retrieval.locks import DocumentLockUnavailable, lifecycle_lock
+from kitsune.retrieval.sync import sync_document_chunks
 from kitsune.retrieval.tests import ChunkIndexTestCase
 from kitsune.search.es_utils import es_client
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 TS1 = datetime(2026, 1, 1, tzinfo=UTC)
 TS2 = datetime(2026, 1, 2, tzinfo=UTC)
+OTHER_SCHEMA_VERSION = SCHEMA_VERSION + 1
+SEARCH_INIT = "kitsune.retrieval.management.commands.search_init"
 
 
-def _meta(**recipe_overrides):
+def _meta(*, schema_version=SCHEMA_VERSION, **recipe_overrides):
     recipe = configured_embedding_recipe()
     if recipe_overrides:
         recipe = replace(recipe, **recipe_overrides)
@@ -39,7 +50,7 @@ def _meta(**recipe_overrides):
         recipe,
         similarity=SIMILARITY,
         index_options=VECTOR_INDEX_OPTIONS,
-        schema_version=SCHEMA_VERSION,
+        schema_version=schema_version,
     )
 
 
@@ -49,6 +60,18 @@ def _write_alias():
 
 def _read_alias():
     return ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias)
+
+
+def _event(logs, name):
+    [event] = [record for record in logs.records if record.getMessage() == name]
+    return event
+
+
+def _approved_document():
+    document = DocumentFactory(title="Install Firefox", slug="install-firefox")
+    ApprovedRevisionFactory(document=document, summary="How to install.")
+    document.refresh_from_db()
+    return document
 
 
 class LifecycleTestCase(ChunkIndexTestCase):
@@ -159,11 +182,15 @@ class ResolveReadTargetTests(LifecycleTestCase):
 
 class SearchInitCommandTests(LifecycleTestCase):
     def test_first_run_creates_write_generation_without_a_read_alias(self):
-        call_command("search_init")
+        with self.assertLogs("k.retrieval", level="INFO") as logs:
+            call_command("search_init")
+
         write_index = _write_alias()
         self.assertTrue(write_index)
         self.assertIsNone(_read_alias())
         self.assertEqual(read_index_meta(write_index), configured_index_meta())
+        event = _event(logs, "retrieval.rebuild.write_initialized")
+        self.assertEqual(event.index, write_index)
 
     def test_compatible_config_updates_mapping_in_place_without_moving_aliases(self):
         name = create_write_generation(timestamp=TS1, meta=configured_index_meta())
@@ -181,6 +208,15 @@ class SearchInitCommandTests(LifecycleTestCase):
             call_command("search_init")
         self.assertEqual(_write_alias(), name)
         self.assertEqual(_read_alias(), name)
+
+    def test_query_recipe_mismatch_names_the_supported_update_command(self):
+        create_write_generation(timestamp=TS1, meta=_meta(query_task="PRIOR_QUERY"))
+        ChunkDocument.migrate_reads()
+
+        with self.assertRaises(CommandError) as caught:
+            call_command("search_init")
+
+        self.assertIn("search_init --update-query-recipe", str(caught.exception))
 
     def test_query_recipe_update_rewrites_only_the_query_section(self):
         name = create_write_generation(timestamp=TS1, meta=_meta(query_task="PRIOR_QUERY"))
@@ -232,11 +268,296 @@ class SearchInitCommandTests(LifecycleTestCase):
             self.assertIsNone(_write_alias())
             self.assertIsNone(_read_alias())
 
-    def test_read_migration_is_disabled_until_the_integrity_gate_exists(self):
-        write_index = create_write_generation(timestamp=TS1, meta=configured_index_meta())
+
+class AuthorizedWriteMigrationTests(LifecycleTestCase):
+    """Creating a generation is the expensive, irreversible step, so it is never implicit."""
+
+    def test_migration_without_a_named_action_is_refused(self):
+        name = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
+        ChunkDocument.migrate_reads()
+
+        with self.assertRaises(CommandError):
+            call_command("search_init", "--migrate-writes")
+
+        self.assertEqual(_write_alias(), name)
+
+    def test_an_action_that_disagrees_with_the_classification_is_refused(self):
+        # Config differs by embedding model, so the only authorized action is a re-embed.
+        name = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
+        ChunkDocument.migrate_reads()
+
+        with self.assertRaises(CommandError):
+            call_command("search_init", "--migrate-writes", "--action", "copy")
+
+        self.assertEqual(_write_alias(), name)
+        self.assertEqual(_read_alias(), name)
+
+    def test_a_matching_action_creates_and_stamps_the_next_generation(self):
+        first = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
+        ChunkDocument.migrate_reads()
+        out = StringIO()
+
+        with self.assertLogs("k.retrieval", level="INFO") as logs:
+            call_command("search_init", "--migrate-writes", "--action", "reembed", stdout=out)
+
+        second = _write_alias()
+        self.assertNotEqual(second, first)
+        self.assertEqual(read_index_meta(second), configured_index_meta())
+        # reads stay on the old generation until the gated swap
+        self.assertEqual(_read_alias(), first)
+        event = _event(logs, "retrieval.rebuild.write_migrated")
+        self.assertEqual(event.source_index, first)
+        self.assertEqual(event.target_index, second)
+        self.assertEqual(event.action, IndexMetaAction.REEMBED.value)
+        self.assertIn(f"sync_chunks --backfill --index {second}", out.getvalue())
+
+    def test_a_mapping_change_authorizes_copy_population(self):
+        first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
+        ChunkDocument.migrate_reads()
+        write_index_meta(first, _meta(schema_version=OTHER_SCHEMA_VERSION))
+        out = StringIO()
+
+        call_command("search_init", "--migrate-writes", "--action", "copy", stdout=out)
+
+        second = _write_alias()
+        self.assertNotEqual(second, first)
+        self.assertEqual(_read_alias(), first)
+        self.assertEqual(read_index_meta(second), configured_index_meta())
+        self.assertIn("search_init --copy-vectors", out.getvalue())
+
+    def test_an_existing_divergence_cannot_create_a_third_generation(self):
+        first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
+        ChunkDocument.migrate_reads()
+        second = create_write_generation(timestamp=TS2, meta=_meta(model="prior-model"))
+
+        with self.assertRaises(CommandError) as caught:
+            call_command("search_init", "--migrate-writes", "--action", "reembed")
+
+        self.assertIn(second, str(caught.exception))
+        self.assertIn("sync_chunks --backfill", str(caught.exception))
+        self.assertEqual(_write_alias(), second)
+        self.assertEqual(_read_alias(), first)
+
+    def test_a_write_only_first_run_cannot_create_another_generation(self):
+        first = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
+
+        with self.assertRaises(CommandError):
+            call_command("search_init", "--migrate-writes", "--action", "reembed")
+
+        self.assertEqual(_write_alias(), first)
+        self.assertIsNone(_read_alias())
+
+
+class LifecycleSerializationTests(LifecycleTestCase):
+    def test_a_held_lifecycle_lease_refuses_rather_than_waits(self):
+        create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
+        ChunkDocument.migrate_reads()
+
+        with lifecycle_lock(), self.assertRaises(CommandError):
+            call_command("search_init", "--migrate-writes", "--action", "reembed")
+
+    def test_alias_state_is_rechecked_under_the_lease(self):
+        # A racing operator wins between this command's first look and its lease.
+        first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
+        ChunkDocument.migrate_reads()
+
+        real_lock = lifecycle_lock
+
+        @contextmanager
+        def race_then_lock(*args, **kwargs):
+            create_write_generation(timestamp=TS2, meta=_meta(model="prior-model"))
+            with real_lock(*args, **kwargs) as lease:
+                yield lease
+
+        with (
+            mock.patch(f"{SEARCH_INIT}.lifecycle_lock", race_then_lock),
+            self.assertRaises(CommandError),
+        ):
+            call_command("search_init", "--migrate-writes", "--action", "reembed")
+
+        # the loser must not have created a third generation
+        self.assertEqual(len(set(resolve_active_targets())), 2)
+        self.assertEqual(_read_alias(), first)
+
+    def test_a_lease_lost_during_the_gate_prevents_the_read_swap(self):
+        first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
+
+        @contextmanager
+        def lost_lease():
+            lease = mock.Mock()
+            lease.renew.side_effect = DocumentLockUnavailable("lost")
+            yield lease
+
+        with (
+            mock.patch(f"{SEARCH_INIT}.lifecycle_lock", lost_lease),
+            mock.patch(f"{SEARCH_INIT}.gate_index", return_value=mock.Mock(is_clean=True)),
+            self.assertRaises(CommandError),
+        ):
+            call_command("search_init", "--migrate-reads")
+
+        self.assertEqual(_write_alias(), first)
+        self.assertIsNone(_read_alias())
+
+
+class CopyVectorsTests(LifecycleTestCase):
+    """A mapping-only change reuses the stored vectors, so it must never pay the provider."""
+
+    def setUp(self):
+        super().setUp()
+        self.first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
+        ChunkDocument.migrate_reads()
+        self.document = _approved_document()
+        self.identity = ChunkIdentity("kb", str(self.document.id), self.document.locale)
+        sync_document_chunks(self.document.id)
+        # The source generation represents a different mapping while retaining the same
+        # document embedding space. That is the only migration shape legal for a copy.
+        write_index_meta(self.first, _meta(schema_version=OTHER_SCHEMA_VERSION))
+
+    def _diverge(self):
+        return create_write_generation(timestamp=TS2, meta=configured_index_meta())
+
+    def test_it_copies_every_document_without_calling_the_embedder(self):
+        second = self._diverge()
+
+        with (
+            mock.patch("kitsune.retrieval.sync.get_embeddings") as embed,
+            self.assertLogs("k.retrieval", level="INFO") as logs,
+        ):
+            call_command("search_init", "--copy-vectors")
+
+        embed.assert_not_called()
+        copied = read_indexed_document(index=second, identity=self.identity)
+        self.assertIsNotNone(copied.manifest)
+        self.assertGreater(len(copied.chunks), 0)
+        event = _event(logs, "retrieval.rebuild.copy_completed")
+        self.assertEqual(event.source_index, self.first)
+        self.assertEqual(event.target_index, second)
+        self.assertGreater(event.documents_created, 0)
+        self.assertEqual(event.version_conflicts, 0)
+
+    def test_it_creates_rather_than_overwrites_so_newer_writes_survive(self):
+        second = self._diverge()
+        # A fanned-out incremental write reaches the new generation first, with newer content.
+        ApprovedRevisionFactory(document=self.document, content="Newer guidance for N+1.")
+        self.document.refresh_from_db()
+        sync_document_chunks(self.document.id, target_indexes=[second])
+        newer = read_indexed_document(index=second, identity=self.identity)
+
+        out = StringIO()
+        call_command("search_init", "--copy-vectors", stdout=out)
+
+        after = read_indexed_document(index=second, identity=self.identity)
+        self.assertEqual(after.manifest, newer.manifest)
+        self.assertIn("conflict", out.getvalue().lower())
+
+    def test_a_real_item_failure_is_fatal(self):
+        self._diverge()
+        broken = mock.Mock()
+        broken.reindex.return_value = {
+            "total": 1,
+            "created": 0,
+            "version_conflicts": 0,
+            "timed_out": False,
+            "failures": [{"index": "x", "id": "y", "cause": {"type": "boom"}}],
+        }
+        with (
+            mock.patch(f"{SEARCH_INIT}.es_client", return_value=broken),
+            self.assertRaises(CommandError),
+        ):
+            call_command("search_init", "--copy-vectors")
+
+    def test_it_refuses_when_the_aliases_do_not_diverge(self):
+        with self.assertRaises(CommandError):
+            call_command("search_init", "--copy-vectors")
+
+    def test_it_refuses_to_copy_across_embedding_spaces(self):
+        write_index_meta(self.first, _meta(model="prior-model"))
+        self._diverge()
+
+        with self.assertRaises(CommandError) as caught:
+            call_command("search_init", "--copy-vectors")
+
+        self.assertIn(IndexMetaAction.REEMBED.value, str(caught.exception))
+
+    def test_it_refuses_to_populate_a_target_that_no_longer_matches_config(self):
+        second = self._diverge()
+        write_index_meta(second, _meta(query_task="PRIOR_QUERY"))
+
+        with self.assertRaises(CommandError):
+            call_command("search_init", "--copy-vectors")
+
+        self.assertEqual(
+            read_indexed_document(index=second, identity=self.identity).chunks,
+            [],
+        )
+
+
+class GatedReadMigrationTests(LifecycleTestCase):
+    def setUp(self):
+        super().setUp()
+        self.first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
+        self.document = _approved_document()
+
+    def test_a_dirty_gate_refuses_the_swap(self):
+        # The document is eligible but was never indexed, so the new generation is incomplete.
+        with self.assertRaises(CommandError):
+            call_command("search_init", "--migrate-reads")
+
+        self.assertIsNone(_read_alias())
+
+    def test_a_clean_gate_attaches_reads_on_first_run(self):
+        sync_document_chunks(self.document.id)
+
+        call_command("search_init", "--migrate-reads")
+
+        self.assertEqual(_read_alias(), self.first)
+
+    def test_a_clean_gate_swaps_reads_to_the_new_generation(self):
+        sync_document_chunks(self.document.id)
+        ChunkDocument.migrate_reads()
+        second = create_write_generation(timestamp=TS2, meta=configured_index_meta())
+        sync_document_chunks(self.document.id, target_indexes=[second])
+
+        with self.assertLogs("k.retrieval", level="INFO") as logs:
+            call_command("search_init", "--migrate-reads")
+
+        self.assertEqual(_read_alias(), second)
+        event = _event(logs, "retrieval.rebuild.read_migrated")
+        self.assertEqual(event.source_index, self.first)
+        self.assertEqual(event.target_index, second)
+        self.assertTrue(es_client().indices.exists(index=self.first))
+
+    def test_the_gate_runs_against_the_write_target_not_the_read_target(self):
+        # The old read generation being healthy says nothing about the one being promoted.
+        sync_document_chunks(self.document.id)
+        ChunkDocument.migrate_reads()
+        create_write_generation(timestamp=TS2, meta=configured_index_meta())
 
         with self.assertRaises(CommandError):
             call_command("search_init", "--migrate-reads")
 
-        self.assertEqual(_write_alias(), write_index)
+        self.assertEqual(_read_alias(), self.first)
+
+    def test_a_clean_but_obsolete_generation_is_not_promoted(self):
+        sync_document_chunks(self.document.id)
+        write_index_meta(self.first, _meta(query_task="PRIOR_QUERY"))
+
+        with self.assertRaises(CommandError) as caught:
+            call_command("search_init", "--migrate-reads")
+
+        self.assertIn(IndexMetaAction.QUERY_META_UPDATE.value, str(caught.exception))
         self.assertIsNone(_read_alias())
+
+
+class ChunkerGenerationRolloutTests(LifecycleTestCase):
+    def test_a_chunker_change_needs_no_physical_rebuild(self):
+        # CHUNKING_GENERATION is not part of the index _meta: changed text re-embeds per
+        # document through reconciliation instead of forcing a new generation.
+        name = create_write_generation(timestamp=TS1, meta=configured_index_meta())
+        ChunkDocument.migrate_reads()
+
+        with mock.patch("kitsune.retrieval.chunking.CHUNKING_GENERATION", CHUNKING_GENERATION + 1):
+            call_command("search_init")
+
+        self.assertEqual(_write_alias(), name)
+        self.assertEqual(_read_alias(), name)

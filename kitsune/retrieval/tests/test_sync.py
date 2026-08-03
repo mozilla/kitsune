@@ -572,6 +572,22 @@ class MultiGenerationTests(ChunkIndexTestCase):
         # A model migration is exactly the case that needs one call per vector space.
         self.assertEqual(report.embedding_calls, 2)
 
+    def test_an_ineligible_document_is_evicted_from_both_generations(self):
+        second = self._second_generation()
+        sync_document_chunks(self.document.id)
+        self.document.restrict_to_groups.add(GroupFactory())
+
+        report = sync_document_chunks(self.document.id)
+
+        self.assertEqual(
+            report.outcomes,
+            dict.fromkeys((self.first, second), SyncOutcome.DELETED),
+        )
+        for index in (self.first, second):
+            stored = read_indexed_document(index=index, identity=self.identity)
+            self.assertEqual(stored.chunks, [])
+            self.assertIsNone(stored.manifest)
+
     def test_a_newer_state_in_one_target_aborts_every_target(self):
         expected = _expected(
             chunk("kb", self.document.html, title=self.document.title),

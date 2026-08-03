@@ -366,6 +366,11 @@ RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS = config(
 # Retrieval document leases have no background renewer. Keep each retrieval task's Celery
 # time limit below this ttl so the lease cannot lapse while the task is running.
 RETRIEVAL_LOCK_TTL_SECONDS = config("RETRIEVAL_LOCK_TTL_SECONDS", default=300, cast=float)
+# Corpus-wide operator commands can run much longer than one bounded document task. Their
+# separate lease keeps the task-safety invariant above independent from migration runtime.
+RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS = config(
+    "RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS", default=3600, cast=float
+)
 
 # Retrieval ingestion. Independent of ES_LIVE_INDEXING so lexical search and retrieval can be
 # enabled separately. Task limits are retrieval-specific by design: a global Celery limit would

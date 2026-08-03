@@ -1,4 +1,5 @@
 import time
+from functools import partial
 from unittest import mock
 from uuid import uuid4
 
@@ -8,10 +9,12 @@ from redis.exceptions import ConnectionError as RedisConnectionError
 
 from kitsune.retrieval.index import ChunkIdentity
 from kitsune.retrieval.locks import (
+    KEY_PREFIX,
     DocumentLockBackendError,
     DocumentLockUnavailable,
     document_lock,
     document_lock_key,
+    lifecycle_lock,
     redis_lease,
 )
 from kitsune.sumo.redis_utils import RedisError, redis_client
@@ -205,3 +208,32 @@ class LockSettingsTests(LeaseTestCase):
                 with redis_lease(self.key, ttl_seconds=ttl):
                     pass
         self.assertIsNone(self.client.get(self.key))
+
+    @override_settings(
+        RETRIEVAL_LOCK_TTL_SECONDS=1,
+        RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS=60,
+    )
+    def test_lifecycle_operations_use_their_own_ttl(self):
+        with lifecycle_lock():
+            self.assertGreater(self.client.pttl(f"{KEY_PREFIX}:lifecycle"), 50_000)
+
+    def test_ttl_errors_name_the_setting_or_argument_to_fix(self):
+        cases = (
+            (
+                {"RETRIEVAL_LOCK_TTL_SECONDS": -1},
+                partial(redis_lease, self.key),
+                "RETRIEVAL_LOCK_TTL_SECONDS",
+            ),
+            (
+                {"RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS": -1},
+                lifecycle_lock,
+                "RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS",
+            ),
+            ({}, partial(redis_lease, self.key, ttl_seconds=-1), "ttl_seconds"),
+        )
+        for overrides, factory, expected in cases:
+            with self.subTest(source=expected), override_settings(**overrides):
+                with self.assertRaises(ImproperlyConfigured) as caught:
+                    with factory():
+                        pass
+                self.assertIn(expected, str(caught.exception))

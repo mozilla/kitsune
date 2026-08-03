@@ -50,22 +50,21 @@ def _lock_client():
     return redis_client("default")
 
 
-def _validated_ttl(ttl_seconds) -> float:
+def _validated_ttl(ttl_seconds, *, name: str = "ttl_seconds") -> float:
     # Name the source in the error so a reader knows whether to fix the setting or the call.
+    # A caller reading its own setting passes that setting's name.
     if ttl_seconds is None:
-        value, name = settings.RETRIEVAL_LOCK_TTL_SECONDS, "RETRIEVAL_LOCK_TTL_SECONDS"
-    else:
-        value, name = ttl_seconds, "ttl_seconds"
+        ttl_seconds, name = settings.RETRIEVAL_LOCK_TTL_SECONDS, "RETRIEVAL_LOCK_TTL_SECONDS"
     if (
-        isinstance(value, bool)
-        or not isinstance(value, int | float)
-        or not math.isfinite(value)
-        or value < _MIN_TTL_SECONDS
+        isinstance(ttl_seconds, bool)
+        or not isinstance(ttl_seconds, int | float)
+        or not math.isfinite(ttl_seconds)
+        or ttl_seconds < _MIN_TTL_SECONDS
     ):
         raise ImproperlyConfigured(
             f"{name} must be a positive, finite number of seconds of at least one millisecond"
         )
-    return float(value)
+    return float(ttl_seconds)
 
 
 class RedisLease:
@@ -154,3 +153,21 @@ def document_lock_key(identity: ChunkIdentity) -> str:
 def document_lock(identity: ChunkIdentity, *, ttl_seconds=None):
     """Serialize all retrieval work for one document across workers."""
     return redis_lease(document_lock_key(identity), ttl_seconds=ttl_seconds)
+
+
+_LIFECYCLE_KEY = f"{KEY_PREFIX}:lifecycle"
+
+
+def lifecycle_lock(*, ttl_seconds=None):
+    """Coordinate generation creation and alias moves across operators.
+
+    One key protects the shared alias state rather than any particular generation. Like every
+    lease here it expires; callers must renew after a long read-only phase and before a change.
+    """
+    if ttl_seconds is None:
+        # Validated here, not in redis_lease, so the error names the setting to fix.
+        ttl_seconds = _validated_ttl(
+            settings.RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS,
+            name="RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS",
+        )
+    return redis_lease(_LIFECYCLE_KEY, ttl_seconds=ttl_seconds)
