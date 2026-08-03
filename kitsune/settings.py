@@ -367,6 +367,18 @@ RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS = config(
 # time limit below this ttl so the lease cannot lapse while the task is running.
 RETRIEVAL_LOCK_TTL_SECONDS = config("RETRIEVAL_LOCK_TTL_SECONDS", default=300, cast=float)
 
+# Retrieval ingestion. Independent of ES_LIVE_INDEXING so lexical search and retrieval can be
+# enabled separately. Task limits are retrieval-specific by design: a global Celery limit would
+# truncate unrelated Kitsune tasks. checks.py enforces
+# request deadline < soft < hard < lease ttl.
+RETRIEVAL_LIVE_INDEXING = config("RETRIEVAL_LIVE_INDEXING", default=False, cast=bool)
+RETRIEVAL_TASK_SOFT_TIME_LIMIT_SECONDS = config(
+    "RETRIEVAL_TASK_SOFT_TIME_LIMIT_SECONDS", default=210, cast=float
+)
+RETRIEVAL_TASK_TIME_LIMIT_SECONDS = config(
+    "RETRIEVAL_TASK_TIME_LIMIT_SECONDS", default=240, cast=float
+)
+
 TEXT_DOMAIN = "messages"
 
 SITE_ID = 1
@@ -700,7 +712,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "kitsune.access",
     "kitsune.sumo",
     "kitsune.search",
-    "kitsune.retrieval",
+    "kitsune.retrieval.apps.RetrievalConfig",
     "kitsune.forums",
     "rest_framework.authtoken",
     "kitsune.questions",

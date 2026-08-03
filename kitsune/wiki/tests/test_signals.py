@@ -1,6 +1,6 @@
 from unittest.mock import call, patch
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.tests import DocumentFactory
@@ -129,3 +129,36 @@ class ReverseRestrictToGroupsChangeTests(TestCase):
             group.restricted_documents.add(doc)
 
         mock_task.delay.assert_not_called()
+
+
+class RenderIncludersOnDeleteTests(TestCase):
+    """Deleting an include must rerender dependents after the link rows disappear."""
+
+    def setUp(self):
+        self.included = DocumentFactory(title="Shared", slug="shared")
+        self.includer = DocumentFactory(title="Includer", slug="includer")
+        self.includer.add_link_to(self.included, "include")
+
+    @override_settings(RETRIEVAL_LIVE_INDEXING=False)
+    def test_deletion_rerenders_includers_when_retrieval_is_disabled(self):
+        with patch("kitsune.wiki.tasks.render_document_cascade.delay") as delay:
+            with self.captureOnCommitCallbacks(execute=True):
+                self.included.delete()
+
+        self.assertIn(self.includer.id, {task.args[0] for task in delay.call_args_list})
+
+
+class RenderOnGroupDeleteTests(TestCase):
+    def test_deletion_rerenders_restricted_translation_families(self):
+        parent = DocumentFactory()
+        translation = DocumentFactory(parent=parent, locale="de")
+        group = GroupFactory()
+        with patch("kitsune.wiki.tasks.render_document_cascade.delay"):
+            parent.restrict_to_groups.add(group)
+
+        with patch("kitsune.wiki.tasks.render_document_cascade.delay") as delay:
+            with self.captureOnCommitCallbacks(execute=True):
+                group.delete()
+
+        delay.assert_has_calls([call(parent.id), call(translation.id)], any_order=True)
+        assert delay.call_count == 2

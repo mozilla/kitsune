@@ -19,6 +19,7 @@ VERTEX_BACKEND = "vertex"
 DEFAULT_DOCUMENT_TASK = "RETRIEVAL_DOCUMENT"
 DEFAULT_QUERY_TASK = "RETRIEVAL_QUERY"
 DEFAULT_NORMALIZATION = "none"
+MIN_EMBEDDING_TIMEOUT_SECONDS = 0.001
 
 _MAX_ATTEMPTS = 4
 _BACKOFF_BASE = 0.5
@@ -229,7 +230,7 @@ def _configured_timeout_ms() -> int:
         isinstance(timeout, bool)
         or not isinstance(timeout, int | float)
         or not math.isfinite(timeout)
-        or timeout < 0.001
+        or timeout < MIN_EMBEDDING_TIMEOUT_SECONDS
     ):
         raise ImproperlyConfigured(
             "RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS must be a finite number of seconds "

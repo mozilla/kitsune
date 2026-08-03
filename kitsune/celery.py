@@ -16,4 +16,6 @@ app.conf.task_routes = {
     "kitsune.kbadge.tasks.send_award_notification": {"queue": "email"},
     "kitsune.wiki.tasks.send_reviewed_notification": {"queue": "email"},
     "kitsune.wiki.tasks.send_contributor_notification": {"queue": "email"},
+    "kitsune.retrieval.tasks.sync_document": {"queue": "retrieval"},
+    "kitsune.retrieval.tasks.delete_document": {"queue": "retrieval"},
 }
