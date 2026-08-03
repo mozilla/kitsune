@@ -104,7 +104,7 @@
 
 {% macro topic_sidebar(topics, subtopics, product=None, selected_topic=None, selected_subtopic=None) -%}
 {% if topics %}
-  <h3 class="sidebar-subheading large-only">{{ _('Popular') }} {% if product %} {{ product }} {% endif %} {{ _('Topics') }}</h3>
+  <h3 class="sidebar-subheading large-only">{% if product %}{{ _('Popular {product} topics')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% else %}{{ _('Popular topics') }}{% endif %}</h3>
   <nav class="sidebar-nav topics">
     <span class="details-heading"></span>
     <ul class="sidebar-nav--list">
