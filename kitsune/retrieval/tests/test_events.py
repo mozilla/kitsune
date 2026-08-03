@@ -35,6 +35,7 @@ class PrivacyTests(SimpleTestCase):
             "content",
             "content_text",
             "html",
+            "key",
             "summary",
             "keywords",
             "vector",

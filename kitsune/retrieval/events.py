@@ -20,6 +20,7 @@ _SENSITIVE_FIELDS = {
     "group_ids",
     "groups",
     "html",
+    "key",
     "keywords",
     "password",
     "restrict_to_groups",
@@ -35,8 +36,43 @@ _SENSITIVE_FIELDS = {
 _RESERVED_FIELDS = set(logging.makeLogRecord({}).__dict__) | {"asctime", "message"}
 
 
+# `emit` rejects names outside this catalog; the observability audit keeps it aligned with
+# production call sites in both directions.
+EVENT_CATALOG = frozenset(
+    {
+        # provider cost and reliability
+        "retrieval.embeddings.completed",
+        "retrieval.embeddings.retried",
+        "retrieval.embeddings.failed",
+        # work serialization
+        "retrieval.lock.contended",
+        "retrieval.lock.lost",
+        "retrieval.lock.backend_unavailable",
+        # per-document ingestion
+        "retrieval.sync.completed",
+        "retrieval.sync.skipped",
+        # cross-document ingestion
+        "retrieval.batch.completed",
+        "retrieval.batch.skipped",
+        "retrieval.batch.deferred",
+        "retrieval.batch.abandoned",
+        # integrity
+        "retrieval.gate.completed",
+        # generation lifecycle
+        "retrieval.rebuild.write_initialized",
+        "retrieval.rebuild.write_migrated",
+        "retrieval.rebuild.copy_completed",
+        "retrieval.rebuild.read_migrated",
+    }
+)
+
+
 class UnsafeEventField(ValueError):
     """An event field is explicitly sensitive, reserved, or payload-shaped."""
+
+
+class UnknownEvent(ValueError):
+    """The event name is not in the catalog."""
 
 
 def _safe_value(name: str, value, *, nested: bool = False):
@@ -55,8 +91,8 @@ def _safe_value(name: str, value, *, nested: bool = False):
 
 def emit(event: str, *, level: int = logging.INFO, **fields) -> None:
     """Record one stable event name with bounded scalar fields."""
-    if not isinstance(event, str) or not event:
-        raise ValueError("event must be a non-empty string")
+    if event not in EVENT_CATALOG:
+        raise UnknownEvent(f"{event!r} is not in EVENT_CATALOG; add it there first")
     for name in fields:
         if name in _RESERVED_FIELDS:
             raise UnsafeEventField(f"event field {name!r} is reserved by logging")

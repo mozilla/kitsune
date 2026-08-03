@@ -495,8 +495,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
     def test_the_completion_event_carries_no_text_or_vectors(self):
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             self._sync()
-        [record] = logs.records
-        self.assertEqual(record.getMessage(), "retrieval.sync.completed")
+        [record] = [r for r in logs.records if r.getMessage() == "retrieval.sync.completed"]
         self.assertNotIn("Install Firefox", repr(record.__dict__))
         for field in ("content_text", "content_vector", "access_group_ids"):
             self.assertNotIn(field, record.__dict__)

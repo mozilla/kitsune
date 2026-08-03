@@ -10,6 +10,7 @@ before writing to prove ownership. The lease serializes writers; it is not autho
 state.
 """
 
+import logging
 import math
 from contextlib import contextmanager
 from functools import cache
@@ -20,15 +21,26 @@ from django.core.exceptions import ImproperlyConfigured
 from redis.exceptions import LockNotOwnedError
 from redis.exceptions import RedisError as RedisBackendFailure
 
+from kitsune.retrieval.events import emit
 from kitsune.retrieval.index import ChunkIdentity
 from kitsune.sumo.redis_utils import RedisError as RedisUnavailable
 from kitsune.sumo.redis_utils import redis_client
 
 NAMESPACE = "retrieval:"
 KEY_PREFIX = f"{NAMESPACE}lease"
+_LIFECYCLE_KEY = f"{KEY_PREFIX}:lifecycle"
 # Redis expiries are milliseconds, so anything shorter truncates to a ttl of zero — and
 # PEXPIRE with zero deletes the key outright.
 _MIN_TTL_SECONDS = 0.001
+
+
+def _lock_kind(key: str) -> str:
+    """Return bounded context without logging the identity-bearing Redis key."""
+    if key == _LIFECYCLE_KEY:
+        return "lifecycle"
+    if key.startswith(f"{KEY_PREFIX}:"):
+        return "document"
+    return "other"
 
 
 class DocumentLockUnavailable(Exception):
@@ -88,8 +100,20 @@ class RedisLease:
         # LockNotOwnedError subclasses RedisError, so it has to be caught first or a lost
         # lease would be misreported as a retryable backend failure.
         except LockNotOwnedError as exc:
+            emit(
+                "retrieval.lock.lost",
+                level=logging.WARNING,
+                lock_kind=_lock_kind(self._key),
+            )
             raise DocumentLockUnavailable(f"{self._key} is no longer held by this worker") from exc
         except RedisBackendFailure as exc:
+            emit(
+                "retrieval.lock.backend_unavailable",
+                level=logging.ERROR,
+                lock_kind=_lock_kind(self._key),
+                operation="renew",
+                error_type=type(exc).__name__,
+            )
             raise DocumentLockBackendError(f"cannot renew {self._key}") from exc
 
     def release(self) -> None:
@@ -106,6 +130,13 @@ class RedisLease:
         except LockNotOwnedError:
             pass  # a successor holds it, so there is nothing of ours to delete
         except RedisBackendFailure as exc:
+            emit(
+                "retrieval.lock.backend_unavailable",
+                level=logging.ERROR,
+                lock_kind=_lock_kind(self._key),
+                operation="release",
+                error_type=type(exc).__name__,
+            )
             raise DocumentLockBackendError(f"cannot release {self._key}") from exc
 
 
@@ -129,8 +160,20 @@ def redis_lease(key: str, *, ttl_seconds=None):
         lock = _lock_client().lock(key, timeout=ttl, blocking=False)
         acquired = lock.acquire(token=token)
     except (RedisUnavailable, RedisBackendFailure) as exc:
+        emit(
+            "retrieval.lock.backend_unavailable",
+            level=logging.ERROR,
+            lock_kind=_lock_kind(key),
+            operation="acquire",
+            error_type=type(exc).__name__,
+        )
         raise DocumentLockBackendError(f"cannot acquire {key}") from exc
     if not acquired:
+        emit(
+            "retrieval.lock.contended",
+            level=logging.WARNING,
+            lock_kind=_lock_kind(key),
+        )
         raise DocumentLockUnavailable(f"{key} is held by another worker")
 
     lease = RedisLease(lock, key, token)
@@ -153,9 +196,6 @@ def document_lock_key(identity: ChunkIdentity) -> str:
 def document_lock(identity: ChunkIdentity, *, ttl_seconds=None):
     """Serialize all retrieval work for one document across workers."""
     return redis_lease(document_lock_key(identity), ttl_seconds=ttl_seconds)
-
-
-_LIFECYCLE_KEY = f"{KEY_PREFIX}:lifecycle"
 
 
 def lifecycle_lock(*, ttl_seconds=None):

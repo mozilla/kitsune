@@ -14,6 +14,7 @@ from collections import Counter
 from collections.abc import Iterable
 from contextlib import ExitStack
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from enum import StrEnum
 
 from django.conf import settings
@@ -207,8 +208,14 @@ def _report(
     embedding_calls: int = 0,
     *,
     object_id: str | None = None,
+    approved_at: datetime | None = None,
 ) -> SyncReport:
     """Emit and return one consistent result for every terminal sync path."""
+    approval_latency_ms = (
+        None
+        if approved_at is None
+        else int((datetime.now(tz=UTC) - approved_at).total_seconds() * 1000)
+    )
     emit(
         "retrieval.sync.completed",
         content_type=CONTENT_TYPE,
@@ -216,6 +223,9 @@ def _report(
         locale=identity.locale if identity else None,
         outcomes={index: outcome.value for index, outcome in outcomes.items()},
         embedding_calls=embedding_calls,
+        # Approval to searchable: null on paths with no approved revision, never a false zero.
+        # Negative values deliberately expose clock skew or a future-dated review.
+        approval_latency_ms=approval_latency_ms,
     )
     return SyncReport(identity, outcomes, embedding_calls)
 
@@ -333,6 +343,9 @@ class _DocumentWork:
     chunks: list[Chunk]
     expected: ExpectedDocumentState
     plans: dict[str, TargetPlan]
+    # Approval time, for the freshness SLI only. Deliberately not part of the indexed payload
+    # or any hash: it must not make a document look changed.
+    approved_at: datetime | None = None
 
     @property
     def outcomes(self) -> dict[str, SyncOutcome]:
@@ -416,7 +429,9 @@ def _plan_document(document, targets, recipes) -> _DocumentWork | SyncReport:
     if any(plan.outcome is SyncOutcome.ABORTED_STALE for plan in plans.values()):
         return _report(identity, dict.fromkeys(targets, SyncOutcome.ABORTED_STALE))
 
-    work = _DocumentWork(identity, source, chunks, expected, plans)
+    work = _DocumentWork(
+        identity, source, chunks, expected, plans, document.current_revision.reviewed
+    )
     if all(outcome is SyncOutcome.NO_OP for outcome in work.outcomes.values()):
         return _report(identity, work.outcomes)
     return work
@@ -520,7 +535,7 @@ def sync_document_chunks(document_id: int, *, target_indexes=None) -> SyncReport
             return terminal
         _write_plans(work, vectors[document_id], lease)
 
-    return _report(identity, work.outcomes, calls)
+    return _report(identity, work.outcomes, calls, approved_at=work.approved_at)
 
 
 def ordered_document_ids(document_ids) -> tuple[int, ...]:
@@ -656,7 +671,11 @@ def sync_document_batch(document_ids, *, target_indexes=None) -> BatchSyncReport
                 # One stolen lease is that document's problem; the rest of the batch stands.
                 contended.append(document_id)
                 continue
-            reports[document_id] = _report(work.identity, work.outcomes)
+            reports[document_id] = _report(
+                work.identity,
+                work.outcomes,
+                approved_at=work.approved_at,
+            )
 
     deferred = tuple(sorted(over_document_limit + over_input_limit))
     if deferred:
