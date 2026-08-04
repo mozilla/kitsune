@@ -24,7 +24,6 @@ from kitsune.retrieval.index import (
     IndexWriteError,
     configured_index_meta,
     create_write_generation,
-    read_indexed_document,
 )
 from kitsune.retrieval.locks import (
     DocumentLockBackendError,
@@ -40,7 +39,7 @@ from kitsune.retrieval.sync import (
     sync_document_chunks,
 )
 from kitsune.retrieval.tasks import enqueue_document_batch, sync_documents
-from kitsune.retrieval.tests import ChunkIndexTestCase
+from kitsune.retrieval.tests import ChunkIndexTestCase, read_indexed_document
 from kitsune.sumo.redis_utils import redis_client
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory

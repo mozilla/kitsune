@@ -26,7 +26,6 @@ from kitsune.retrieval.index import (
     configured_index_meta,
     create_write_generation,
     manifest_id,
-    read_indexed_document,
     scope_envelope,
 )
 from kitsune.retrieval.locks import DocumentLockUnavailable, RedisLease, document_lock
@@ -37,7 +36,7 @@ from kitsune.retrieval.sync import (
     plan_target,
     sync_document_chunks,
 )
-from kitsune.retrieval.tests import ChunkIndexTestCase
+from kitsune.retrieval.tests import ChunkIndexTestCase, read_indexed_document
 from kitsune.retrieval.tests.test_index import _expected, _source, _vector
 from kitsune.search.es_utils import es_client
 from kitsune.users.tests import GroupFactory

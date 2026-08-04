@@ -16,6 +16,7 @@ from kitsune.retrieval.index import (
     IncompleteDocumentState,
     IndexWriteError,
     InvalidDocumentState,
+    StoredChunkSummary,
     access_metadata_matches,
     chunk_id,
     commit_manifest,
@@ -26,13 +27,13 @@ from kitsune.retrieval.index import (
     manifest_id,
     parse_manifest,
     read_chunk_summaries,
-    read_indexed_document,
+    read_index_summaries,
     read_manifest,
     replace_chunks,
     update_chunks_metadata_for,
     write_chunks,
 )
-from kitsune.retrieval.tests import ChunkIndexTestCase
+from kitsune.retrieval.tests import ChunkIndexTestCase, read_indexed_document
 from kitsune.search.es_utils import es_client
 
 
@@ -149,20 +150,20 @@ class ChunkSourceStateContractTests(SimpleTestCase):
         cases = (
             (
                 "exact public metadata",
-                {"visibility": "public", "access_group_ids": []},
+                StoredChunkSummary(0, "public", ()),
                 public,
                 True,
             ),
-            ("missing groups", {"visibility": "public"}, public, False),
+            ("missing groups", StoredChunkSummary(0, "public", None), public, False),
             (
                 "canonical groups",
-                {"visibility": "group_restricted", "access_group_ids": [1, 2]},
+                StoredChunkSummary(0, "group_restricted", (1, 2)),
                 restricted,
                 True,
             ),
             (
                 "noncanonical groups",
-                {"visibility": "group_restricted", "access_group_ids": [2, 1]},
+                StoredChunkSummary(0, "group_restricted", (2, 1)),
                 restricted,
                 False,
             ),
@@ -965,11 +966,11 @@ class ConcreteIndexGuardTests(SimpleTestCase):
                         index=index, identity=source.identity, expected_positions={0}
                     )
                 with self.assertRaises(InvalidDocumentState):
-                    read_indexed_document(index=index, identity=source.identity)
-                with self.assertRaises(InvalidDocumentState):
                     read_manifest(index=index, identity=source.identity)
                 with self.assertRaises(InvalidDocumentState):
                     read_chunk_summaries(index=index, identity=source.identity)
+                with self.assertRaises(InvalidDocumentState):
+                    read_index_summaries(index=index, content_type="kb")
                 with self.assertRaises(InvalidDocumentState):
                     delete_chunks_for(index=index, identity=source.identity)
                 with self.assertRaises(InvalidDocumentState):

@@ -100,12 +100,15 @@ class Command(BaseCommand):
             raise CommandError("--locale must not be empty.")
         dry_run = options["dry_run"]
 
-        if options["backfill"]:
-            self._backfill(target, locales, page_size, dry_run)
-        elif options["reconcile"]:
-            self._reconcile(target, locales, page_size, dry_run)
-        else:
-            self._gate(target, locales, page_size)
+        try:
+            if options["backfill"]:
+                self._backfill(target, locales, page_size, dry_run)
+            elif options["reconcile"]:
+                self._reconcile(target, locales, page_size, dry_run)
+            else:
+                self._gate(target, locales, page_size)
+        except InvalidDocumentState as exc:
+            raise CommandError(f"Could not inspect {target}: {exc}") from exc
 
     def _backfill(self, target, locales, page_size, dry_run):
         documents = eligible_documents()

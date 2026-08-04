@@ -22,6 +22,7 @@ from kitsune.retrieval.fingerprints import (
 from kitsune.retrieval.gate import gate_index
 from kitsune.retrieval.index import (
     ChunkDocument,
+    InvalidDocumentState,
     configured_index_meta,
     create_write_generation,
 )
@@ -78,6 +79,8 @@ class Command(BaseCommand):
             raise CommandError(
                 "The lock backend is unreachable, so lifecycle changes cannot be serialized."
             ) from exc
+        except InvalidDocumentState as exc:
+            raise CommandError(f"Retrieval index state is invalid: {exc}") from exc
 
     def _aliases(self):
         """Read alias state under the current lifecycle lease."""

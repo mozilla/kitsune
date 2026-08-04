@@ -29,9 +29,7 @@ from kitsune.retrieval.eligibility import (
 )
 from kitsune.retrieval.embeddings import (
     EmbeddingRecipe,
-    InvalidEmbeddingResponse,
     get_embeddings,
-    validate_embeddings,
 )
 from kitsune.retrieval.events import emit
 from kitsune.retrieval.fingerprints import (
@@ -44,6 +42,8 @@ from kitsune.retrieval.index import (
     ExpectedDocumentState,
     IncompleteDocumentState,
     StoredChunkSummary,
+    access_metadata_matches,
+    chunk_layout_matches,
     delete_chunks_for,
     delete_chunks_for_object,
     read_chunk_summaries,
@@ -69,21 +69,6 @@ class SyncOutcome(StrEnum):
     ABORTED_STALE = "aborted_stale"
 
 
-def is_usable_vector(vector, recipe: EmbeddingRecipe) -> bool:
-    """Whether a stored vector is one this recipe would have written.
-
-    Public so the integrity gate applies the writer's own definition rather than a second one
-    that could pass a vector the writer would reject.
-    """
-    if not isinstance(vector, list):
-        return False
-    try:
-        validate_embeddings([vector], ["stored chunk"], recipe)
-    except InvalidEmbeddingResponse:
-        return False
-    return True
-
-
 def plan_target(
     *,
     chunks: list[Chunk],
@@ -107,15 +92,10 @@ def plan_target(
     if manifest is None or manifest.content_hash != expected_state.content_hash:
         return SyncOutcome.EMBED_REPLACE
 
-    positions = {summary.position for summary in summaries}
-    if len(summaries) != len(chunks) or positions != set(range(len(chunks))):
+    if not chunk_layout_matches(summaries, expected_state.chunk_count):
         return SyncOutcome.EMBED_REPLACE
 
-    access_matches = all(
-        summary.visibility == source.visibility
-        and summary.access_group_ids == source.access_group_ids
-        for summary in summaries
-    )
+    access_matches = all(access_metadata_matches(summary, source) for summary in summaries)
     if manifest != expected_state or not access_matches:
         return SyncOutcome.METADATA_ONLY
 
@@ -205,8 +185,7 @@ def expected_state_for(
 ) -> ExpectedDocumentState:
     """The state a healthy commit of this document would hold.
 
-    Public for the same reason as ``is_usable_vector``: the gate has to compare against exactly
-    what the writer would have produced.
+    Public because the gate has to compare against exactly what the writer would have produced.
     """
     return ExpectedDocumentState(
         content_hash=content_hash(chunks),

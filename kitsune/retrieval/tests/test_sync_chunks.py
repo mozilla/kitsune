@@ -9,6 +9,7 @@ from kitsune.retrieval.gate import GateCategory
 from kitsune.retrieval.index import ChunkDocument, ChunkIdentity
 from kitsune.retrieval.sync import sync_document_chunks
 from kitsune.retrieval.tests import ChunkIndexTestCase
+from kitsune.search.es_utils import es_client
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.models import Document
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
@@ -210,7 +211,21 @@ class GateModeTests(SyncChunksTestCase):
         with self.assertRaises(CommandError) as caught:
             self._run("--gate")
 
-        self.assertIn(GateCategory.MISSING_DOCUMENT.value, str(caught.exception))
+        self.assertIn(GateCategory.STALE_DOCUMENT.value, str(caught.exception))
+
+    def test_an_unparseable_index_is_an_operator_error(self):
+        es_client().index(
+            index=self.index,
+            id="stray",
+            document={"kind": "unknown", "content_type": "kb"},
+            refresh=True,
+        )
+
+        with self.assertRaises(CommandError) as caught:
+            self._run("--gate")
+
+        self.assertIn(self.index, str(caught.exception))
+        self.assertIn("unknown kind", str(caught.exception))
 
     def test_the_gate_mode_repairs_nothing(self):
         with (
@@ -231,5 +246,5 @@ class GateModeTests(SyncChunksTestCase):
         with self.assertRaises(CommandError):
             call_command("sync_chunks", "--gate", stdout=out, stderr=out)
 
-        self.assertIn(GateCategory.MISSING_DOCUMENT.value, out.getvalue())
+        self.assertIn(GateCategory.STALE_DOCUMENT.value, out.getvalue())
         self.assertIn(f"kb:{missing.id}:en-US", out.getvalue())

@@ -22,6 +22,7 @@ from kitsune.retrieval.index import (
     SIMILARITY,
     VECTOR_INDEX_OPTIONS,
     ChunkDocument,
+    InvalidDocumentState,
     RetrievalIndexUnavailable,
     configured_index_meta,
     create_write_generation,
@@ -386,6 +387,19 @@ class GatedReadMigrationTests(LifecycleTestCase):
         with self.assertRaises(CommandError):
             call_command("search_init", "--migrate-reads")
 
+        self.assertIsNone(_read_alias())
+
+    def test_an_unparseable_index_is_an_operator_error(self):
+        with (
+            mock.patch(
+                f"{SEARCH_INIT}.gate_index",
+                side_effect=InvalidDocumentState("indexed document has an unknown kind"),
+            ),
+            self.assertRaises(CommandError) as caught,
+        ):
+            call_command("search_init", "--migrate-reads")
+
+        self.assertIn("index state is invalid", str(caught.exception).lower())
         self.assertIsNone(_read_alias())
 
     def test_a_clean_gate_attaches_reads_on_first_run(self):
