@@ -82,7 +82,9 @@ jobs:
       - image: cimg/python:3.14
     steps:
       - run-tests-with-es:
-          app_labels: kitsune.search kitsune.community kitsune.products kitsune.landings
+          app_labels: >-
+            kitsune.search kitsune.retrieval kitsune.community kitsune.products
+            kitsune.landings
 
   kitsune-tests:
     docker:

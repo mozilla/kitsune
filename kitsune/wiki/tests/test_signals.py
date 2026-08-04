@@ -140,7 +140,11 @@ class RenderIncludersOnDeleteTests(TestCase):
         self.includer.add_link_to(self.included, "include")
 
     @override_settings(RETRIEVAL_LIVE_INDEXING=False)
-    def test_deletion_rerenders_includers_when_retrieval_is_disabled(self):
+    @patch("kitsune.retrieval.tasks.delete_document.delay")
+    def test_deletion_rerenders_includers_when_retrieval_is_disabled(self, retrieval_delete):
+        # Eviction is deliberately not gated on RETRIEVAL_LIVE_INDEXING, and Celery is eager
+        # here, so an unmocked delete would reach Elasticsearch — which the wiki CI job has no
+        # container for. This test is about the wiki cascade, not about retrieval.
         with patch("kitsune.wiki.tasks.render_document_cascade.delay") as delay:
             with self.captureOnCommitCallbacks(execute=True):
                 self.included.delete()

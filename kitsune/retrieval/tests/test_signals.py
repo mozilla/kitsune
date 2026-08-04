@@ -1,4 +1,4 @@
-from unittest import mock, skip
+from unittest import mock
 
 from django.test import TestCase, override_settings
 
@@ -139,12 +139,6 @@ class RestrictionChangeTests(SignalTestCase):
         self.document.restrict_to_groups.add(self.group)
         self.assertIn(self.document.id, self._queued_syncs(self.document.restrict_to_groups.clear))
 
-    @skip(
-        "Blocked on the wiki reverse-restriction fix, which lands separately. Touching the "
-        "reverse accessor also fires wiki's render_on_restrict_to_groups_change, which assumes "
-        "the m2m instance is a Document and raises on a Group. Re-enable after rebasing onto "
-        "main with that fix, or when this work merges alongside it."
-    )
     def test_changes_from_the_group_side_find_the_documents(self):
         relation = self.group.restricted_documents
         self.assertIn(self.document.id, self._queued_syncs(lambda: relation.add(self.document)))

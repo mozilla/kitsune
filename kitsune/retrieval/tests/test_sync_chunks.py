@@ -162,7 +162,9 @@ class ReconcileTests(SyncChunksTestCase):
 
     def test_access_drift_is_reported_prominently_and_without_group_identifiers(self):
         sync_document_chunks(self.document.id)
-        group = GroupFactory()
+        # A distinctive id and name: a small integer would match a count or part of the
+        # timestamped index name by coincidence, so asserting its absence would prove nothing.
+        group = GroupFactory(id=987_654_321, name="Confidential Partner Staff")
         self.document.restrict_to_groups.add(group)
 
         with (

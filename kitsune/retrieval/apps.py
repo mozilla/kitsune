@@ -3,6 +3,9 @@ from django.core.exceptions import ImproperlyConfigured
 
 
 class RetrievalConfig(AppConfig):
+    # `default` so INSTALLED_APPS can name the module like every other app: naming this class
+    # there instead breaks anything that walks INSTALLED_APPS expecting importable modules.
+    default = True
     name = "kitsune.retrieval"
     default_auto_field = "django.db.models.AutoField"
 
