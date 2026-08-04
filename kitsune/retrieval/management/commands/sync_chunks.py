@@ -11,6 +11,7 @@ drained; an operator reruns ``--gate`` once the workers are done.
 
 from itertools import batched
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from elasticsearch import NotFoundError
 
@@ -83,6 +84,19 @@ class Command(BaseCommand):
         page_size = options["page_size"]
         if page_size <= 0:
             raise CommandError("--page-size must be a positive integer.")
+
+        # Refuse rather than no-op: a backfill that reports success without queueing anything
+        # is worse than one that fails. --gate and --dry-run only report, so they stay usable
+        # for inspecting an index before the pipeline is turned on.
+        #
+        # --gate is the only mode that never enqueues, and --dry-run suppresses dispatch in the
+        # other two. Written as "not gate" so a mode added later is guarded until it opts out.
+        would_enqueue = not options["gate"] and not options["dry_run"]
+        if would_enqueue and not settings.RETRIEVAL_INGESTION_ENABLED:
+            raise CommandError(
+                "Retrieval ingestion is disabled, which turns off queueing. "
+                "Set RETRIEVAL_INGESTION_ENABLED to enable it, or add --dry-run to report only."
+            )
 
         selected_targets = options["index"] or resolve_active_targets()
         targets = list(dict.fromkeys(selected_targets))

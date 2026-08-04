@@ -7,6 +7,10 @@ rows disappear — a ``post_clear`` or post-cascade handler cannot recover what 
 Access changes are handled here as ordinary freshness transitions rather than by a separate
 security workflow (ADR 0006). Under the public-only policy, restricting a document makes it
 ineligible and the sync core evicts it; widening access makes it eligible and it is indexed.
+
+Every receiver here is gated on ``RETRIEVAL_INGESTION_ENABLED``, eviction included, so a
+disabled pipeline queues nothing at all. Eviction is otherwise never treated as optional, but
+before the index has been populated there is nothing for it to remove.
 """
 
 from django.conf import settings
@@ -18,7 +22,11 @@ from django.dispatch import receiver
 
 from kitsune.products.models import Product, Topic
 from kitsune.retrieval.index import ChunkIdentity
-from kitsune.retrieval.tasks import enqueue_document_delete, enqueue_document_sync
+from kitsune.retrieval.tasks import (
+    enqueue_document_delete,
+    enqueue_document_sync,
+    live_indexing_is_active,
+)
 from kitsune.wiki.models import Document
 
 CONTENT_TYPE = "kb"
@@ -31,7 +39,7 @@ def _refresh_families(document_ids) -> None:
     provider-free, and it is necessary because translations inherit products, topics, category
     and access from their original.
     """
-    if not settings.RETRIEVAL_LIVE_INDEXING:
+    if not live_indexing_is_active():
         return
 
     seeds = set(document_ids)
@@ -57,7 +65,7 @@ def _refresh_families(document_ids) -> None:
 
 
 def _affected_documents(instance, action, reverse, pk_set, *, reverse_accessor) -> list[int]:
-    if not settings.RETRIEVAL_LIVE_INDEXING:
+    if not live_indexing_is_active():
         return []
     if not reverse:
         return [instance.pk] if action in ("post_add", "post_remove", "pre_clear") else []
@@ -119,7 +127,12 @@ def document_deleted(sender, instance, **kwargs):
 
     A deleted row cannot report its locale, and the identity is what scopes the eviction, so
     it has to be read here rather than after the delete.
+
+    Gated on the master switch alone, not on live indexing: pausing freshness must not leave
+    withdrawn content served, so eviction stops only when the pipeline is off entirely.
     """
+    if not settings.RETRIEVAL_INGESTION_ENABLED:
+        return
     identity = ChunkIdentity(
         content_type=CONTENT_TYPE, object_id=str(instance.pk), locale=instance.locale
     )

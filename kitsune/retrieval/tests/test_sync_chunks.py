@@ -3,7 +3,7 @@ from unittest import mock
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
 from kitsune.retrieval.gate import GateCategory
 from kitsune.retrieval.index import ChunkDocument, ChunkIdentity
@@ -37,6 +37,36 @@ class ModeSelectionTests(SimpleTestCase):
                 call_command("sync_chunks", *pair)
 
 
+@override_settings(RETRIEVAL_INGESTION_ENABLED=False)
+class IngestionDisabledTests(SimpleTestCase):
+    """Enqueueing modes refuse to run rather than reporting success without queueing."""
+
+    def test_enqueueing_modes_refuse_to_run(self):
+        for mode in ("--backfill", "--reconcile"):
+            with self.subTest(mode=mode):
+                with self.assertRaisesMessage(CommandError, "Retrieval ingestion is disabled"):
+                    call_command("sync_chunks", mode)
+
+    def test_the_refusal_precedes_any_elasticsearch_work(self):
+        # No index is named and no alias is resolved, so a refusal that reached
+        # resolve_active_targets would need a live cluster this test does not have.
+        with mock.patch(f"{COMMAND}.resolve_active_targets") as targets:
+            with self.assertRaises(CommandError):
+                call_command("sync_chunks", "--backfill")
+        targets.assert_not_called()
+
+    def test_reporting_modes_are_unaffected(self):
+        # --dry-run and --gate queue nothing, so they stay usable before the pipeline is on:
+        # both get past the refusal and on to resolving targets.
+        for args in (("--backfill", "--dry-run"), ("--gate",)):
+            with self.subTest(args=args):
+                with mock.patch(f"{COMMAND}.resolve_active_targets", return_value=()) as targets:
+                    with self.assertRaisesMessage(CommandError, "No active retrieval index"):
+                        call_command("sync_chunks", *args)
+                targets.assert_called_once()
+
+
+@override_settings(RETRIEVAL_INGESTION_ENABLED=True)
 class SyncChunksTestCase(ChunkIndexTestCase):
     def setUp(self):
         super().setUp()

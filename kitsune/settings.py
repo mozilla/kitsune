@@ -376,6 +376,14 @@ RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS = config(
 # enabled separately. Task limits are retrieval-specific by design: a global Celery limit would
 # truncate unrelated Kitsune tasks. checks.py enforces
 # request deadline < soft < hard < lease ttl.
+#
+# The master switch. While it is off, nothing queues retrieval work: signals queue nothing, not
+# even eviction, since an index nothing has populated has nothing to evict, and `sync_chunks`
+# refuses to enqueue. Tasks already queued still run — this only stops new work being added.
+RETRIEVAL_INGESTION_ENABLED = config("RETRIEVAL_INGESTION_ENABLED", default=False, cast=bool)
+# Whether an enabled pipeline also follows live edits. Turning off only this pauses freshness
+# while eviction continues, for a backfill or a provider incident. `sync_document` rechecks it
+# when it runs, so a sync queued before the change no-ops.
 RETRIEVAL_LIVE_INDEXING = config("RETRIEVAL_LIVE_INDEXING", default=False, cast=bool)
 RETRIEVAL_TASK_SOFT_TIME_LIMIT_SECONDS = config(
     "RETRIEVAL_TASK_SOFT_TIME_LIMIT_SECONDS", default=210, cast=float

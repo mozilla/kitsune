@@ -78,13 +78,22 @@ def delete_document(content_type: str, object_id: str, locale: str, target_index
     delete_document_chunks(identity, target_indexes=target_indexes)
 
 
-def enqueue_document_sync(document_id: int) -> None:
-    """Queue a sync, or drop it silently when live indexing is off.
+def live_indexing_is_active() -> bool:
+    """Whether edit-driven freshness work should be queued: the pipeline is on and tracking.
 
-    Signals go through here so the flag is honoured before a task is even queued, rather than
-    filling the queue with work that will no-op.
+    One predicate so the signal receivers and the enqueue helper below cannot drift apart on
+    what "live" means.
     """
-    if not settings.RETRIEVAL_LIVE_INDEXING:
+    return settings.RETRIEVAL_INGESTION_ENABLED and settings.RETRIEVAL_LIVE_INDEXING
+
+
+def enqueue_document_sync(document_id: int) -> None:
+    """Queue a sync, or drop it silently when live indexing is not active.
+
+    Signals go through here so the switches are honoured before a task is even queued, rather
+    than filling the queue with work that will no-op.
+    """
+    if not live_indexing_is_active():
         return
     sync_document.delay(document_id)
 

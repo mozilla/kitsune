@@ -30,7 +30,7 @@ class SignalTestCase(TestCase):
         return {call.args for call in delay.call_args_list}
 
 
-@override_settings(RETRIEVAL_LIVE_INDEXING=True)
+@override_settings(RETRIEVAL_INGESTION_ENABLED=True, RETRIEVAL_LIVE_INDEXING=True)
 class DocumentSaveTests(SignalTestCase):
     def test_saving_a_document_queues_its_own_sync(self):
         self.assertIn(self.document.id, self._queued_syncs(self.document.save))
@@ -59,19 +59,49 @@ class DocumentSaveTests(SignalTestCase):
             delay.assert_not_called()
 
 
-class FlagTests(SignalTestCase):
-    @override_settings(RETRIEVAL_LIVE_INDEXING=False)
-    def test_with_live_indexing_off_no_sync_is_queued(self):
+@override_settings(RETRIEVAL_INGESTION_ENABLED=True, RETRIEVAL_LIVE_INDEXING=False)
+class LiveIndexingOffTests(SignalTestCase):
+    """With the pipeline on, live indexing governs freshness only."""
+
+    def test_no_sync_is_queued(self):
         self.assertEqual(self._queued_syncs(self.document.save), set())
 
-    @override_settings(RETRIEVAL_LIVE_INDEXING=False)
-    def test_deletion_is_queued_even_with_live_indexing_off(self):
+    def test_deletion_is_still_queued(self):
         # Eviction is not a freshness optimization.
         identity = ("kb", str(self.document.id), self.document.locale)
         self.assertIn(identity, self._queued_deletes(self.document.delete))
 
 
-@override_settings(RETRIEVAL_LIVE_INDEXING=True)
+@override_settings(RETRIEVAL_INGESTION_ENABLED=False, RETRIEVAL_LIVE_INDEXING=True)
+class IngestionDisabledTests(SignalTestCase):
+    """The master switch queues nothing at all, and outranks live indexing to do it.
+
+    Live indexing is deliberately left on here: the point is that the switch above it wins, so
+    a half-configured environment cannot start filling a queue nothing is consuming.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.group = GroupFactory()
+
+    def test_saving_a_document_queues_no_sync(self):
+        self.assertEqual(self._queued_syncs(self.document.save), set())
+
+    def test_deleting_a_document_queues_no_eviction(self):
+        self.assertEqual(self._queued_deletes(self.document.delete), set())
+
+    def test_taxonomy_changes_queue_nothing(self):
+        product = ProductFactory()
+        self.assertEqual(self._queued_syncs(lambda: self.document.products.add(product)), set())
+        self.assertEqual(self._queued_syncs(product.delete), set())
+
+    def test_access_changes_queue_nothing(self):
+        relation = self.document.restrict_to_groups
+        self.assertEqual(self._queued_syncs(lambda: relation.add(self.group)), set())
+        self.assertEqual(self._queued_syncs(self.group.delete), set())
+
+
+@override_settings(RETRIEVAL_INGESTION_ENABLED=True, RETRIEVAL_LIVE_INDEXING=True)
 class TaxonomyChangeTests(SignalTestCase):
     def setUp(self):
         super().setUp()
@@ -112,7 +142,7 @@ class TaxonomyChangeTests(SignalTestCase):
                 self.assertIn(self.document.id, self._queued_syncs(item.delete))
 
 
-@override_settings(RETRIEVAL_LIVE_INDEXING=True)
+@override_settings(RETRIEVAL_INGESTION_ENABLED=True, RETRIEVAL_LIVE_INDEXING=True)
 class RestrictionChangeTests(SignalTestCase):
     """An access change is an ordinary freshness transition (ADR 0006)."""
 
@@ -151,7 +181,7 @@ class RestrictionChangeTests(SignalTestCase):
         self.assertIn(self.document.id, self._queued_syncs(self.group.delete))
 
 
-@override_settings(RETRIEVAL_LIVE_INDEXING=True)
+@override_settings(RETRIEVAL_INGESTION_ENABLED=True, RETRIEVAL_LIVE_INDEXING=True)
 class DocumentDeletionTests(SignalTestCase):
     def test_deleting_a_document_queues_an_eviction_for_its_exact_identity(self):
         identity = ("kb", str(self.document.id), self.document.locale)
