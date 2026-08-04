@@ -61,7 +61,6 @@ EVENT_CATALOG = frozenset(
         # generation lifecycle
         "retrieval.rebuild.write_initialized",
         "retrieval.rebuild.write_migrated",
-        "retrieval.rebuild.copy_completed",
         "retrieval.rebuild.read_migrated",
     }
 )

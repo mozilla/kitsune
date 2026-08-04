@@ -209,20 +209,19 @@ def build_index_meta(
 class IndexMetaAction(Enum):
     NONE = "none"
     QUERY_META_UPDATE = "query_meta_update"
-    COPY_VECTORS = "copy_vectors"
-    REEMBED = "reembed"
+    REBUILD = "rebuild"
 
 
 def classify_meta_mismatch(current: dict, desired: dict) -> IndexMetaAction:
-    """Choose the cheapest safe response to an index `_meta` difference.
+    """Classify an index `_meta` difference.
 
-    An embedding-space change wins (re-embed), followed by a vector-mapping change
-    (copy vectors), then a query-recipe change (`_meta` update only).
+    Document-vector or rebuild-requiring mapping changes use the same full rebuild.
+    A query-only change can update `_meta` without corpus work.
     """
     if current["embedding"]["digest"] != desired["embedding"]["digest"]:
-        return IndexMetaAction.REEMBED
+        return IndexMetaAction.REBUILD
     if current["mapping"]["digest"] != desired["mapping"]["digest"]:
-        return IndexMetaAction.COPY_VECTORS
+        return IndexMetaAction.REBUILD
     if current["query"]["digest"] != desired["query"]["digest"]:
         return IndexMetaAction.QUERY_META_UPDATE
     return IndexMetaAction.NONE
