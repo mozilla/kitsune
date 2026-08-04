@@ -42,13 +42,13 @@ from kitsune.retrieval.index import (
     ChunkIdentity,
     ChunkSource,
     ExpectedDocumentState,
-    IndexedDocumentState,
-    access_metadata_matches,
+    IncompleteDocumentState,
+    StoredChunkSummary,
     delete_chunks_for,
     delete_chunks_for_object,
-    read_indexed_document,
+    read_chunk_summaries,
+    read_manifest,
     recipe_for_index,
-    repair_document_commit,
     replace_chunks,
     resolve_write_target,
     update_chunks_metadata_for,
@@ -64,40 +64,9 @@ class SyncOutcome(StrEnum):
 
     EMBED_REPLACE = "embed_replace"
     METADATA_ONLY = "metadata_only"
-    COMMIT_REPAIR = "commit_repair"
     NO_OP = "no_op"
     DELETED = "deleted"
     ABORTED_STALE = "aborted_stale"
-
-
-@dataclass(frozen=True)
-class TargetPlan:
-    outcome: SyncOutcome
-    # Only a commit repair needs these: the other write paths derive orphans from the
-    # expected positions themselves.
-    orphan_positions: tuple[int, ...] = ()
-
-
-def _is_newer(stored: int | None, proposed: int) -> bool:
-    return isinstance(stored, int) and not isinstance(stored, bool) and stored > proposed
-
-
-def _stored_is_newer(indexed: IndexedDocumentState, expected: ExpectedDocumentState) -> bool:
-    """Whether the index already holds output this worker would be downgrading.
-
-    Checks the chunks as well as the manifest, because a crash can leave newer chunks behind
-    with no manifest to describe them.
-    """
-    manifest = indexed.manifest
-    if manifest and (
-        _is_newer(manifest.chunking_generation, expected.chunking_generation)
-        or _is_newer(manifest.indexed_revision_id, expected.indexed_revision_id)
-    ):
-        return True
-    return any(
-        _is_newer(chunk.get("chunking_generation"), expected.chunking_generation)
-        for chunk in indexed.chunks
-    )
 
 
 def is_usable_vector(vector, recipe: EmbeddingRecipe) -> bool:
@@ -115,69 +84,42 @@ def is_usable_vector(vector, recipe: EmbeddingRecipe) -> bool:
     return True
 
 
-def _is_recoverable(
-    stored: dict | None,
-    chunk: Chunk,
-    source: ChunkSource,
-    expected: ExpectedDocumentState,
-    recipe: EmbeddingRecipe,
-) -> bool:
-    """Whether this position can be kept as-is instead of being re-embedded.
-
-    The text and vector have to be exactly what the expected chunk implies, because a
-    metadata-only update rewrites neither of them.
-    """
-    if stored is None:
-        return False
-    stored_text = stored.get("content_text")
-    return (
-        isinstance(stored_text, dict)
-        and stored_text.get(source.locale) == chunk.text
-        and stored.get("content_hash") == expected.content_hash
-        and stored.get("chunking_generation") == expected.chunking_generation
-        and is_usable_vector(stored.get("content_vector"), recipe)
-    )
-
-
 def plan_target(
     *,
     chunks: list[Chunk],
     source: ChunkSource,
     expected_state: ExpectedDocumentState,
-    indexed: IndexedDocumentState,
-    recipe: EmbeddingRecipe,
-) -> TargetPlan:
+    manifest: ExpectedDocumentState | None,
+    summaries: tuple[StoredChunkSummary, ...],
+) -> SyncOutcome:
     """Name the cheapest outcome that makes this index correct for this document.
 
-    Ordered cheapest-last on purpose: staleness is decided before anything else so a worker
-    holding older content aborts without paying the provider, and the metadata path is
-    preferred over re-embedding whenever the stored text and vectors are still trustworthy.
+    A final manifest is the commit marker. Stored text and vectors are intentionally not read:
+    exceptional incomplete writes are replaced instead of making every normal sync prove that
+    their individual vectors are reusable.
     """
-    if _stored_is_newer(indexed, expected_state):
-        return TargetPlan(SyncOutcome.ABORTED_STALE)
-
-    by_position = {chunk["position"]: chunk for chunk in indexed.chunks}
-    expected_positions = range(len(chunks))
-    orphans = tuple(sorted(set(by_position) - set(expected_positions)))
-
-    if not all(
-        _is_recoverable(by_position.get(chunk.position), chunk, source, expected_state, recipe)
-        for chunk in chunks
+    if manifest and (
+        manifest.chunking_generation > expected_state.chunking_generation
+        or manifest.indexed_revision_id > expected_state.indexed_revision_id
     ):
-        return TargetPlan(SyncOutcome.EMBED_REPLACE)
+        return SyncOutcome.ABORTED_STALE
 
-    if any(
-        by_position[position].get("index_state_hash") != expected_state.index_state_hash
-        or not access_metadata_matches(by_position[position], source)
-        for position in expected_positions
-    ):
-        # Scope or source metadata moved while the text did not; rewriting it is free.
-        return TargetPlan(SyncOutcome.METADATA_ONLY)
+    if manifest is None or manifest.content_hash != expected_state.content_hash:
+        return SyncOutcome.EMBED_REPLACE
 
-    if orphans or indexed.manifest != expected_state:
-        return TargetPlan(SyncOutcome.COMMIT_REPAIR, orphans)
+    positions = {summary.position for summary in summaries}
+    if len(summaries) != len(chunks) or positions != set(range(len(chunks))):
+        return SyncOutcome.EMBED_REPLACE
 
-    return TargetPlan(SyncOutcome.NO_OP)
+    access_matches = all(
+        summary.visibility == source.visibility
+        and summary.access_group_ids == source.access_group_ids
+        for summary in summaries
+    )
+    if manifest != expected_state or not access_matches:
+        return SyncOutcome.METADATA_ONLY
+
+    return SyncOutcome.NO_OP
 
 
 @dataclass(frozen=True)
@@ -187,8 +129,8 @@ class SyncReport:
     identity: ChunkIdentity | None
     index: str | None = None
     outcome: SyncOutcome | None = None
-    # Embedding-adapter calls actually made. Zero inside a batch, where a shared call belongs
-    # to the batch rather than to any one document.
+    # Embedding-adapter calls attributable to this document. A batch's shared call belongs to
+    # the batch report; a document-specific fallback remains attributable here.
     embedding_calls: int = 0
 
 
@@ -329,11 +271,12 @@ def _evict_object(object_id: str, index: str, embedding_calls: int = 0) -> SyncR
 class _DocumentWork:
     """One locked document's decisions, before anything has been written."""
 
+    document_id: int
     identity: ChunkIdentity
     source: ChunkSource
     chunks: list[Chunk]
     expected: ExpectedDocumentState
-    plan: TargetPlan
+    outcome: SyncOutcome
     # Approval time, for the freshness SLI only. Deliberately not part of the indexed payload
     # or any hash: it must not make a document look changed.
     approved_at: datetime | None = None
@@ -346,7 +289,7 @@ def _embed_for_works(
     inputs: list[str] = []
     spans: dict[int, tuple[int, int]] = {}
     for document_id, work in works.items():
-        if work.plan.outcome is SyncOutcome.EMBED_REPLACE:
+        if work.outcome is SyncOutcome.EMBED_REPLACE:
             spans[document_id] = (len(inputs), len(inputs) + len(work.chunks))
             inputs.extend(chunk.text for chunk in work.chunks)
 
@@ -356,7 +299,7 @@ def _embed_for_works(
     return {document_id: combined[start:stop] for document_id, (start, stop) in spans.items()}, 1
 
 
-def _plan_document(document, index, recipe) -> _DocumentWork | SyncReport:
+def _plan_document(document, index) -> _DocumentWork | SyncReport:
     """Plan one locked, eligible document for one index—or finish it outright.
 
     Returns a report when the document needs no provider work: it is stale or already agrees
@@ -366,21 +309,33 @@ def _plan_document(document, index, recipe) -> _DocumentWork | SyncReport:
     source = build_source(document)
     chunks = chunk(CONTENT_TYPE, document.html, title=document.title)
     expected = expected_state_for(chunks, source, document)
+    manifest = read_manifest(index=index, identity=identity)
+    summaries = (
+        read_chunk_summaries(index=index, identity=identity)
+        if manifest and manifest.content_hash == expected.content_hash
+        else ()
+    )
     plan = plan_target(
         chunks=chunks,
         source=source,
         expected_state=expected,
-        indexed=read_indexed_document(index=index, identity=identity),
-        recipe=recipe,
+        manifest=manifest,
+        summaries=summaries,
     )
 
-    if plan.outcome is SyncOutcome.ABORTED_STALE:
+    if plan is SyncOutcome.ABORTED_STALE:
         return _report(identity, index, SyncOutcome.ABORTED_STALE)
 
     work = _DocumentWork(
-        identity, source, chunks, expected, plan, document.current_revision.reviewed
+        document_id=document.id,
+        identity=identity,
+        source=source,
+        chunks=chunks,
+        expected=expected,
+        outcome=plan,
+        approved_at=document.current_revision.reviewed,
     )
-    if plan.outcome is SyncOutcome.NO_OP:
+    if plan is SyncOutcome.NO_OP:
         return _report(identity, index, SyncOutcome.NO_OP)
     return work
 
@@ -405,11 +360,22 @@ def _revalidate(
     return None
 
 
-def _write_plan(work: _DocumentWork, index: str, lease, vectors=()) -> None:
+def _apply_plan(
+    work: _DocumentWork,
+    index: str,
+    recipe: EmbeddingRecipe,
+    lease,
+    vectors=(),
+) -> tuple[SyncReport | None, SyncOutcome, int]:
+    """Apply an outcome, replacing once if metadata finds an incomplete layout.
+
+    The replacement fallback embeds and then revalidates just like the main embedding path;
+    the returned call count lets single and batch reports account for that extra work.
+    """
     # A plan may need several ES calls. Renew immediately before starting it; the task-level
     # deadline keeps the complete mutation shorter than the lease.
     lease.renew()
-    if work.plan.outcome is SyncOutcome.EMBED_REPLACE:
+    if work.outcome is SyncOutcome.EMBED_REPLACE:
         replace_chunks(
             index=index,
             chunks=work.chunks,
@@ -417,20 +383,39 @@ def _write_plan(work: _DocumentWork, index: str, lease, vectors=()) -> None:
             source=work.source,
             expected_state=work.expected,
         )
-    elif work.plan.outcome is SyncOutcome.METADATA_ONLY:
-        update_chunks_metadata_for(
-            index=index,
-            chunks=work.chunks,
-            source=work.source,
-            expected_state=work.expected,
-        )
-    elif work.plan.outcome is SyncOutcome.COMMIT_REPAIR:
-        repair_document_commit(
-            index=index,
-            identity=work.identity,
-            expected_state=work.expected,
-            orphan_positions=work.plan.orphan_positions,
-        )
+        return None, work.outcome, 0
+    elif work.outcome is SyncOutcome.METADATA_ONLY:
+        try:
+            update_chunks_metadata_for(
+                index=index,
+                chunks=work.chunks,
+                source=work.source,
+                expected_state=work.expected,
+            )
+            return None, work.outcome, 0
+        except IncompleteDocumentState:
+            fallback_vectors = get_embeddings(
+                [chunk.text for chunk in work.chunks], task="document", recipe=recipe
+            )
+            terminal = _revalidate(
+                work,
+                _load(work.document_id),
+                index,
+                lease,
+                1,
+            )
+            if terminal is not None:
+                return terminal, work.outcome, 1
+            lease.renew()
+            replace_chunks(
+                index=index,
+                chunks=work.chunks,
+                vectors=fallback_vectors,
+                source=work.source,
+                expected_state=work.expected,
+            )
+            return None, SyncOutcome.EMBED_REPLACE, 1
+    raise AssertionError(f"{work.outcome} is not a writable plan")
 
 
 def sync_document_chunks(document_id: int, *, target_index: str | None = None) -> SyncReport:
@@ -465,7 +450,7 @@ def sync_document_chunks(document_id: int, *, target_index: str | None = None) -
 
         # The recipe must fail before anything is paid for.
         recipe = recipe_for_index(index)
-        work = _plan_document(document, index, recipe)
+        work = _plan_document(document, index)
         if isinstance(work, SyncReport):
             return work
 
@@ -473,9 +458,18 @@ def sync_document_chunks(document_id: int, *, target_index: str | None = None) -
         terminal = _revalidate(work, _load(document_id), index, lease, calls)
         if terminal is not None:
             return terminal
-        _write_plan(work, index, lease, vectors.get(document_id, ()))
+        terminal, outcome, fallback_calls = _apply_plan(
+            work,
+            index,
+            recipe,
+            lease,
+            vectors.get(document_id, ()),
+        )
+        calls += fallback_calls
+        if terminal is not None:
+            return terminal
 
-    return _report(identity, index, work.plan.outcome, calls, approved_at=work.approved_at)
+    return _report(identity, index, outcome, calls, approved_at=work.approved_at)
 
 
 def ordered_document_ids(document_ids) -> tuple[int, ...]:
@@ -518,7 +512,7 @@ def _within_input_budget(
     deferred: list[int] = []
     used = 0
     for document_id, work in works.items():
-        needed = len(work.chunks) if work.plan.outcome is SyncOutcome.EMBED_REPLACE else 0
+        needed = len(work.chunks) if work.outcome is SyncOutcome.EMBED_REPLACE else 0
         if admitted and used + needed > max_inputs:
             deferred.append(document_id)
             continue
@@ -581,41 +575,50 @@ def sync_document_batch(document_ids, *, target_index: str | None = None) -> Bat
 
         # Invalid target metadata must not prevent the safety evictions above. It still fails
         # before any provider call or indexing write for eligible documents.
-        recipe = recipe_for_index(index) if eligible else None
-        works: dict[int, _DocumentWork] = {}
-        for document_id, document in eligible.items():
-            planned = _plan_document(document, index, recipe)
-            if isinstance(planned, SyncReport):
-                reports[document_id] = planned
-            else:
-                works[document_id] = planned
+        calls = 0
+        over_input_limit: tuple[int, ...] = ()
+        if eligible:
+            recipe = recipe_for_index(index)
+            works: dict[int, _DocumentWork] = {}
+            for document_id, document in eligible.items():
+                planned = _plan_document(document, index)
+                if isinstance(planned, SyncReport):
+                    reports[document_id] = planned
+                else:
+                    works[document_id] = planned
 
-        works, over_input_limit = _within_input_budget(works, max_inputs)
-        for document_id in over_input_limit:
-            # Nothing will be written for it, so stop holding it for the rest of the batch.
-            leases[document_id].release()
+            works, over_input_limit = _within_input_budget(works, max_inputs)
+            for document_id in over_input_limit:
+                # Nothing will be written for it, so stop holding it for the rest of the batch.
+                leases[document_id].release()
 
-        vectors, calls = _embed_for_works(works, recipe) if recipe else ({}, 0)
-
-        fresh = _load_many(works)
-        for document_id, work in works.items():
-            lease = leases[document_id]
-            try:
-                terminal = _revalidate(work, fresh.get(document_id), index, lease)
-                if terminal is not None:
-                    reports[document_id] = terminal
+            vectors, calls = _embed_for_works(works, recipe)
+            fresh = _load_many(works)
+            for document_id, work in works.items():
+                lease = leases[document_id]
+                try:
+                    terminal = _revalidate(work, fresh.get(document_id), index, lease)
+                    if terminal is not None:
+                        reports[document_id] = terminal
+                        continue
+                    terminal, written_outcome, fallback_calls = _apply_plan(
+                        work, index, recipe, lease, vectors.get(document_id, ())
+                    )
+                    calls += fallback_calls
+                    if terminal is not None:
+                        reports[document_id] = terminal
+                        continue
+                except DocumentLockUnavailable:
+                    # One stolen lease is that document's problem; the rest of the batch stands.
+                    contended.append(document_id)
                     continue
-                _write_plan(work, index, lease, vectors.get(document_id, ()))
-            except DocumentLockUnavailable:
-                # One stolen lease is that document's problem; the rest of the batch stands.
-                contended.append(document_id)
-                continue
-            reports[document_id] = _report(
-                work.identity,
-                index,
-                work.plan.outcome,
-                approved_at=work.approved_at,
-            )
+                reports[document_id] = _report(
+                    work.identity,
+                    index,
+                    written_outcome,
+                    fallback_calls,
+                    approved_at=work.approved_at,
+                )
 
     deferred = tuple(sorted(over_document_limit + over_input_limit))
     if deferred:
@@ -636,9 +639,9 @@ def sync_document_batch(document_ids, *, target_index: str | None = None) -> Bat
         embedding_calls=calls,
         outcomes=dict(
             Counter(
-                outcome.value
+                report_outcome.value
                 for report in reports.values()
-                if (outcome := report.outcome) is not None
+                if (report_outcome := report.outcome) is not None
             )
         ),
     )

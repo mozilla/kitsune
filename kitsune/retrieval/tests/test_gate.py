@@ -16,7 +16,6 @@ from kitsune.retrieval.index import (
     IndexedDocumentState,
     chunk_id,
     commit_manifest,
-    delete_chunk_positions,
     manifest_id,
 )
 from kitsune.retrieval.sync import SyncOutcome, build_source, sync_document_chunks
@@ -308,7 +307,7 @@ class GateEnumerationTests(GateIndexTestCase):
 
     def test_a_missing_chunk_is_reported_as_a_gap(self):
         sync_document_chunks(self.document.id)
-        delete_chunk_positions(index=self.index, identity=self.identity, positions=(0,))
+        es_client().delete(index=self.index, id=chunk_id(self.identity, 0), refresh=True)
 
         report = gate_index(self.index)
 

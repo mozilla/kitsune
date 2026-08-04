@@ -16,12 +16,12 @@ from kitsune.retrieval.index import (
     CHUNK_KIND,
     SCHEMA_VERSION,
     SIMILARITY,
-    VECTOR_DIMS,
     VECTOR_INDEX_OPTIONS,
     ChunkDocument,
     ChunkIdentity,
-    IndexedDocumentState,
+    IncompleteDocumentState,
     IndexWriteError,
+    StoredChunkSummary,
     commit_manifest,
     configured_index_meta,
     create_write_generation,
@@ -71,24 +71,29 @@ def _stored(chunks, source, state, *, count=None, **overrides):
     return documents
 
 
-def _indexed(chunks, source, state, *, manifest=..., extra_positions=(), **overrides):
-    documents = _stored(chunks, source, state, **overrides)
-    for position in extra_positions:
-        leftover = dict(documents[0], position=position)
-        documents.append(leftover)
-    return IndexedDocumentState(
-        manifest=state if manifest is ... else manifest,
-        chunks=sorted(documents, key=lambda c: c["position"]),
+def _summaries(chunks, source, *, count=None, extra_positions=(), **overrides):
+    summaries = [
+        StoredChunkSummary(
+            item.position,
+            overrides.get("visibility", source.visibility),
+            overrides.get("access_group_ids", source.access_group_ids),
+        )
+        for item in chunks[: count if count is not None else len(chunks)]
+    ]
+    summaries.extend(
+        StoredChunkSummary(position, source.visibility, source.access_group_ids)
+        for position in extra_positions
     )
+    return tuple(summaries)
 
 
-def _plan(chunks, source, state, indexed, recipe=None):
+def _plan(chunks, source, state, *, manifest=..., summaries=None):
     return plan_target(
         chunks=chunks,
         source=source,
         expected_state=state,
-        indexed=indexed,
-        recipe=recipe or configured_embedding_recipe(),
+        manifest=state if manifest is ... else manifest,
+        summaries=_summaries(chunks, source) if summaries is None else summaries,
     )
 
 
@@ -102,111 +107,82 @@ class PlanOutcomeTests(SimpleTestCase):
         self.state = _expected(self.chunks, self.source)
 
     def test_a_fully_committed_document_is_a_no_op(self):
-        indexed = _indexed(self.chunks, self.source, self.state)
-        self.assertEqual(
-            _plan(self.chunks, self.source, self.state, indexed).outcome, SyncOutcome.NO_OP
-        )
+        self.assertEqual(_plan(self.chunks, self.source, self.state), SyncOutcome.NO_OP)
 
     def test_an_empty_index_embeds_and_replaces(self):
-        indexed = IndexedDocumentState(manifest=None, chunks=[])
-        plan = _plan(self.chunks, self.source, self.state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.EMBED_REPLACE)
+        plan = _plan(self.chunks, self.source, self.state, manifest=None, summaries=())
+        self.assertEqual(plan, SyncOutcome.EMBED_REPLACE)
 
     def test_changed_text_embeds_and_replaces(self):
         stale = _expected(_chunks(3, text="old {i}"), self.source)
-        indexed = _indexed(_chunks(3, text="old {i}"), self.source, stale)
-        plan = _plan(self.chunks, self.source, self.state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.EMBED_REPLACE)
+        plan = _plan(self.chunks, self.source, self.state, manifest=stale, summaries=())
+        self.assertEqual(plan, SyncOutcome.EMBED_REPLACE)
 
     def test_a_missing_position_embeds_and_replaces(self):
-        indexed = _indexed(self.chunks, self.source, self.state, count=2)
-        plan = _plan(self.chunks, self.source, self.state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.EMBED_REPLACE)
-
-    def test_a_malformed_vector_embeds_and_replaces(self):
-        for vector in (
-            [],
-            [0.0] * (VECTOR_DIMS - 1),
-            [float("nan")] * VECTOR_DIMS,
-            [True] * VECTOR_DIMS,
-            None,
-        ):
-            with self.subTest(vector=vector):
-                indexed = _indexed(self.chunks, self.source, self.state, content_vector=vector)
-                plan = _plan(self.chunks, self.source, self.state, indexed)
-                self.assertEqual(plan.outcome, SyncOutcome.EMBED_REPLACE)
-
-    def test_malformed_stored_text_embeds_and_replaces(self):
-        for stored_text in (None, "body", []):
-            with self.subTest(stored_text=stored_text):
-                indexed = _indexed(
-                    self.chunks,
-                    self.source,
-                    self.state,
-                    content_text=stored_text,
-                )
-                self.assertEqual(
-                    _plan(self.chunks, self.source, self.state, indexed).outcome,
-                    SyncOutcome.EMBED_REPLACE,
-                )
-
-    def test_a_vector_that_breaks_the_recipe_normalization_is_replaced(self):
-        recipe = EmbeddingRecipe(
-            **{**recipe_to_payload(configured_embedding_recipe()), "normalization": "l2"}
-        )
-        indexed = _indexed(
+        plan = _plan(
             self.chunks,
             self.source,
             self.state,
-            content_vector=[2.0] + [0.0] * (VECTOR_DIMS - 1),
+            summaries=_summaries(self.chunks, self.source, count=2),
         )
-        self.assertEqual(
-            _plan(self.chunks, self.source, self.state, indexed, recipe).outcome,
-            SyncOutcome.EMBED_REPLACE,
-        )
+        self.assertEqual(plan, SyncOutcome.EMBED_REPLACE)
 
     def test_changed_metadata_alone_takes_the_metadata_path(self):
-        # Same text and vectors, different state hash: no reason to pay the provider again.
+        # Same committed content, different state hash: no reason to pay the provider again.
         rescoped = _source(product_ids=["9"])
         state = _expected(self.chunks, rescoped)
-        indexed = _indexed(self.chunks, self.source, self.state)
-        plan = _plan(self.chunks, rescoped, state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.METADATA_ONLY)
+        plan = _plan(
+            self.chunks,
+            rescoped,
+            state,
+            manifest=self.state,
+            summaries=_summaries(self.chunks, self.source),
+        )
+        self.assertEqual(plan, SyncOutcome.METADATA_ONLY)
 
-    def test_a_missing_manifest_is_only_a_commit_repair(self):
-        indexed = _indexed(self.chunks, self.source, self.state, manifest=None)
-        plan = _plan(self.chunks, self.source, self.state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.COMMIT_REPAIR)
-        self.assertEqual(plan.orphan_positions, ())
-
-    def test_a_stale_manifest_is_only_a_commit_repair(self):
+    def test_a_stale_manifest_takes_the_metadata_path_when_content_matches(self):
         older = _expected(self.chunks, self.source, indexed_revision_id=1)
         state = _expected(self.chunks, self.source, indexed_revision_id=2)
-        indexed = _indexed(self.chunks, self.source, state, manifest=older)
-        plan = _plan(self.chunks, self.source, state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.COMMIT_REPAIR)
+        plan = _plan(self.chunks, self.source, state, manifest=older)
+        self.assertEqual(plan, SyncOutcome.METADATA_ONLY)
 
-    def test_leftover_positions_are_reported_for_repair(self):
-        indexed = _indexed(self.chunks, self.source, self.state, extra_positions=(3, 4))
-        plan = _plan(self.chunks, self.source, self.state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.COMMIT_REPAIR)
-        self.assertEqual(plan.orphan_positions, (3, 4))
+    def test_leftover_positions_embed_and_replace(self):
+        plan = _plan(
+            self.chunks,
+            self.source,
+            self.state,
+            summaries=_summaries(self.chunks, self.source, extra_positions=(3, 4)),
+        )
+        self.assertEqual(plan, SyncOutcome.EMBED_REPLACE)
 
-    def test_a_zero_chunk_document_with_leftovers_repairs(self):
+    def test_a_zero_chunk_document_with_leftovers_replaces_without_provider_input(self):
         empty = _chunks(0)
         state = _expected(empty, self.source)
-        indexed = IndexedDocumentState(
-            manifest=None, chunks=_stored(self.chunks, self.source, self.state)
+        plan = _plan(
+            empty,
+            self.source,
+            state,
+            manifest=None,
+            summaries=_summaries(self.chunks, self.source),
         )
-        plan = _plan(empty, self.source, state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.COMMIT_REPAIR)
-        self.assertEqual(plan.orphan_positions, (0, 1, 2))
+        self.assertEqual(plan, SyncOutcome.EMBED_REPLACE)
 
     def test_a_committed_zero_chunk_document_is_a_no_op(self):
         empty = _chunks(0)
         state = _expected(empty, self.source)
-        indexed = IndexedDocumentState(manifest=state, chunks=[])
-        self.assertEqual(_plan(empty, self.source, state, indexed).outcome, SyncOutcome.NO_OP)
+        self.assertEqual(_plan(empty, self.source, state, summaries=()), SyncOutcome.NO_OP)
+
+    def test_access_drift_hidden_behind_a_current_manifest_is_metadata_only(self):
+        summaries = _summaries(
+            self.chunks,
+            self.source,
+            visibility="group_restricted",
+            access_group_ids=(7,),
+        )
+        self.assertEqual(
+            _plan(self.chunks, self.source, self.state, summaries=summaries),
+            SyncOutcome.METADATA_ONLY,
+        )
 
 
 class StalenessDefenceTests(SimpleTestCase):
@@ -219,44 +195,25 @@ class StalenessDefenceTests(SimpleTestCase):
     def test_a_newer_stored_revision_aborts(self):
         state = _expected(self.chunks, self.source, indexed_revision_id=2)
         newer = _expected(self.chunks, self.source, indexed_revision_id=5)
-        indexed = _indexed(self.chunks, self.source, newer)
-        plan = _plan(self.chunks, self.source, state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.ABORTED_STALE)
+        plan = _plan(self.chunks, self.source, state, manifest=newer)
+        self.assertEqual(plan, SyncOutcome.ABORTED_STALE)
 
     def test_a_newer_stored_chunking_generation_aborts(self):
         state = _expected(self.chunks, self.source)
         newer = _expected(self.chunks, self.source, chunking_generation=CHUNKING_GENERATION + 1)
-        indexed = _indexed(self.chunks, self.source, newer)
-        plan = _plan(self.chunks, self.source, state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.ABORTED_STALE)
-
-    def test_a_newer_generation_on_the_chunks_alone_aborts(self):
-        # A crash can leave newer chunks with no manifest; downgrading them is still wrong.
-        state = _expected(self.chunks, self.source)
-        indexed = _indexed(
-            self.chunks,
-            self.source,
-            state,
-            manifest=None,
-            chunking_generation=CHUNKING_GENERATION + 1,
-        )
-        plan = _plan(self.chunks, self.source, state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.ABORTED_STALE)
+        plan = _plan(self.chunks, self.source, state, manifest=newer)
+        self.assertEqual(plan, SyncOutcome.ABORTED_STALE)
 
     def test_an_equal_revision_is_not_stale(self):
         state = _expected(self.chunks, self.source, indexed_revision_id=3)
-        indexed = _indexed(self.chunks, self.source, state)
-        self.assertEqual(
-            _plan(self.chunks, self.source, state, indexed).outcome, SyncOutcome.NO_OP
-        )
+        self.assertEqual(_plan(self.chunks, self.source, state), SyncOutcome.NO_OP)
 
     def test_staleness_is_decided_before_anything_would_be_embedded(self):
-        # Newer stored state plus unusable chunk bodies: it must abort rather than re-embed.
+        # A newer manifest must abort before its mismatched content could select replacement.
         state = _expected(self.chunks, self.source, indexed_revision_id=1)
         newer = _expected(self.chunks, self.source, indexed_revision_id=9)
-        indexed = _indexed(self.chunks, self.source, newer, content_vector=None)
-        plan = _plan(self.chunks, self.source, state, indexed)
-        self.assertEqual(plan.outcome, SyncOutcome.ABORTED_STALE)
+        plan = _plan(self.chunks, self.source, state, manifest=newer, summaries=())
+        self.assertEqual(plan, SyncOutcome.ABORTED_STALE)
 
 
 class SyncExecutorTests(ChunkIndexTestCase):
@@ -331,15 +288,33 @@ class SyncExecutorTests(ChunkIndexTestCase):
         self.assertEqual(report.outcome, SyncOutcome.EMBED_REPLACE)
         self.assertEqual(report.embedding_calls, 1)
 
-    def test_a_missing_manifest_is_repaired_without_embedding(self):
+    def test_a_missing_manifest_is_replaced(self):
         self._sync()
         es_client().delete(index=self.index, id=manifest_id(self.identity), refresh=True)
 
         report = self._sync()
 
-        self.assertEqual(report.outcome, SyncOutcome.COMMIT_REPAIR)
-        self.assertEqual(report.embedding_calls, 0)
+        self.assertEqual(report.outcome, SyncOutcome.EMBED_REPLACE)
+        self.assertEqual(report.embedding_calls, 1)
         self.assertIsNotNone(self._stored_state().manifest)
+
+    def test_a_missing_metadata_target_falls_back_to_replacement(self):
+        self._sync()
+        self.document.products.add(ProductFactory())
+
+        with (
+            mock.patch(
+                "kitsune.retrieval.sync.update_chunks_metadata_for",
+                side_effect=IncompleteDocumentState("position disappeared"),
+            ),
+            mock.patch("kitsune.retrieval.sync.get_embeddings", wraps=get_embeddings) as embed,
+        ):
+            report = self._sync()
+
+        self.assertEqual(report.outcome, SyncOutcome.EMBED_REPLACE)
+        self.assertEqual(report.embedding_calls, 1)
+        embed.assert_called_once()
+        self.assertEqual(self._sync().outcome, SyncOutcome.NO_OP)
 
     def test_an_ineligible_document_is_evicted(self):
         self._sync()
@@ -657,6 +632,24 @@ class FailureContainmentTests(ChunkIndexTestCase):
         # The previous commit stands; a half-written replacement must not look complete.
         self.assertEqual(self._stored().manifest, committed)
 
+    def test_a_general_metadata_failure_does_not_trigger_paid_fallback(self):
+        sync_document_chunks(self.document.id)
+        committed = self._stored().manifest
+        self.document.products.add(ProductFactory())
+
+        with (
+            mock.patch(
+                "kitsune.retrieval.sync.update_chunks_metadata_for",
+                side_effect=IndexWriteError("bulk failed"),
+            ),
+            mock.patch("kitsune.retrieval.sync.get_embeddings") as embed,
+            self.assertRaises(IndexWriteError),
+        ):
+            sync_document_chunks(self.document.id)
+
+        embed.assert_not_called()
+        self.assertEqual(self._stored().manifest, committed)
+
     def test_a_document_with_no_chunkable_content_commits_an_empty_manifest(self):
         Document.objects.filter(pk=self.document.id).update(html="")
 
@@ -667,6 +660,6 @@ class FailureContainmentTests(ChunkIndexTestCase):
         # "Processed and empty" has to be distinguishable from "never processed".
         self.assertIsNotNone(stored.manifest)
         self.assertEqual(stored.manifest.chunk_count, 0)
-        # There is nothing to embed, so the only outstanding work is the manifest itself.
-        self.assertEqual(report.outcome, SyncOutcome.COMMIT_REPAIR)
+        # Replacement still owns the cleanup and manifest; an empty input costs no API call.
+        self.assertEqual(report.outcome, SyncOutcome.EMBED_REPLACE)
         self.assertEqual(report.embedding_calls, 0)

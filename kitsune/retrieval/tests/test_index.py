@@ -13,6 +13,7 @@ from kitsune.retrieval.index import (
     ChunkIdentity,
     ChunkSource,
     ExpectedDocumentState,
+    IncompleteDocumentState,
     IndexWriteError,
     InvalidDocumentState,
     access_metadata_matches,
@@ -24,8 +25,9 @@ from kitsune.retrieval.index import (
     manifest_doc,
     manifest_id,
     parse_manifest,
+    read_chunk_summaries,
     read_indexed_document,
-    repair_document_commit,
+    read_manifest,
     replace_chunks,
     update_chunks_metadata_for,
     write_chunks,
@@ -454,6 +456,16 @@ class WriteReadRoundTripTests(ChunkIndexTestCase):
         self.assertEqual([c["position"] for c in state.chunks], list(range(15)))
         self.assertEqual(state.manifest.chunk_count, 15)
 
+        summaries = read_chunk_summaries(index=self.index, identity=source.identity)
+        self.assertEqual([summary.position for summary in summaries], list(range(15)))
+        self.assertTrue(
+            all(
+                (summary.visibility, summary.access_group_ids) == ("public", ())
+                for summary in summaries
+            )
+        )
+        self.assertEqual(read_manifest(index=self.index, identity=source.identity), state.manifest)
+
     def test_shrink_removes_orphan_chunks(self):
         source = _source()
         self._replace(
@@ -688,7 +700,7 @@ class MetadataUpdateTests(ChunkIndexTestCase):
             Chunk(text="a", position=0, heading_path="H"),
             Chunk(text="b", position=1, heading_path="H"),
         ]
-        with self.assertRaises(IndexWriteError):
+        with self.assertRaises(IncompleteDocumentState):
             update_chunks_metadata_for(
                 index=self.index,
                 chunks=grown,
@@ -816,126 +828,6 @@ class MetadataUpdateTests(ChunkIndexTestCase):
         self.assertEqual(stored["product_ids"], [])
         self.assertEqual(stored["topic_ids"], [])
         self.assertEqual(stored["summary"]["en-US"], "")
-
-
-class CommitRepairTests(ChunkIndexTestCase):
-    def setUp(self):
-        super().setUp()
-        self.index = ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
-
-    def _seed(self, count, source, **expected_kwargs):
-        chunks = [Chunk(text=f"b{i}", position=i, heading_path="H") for i in range(count)]
-        replace_chunks(
-            index=self.index,
-            chunks=chunks,
-            vectors=[_vector(i) for i in range(count)],
-            source=source,
-            expected_state=_expected(chunks, source, **expected_kwargs),
-        )
-        return chunks
-
-    def test_deletes_known_orphans_and_commits_the_manifest(self):
-        source = _source()
-        chunks = self._seed(5, source, indexed_revision_id=1)
-        expected = _expected(chunks[:3], source, indexed_revision_id=2)
-
-        repair_document_commit(
-            index=self.index,
-            identity=source.identity,
-            expected_state=expected,
-            orphan_positions={3, 4},
-        )
-
-        stored = read_indexed_document(index=self.index, identity=source.identity)
-        self.assertEqual([c["position"] for c in stored.chunks], [0, 1, 2])
-        self.assertEqual(stored.manifest, expected)
-
-    def test_no_orphans_commits_without_a_delete(self):
-        source = _source()
-        chunks = self._seed(2, source, indexed_revision_id=1)
-        expected = _expected(chunks, source, indexed_revision_id=2)
-
-        with mock.patch("kitsune.retrieval.index._verified_delete_by_query") as delete:
-            repair_document_commit(
-                index=self.index,
-                identity=source.identity,
-                expected_state=expected,
-                orphan_positions=set(),
-            )
-        delete.assert_not_called()
-
-        stored = read_indexed_document(index=self.index, identity=source.identity)
-        self.assertEqual(stored.manifest, expected)
-
-    def test_refuses_to_delete_an_expected_position(self):
-        source = _source()
-        chunks = self._seed(3, source, indexed_revision_id=1)
-        expected = _expected(chunks, source, indexed_revision_id=2)
-
-        for orphans in ({0}, {2}, {1, 3}):
-            with self.subTest(orphans=orphans), self.assertRaises(InvalidDocumentState):
-                repair_document_commit(
-                    index=self.index,
-                    identity=source.identity,
-                    expected_state=expected,
-                    orphan_positions=orphans,
-                )
-
-        stored = read_indexed_document(index=self.index, identity=source.identity)
-        self.assertEqual([c["position"] for c in stored.chunks], [0, 1, 2])
-        self.assertEqual(stored.manifest.indexed_revision_id, 1)
-
-    def test_rejects_malformed_orphan_positions(self):
-        source = _source()
-        chunks = self._seed(1, source)
-        expected = _expected(chunks, source)
-
-        for orphans in ({-1}, {True}, {"3"}, [1.5], "12", 3, None):
-            with self.subTest(orphans=orphans), self.assertRaises(InvalidDocumentState):
-                repair_document_commit(
-                    index=self.index,
-                    identity=source.identity,
-                    expected_state=expected,
-                    orphan_positions=orphans,
-                )
-
-    def test_failed_orphan_delete_does_not_commit(self):
-        source = _source()
-        chunks = self._seed(3, source, indexed_revision_id=1)
-        expected = _expected(chunks[:2], source, indexed_revision_id=2)
-
-        with (
-            mock.patch(
-                "kitsune.retrieval.index._verified_delete_by_query",
-                side_effect=IndexWriteError("delete failed"),
-            ),
-            self.assertRaises(IndexWriteError),
-        ):
-            repair_document_commit(
-                index=self.index,
-                identity=source.identity,
-                expected_state=expected,
-                orphan_positions={2},
-            )
-
-        stored = read_indexed_document(index=self.index, identity=source.identity)
-        self.assertEqual(stored.manifest.indexed_revision_id, 1)
-
-    def test_repairs_only_the_requested_document(self):
-        target, other = _source(object_id="1"), _source(object_id="2")
-        target_chunks = self._seed(3, target)
-        self._seed(3, other)
-
-        repair_document_commit(
-            index=self.index,
-            identity=target.identity,
-            expected_state=_expected(target_chunks[:1], target),
-            orphan_positions={1, 2},
-        )
-
-        kept = read_indexed_document(index=self.index, identity=other.identity)
-        self.assertEqual([c["position"] for c in kept.chunks], [0, 1, 2])
-        self.assertEqual(kept.manifest.chunk_count, 3)
 
 
 class DeleteTests(ChunkIndexTestCase):
@@ -1075,17 +967,14 @@ class ConcreteIndexGuardTests(SimpleTestCase):
                 with self.assertRaises(InvalidDocumentState):
                     read_indexed_document(index=index, identity=source.identity)
                 with self.assertRaises(InvalidDocumentState):
+                    read_manifest(index=index, identity=source.identity)
+                with self.assertRaises(InvalidDocumentState):
+                    read_chunk_summaries(index=index, identity=source.identity)
+                with self.assertRaises(InvalidDocumentState):
                     delete_chunks_for(index=index, identity=source.identity)
                 with self.assertRaises(InvalidDocumentState):
                     delete_chunks_for_object(index=index, content_type="kb", object_id="1")
                 with self.assertRaises(InvalidDocumentState):
                     update_chunks_metadata_for(
                         index=index, chunks=chunks, source=source, expected_state=state
-                    )
-                with self.assertRaises(InvalidDocumentState):
-                    repair_document_commit(
-                        index=index,
-                        identity=source.identity,
-                        expected_state=state,
-                        orphan_positions={1},
                     )
