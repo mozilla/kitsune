@@ -281,7 +281,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
     def test_a_first_sync_embeds_and_commits(self):
         report = self._sync()
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.EMBED_REPLACE})
+        self.assertEqual((report.index, report.outcome), (self.index, SyncOutcome.EMBED_REPLACE))
         self.assertEqual(report.embedding_calls, 1)
         stored = self._stored_state()
         self.assertGreater(len(stored.chunks), 0)
@@ -302,7 +302,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
         self._sync()
         report = self._sync()
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.NO_OP})
+        self.assertEqual(report.outcome, SyncOutcome.NO_OP)
         self.assertEqual(report.embedding_calls, 0)
 
     def test_a_metadata_change_updates_without_embedding(self):
@@ -312,7 +312,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
         self.document.products.add(ProductFactory())
         report = self._sync()
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.METADATA_ONLY})
+        self.assertEqual(report.outcome, SyncOutcome.METADATA_ONLY)
         self.assertEqual(report.embedding_calls, 0)
         stored = self._stored_state()
         vector_after = stored.chunks[0]["content_vector"]
@@ -328,7 +328,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
 
         report = self._sync()
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.EMBED_REPLACE})
+        self.assertEqual(report.outcome, SyncOutcome.EMBED_REPLACE)
         self.assertEqual(report.embedding_calls, 1)
 
     def test_a_missing_manifest_is_repaired_without_embedding(self):
@@ -337,7 +337,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
 
         report = self._sync()
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.COMMIT_REPAIR})
+        self.assertEqual(report.outcome, SyncOutcome.COMMIT_REPAIR)
         self.assertEqual(report.embedding_calls, 0)
         self.assertIsNotNone(self._stored_state().manifest)
 
@@ -348,8 +348,8 @@ class SyncExecutorTests(ChunkIndexTestCase):
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             report = self._sync()
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.DELETED})
-        self.assertEqual(logs.records[0].outcomes, {self.index: "deleted"})
+        self.assertEqual(report.outcome, SyncOutcome.DELETED)
+        self.assertEqual(logs.records[0].outcome, "deleted")
         stored = self._stored_state()
         self.assertEqual(stored.chunks, [])
         self.assertIsNone(stored.manifest)
@@ -361,7 +361,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
 
         report = sync_document_chunks(document_id)
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.DELETED})
+        self.assertEqual(report.outcome, SyncOutcome.DELETED)
         self.assertEqual(self._stored_state().chunks, [])
 
     def test_delete_document_chunks_removes_everything(self):
@@ -369,19 +369,22 @@ class SyncExecutorTests(ChunkIndexTestCase):
 
         report = delete_document_chunks(self.identity)
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.DELETED})
+        self.assertEqual(report.outcome, SyncOutcome.DELETED)
         stored = self._stored_state()
         self.assertEqual(stored.chunks, [])
         self.assertIsNone(stored.manifest)
 
     def test_an_explicit_target_does_not_fan_out(self):
-        report = self._sync(target_indexes=[self.index])
-        self.assertEqual(list(report.outcomes), [self.index])
+        report = self._sync(target_index=self.index)
+        self.assertEqual(report.index, self.index)
 
-    def test_no_active_target_writes_nothing(self):
-        with self.assertLogs("k.retrieval", level="WARNING") as logs:
-            report = self._sync(target_indexes=[])
-        self.assertEqual(report.outcomes, {})
+    def test_no_write_target_writes_nothing(self):
+        with (
+            mock.patch("kitsune.retrieval.sync.resolve_write_target", return_value=None),
+            self.assertLogs("k.retrieval", level="WARNING") as logs,
+        ):
+            report = self._sync()
+        self.assertIsNone(report.outcome)
         self.assertEqual(report.embedding_calls, 0)
         self.assertEqual(logs.records[0].getMessage(), "retrieval.sync.skipped")
 
@@ -405,7 +408,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
         with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=edit_then_embed):
             report = self._sync()
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.ABORTED_STALE})
+        self.assertEqual(report.outcome, SyncOutcome.ABORTED_STALE)
         stored = self._stored_state()
         self.assertEqual(stored.chunks, [])
         self.assertIsNone(stored.manifest)
@@ -422,7 +425,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
 
         self.document.refresh_from_db()
         self.assertEqual(self.document.current_revision_id, revision_id)
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.ABORTED_STALE})
+        self.assertEqual(report.outcome, SyncOutcome.ABORTED_STALE)
         self.assertEqual(self._stored_state().chunks, [])
 
     def test_a_restriction_during_provider_work_evicts_instead_of_writing(self):
@@ -437,7 +440,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
         with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=restrict_then_embed):
             report = self._sync()
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.DELETED})
+        self.assertEqual(report.outcome, SyncOutcome.DELETED)
         self.assertEqual(self._stored_state().chunks, [])
 
     def test_a_lost_lease_cannot_evict_after_provider_work(self):
@@ -489,13 +492,16 @@ class SyncExecutorTests(ChunkIndexTestCase):
 
         report = self._sync()
 
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.ABORTED_STALE})
+        self.assertEqual(report.outcome, SyncOutcome.ABORTED_STALE)
         self.assertEqual(report.embedding_calls, 0)
 
     def test_the_completion_event_carries_no_text_or_vectors(self):
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             self._sync()
         [record] = [r for r in logs.records if r.getMessage() == "retrieval.sync.completed"]
+        self.assertEqual(
+            (record.index, record.outcome), (self.index, SyncOutcome.EMBED_REPLACE.value)
+        )
         self.assertNotIn("Install Firefox", repr(record.__dict__))
         for field in ("content_text", "content_vector", "access_group_ids"):
             self.assertNotIn(field, record.__dict__)
@@ -521,8 +527,8 @@ class BuildSourceTests(ChunkIndexTestCase):
         self.assertEqual(source.access_group_ids, ())
 
 
-class MultiGenerationTests(ChunkIndexTestCase):
-    """Fan-out across a migration window, where read and write aliases differ."""
+class SingleWriteGenerationTests(ChunkIndexTestCase):
+    """During a rebuild, ordinary mutations touch only the write generation."""
 
     def setUp(self):
         super().setUp()
@@ -546,48 +552,52 @@ class MultiGenerationTests(ChunkIndexTestCase):
         )
         return create_write_generation(timestamp=datetime(2031, 5, 4, tzinfo=UTC), meta=meta)
 
-    def test_divergent_targets_both_receive_the_document_from_one_call(self):
+    def test_an_ordinary_sync_writes_only_to_the_new_generation(self):
         second = self._second_generation()
 
         report = sync_document_chunks(self.document.id)
 
-        self.assertEqual(set(report.outcomes), {self.first, second})
-        # Both generations share an embedding fingerprint, so the provider is paid once.
+        self.assertEqual((report.index, report.outcome), (second, SyncOutcome.EMBED_REPLACE))
         self.assertEqual(report.embedding_calls, 1)
-        for index in (self.first, second):
-            stored = read_indexed_document(index=index, identity=self.identity)
-            self.assertGreater(len(stored.chunks), 0)
-            self.assertIsNotNone(stored.manifest)
+        self.assertEqual(
+            read_indexed_document(index=self.first, identity=self.identity).chunks, []
+        )
+        self.assertGreater(
+            len(read_indexed_document(index=second, identity=self.identity).chunks), 0
+        )
 
-    def test_divergent_embedding_profiles_do_not_share_a_call(self):
+    def test_sync_uses_only_the_write_generations_recipe(self):
         other_space = EmbeddingRecipe(
             **{**recipe_to_payload(configured_embedding_recipe()), "model": "another-model"}
         )
         second = self._second_generation(other_space)
 
-        report = sync_document_chunks(self.document.id)
+        with mock.patch("kitsune.retrieval.sync.get_embeddings", wraps=get_embeddings) as embed:
+            report = sync_document_chunks(self.document.id)
 
-        self.assertEqual(set(report.outcomes), {self.first, second})
-        # A model migration is exactly the case that needs one call per vector space.
-        self.assertEqual(report.embedding_calls, 2)
+        self.assertEqual(report.index, second)
+        self.assertEqual(report.embedding_calls, 1)
+        self.assertEqual(embed.call_args.kwargs["recipe"], other_space)
 
-    def test_an_ineligible_document_is_evicted_from_both_generations(self):
+    def test_ineligibility_evicts_only_from_the_write_generation(self):
+        # Seed the complete old read generation explicitly; earlier tests may already have
+        # left this test class's write alias diverged from it.
+        sync_document_chunks(self.document.id, target_index=self.first)
         second = self._second_generation()
         sync_document_chunks(self.document.id)
         self.document.restrict_to_groups.add(GroupFactory())
 
         report = sync_document_chunks(self.document.id)
 
-        self.assertEqual(
-            report.outcomes,
-            dict.fromkeys((self.first, second), SyncOutcome.DELETED),
+        self.assertEqual((report.index, report.outcome), (second, SyncOutcome.DELETED))
+        self.assertGreater(
+            len(read_indexed_document(index=self.first, identity=self.identity).chunks), 0
         )
-        for index in (self.first, second):
-            stored = read_indexed_document(index=index, identity=self.identity)
-            self.assertEqual(stored.chunks, [])
-            self.assertIsNone(stored.manifest)
+        stored = read_indexed_document(index=second, identity=self.identity)
+        self.assertEqual(stored.chunks, [])
+        self.assertIsNone(stored.manifest)
 
-    def test_a_newer_state_in_one_target_aborts_every_target(self):
+    def test_newer_state_in_the_read_generation_does_not_block_the_write_generation(self):
         expected = _expected(
             chunk("kb", self.document.html, title=self.document.title),
             build_source(self.document),
@@ -598,12 +608,11 @@ class MultiGenerationTests(ChunkIndexTestCase):
 
         report = sync_document_chunks(self.document.id)
 
-        self.assertEqual(
-            report.outcomes,
-            dict.fromkeys((self.first, second), SyncOutcome.ABORTED_STALE),
+        self.assertEqual((report.index, report.outcome), (second, SyncOutcome.EMBED_REPLACE))
+        self.assertEqual(report.embedding_calls, 1)
+        self.assertGreater(
+            len(read_indexed_document(index=second, identity=self.identity).chunks), 0
         )
-        self.assertEqual(report.embedding_calls, 0)
-        self.assertEqual(read_indexed_document(index=second, identity=self.identity).chunks, [])
 
 
 class FailureContainmentTests(ChunkIndexTestCase):
@@ -659,5 +668,5 @@ class FailureContainmentTests(ChunkIndexTestCase):
         self.assertIsNotNone(stored.manifest)
         self.assertEqual(stored.manifest.chunk_count, 0)
         # There is nothing to embed, so the only outstanding work is the manifest itself.
-        self.assertEqual(report.outcomes, {self.index: SyncOutcome.COMMIT_REPAIR})
+        self.assertEqual(report.outcome, SyncOutcome.COMMIT_REPAIR)
         self.assertEqual(report.embedding_calls, 0)

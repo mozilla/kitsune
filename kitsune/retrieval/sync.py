@@ -1,4 +1,4 @@
-"""Deciding, and then performing, what documents need in the indexes they belong to.
+"""Decide and perform what documents need in the current retrieval write index.
 
 The decision is separated from the work. ``plan_target`` is pure: given what a worker computed
 and what an index currently holds, it names an outcome and touches nothing. That keeps the
@@ -36,7 +36,6 @@ from kitsune.retrieval.embeddings import (
 from kitsune.retrieval.events import emit
 from kitsune.retrieval.fingerprints import (
     content_hash,
-    document_embedding_fingerprint,
     index_state_hash,
 )
 from kitsune.retrieval.index import (
@@ -51,7 +50,7 @@ from kitsune.retrieval.index import (
     recipe_for_index,
     repair_document_commit,
     replace_chunks,
-    resolve_active_targets,
+    resolve_write_target,
     update_chunks_metadata_for,
 )
 from kitsune.retrieval.locks import DocumentLockUnavailable, document_lock
@@ -183,10 +182,11 @@ def plan_target(
 
 @dataclass(frozen=True)
 class SyncReport:
-    """What one sync attempt did, per physical index."""
+    """What one single-target sync attempt did."""
 
     identity: ChunkIdentity | None
-    outcomes: dict[str, SyncOutcome] = field(default_factory=dict)
+    index: str | None = None
+    outcome: SyncOutcome | None = None
     # Embedding-adapter calls actually made. Zero inside a batch, where a shared call belongs
     # to the batch rather than to any one document.
     embedding_calls: int = 0
@@ -204,7 +204,8 @@ class BatchSyncReport:
 
 def _report(
     identity: ChunkIdentity | None,
-    outcomes: dict[str, SyncOutcome],
+    index: str,
+    outcome: SyncOutcome,
     embedding_calls: int = 0,
     *,
     object_id: str | None = None,
@@ -221,13 +222,14 @@ def _report(
         content_type=CONTENT_TYPE,
         object_id=identity.object_id if identity else object_id,
         locale=identity.locale if identity else None,
-        outcomes={index: outcome.value for index, outcome in outcomes.items()},
+        index=index,
+        outcome=outcome.value,
         embedding_calls=embedding_calls,
         # Approval to searchable: null on paths with no approved revision, never a false zero.
         # Negative values deliberately expose clock skew or a future-dated review.
         approval_latency_ms=approval_latency_ms,
     )
-    return SyncReport(identity, outcomes, embedding_calls)
+    return SyncReport(identity, index, outcome, embedding_calls)
 
 
 def build_source(document) -> ChunkSource:
@@ -298,37 +300,26 @@ def _identity_for(document) -> ChunkIdentity:
     return ChunkIdentity(CONTENT_TYPE, str(document.id), document.locale)
 
 
-def _resolve_targets(target_indexes) -> tuple[str, ...]:
-    """Snapshot the targets once.
-
-    An explicit list is used exactly as supplied, so a backfill pinned to a new generation
-    cannot be widened into re-embedding the old one.
-    """
-    if target_indexes is not None:
-        return tuple(target_indexes)
-    return resolve_active_targets()
+def _resolve_target(target_index: str | None) -> str | None:
+    """Use an explicit physical index or snapshot the write alias once."""
+    return target_index if target_index is not None else resolve_write_target()
 
 
-def _evict(
-    identity: ChunkIdentity, targets: tuple[str, ...], embedding_calls: int = 0
-) -> SyncReport:
-    for index in targets:
-        delete_chunks_for(index=index, identity=identity)
-    return _report(identity, dict.fromkeys(targets, SyncOutcome.DELETED), embedding_calls)
+def _evict(identity: ChunkIdentity, index: str, embedding_calls: int = 0) -> SyncReport:
+    delete_chunks_for(index=index, identity=identity)
+    return _report(identity, index, SyncOutcome.DELETED, embedding_calls)
 
 
-def _evict_object(
-    object_id: str, targets: tuple[str, ...], embedding_calls: int = 0
-) -> SyncReport:
+def _evict_object(object_id: str, index: str, embedding_calls: int = 0) -> SyncReport:
     """Remove every locale of a source row that no longer exists.
 
     A deleted row cannot tell us its locale, so the identity-scoped delete is unavailable.
     """
-    for index in targets:
-        delete_chunks_for_object(index=index, content_type=CONTENT_TYPE, object_id=object_id)
+    delete_chunks_for_object(index=index, content_type=CONTENT_TYPE, object_id=object_id)
     return _report(
         None,
-        dict.fromkeys(targets, SyncOutcome.DELETED),
+        index,
+        SyncOutcome.DELETED,
         embedding_calls,
         object_id=object_id,
     )
@@ -342,200 +333,149 @@ class _DocumentWork:
     source: ChunkSource
     chunks: list[Chunk]
     expected: ExpectedDocumentState
-    plans: dict[str, TargetPlan]
+    plan: TargetPlan
     # Approval time, for the freshness SLI only. Deliberately not part of the indexed payload
     # or any hash: it must not make a document look changed.
     approved_at: datetime | None = None
 
-    @property
-    def outcomes(self) -> dict[str, SyncOutcome]:
-        return {index: plan.outcome for index, plan in self.plans.items()}
-
-    def spaces_to_embed(self, digests: dict[str, str]) -> set[str]:
-        return {
-            digests[index]
-            for index, plan in self.plans.items()
-            if plan.outcome is SyncOutcome.EMBED_REPLACE
-        }
-
-
-def _digests(recipes: dict[str, EmbeddingRecipe]) -> dict[str, str]:
-    """Each target's stored-vector space, so targets sharing a space can share one call."""
-    return {index: document_embedding_fingerprint(recipe)[1] for index, recipe in recipes.items()}
-
 
 def _embed_for_works(
-    works: dict[int, _DocumentWork], recipes: dict[str, EmbeddingRecipe]
-) -> tuple[dict[int, dict[str, list[list[float]]]], int]:
-    """Embed once per distinct vector space, however many documents and targets are involved.
-
-    Inputs are flattened across documents and sliced back out by recorded span, so a shared call
-    cannot hand one document another document's vectors. Generations sharing an embedding
-    fingerprint share one result; a model migration is the case that genuinely needs a call per
-    space.
-    """
-    digests = _digests(recipes)
-    inputs: dict[str, list[str]] = {}
-    recipe_by_digest: dict[str, EmbeddingRecipe] = {}
-    spans: dict[tuple[int, str], tuple[int, int]] = {}
+    works: dict[int, _DocumentWork], recipe: EmbeddingRecipe
+) -> tuple[dict[int, list[list[float]]], int]:
+    """Embed all documents needing replacement in one flattened provider call."""
+    inputs: list[str] = []
+    spans: dict[int, tuple[int, int]] = {}
     for document_id, work in works.items():
-        for digest in work.spaces_to_embed(digests):
-            texts = inputs.setdefault(digest, [])
-            spans[(document_id, digest)] = (len(texts), len(texts) + len(work.chunks))
-            texts.extend(item.text for item in work.chunks)
+        if work.plan.outcome is SyncOutcome.EMBED_REPLACE:
+            spans[document_id] = (len(inputs), len(inputs) + len(work.chunks))
+            inputs.extend(chunk.text for chunk in work.chunks)
 
-    for index, digest in digests.items():
-        # Every target with this digest embeds identically, so either recipe will do.
-        recipe_by_digest[digest] = recipes[index]
-    vectors_by_digest = {
-        digest: get_embeddings(texts, task="document", recipe=recipe_by_digest[digest])
-        for digest, texts in inputs.items()
-    }
-
-    vectors: dict[int, dict[str, list[list[float]]]] = {}
-    for document_id, work in works.items():
-        by_index = {}
-        for index, plan in work.plans.items():
-            if plan.outcome is SyncOutcome.EMBED_REPLACE:
-                start, stop = spans[(document_id, digests[index])]
-                by_index[index] = vectors_by_digest[digests[index]][start:stop]
-        vectors[document_id] = by_index
-    return vectors, len(inputs)
+    if not inputs:
+        return {}, 0
+    combined = get_embeddings(inputs, task="document", recipe=recipe)
+    return {document_id: combined[start:stop] for document_id, (start, stop) in spans.items()}, 1
 
 
-def _plan_document(document, targets, recipes) -> _DocumentWork | SyncReport:
-    """Decide every target for one locked, eligible document — or finish it outright.
+def _plan_document(document, index, recipe) -> _DocumentWork | SyncReport:
+    """Plan one locked, eligible document for one index—or finish it outright.
 
-    Returns a report when the document needs no provider work: it is stale, or already in
-    agreement with every target.
+    Returns a report when the document needs no provider work: it is stale or already agrees
+    with the target.
     """
     identity = _identity_for(document)
     source = build_source(document)
     chunks = chunk(CONTENT_TYPE, document.html, title=document.title)
     expected = expected_state_for(chunks, source, document)
-    plans = {
-        index: plan_target(
-            chunks=chunks,
-            source=source,
-            expected_state=expected,
-            indexed=read_indexed_document(index=index, identity=identity),
-            recipe=recipes[index],
-        )
-        for index in targets
-    }
+    plan = plan_target(
+        chunks=chunks,
+        source=source,
+        expected_state=expected,
+        indexed=read_indexed_document(index=index, identity=identity),
+        recipe=recipe,
+    )
 
-    # A newer state in any active generation proves this worker is stale. Do not copy that
-    # stale state into another generation that happens to be empty.
-    if any(plan.outcome is SyncOutcome.ABORTED_STALE for plan in plans.values()):
-        return _report(identity, dict.fromkeys(targets, SyncOutcome.ABORTED_STALE))
+    if plan.outcome is SyncOutcome.ABORTED_STALE:
+        return _report(identity, index, SyncOutcome.ABORTED_STALE)
 
     work = _DocumentWork(
-        identity, source, chunks, expected, plans, document.current_revision.reviewed
+        identity, source, chunks, expected, plan, document.current_revision.reviewed
     )
-    if all(outcome is SyncOutcome.NO_OP for outcome in work.outcomes.values()):
-        return _report(identity, work.outcomes)
+    if plan.outcome is SyncOutcome.NO_OP:
+        return _report(identity, index, SyncOutcome.NO_OP)
     return work
 
 
 def _revalidate(
-    work: _DocumentWork, document, lease, embedding_calls: int = 0
+    work: _DocumentWork, document, index, lease, embedding_calls: int = 0
 ) -> SyncReport | None:
     """The terminal report if the document moved while the provider worked, else ``None``.
 
     Recomputed from the reloaded HTML: included-content rerenders can change HTML without
     changing current_revision_id, so the revision alone is not a sufficient guard.
     """
-    targets = tuple(work.plans)
     if document is None:
         lease.renew()
-        return _evict_object(work.identity.object_id, targets, embedding_calls)
+        return _evict_object(work.identity.object_id, index, embedding_calls)
     if not is_retrieval_indexable(document):
         lease.renew()
-        return _evict(work.identity, targets, embedding_calls)
+        return _evict(work.identity, index, embedding_calls)
     fresh_chunks = chunk(CONTENT_TYPE, document.html, title=document.title)
     if expected_state_for(fresh_chunks, build_source(document), document) != work.expected:
-        return _report(
-            work.identity, dict.fromkeys(targets, SyncOutcome.ABORTED_STALE), embedding_calls
-        )
+        return _report(work.identity, index, SyncOutcome.ABORTED_STALE, embedding_calls)
     return None
 
 
-def _write_plans(work: _DocumentWork, vectors_by_index, lease) -> None:
-    for index, plan in work.plans.items():
-        if plan.outcome is SyncOutcome.NO_OP:
-            continue
-
-        # A target may need several ES calls. Renew immediately before starting it; the
-        # task-level deadline keeps the complete mutation shorter than the lease.
-        lease.renew()
-        if plan.outcome is SyncOutcome.EMBED_REPLACE:
-            replace_chunks(
-                index=index,
-                chunks=work.chunks,
-                vectors=vectors_by_index[index],
-                source=work.source,
-                expected_state=work.expected,
-            )
-        elif plan.outcome is SyncOutcome.METADATA_ONLY:
-            update_chunks_metadata_for(
-                index=index,
-                chunks=work.chunks,
-                source=work.source,
-                expected_state=work.expected,
-            )
-        elif plan.outcome is SyncOutcome.COMMIT_REPAIR:
-            repair_document_commit(
-                index=index,
-                identity=work.identity,
-                expected_state=work.expected,
-                orphan_positions=plan.orphan_positions,
-            )
+def _write_plan(work: _DocumentWork, index: str, lease, vectors=()) -> None:
+    # A plan may need several ES calls. Renew immediately before starting it; the task-level
+    # deadline keeps the complete mutation shorter than the lease.
+    lease.renew()
+    if work.plan.outcome is SyncOutcome.EMBED_REPLACE:
+        replace_chunks(
+            index=index,
+            chunks=work.chunks,
+            vectors=vectors,
+            source=work.source,
+            expected_state=work.expected,
+        )
+    elif work.plan.outcome is SyncOutcome.METADATA_ONLY:
+        update_chunks_metadata_for(
+            index=index,
+            chunks=work.chunks,
+            source=work.source,
+            expected_state=work.expected,
+        )
+    elif work.plan.outcome is SyncOutcome.COMMIT_REPAIR:
+        repair_document_commit(
+            index=index,
+            identity=work.identity,
+            expected_state=work.expected,
+            orphan_positions=work.plan.orphan_positions,
+        )
 
 
-def sync_document_chunks(document_id: int, *, target_indexes=None) -> SyncReport:
-    """Bring every target index into agreement with one document, as cheaply as is correct.
+def sync_document_chunks(document_id: int, *, target_index: str | None = None) -> SyncReport:
+    """Bring one physical index into agreement with one document.
 
-    Holds the document's lease for the whole attempt, plans each target independently, embeds
-    at most once per vector space, then revalidates the source before writing — because the
-    row can change while a provider call is in flight.
+    Holds the document's lease for the whole attempt, embeds if necessary, then revalidates the
+    source before writing because the row can change while a provider call is in flight.
     """
-    targets = _resolve_targets(target_indexes)
-    if not targets:
+    index = _resolve_target(target_index)
+    if not index:
         emit(
             "retrieval.sync.skipped",
             level=logging.WARNING,
-            reason="no_active_index",
+            reason="no_write_index",
             document_id=document_id,
         )
         return SyncReport(None)
 
     document = _load(document_id)
     if document is None:
-        return _evict_object(str(document_id), targets)
+        return _evict_object(str(document_id), index)
 
     identity = _identity_for(document)
     with document_lock(identity) as lease:
         document = _load(document_id)  # authoritative read, now that nobody else may write
         if document is None:
-            return _evict_object(identity.object_id, targets)
-        # Before the recipes, so an unreadable `_meta` cannot block removing content that
+            return _evict_object(identity.object_id, index)
+        # Before the recipe, so an unreadable `_meta` cannot block removing content that
         # should no longer be served.
         if not is_retrieval_indexable(document):
-            return _evict(identity, targets)
+            return _evict(identity, index)
 
-        # Recipes next: they must fail before anything is paid for.
-        recipes = {index: recipe_for_index(index) for index in targets}
-        work = _plan_document(document, targets, recipes)
+        # The recipe must fail before anything is paid for.
+        recipe = recipe_for_index(index)
+        work = _plan_document(document, index, recipe)
         if isinstance(work, SyncReport):
             return work
 
-        vectors, calls = _embed_for_works({document_id: work}, recipes)
-        terminal = _revalidate(work, _load(document_id), lease, calls)
+        vectors, calls = _embed_for_works({document_id: work}, recipe)
+        terminal = _revalidate(work, _load(document_id), index, lease, calls)
         if terminal is not None:
             return terminal
-        _write_plans(work, vectors[document_id], lease)
+        _write_plan(work, index, lease, vectors.get(document_id, ()))
 
-    return _report(identity, work.outcomes, calls, approved_at=work.approved_at)
+    return _report(identity, index, work.plan.outcome, calls, approved_at=work.approved_at)
 
 
 def ordered_document_ids(document_ids) -> tuple[int, ...]:
@@ -567,19 +507,18 @@ def max_batch_documents() -> int:
 
 
 def _within_input_budget(
-    works: dict[int, _DocumentWork], recipes, max_inputs: int
+    works: dict[int, _DocumentWork], max_inputs: int
 ) -> tuple[dict[int, _DocumentWork], tuple[int, ...]]:
     """Trim the batch to the configured embedding-input bound.
 
     The first document is always admitted, whatever it costs: an article with more chunks than
     the bound would otherwise be deferred out of every batch forever.
     """
-    digests = _digests(recipes)
     admitted: dict[int, _DocumentWork] = {}
     deferred: list[int] = []
     used = 0
     for document_id, work in works.items():
-        needed = len(work.chunks) * len(work.spaces_to_embed(digests))
+        needed = len(work.chunks) if work.plan.outcome is SyncOutcome.EMBED_REPLACE else 0
         if admitted and used + needed > max_inputs:
             deferred.append(document_id)
             continue
@@ -588,8 +527,8 @@ def _within_input_budget(
     return admitted, tuple(deferred)
 
 
-def sync_document_batch(document_ids, *, target_indexes=None) -> BatchSyncReport:
-    """Bring a set of documents into agreement with every target, sharing the provider calls.
+def sync_document_batch(document_ids, *, target_index: str | None = None) -> BatchSyncReport:
+    """Bring documents into agreement with one target, sharing the provider call.
 
     Per-document correctness is unchanged: each document is planned, revalidated, and committed
     under its own lease, and holds that lease across its own writes. Only the embedding calls
@@ -602,12 +541,12 @@ def sync_document_batch(document_ids, *, target_indexes=None) -> BatchSyncReport
 
     max_documents = max_batch_documents()
     max_inputs = _bulk_bound("RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS")
-    targets = _resolve_targets(target_indexes)
-    if not targets:
+    index = _resolve_target(target_index)
+    if not index:
         emit(
             "retrieval.batch.skipped",
             level=logging.WARNING,
-            reason="no_active_index",
+            reason="no_write_index",
             document_count=len(ids),
         )
         return BatchSyncReport()
@@ -622,7 +561,7 @@ def sync_document_batch(document_ids, *, target_indexes=None) -> BatchSyncReport
         for document_id in ids:
             document = known.get(document_id)
             if document is None:
-                reports[document_id] = _evict_object(str(document_id), targets)
+                reports[document_id] = _evict_object(str(document_id), index)
                 continue
             try:
                 leases[document_id] = stack.enter_context(document_lock(_identity_for(document)))
@@ -634,46 +573,47 @@ def sync_document_batch(document_ids, *, target_indexes=None) -> BatchSyncReport
         for document_id in leases:
             document = locked.get(document_id)
             if document is None:
-                reports[document_id] = _evict_object(str(document_id), targets)
+                reports[document_id] = _evict_object(str(document_id), index)
             elif not is_retrieval_indexable(document):
-                reports[document_id] = _evict(_identity_for(document), targets)
+                reports[document_id] = _evict(_identity_for(document), index)
             else:
                 eligible[document_id] = document
 
         # Invalid target metadata must not prevent the safety evictions above. It still fails
         # before any provider call or indexing write for eligible documents.
-        recipes = {index: recipe_for_index(index) for index in targets} if eligible else {}
+        recipe = recipe_for_index(index) if eligible else None
         works: dict[int, _DocumentWork] = {}
         for document_id, document in eligible.items():
-            planned = _plan_document(document, targets, recipes)
+            planned = _plan_document(document, index, recipe)
             if isinstance(planned, SyncReport):
                 reports[document_id] = planned
             else:
                 works[document_id] = planned
 
-        works, over_input_limit = _within_input_budget(works, recipes, max_inputs)
+        works, over_input_limit = _within_input_budget(works, max_inputs)
         for document_id in over_input_limit:
             # Nothing will be written for it, so stop holding it for the rest of the batch.
             leases[document_id].release()
 
-        vectors, calls = _embed_for_works(works, recipes)
+        vectors, calls = _embed_for_works(works, recipe) if recipe else ({}, 0)
 
         fresh = _load_many(works)
         for document_id, work in works.items():
             lease = leases[document_id]
             try:
-                terminal = _revalidate(work, fresh.get(document_id), lease)
+                terminal = _revalidate(work, fresh.get(document_id), index, lease)
                 if terminal is not None:
                     reports[document_id] = terminal
                     continue
-                _write_plans(work, vectors[document_id], lease)
+                _write_plan(work, index, lease, vectors.get(document_id, ()))
             except DocumentLockUnavailable:
                 # One stolen lease is that document's problem; the rest of the batch stands.
                 contended.append(document_id)
                 continue
             reports[document_id] = _report(
                 work.identity,
-                work.outcomes,
+                index,
+                work.plan.outcome,
                 approved_at=work.approved_at,
             )
 
@@ -698,17 +638,19 @@ def sync_document_batch(document_ids, *, target_indexes=None) -> BatchSyncReport
             Counter(
                 outcome.value
                 for report in reports.values()
-                for outcome in report.outcomes.values()
+                if (outcome := report.outcome) is not None
             )
         ),
     )
     return BatchSyncReport(reports, tuple(sorted(contended)), deferred, calls)
 
 
-def delete_document_chunks(identity: ChunkIdentity, *, target_indexes=None) -> SyncReport:
-    """Evict one document from every target, under its lease so no sync races the removal."""
-    targets = _resolve_targets(target_indexes)
-    if not targets:
+def delete_document_chunks(
+    identity: ChunkIdentity, *, target_index: str | None = None
+) -> SyncReport:
+    """Evict one document from one target under its document lease."""
+    index = _resolve_target(target_index)
+    if not index:
         return SyncReport(identity)
     with document_lock(identity):
-        return _evict(identity, targets)
+        return _evict(identity, index)

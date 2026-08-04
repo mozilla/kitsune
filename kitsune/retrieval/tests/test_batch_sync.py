@@ -125,8 +125,8 @@ class BatchExecutorTests(BatchTestCase):
         self.assertEqual(embed.call_count, 1)
         self.assertEqual(report.embedding_calls, 1)
         self.assertEqual(
-            {document_id: report.reports[document_id].outcomes for document_id in self.ids},
-            {document_id: {self.index: SyncOutcome.EMBED_REPLACE} for document_id in self.ids},
+            {document_id: report.reports[document_id].outcome for document_id in self.ids},
+            dict.fromkeys(self.ids, SyncOutcome.EMBED_REPLACE),
         )
 
     def test_the_flattened_inputs_are_every_documents_chunks_in_id_order(self):
@@ -168,14 +168,17 @@ class BatchExecutorTests(BatchTestCase):
         )
 
     def test_an_explicit_target_does_not_fan_out(self):
-        report = sync_document_batch(self.ids, target_indexes=[self.index])
+        report = sync_document_batch(self.ids, target_index=self.index)
 
         for document_id in self.ids:
-            self.assertEqual(list(report.reports[document_id].outcomes), [self.index])
+            self.assertEqual(report.reports[document_id].index, self.index)
 
-    def test_no_active_target_writes_nothing(self):
-        with self.assertLogs("k.retrieval", level="WARNING") as logs:
-            report = sync_document_batch(self.ids, target_indexes=[])
+    def test_no_write_target_writes_nothing(self):
+        with (
+            mock.patch("kitsune.retrieval.sync.resolve_write_target", return_value=None),
+            self.assertLogs("k.retrieval", level="WARNING") as logs,
+        ):
+            report = sync_document_batch(self.ids)
 
         self.assertEqual(report.reports, {})
         self.assertEqual(report.embedding_calls, 0)
@@ -186,11 +189,9 @@ class BatchExecutorTests(BatchTestCase):
 
         report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.reports[self.ids[0]].outcomes, {self.index: SyncOutcome.NO_OP})
+        self.assertEqual(report.reports[self.ids[0]].outcome, SyncOutcome.NO_OP)
         self.assertEqual(report.embedding_calls, 1)
-        self.assertEqual(
-            report.reports[self.ids[1]].outcomes, {self.index: SyncOutcome.EMBED_REPLACE}
-        )
+        self.assertEqual(report.reports[self.ids[1]].outcome, SyncOutcome.EMBED_REPLACE)
 
     def test_a_metadata_change_alone_pays_the_provider_nothing(self):
         sync_document_batch(self.ids)
@@ -198,9 +199,7 @@ class BatchExecutorTests(BatchTestCase):
 
         report = sync_document_batch(self.ids)
 
-        self.assertEqual(
-            report.reports[self.ids[0]].outcomes, {self.index: SyncOutcome.METADATA_ONLY}
-        )
+        self.assertEqual(report.reports[self.ids[0]].outcome, SyncOutcome.METADATA_ONLY)
         self.assertEqual(report.embedding_calls, 0)
         self.assertNotEqual(self._stored(self.documents[0]).chunks[0]["product_ids"], [])
 
@@ -211,7 +210,7 @@ class BatchExecutorTests(BatchTestCase):
 
         report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.reports[missing].outcomes, {self.index: SyncOutcome.DELETED})
+        self.assertEqual(report.reports[missing].outcome, SyncOutcome.DELETED)
         self.assertEqual(self._stored(self.documents[0]).chunks, [])
         self.assertIsNotNone(self._stored(self.documents[1]).manifest)
 
@@ -226,7 +225,7 @@ class BatchExecutorTests(BatchTestCase):
         ) as embed:
             report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.reports[self.ids[0]].outcomes, {self.index: SyncOutcome.DELETED})
+        self.assertEqual(report.reports[self.ids[0]].outcome, SyncOutcome.DELETED)
         self.assertEqual(self._stored(self.documents[0]).chunks, [])
         self.assertEqual(embed.call_args.args[0], self._texts(self.documents[1]))
 
@@ -284,9 +283,7 @@ class BatchExecutorTests(BatchTestCase):
         with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=edit_then_embed):
             report = sync_document_batch(self.ids)
 
-        self.assertEqual(
-            report.reports[self.ids[1]].outcomes, {self.index: SyncOutcome.ABORTED_STALE}
-        )
+        self.assertEqual(report.reports[self.ids[1]].outcome, SyncOutcome.ABORTED_STALE)
         self.assertEqual(self._stored(self.documents[1]).chunks, [])
         for document in (self.documents[0], self.documents[2]):
             self.assertIsNotNone(self._stored(document).manifest)
@@ -304,7 +301,7 @@ class BatchExecutorTests(BatchTestCase):
         with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=restrict_then_embed):
             report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.reports[self.ids[2]].outcomes, {self.index: SyncOutcome.DELETED})
+        self.assertEqual(report.reports[self.ids[2]].outcome, SyncOutcome.DELETED)
         self.assertEqual(self._stored(self.documents[2]).chunks, [])
         self.assertIsNotNone(self._stored(self.documents[0]).manifest)
 
@@ -430,8 +427,8 @@ class BatchBoundTests(BatchTestCase):
             self.assertNotIn(document_id, held)
 
 
-class BatchMultiGenerationTests(BatchTestCase):
-    """One batch across a migration window, where read and write aliases differ."""
+class BatchSingleWriteGenerationTests(BatchTestCase):
+    """A batch also writes only to the current write generation."""
 
     def _second_generation(self, recipe=None):
         meta = (
@@ -446,25 +443,27 @@ class BatchMultiGenerationTests(BatchTestCase):
         )
         return create_write_generation(timestamp=datetime(2031, 5, 4, tzinfo=UTC), meta=meta)
 
-    def test_generations_sharing_a_vector_space_share_one_call_for_the_whole_batch(self):
+    def test_a_batch_populates_only_the_write_generation(self):
         second = self._second_generation()
 
         report = sync_document_batch(self.ids)
 
         self.assertEqual(report.embedding_calls, 1)
         for document in self.documents:
-            for index in (self.index, second):
-                self.assertIsNotNone(self._stored(document, index).manifest)
+            self.assertIsNone(self._stored(document, self.index).manifest)
+            self.assertIsNotNone(self._stored(document, second).manifest)
 
-    def test_divergent_vector_spaces_take_one_call_each_not_one_per_document(self):
+    def test_a_batch_uses_only_the_write_generations_recipe(self):
         other_space = EmbeddingRecipe(
             **{**recipe_to_payload(configured_embedding_recipe()), "model": "another-model"}
         )
         second = self._second_generation(other_space)
 
-        report = sync_document_batch(self.ids)
+        with mock.patch("kitsune.retrieval.sync.get_embeddings", wraps=get_embeddings) as embed:
+            report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.embedding_calls, 2)
+        self.assertEqual(report.embedding_calls, 1)
+        self.assertEqual(embed.call_args.kwargs["recipe"], other_space)
         for document in self.documents:
             with self.subTest(document=document.slug):
                 self._assert_embeds(document, other_space, second)
@@ -487,20 +486,20 @@ class BulkTaskTests(SimpleTestCase):
         with mock.patch(
             "kitsune.retrieval.tasks.sync_document_batch", return_value=BatchSyncReport()
         ) as core:
-            sync_documents([2, 1], target_indexes=["chunks-n-plus-one"])
-        core.assert_called_once_with([2, 1], target_indexes=["chunks-n-plus-one"])
+            sync_documents([2, 1], target_index="chunks-n-plus-one")
+        core.assert_called_once_with([2, 1], target_index="chunks-n-plus-one")
 
     @override_settings(RETRIEVAL_LIVE_INDEXING=False, RETRIEVAL_BULK_MAX_DOCUMENTS=2)
     def test_enqueueing_splits_bounded_payloads_and_preserves_the_target(self):
         with mock.patch.object(sync_documents, "delay") as delay:
-            enqueue_document_batch([5, 4, 3, 2, 1], target_indexes=["chunks-n-plus-one"])
+            enqueue_document_batch([5, 4, 3, 2, 1], target_index="chunks-n-plus-one")
 
         self.assertEqual(
             delay.call_args_list,
             [
-                mock.call([1, 2], target_indexes=["chunks-n-plus-one"]),
-                mock.call([3, 4], target_indexes=["chunks-n-plus-one"]),
-                mock.call([5], target_indexes=["chunks-n-plus-one"]),
+                mock.call([1, 2], target_index="chunks-n-plus-one"),
+                mock.call([3, 4], target_index="chunks-n-plus-one"),
+                mock.call([5], target_index="chunks-n-plus-one"),
             ],
         )
 
@@ -511,14 +510,14 @@ class BulkTaskTests(SimpleTestCase):
             mock.patch("kitsune.retrieval.tasks.enqueue_document_batch") as enqueue,
             mock.patch.object(sync_documents, "apply_async") as requeue,
         ):
-            sync_documents([1, 2, 3], target_indexes=["chunks-n-plus-one"])
+            sync_documents([1, 2, 3], target_index="chunks-n-plus-one")
 
-        enqueue.assert_called_once_with((3,), target_indexes=["chunks-n-plus-one"])
+        enqueue.assert_called_once_with((3,), target_index="chunks-n-plus-one")
         requeue.assert_called_once()
         self.assertEqual(requeue.call_args.kwargs["args"], [[2]])
         self.assertEqual(
             requeue.call_args.kwargs["kwargs"],
-            {"target_indexes": ["chunks-n-plus-one"], "contention_attempt": 1},
+            {"target_index": "chunks-n-plus-one", "contention_attempt": 1},
         )
         self.assertGreater(requeue.call_args.kwargs["countdown"], 0)
 

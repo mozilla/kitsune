@@ -286,7 +286,7 @@ class GateEnumerationTests(GateIndexTestCase):
         with mock.patch("kitsune.retrieval.sync.get_embeddings") as embed:
             sync_report = sync_document_chunks(self.document.id)
         embed.assert_not_called()
-        self.assertEqual(sync_report.outcomes, {self.index: SyncOutcome.METADATA_ONLY})
+        self.assertEqual(sync_report.outcome, SyncOutcome.METADATA_ONLY)
         self.assertTrue(gate_index(self.index).is_clean)
 
     def test_a_stale_manifest_is_reported_and_named_for_sync(self):

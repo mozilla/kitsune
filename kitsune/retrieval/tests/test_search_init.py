@@ -25,8 +25,8 @@ from kitsune.retrieval.index import (
     RetrievalIndexUnavailable,
     configured_index_meta,
     create_write_generation,
-    resolve_active_targets,
     resolve_read_target_and_recipe,
+    resolve_write_target,
 )
 from kitsune.retrieval.locks import DocumentLockUnavailable, lifecycle_lock
 from kitsune.retrieval.sync import sync_document_chunks
@@ -129,18 +129,17 @@ class CreateWriteGenerationTests(LifecycleTestCase):
         self.assertIsNone(_write_alias())
 
 
-class ResolveActiveTargetsTests(LifecycleTestCase):
-    def test_tracks_missing_shared_and_diverged_alias_targets(self):
-        self.assertEqual(resolve_active_targets(), ())
+class ResolveWriteTargetTests(LifecycleTestCase):
+    def test_tracks_only_the_write_alias(self):
+        self.assertIsNone(resolve_write_target())
         first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
-        self.assertEqual(resolve_active_targets(), (first,))
+        self.assertEqual(resolve_write_target(), first)
 
         ChunkDocument.migrate_reads()
-        self.assertEqual(resolve_active_targets(), (first,))
+        self.assertEqual(resolve_write_target(), first)
 
         second = create_write_generation(timestamp=TS2, meta=configured_index_meta())
-        self.assertEqual(set(resolve_active_targets()), {first, second})
-        self.assertEqual(len(resolve_active_targets()), 2)
+        self.assertEqual(resolve_write_target(), second)
 
 
 class ResolveReadTargetTests(LifecycleTestCase):
@@ -338,6 +337,7 @@ class LifecycleSerializationTests(LifecycleTestCase):
         ChunkDocument.migrate_reads()
 
         real_lock = lifecycle_lock
+        winner = f"{ChunkDocument.Index.base_name}_{TS2.strftime('%Y%m%d%H%M%S')}"
 
         @contextmanager
         def race_then_lock(*args, **kwargs):
@@ -352,7 +352,7 @@ class LifecycleSerializationTests(LifecycleTestCase):
             call_command("search_init", "--start-rebuild")
 
         # the loser must not have created a third generation
-        self.assertEqual(len(set(resolve_active_targets())), 2)
+        self.assertEqual(_write_alias(), winner)
         self.assertEqual(_read_alias(), first)
 
     def test_a_lease_lost_during_the_gate_prevents_the_read_swap(self):
@@ -399,7 +399,7 @@ class GatedReadMigrationTests(LifecycleTestCase):
         sync_document_chunks(self.document.id)
         ChunkDocument.migrate_reads()
         second = create_write_generation(timestamp=TS2, meta=configured_index_meta())
-        sync_document_chunks(self.document.id, target_indexes=[second])
+        sync_document_chunks(self.document.id, target_index=second)
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             call_command("search_init", "--migrate-reads")

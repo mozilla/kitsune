@@ -743,15 +743,9 @@ def create_write_generation(*, timestamp: datetime, meta: dict) -> str:
     return name
 
 
-def resolve_active_targets() -> tuple[str, ...]:
-    """The concrete indexes the read and write aliases point at — de-duplicated, with
-    absent aliases removed — resolved once so a mid-operation alias move can't split a
-    caller's reads and writes across generations."""
-    candidates = (
-        ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias),
-        ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias),
-    )
-    return tuple(dict.fromkeys(target for target in candidates if target))
+def resolve_write_target() -> str | None:
+    """Snapshot the concrete write generation for one ingestion operation."""
+    return ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
 
 
 def recipe_for_index(index: str) -> EmbeddingRecipe:

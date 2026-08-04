@@ -60,22 +60,23 @@ _SINGLE_DOCUMENT_RETRY = {
 @shared_task(**_LIMITS, **_SINGLE_DOCUMENT_RETRY)
 @skip_if_read_only_mode
 def sync_document(document_id: int):
-    """Bring every active index into agreement with one KB document."""
+    """Bring the current write index into agreement with one KB document."""
     if settings.RETRIEVAL_LIVE_INDEXING:
         sync_document_chunks(document_id)
 
 
 @shared_task(**_LIMITS, **_SINGLE_DOCUMENT_RETRY)
 @skip_if_read_only_mode
-def delete_document(content_type: str, object_id: str, locale: str, target_indexes=None):
-    """Evict one document from the named indexes, or from every active index by default.
+def delete_document(
+    content_type: str, object_id: str, locale: str, target_index: str | None = None
+):
+    """Evict one document from a named index, or from the write index by default.
 
     Deliberately not gated on ``RETRIEVAL_LIVE_INDEXING``: removing content that should no
-    longer be served is not a freshness optimization. Reconciliation pins the target, because
-    evicting from one generation must not empty the other.
+    longer be served is not a freshness optimization. Reconciliation pins its physical target.
     """
     identity = ChunkIdentity(content_type=content_type, object_id=object_id, locale=locale)
-    delete_document_chunks(identity, target_indexes=target_indexes)
+    delete_document_chunks(identity, target_index=target_index)
 
 
 def enqueue_document_sync(document_id: int) -> None:
@@ -89,26 +90,26 @@ def enqueue_document_sync(document_id: int) -> None:
     sync_document.delay(document_id)
 
 
-def enqueue_document_delete(identity: ChunkIdentity, *, target_indexes=None) -> None:
+def enqueue_document_delete(identity: ChunkIdentity, *, target_index: str | None = None) -> None:
     delete_document.delay(
         identity.content_type,
         identity.object_id,
         identity.locale,
-        target_indexes=list(target_indexes) if target_indexes is not None else None,
+        target_index=target_index,
     )
 
 
 @shared_task(**_LIMITS, **_RETRY)
 @skip_if_read_only_mode
-def sync_documents(document_ids, target_indexes=None, contention_attempt: int = 0):
+def sync_documents(document_ids, target_index: str | None = None, contention_attempt: int = 0):
     """Bring a batch of KB documents into agreement, sharing embedding calls across them.
 
     Deferred work is queued immediately. Contended documents retry separately with jitter, so
     neither path repeats work that this attempt already committed.
     """
-    report = sync_document_batch(document_ids, target_indexes=target_indexes)
+    report = sync_document_batch(document_ids, target_index=target_index)
     if report.deferred:
-        enqueue_document_batch(report.deferred, target_indexes=target_indexes)
+        enqueue_document_batch(report.deferred, target_index=target_index)
 
     if not report.contended:
         return
@@ -123,24 +124,23 @@ def sync_documents(document_ids, target_indexes=None, contention_attempt: int = 
     sync_documents.apply_async(
         args=[list(report.contended)],
         kwargs={
-            "target_indexes": target_indexes,
+            "target_index": target_index,
             "contention_attempt": contention_attempt + 1,
         },
         countdown=random.uniform(1, _BULK_RETRY_SECONDS),
     )
 
 
-def enqueue_document_batch(document_ids, *, target_indexes=None) -> None:
+def enqueue_document_batch(document_ids, *, target_index: str | None = None) -> None:
     """Queue bounded batches for explicit backfill or reconciliation work.
 
     Slicing here rather than inside the task keeps every queued payload within the configured
     document bound however large the caller's list is.
     """
     ids = ordered_document_ids(document_ids)
-    targets = list(target_indexes) if target_indexes is not None else None
     size = max_batch_documents()
     for start in range(0, len(ids), size):
         sync_documents.delay(
             list(ids[start : start + size]),
-            target_indexes=targets,
+            target_index=target_index,
         )
