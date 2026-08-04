@@ -357,12 +357,38 @@ RETRIEVAL_EMBEDDING_BACKEND = config("RETRIEVAL_EMBEDDING_BACKEND", default="")
 RETRIEVAL_EMBEDDING_MODEL = config("RETRIEVAL_EMBEDDING_MODEL", default="")
 RETRIEVAL_EMBEDDING_DIMENSIONS = config("RETRIEVAL_EMBEDDING_DIMENSIONS", default=768, cast=int)
 RETRIEVAL_EMBEDDING_BATCH_SIZE = config("RETRIEVAL_EMBEDDING_BATCH_SIZE", default=250, cast=int)
+# Per-request deadline. Retrieval-specific Celery limits added with the ingestion tasks bound
+# the complete operation across retries and batches.
+RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS = config(
+    "RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS", default=30, cast=float
+)
 
-# Retrieval document leases. The ttl bounds how long a crashed worker blocks a document;
-# the heartbeat must stay well under it so a lease survives a slow embedding call.
+# Retrieval document leases have no background renewer. Keep each retrieval task's Celery
+# time limit below this ttl so the lease cannot lapse while the task is running.
 RETRIEVAL_LOCK_TTL_SECONDS = config("RETRIEVAL_LOCK_TTL_SECONDS", default=300, cast=float)
-RETRIEVAL_LOCK_HEARTBEAT_SECONDS = config(
-    "RETRIEVAL_LOCK_HEARTBEAT_SECONDS", default=30, cast=float
+# Corpus-wide operator commands can run much longer than one bounded document task. Their
+# separate lease keeps the task-safety invariant above independent from migration runtime.
+RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS = config(
+    "RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS", default=3600, cast=float
+)
+
+# Retrieval ingestion. Independent of ES_LIVE_INDEXING so lexical search and retrieval can be
+# enabled separately. Task limits are retrieval-specific by design: a global Celery limit would
+# truncate unrelated Kitsune tasks. checks.py enforces
+# request deadline < soft < hard < lease ttl.
+RETRIEVAL_LIVE_INDEXING = config("RETRIEVAL_LIVE_INDEXING", default=False, cast=bool)
+RETRIEVAL_TASK_SOFT_TIME_LIMIT_SECONDS = config(
+    "RETRIEVAL_TASK_SOFT_TIME_LIMIT_SECONDS", default=210, cast=float
+)
+RETRIEVAL_TASK_TIME_LIMIT_SECONDS = config(
+    "RETRIEVAL_TASK_TIME_LIMIT_SECONDS", default=240, cast=float
+)
+
+# Bounds on one bulk retrieval task. Documents past either bound move to a follow-up task;
+# one document may exceed the input bound so an unusually long article cannot starve forever.
+RETRIEVAL_BULK_MAX_DOCUMENTS = config("RETRIEVAL_BULK_MAX_DOCUMENTS", default=50, cast=int)
+RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS = config(
+    "RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS", default=500, cast=int
 )
 
 TEXT_DOMAIN = "messages"

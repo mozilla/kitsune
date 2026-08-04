@@ -74,6 +74,7 @@ dependencies = [
     "pyparsing==3.3.2",
     "django-silk>=5.1.0,<6",
     "requests>=2.34.2,<3",
+    "httpx>=0.28.1,<1",
     "fuzzywuzzy>=0.18.0,<0.19",
     "django-ses==4.7.2",
     "django-post-office==3.11.2",

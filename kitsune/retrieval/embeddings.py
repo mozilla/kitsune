@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import math
 import random
 import time
@@ -12,6 +13,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 from kitsune.retrieval.chunking import count_tokens
+from kitsune.retrieval.events import emit
 
 FAKE_BACKEND = "fake"
 VERTEX_BACKEND = "vertex"
@@ -19,6 +21,7 @@ VERTEX_BACKEND = "vertex"
 DEFAULT_DOCUMENT_TASK = "RETRIEVAL_DOCUMENT"
 DEFAULT_QUERY_TASK = "RETRIEVAL_QUERY"
 DEFAULT_NORMALIZATION = "none"
+MIN_EMBEDDING_TIMEOUT_SECONDS = 0.001
 
 _MAX_ATTEMPTS = 4
 _BACKOFF_BASE = 0.5
@@ -56,6 +59,11 @@ class EmbeddingRecipe:
     document_task: str
     query_task: str
     normalization: str
+
+
+@dataclass
+class _ProviderStats:
+    request_count: int = 0
 
 
 def configured_embedding_recipe() -> EmbeddingRecipe:
@@ -149,9 +157,49 @@ def get_embeddings(
     if not all(isinstance(text, str) for text in inputs):
         raise TypeError("embedding inputs must be strings")
 
-    vectors = _EMBED_BACKENDS[recipe.provider](inputs, task_type=task_type, recipe=recipe)
-    validate_embeddings(vectors, inputs, recipe)
+    started = time.monotonic()
+    character_count = sum(len(text) for text in inputs)
+    stats = _ProviderStats()
+    try:
+        vectors = _EMBED_BACKENDS[recipe.provider](
+            inputs,
+            task_type=task_type,
+            recipe=recipe,
+            stats=stats,
+        )
+        validate_embeddings(vectors, inputs, recipe)
+    except Exception as exc:
+        # Only the exception's type: a provider message can quote the input or the credential.
+        emit(
+            "retrieval.embeddings.failed",
+            level=logging.ERROR,
+            provider=recipe.provider,
+            model=recipe.model,
+            task=task,
+            text_count=len(inputs),
+            character_count=character_count,
+            request_count=stats.request_count,
+            error_type=type(exc).__name__,
+            duration_ms=_elapsed_ms(started),
+        )
+        raise
+    emit(
+        "retrieval.embeddings.completed",
+        provider=recipe.provider,
+        model=recipe.model,
+        task=task,
+        dimensions=recipe.dimensions,
+        text_count=len(inputs),
+        # A bounded measure of input size without recording the input itself.
+        character_count=character_count,
+        request_count=stats.request_count,
+        duration_ms=_elapsed_ms(started),
+    )
     return vectors
+
+
+def _elapsed_ms(started: float) -> int:
+    return int((time.monotonic() - started) * 1000)
 
 
 def validate_embeddings(
@@ -177,7 +225,9 @@ def validate_embeddings(
                 raise InvalidEmbeddingResponse("embedding is not unit-norm under l2 normalization")
 
 
-def _fake_embed(texts: list[str], *, task_type: str, recipe: EmbeddingRecipe) -> list[list[float]]:
+def _fake_embed(
+    texts: list[str], *, task_type: str, recipe: EmbeddingRecipe, stats: _ProviderStats
+) -> list[list[float]]:
     byte_count = recipe.dimensions * 4  # 4 bytes per float
     vectors = []
     for text in texts:
@@ -201,7 +251,7 @@ def _fake_embed(texts: list[str], *, task_type: str, recipe: EmbeddingRecipe) ->
 
 
 def _vertex_embed(
-    texts: list[str], *, task_type: str, recipe: EmbeddingRecipe
+    texts: list[str], *, task_type: str, recipe: EmbeddingRecipe, stats: _ProviderStats
 ) -> list[list[float]]:
     if any(count_tokens(text) > _VERTEX_MAX_INPUT_TOKENS for text in texts):
         raise InvalidEmbeddingResponse(
@@ -209,16 +259,38 @@ def _vertex_embed(
         )
 
     batch_size = min(_configured_batch_size(), _VERTEX_MAX_BATCH_SIZE)
+    timeout_ms = _configured_timeout_ms()
     client = _vertex_client(recipe.model)
     vectors: list[list[float]] = []
     for start in range(0, len(texts), batch_size):
         batch = texts[start : start + batch_size]
         batch_vectors = _embed_batch_with_retry(
-            client, batch, task_type=task_type, dimensions=recipe.dimensions
+            client,
+            batch,
+            task_type=task_type,
+            dimensions=recipe.dimensions,
+            timeout_ms=timeout_ms,
+            stats=stats,
         )
         validate_embeddings(batch_vectors, batch, recipe)
         vectors.extend(batch_vectors)
     return vectors
+
+
+def _configured_timeout_ms() -> int:
+    """Return the configured request deadline in provider milliseconds."""
+    timeout = settings.RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS
+    if (
+        isinstance(timeout, bool)
+        or not isinstance(timeout, int | float)
+        or not math.isfinite(timeout)
+        or timeout < MIN_EMBEDDING_TIMEOUT_SECONDS
+    ):
+        raise ImproperlyConfigured(
+            "RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS must be a finite number of seconds "
+            "of at least one millisecond"
+        )
+    return int(timeout * 1000)
 
 
 def _configured_batch_size() -> int:
@@ -229,10 +301,18 @@ def _configured_batch_size() -> int:
 
 
 def _embed_batch_with_retry(
-    client, batch: list[str], *, task_type: str, dimensions: int
+    client,
+    batch: list[str],
+    *,
+    task_type: str,
+    dimensions: int,
+    timeout_ms: int,
+    stats: _ProviderStats,
 ) -> list[list[float]]:
     from google.api_core import exceptions as gexc
     from google.genai import errors as genai_errors
+    from httpx import TimeoutException as HttpxTimeout
+    from requests import Timeout as RequestsTimeout
 
     provider_errors = (
         genai_errors.APIError,
@@ -243,11 +323,14 @@ def _embed_batch_with_retry(
         gexc.DeadlineExceeded,
         gexc.GatewayTimeout,
         gexc.BadGateway,
+        HttpxTimeout,
+        RequestsTimeout,
     )
     for attempt in range(_MAX_ATTEMPTS):
         try:
+            stats.request_count += 1
             return _request_vertex_embeddings(
-                client, batch, task_type=task_type, dimensions=dimensions
+                client, batch, task_type=task_type, dimensions=dimensions, timeout_ms=timeout_ms
             )
         except provider_errors as exc:
             if isinstance(exc, genai_errors.APIError) and not (
@@ -256,15 +339,23 @@ def _embed_batch_with_retry(
                 raise
             if attempt == _MAX_ATTEMPTS - 1:
                 raise
+            emit(
+                "retrieval.embeddings.retried",
+                level=logging.WARNING,
+                attempt=attempt + 1,
+                max_attempts=_MAX_ATTEMPTS,
+                batch_size=len(batch),
+                error_type=type(exc).__name__,
+            )
             time.sleep(_BACKOFF_BASE * 2**attempt + random.uniform(0, _BACKOFF_BASE))
     raise AssertionError("retry loop exited unexpectedly")
 
 
 def _request_vertex_embeddings(
-    client, batch: list[str], *, task_type: str, dimensions: int
+    client, batch: list[str], *, task_type: str, dimensions: int, timeout_ms: int
 ) -> list[list[float]]:
     """Call Google Gen AI directly so truncation cannot be hidden by the LangChain wrapper."""
-    from google.genai.types import EmbedContentConfig
+    from google.genai.types import EmbedContentConfig, HttpOptions
 
     response = client.client.models.embed_content(
         model=client.model_name,
@@ -273,6 +364,7 @@ def _request_vertex_embeddings(
             task_type=task_type,
             output_dimensionality=dimensions,
             auto_truncate=False,
+            http_options=HttpOptions(timeout=timeout_ms),
         ),
     )
     embeddings = response.embeddings or []

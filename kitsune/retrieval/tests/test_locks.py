@@ -1,4 +1,5 @@
 import time
+from functools import partial
 from unittest import mock
 from uuid import uuid4
 
@@ -8,10 +9,12 @@ from redis.exceptions import ConnectionError as RedisConnectionError
 
 from kitsune.retrieval.index import ChunkIdentity
 from kitsune.retrieval.locks import (
+    KEY_PREFIX,
     DocumentLockBackendError,
     DocumentLockUnavailable,
     document_lock,
     document_lock_key,
+    lifecycle_lock,
     redis_lease,
 )
 from kitsune.sumo.redis_utils import RedisError, redis_client
@@ -33,7 +36,7 @@ class LeaseTestCase(SimpleTestCase):
     def broken_backend(self, lease):
         """Make every token-checked Redis call on this lease fail."""
         broken = mock.Mock()
-        for call in (broken.owned, broken.reacquire, broken.release):
+        for call in (broken.reacquire, broken.release):
             call.side_effect = RedisConnectionError("connection lost")
         return mock.patch.object(lease, "_lock", broken)
 
@@ -41,7 +44,6 @@ class LeaseTestCase(SimpleTestCase):
 class AcquireAndReleaseTests(LeaseTestCase):
     def test_holds_the_key_with_a_ttl_and_frees_it_on_exit(self):
         with redis_lease(self.key) as lease:
-            self.assertTrue(lease.owns_lease())
             self.assertEqual(self.client.get(self.key), lease.token)
             self.assertGreater(self.client.pttl(self.key), 0)
 
@@ -65,9 +67,16 @@ class AcquireAndReleaseTests(LeaseTestCase):
                 raise ValueError("boom")
         self.assertIsNone(self.client.get(self.key))
 
+    def test_releasing_twice_is_harmless(self):
+        # Lock.release() clears its own token first, so an unguarded second call would
+        # complain about an unlocked lock.
+        with redis_lease(self.key) as lease:
+            lease.release()
+            lease.release()
+        self.assertIsNone(self.client.get(self.key))
 
-@override_settings(RETRIEVAL_LOCK_TTL_SECONDS=60, RETRIEVAL_LOCK_HEARTBEAT_SECONDS=30)
-class RenewalAndOwnershipTests(LeaseTestCase):
+
+class RenewalTests(LeaseTestCase):
     def test_renew_extends_the_expiry(self):
         with redis_lease(self.key, ttl_seconds=3) as lease:
             time.sleep(0.5)
@@ -75,25 +84,12 @@ class RenewalAndOwnershipTests(LeaseTestCase):
             lease.renew()
             self.assertGreater(self.client.pttl(self.key), shortened)
 
-    def test_a_stolen_lease_is_no_longer_owned(self):
-        with redis_lease(self.key) as lease:
-            self.steal()
-            self.assertFalse(lease.owns_lease())
-
     def test_renewing_a_stolen_lease_raises(self):
         with redis_lease(self.key) as lease:
-            self.steal()
+            successor = self.steal()
             with self.assertRaises(DocumentLockUnavailable):
                 lease.renew()
-
-    def test_release_never_deletes_a_successors_lease(self):
-        with redis_lease(self.key) as lease:
-            successor = self.steal()
-            lease.release()
             self.assertEqual(self.client.get(self.key), successor)
-
-        # Leaving the context must not delete it either.
-        self.assertEqual(self.client.get(self.key), successor)
 
     def test_renewing_an_expired_lease_does_not_recreate_it(self):
         with redis_lease(self.key) as lease:
@@ -103,31 +99,14 @@ class RenewalAndOwnershipTests(LeaseTestCase):
             # A renew that re-created the key would hand a second worker the same lease.
             self.assertIsNone(self.client.get(self.key))
 
-
-class HeartbeatTests(LeaseTestCase):
-    def test_heartbeat_keeps_a_lease_alive_across_a_blocking_call(self):
-        # The blocking call outlasts the ttl several times over: without renewal from a
-        # background heartbeat the key would be gone before it returns.
-        with redis_lease(self.key, ttl_seconds=0.3, heartbeat_seconds=0.1) as lease:
-            time.sleep(0.9)
-            self.assertTrue(lease.owns_lease())
-            self.assertEqual(self.client.get(self.key), lease.token)
-
-        self.assertIsNone(self.client.get(self.key))
-
-    def test_the_heartbeat_thread_stops_when_the_lease_is_released(self):
-        with redis_lease(self.key, ttl_seconds=0.3, heartbeat_seconds=0.1) as lease:
-            time.sleep(0.2)
-            self.assertTrue(lease.heartbeat_running)
-            lease.release()
-            self.assertFalse(lease.heartbeat_running)
-
-    def test_the_heartbeat_stops_renewing_once_the_lease_is_stolen(self):
-        with redis_lease(self.key, ttl_seconds=0.3, heartbeat_seconds=0.1) as lease:
+    def test_release_never_deletes_a_successors_lease(self):
+        with redis_lease(self.key) as lease:
             successor = self.steal()
-            time.sleep(0.3)
-            self.assertFalse(lease.owns_lease())
+            lease.release()
             self.assertEqual(self.client.get(self.key), successor)
+
+        # Leaving the context must not delete it either.
+        self.assertEqual(self.client.get(self.key), successor)
 
 
 class BackendFailureTests(LeaseTestCase):
@@ -152,46 +131,22 @@ class BackendFailureTests(LeaseTestCase):
                 pass
 
     def test_a_failing_renew_fails_closed(self):
-        with redis_lease(self.key, heartbeat_seconds=10) as lease:
+        with redis_lease(self.key) as lease:
             with self.broken_backend(lease), self.assertRaises(DocumentLockBackendError):
                 lease.renew()
 
     def test_a_failing_release_surfaces_the_backend_error(self):
-        with redis_lease(self.key, heartbeat_seconds=10) as lease:
+        with redis_lease(self.key) as lease:
             with self.broken_backend(lease), self.assertRaises(DocumentLockBackendError):
                 lease.release()
 
-    def test_ownership_cannot_be_confirmed_when_the_backend_fails(self):
-        with redis_lease(self.key, heartbeat_seconds=10) as lease:
-            with (
-                mock.patch.object(
-                    lease._lock, "owned", side_effect=RedisConnectionError("connection lost")
-                ),
-                self.assertRaises(DocumentLockBackendError),
-            ):
-                lease.owns_lease()
-
-    def test_release_cleans_up_after_a_transient_ownership_check_failure(self):
-        with redis_lease(self.key, heartbeat_seconds=10) as lease:
-            with (
-                mock.patch.object(
-                    lease._lock, "owned", side_effect=RedisConnectionError("connection lost")
-                ),
-                self.assertRaises(DocumentLockBackendError),
-            ):
-                lease.owns_lease()
-
-            lease.release()
-            self.assertIsNone(self.client.get(self.key))
-
-    def test_a_backend_failure_during_the_heartbeat_remains_retryable(self):
-        with redis_lease(self.key, ttl_seconds=0.4, heartbeat_seconds=0.1) as lease:
-            with self.broken_backend(lease):
-                time.sleep(0.3)
-            # The background thread cannot raise into this thread. Preserve why ownership
-            # was surrendered so the sync caller still sees a retryable backend failure.
-            with self.assertRaises(DocumentLockBackendError):
-                lease.owns_lease()
+    def test_context_cleanup_ignores_a_release_failure(self):
+        with redis_lease(self.key) as lease:
+            broken = self.broken_backend(lease)
+            broken.start()
+            self.addCleanup(broken.stop)
+        # The protected work finished; the ttl provides cleanup without retrying that work.
+        self.assertGreater(self.client.pttl(self.key), 0)
 
 
 class DocumentLockTests(LeaseTestCase):
@@ -216,13 +171,13 @@ class DocumentLockTests(LeaseTestCase):
         other = ChunkIdentity("kb", uuid4().hex, "en-US")
         self.addCleanup(self.client.delete, document_lock_key(other))
         with document_lock(self.identity), document_lock(other) as second:
-            self.assertTrue(second.owns_lease())
+            self.assertEqual(self.client.get(document_lock_key(other)), second.token)
 
     def test_the_same_object_in_another_locale_does_not_contend(self):
         translation = ChunkIdentity("kb", self.identity.object_id, "de")
         self.addCleanup(self.client.delete, document_lock_key(translation))
         with document_lock(self.identity), document_lock(translation) as second:
-            self.assertTrue(second.owns_lease())
+            self.assertEqual(self.client.get(document_lock_key(translation)), second.token)
 
 
 class LockSettingsTests(LeaseTestCase):
@@ -232,42 +187,53 @@ class LockSettingsTests(LeaseTestCase):
                 with redis_lease(key):
                     pass
 
-    def test_invalid_intervals_fail_closed(self):
-        invalid = (
-            {"RETRIEVAL_LOCK_TTL_SECONDS": 0},
-            {"RETRIEVAL_LOCK_TTL_SECONDS": -1},
-            {"RETRIEVAL_LOCK_TTL_SECONDS": True},
-            {"RETRIEVAL_LOCK_TTL_SECONDS": "60"},
-            {"RETRIEVAL_LOCK_HEARTBEAT_SECONDS": 0},
-            {"RETRIEVAL_LOCK_HEARTBEAT_SECONDS": -1},
-            {"RETRIEVAL_LOCK_HEARTBEAT_SECONDS": True},
-            # A heartbeat at or beyond the ttl can never renew in time.
-            {"RETRIEVAL_LOCK_TTL_SECONDS": 10, "RETRIEVAL_LOCK_HEARTBEAT_SECONDS": 10},
-            {"RETRIEVAL_LOCK_TTL_SECONDS": 10, "RETRIEVAL_LOCK_HEARTBEAT_SECONDS": 30},
-        )
-        for overrides in invalid:
+    def test_an_invalid_configured_ttl_fails_closed(self):
+        for ttl in (0, -1, True, "60", float("inf"), float("nan")):
             with (
-                self.subTest(overrides=overrides),
-                override_settings(**overrides),
+                self.subTest(ttl=ttl),
+                override_settings(RETRIEVAL_LOCK_TTL_SECONDS=ttl),
                 self.assertRaises(ImproperlyConfigured),
             ):
                 with redis_lease(self.key):
                     pass
         self.assertIsNone(self.client.get(self.key))
 
-    def test_invalid_arguments_fail_closed_without_acquiring(self):
-        for kwargs in (
-            {"ttl_seconds": 0},
-            {"heartbeat_seconds": 0},
-            {"ttl_seconds": 0.0001},
-            {"ttl_seconds": 0.001},
-            {"heartbeat_seconds": 0.0001},
-            {"ttl_seconds": "5"},
-        ):
+    def test_an_invalid_ttl_argument_fails_closed_without_acquiring(self):
+        # Below a millisecond the expiry truncates to zero, which would delete the key.
+        for ttl in (0, 0.0001, "5", float("nan")):
             with (
-                self.subTest(kwargs=kwargs),
+                self.subTest(ttl=ttl),
                 self.assertRaises(ImproperlyConfigured),
             ):
-                with redis_lease(self.key, **kwargs):
+                with redis_lease(self.key, ttl_seconds=ttl):
                     pass
         self.assertIsNone(self.client.get(self.key))
+
+    @override_settings(
+        RETRIEVAL_LOCK_TTL_SECONDS=1,
+        RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS=60,
+    )
+    def test_lifecycle_operations_use_their_own_ttl(self):
+        with lifecycle_lock():
+            self.assertGreater(self.client.pttl(f"{KEY_PREFIX}:lifecycle"), 50_000)
+
+    def test_ttl_errors_name_the_setting_or_argument_to_fix(self):
+        cases = (
+            (
+                {"RETRIEVAL_LOCK_TTL_SECONDS": -1},
+                partial(redis_lease, self.key),
+                "RETRIEVAL_LOCK_TTL_SECONDS",
+            ),
+            (
+                {"RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS": -1},
+                lifecycle_lock,
+                "RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS",
+            ),
+            ({}, partial(redis_lease, self.key, ttl_seconds=-1), "ttl_seconds"),
+        )
+        for overrides, factory, expected in cases:
+            with self.subTest(source=expected), override_settings(**overrides):
+                with self.assertRaises(ImproperlyConfigured) as caught:
+                    with factory():
+                        pass
+                self.assertIn(expected, str(caught.exception))

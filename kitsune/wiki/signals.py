@@ -1,8 +1,24 @@
+from django.contrib.auth.models import Group
 from django.db import transaction
-from django.db.models.signals import m2m_changed, post_save
+from django.db.models import Q
+from django.db.models.signals import m2m_changed, post_save, pre_delete
 from django.dispatch import receiver
 
 from kitsune.wiki.models import Document
+
+
+def _rerender_after_commit(document_ids):
+    ids = tuple(sorted(set(document_ids)))
+    if not ids:
+        return
+
+    from kitsune.wiki.tasks import render_document_cascade
+
+    def rerender():
+        for document_id in ids:
+            render_document_cascade.delay(document_id)
+
+    transaction.on_commit(rerender)
 
 
 @receiver(
@@ -36,15 +52,7 @@ def render_on_restrict_to_groups_change(sender, instance, action, reverse, pk_se
     translation_ids = Document.objects.filter(parent_id__in=document_ids).values_list(
         "id", flat=True
     )
-    render_ids = sorted(document_ids | set(translation_ids))
-
-    from kitsune.wiki.tasks import render_document_cascade
-
-    def render_documents():
-        for document_id in render_ids:
-            render_document_cascade.delay(document_id)
-
-    transaction.on_commit(render_documents)
+    _rerender_after_commit(document_ids | set(translation_ids))
 
 
 @receiver(
@@ -64,3 +72,44 @@ def reject_obsolete_translations(sender, instance, created, **kwargs):
     from kitsune.wiki.services import HybridTranslationService
 
     HybridTranslationService().reject_obsolete_translations(instance)
+
+
+@receiver(
+    pre_delete,
+    sender=Document,
+    dispatch_uid="wiki.rerender_includers_on_delete",
+)
+def rerender_includers_on_delete(sender, instance, **kwargs):
+    """Re-render the documents that included a document being deleted.
+
+    Their stored HTML still contains the deleted content, and the link rows that identify them
+    disappear with the cascade — so the includers are captured now and rendered after commit.
+    Only *direct* includers are captured; `render_document_cascade` walks the transitive ones
+    itself, so the mutation does not carry the whole closure.
+    """
+    includer_ids = (
+        instance.links_to()
+        .filter(kind__in=["template", "include"])
+        .values_list("linked_from_id", flat=True)
+    )
+    _rerender_after_commit(includer_ids)
+
+
+@receiver(
+    pre_delete,
+    sender=Group,
+    dispatch_uid="wiki.rerender_restricted_documents_on_group_delete",
+)
+def rerender_restricted_documents_on_group_delete(sender, instance, **kwargs):
+    """Capture restricted families before deleting the group widens their access."""
+    restricted_ids = instance.restricted_documents.values_list("id", flat=True)
+    originals = {
+        parent_id or document_id
+        for parent_id, document_id in Document.objects.filter(pk__in=restricted_ids).values_list(
+            "parent_id", "id"
+        )
+    }
+    affected_ids = Document.objects.filter(
+        Q(pk__in=originals) | Q(parent_id__in=originals)
+    ).values_list("id", flat=True)
+    _rerender_after_commit(affected_ids)

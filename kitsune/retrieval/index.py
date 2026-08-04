@@ -248,6 +248,13 @@ class ChunkSource:
         return ChunkIdentity(self.content_type, self.object_id, self.locale)
 
 
+def access_metadata_matches(stored: Mapping, source: ChunkSource) -> bool:
+    """Whether one stored chunk has the access fields this source requires."""
+    stored_groups = stored.get("access_group_ids")
+    expected_groups = list(source.access_group_ids)
+    return stored.get("visibility") == source.visibility and stored_groups == expected_groups
+
+
 @dataclass(frozen=True)
 class ExpectedDocumentState:
     """One worker-computed expected commit, stored authoritatively on the manifest."""
@@ -537,12 +544,16 @@ def update_chunks_metadata_for(
 ) -> None:
     """Rewrite each existing position's metadata and state in place, delete orphans, commit.
 
-    The cheapest correct path when only scope or non-access source metadata changed: it
-    preserves each chunk's stored text and vector and makes no embedding call. Access-control
-    transitions instead use the embargoed evict, rerender, and resync workflow. The caller
-    must already have verified that every expected position's stored text, vector, and content
-    hash are correct — this never creates a missing position, because a chunk without text and
-    a vector would be indistinguishable from a real one.
+    The cheapest correct path when only scope or source metadata changed: it preserves each
+    chunk's stored text and vector and makes no embedding call. The caller must already have
+    verified that every expected position's stored text, vector, and content hash are correct
+    — this never creates a missing position, because a chunk without text and a vector would
+    be indistinguishable from a real one.
+
+    While ingestion is public-only, an access change never reaches here: it flips the
+    document's eligibility, so the sync core evicts it or indexes it afresh instead. Once
+    restricted ingestion is enabled, a change to `visibility`/`access_group_ids` becomes an
+    ordinary metadata change and this is the path it takes (ADR 0006).
     """
     _require_concrete_index(index)
     _verify_expected_state(chunks, source, expected_state)
@@ -743,18 +754,17 @@ def resolve_active_targets() -> tuple[str, ...]:
     return tuple(dict.fromkeys(target for target in candidates if target))
 
 
-def resolve_read_target_and_recipe() -> tuple[str, EmbeddingRecipe]:
-    """Bind a query to one concrete read index and the recipe stamped on it.
+def recipe_for_index(index: str) -> EmbeddingRecipe:
+    """The embedding recipe stamped on one concrete index.
 
-    Fails closed: a missing read alias raises rather than silently querying the write
-    alias, and an un-stamped or tampered `_meta` raises through ``read_index_meta``.
+    Reconstructed from `_meta` rather than from current settings, so a worker writing to an
+    older generation embeds into the vector space that generation actually holds. An
+    un-stamped or tampered `_meta` raises through ``read_index_meta``.
     """
-    read_index = ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias)
-    if not read_index:
-        raise RetrievalIndexUnavailable("the retrieval read alias points at no index")
-    meta = read_index_meta(read_index)
+    _require_concrete_index(index)
+    meta = read_index_meta(index)
     embedding = meta["embedding"]
-    recipe = recipe_from_payload(
+    return recipe_from_payload(
         {
             "provider": embedding["provider"],
             "model": embedding["model"],
@@ -764,4 +774,14 @@ def resolve_read_target_and_recipe() -> tuple[str, EmbeddingRecipe]:
             "normalization": embedding["normalization"],
         }
     )
-    return read_index, recipe
+
+
+def resolve_read_target_and_recipe() -> tuple[str, EmbeddingRecipe]:
+    """Bind a query to one concrete read index and the recipe stamped on it.
+
+    Fails closed: a missing read alias raises rather than silently querying the write alias.
+    """
+    read_index = ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias)
+    if not read_index:
+        raise RetrievalIndexUnavailable("the retrieval read alias points at no index")
+    return read_index, recipe_for_index(read_index)

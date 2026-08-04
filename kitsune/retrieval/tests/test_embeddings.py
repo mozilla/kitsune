@@ -6,6 +6,8 @@ from unittest import mock
 from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase, override_settings
 from google.genai.errors import ClientError, ServerError
+from httpx import ReadTimeout as HttpxReadTimeout
+from requests import ReadTimeout as RequestsReadTimeout
 
 from kitsune.retrieval.embeddings import (
     _MAX_ATTEMPTS,
@@ -133,6 +135,46 @@ class VertexBackendTests(SimpleTestCase):
         self.assertEqual(first_call.kwargs["config"].task_type, "RETRIEVAL_DOCUMENT")
         self.assertEqual(first_call.kwargs["config"].output_dimensionality, 8)
         self.assertIs(first_call.kwargs["config"].auto_truncate, False)
+
+    @override_settings(RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS=12)
+    def test_every_request_carries_an_explicit_deadline(self):
+        client, request = _mock_vertex_client()
+        with mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client):
+            get_embeddings(["a"], task="document", recipe=VERTEX)
+
+        http_options = request.call_args.kwargs["config"].http_options
+        self.assertEqual(http_options.timeout, 12_000)  # the provider expects milliseconds
+
+    def test_transport_timeout_is_retried(self):
+        for timeout in (HttpxReadTimeout("timed out"), RequestsReadTimeout("timed out")):
+            with self.subTest(timeout=type(timeout).__name__):
+                client, request = _mock_vertex_client()
+                request.side_effect = [timeout, _vertex_response(["a"])]
+                with (
+                    mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
+                    mock.patch("kitsune.retrieval.embeddings.time.sleep"),
+                ):
+                    vectors = get_embeddings(["a"], task="document", recipe=VERTEX)
+                self.assertEqual(len(vectors), 1)
+                self.assertEqual(request.call_count, 2)
+
+    def test_an_unusable_timeout_fails_closed(self):
+        for timeout in (0, -1, 0.0001, True, "1", float("inf"), float("nan")):
+            with (
+                self.subTest(timeout=timeout),
+                override_settings(RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS=timeout),
+                mock.patch("kitsune.retrieval.embeddings._vertex_client") as vertex_client,
+                self.assertRaises(ImproperlyConfigured),
+            ):
+                get_embeddings(["a"], task="document", recipe=VERTEX)
+            vertex_client.assert_not_called()
+
+    @override_settings(RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS=0.001)
+    def test_one_millisecond_is_the_minimum_timeout(self):
+        client, request = _mock_vertex_client()
+        with mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client):
+            get_embeddings(["a"], task="document", recipe=VERTEX)
+        self.assertEqual(request.call_args.kwargs["config"].http_options.timeout, 1)
 
     def test_query_uses_query_task_type(self):
         client, request = _mock_vertex_client()
