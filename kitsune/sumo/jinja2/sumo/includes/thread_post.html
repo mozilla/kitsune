@@ -67,10 +67,10 @@
   <div class="thread-detail--context">
     <div class="thread-detail--context-left">
       {% if obj.product %}
+        {% set _product_title = pgettext('DB: products.Product.title', obj.product.title) %}
         {% if obj.channel == "direct_support" %}
-          <span class="question-entry--meta-item">{{ obj.product.title }}</span>
+          <span class="question-entry--meta-item">{{ _product_title }}</span>
         {% else %}
-          {% set _product_title = pgettext('DB: products.Product.title', obj.product.title) %}
           <a class="question-entry--meta-item"
              href="{{ url('questions.list', product_slug=obj.product.slug) }}"
              title="{{ _('{product} questions')|f(product=_product_title) }}">
@@ -85,10 +85,10 @@
         {% endif %}
       {% endif %}
       {% if obj.topic %}
+        {% set _topic_title = pgettext('DB: products.Topic.title', obj.topic.title) %}
         {% if obj.channel == "direct_support" %}
-          <span class="question-entry--meta-item">{{ obj.topic.title }}</span>
+          <span class="question-entry--meta-item">{{ _topic_title }}</span>
         {% else %}
-          {% set _topic_title = pgettext('DB: products.Topic.title', obj.topic.title) %}
           <a class="question-entry--meta-item"
              href="{{ url('questions.list_by_topic', topic_slug=obj.topic.slug) }}"
              title="{{ _('{topic} questions')|f(topic=_topic_title) }}">
@@ -114,25 +114,23 @@
       </span>
     </div>
     {% if obj.channel != "direct_support" and obj.last_answer %}
-      <span class="question-entry--last-reply"
+      <span class="question-entry--meta-item"
             title="{{ _('Last reply by {user}')|f(user=display_name(obj.last_answer.creator)) }}">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
              aria-hidden="true">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
-        <span class="question-entry--last-reply-name">{{ display_name(obj.last_answer.creator)|truncate(20) }}</span>
-        <span class="question-entry--last-reply-verb">{{ _('replied') }}</span>
-        <a class="question-entry--last-reply-time" href="{{ obj.last_answer.get_absolute_url() }}" rel="nofollow">
-          <time itemprop="dateModified" datetime="{{ obj.last_answer.created.isoformat() }}">{{ obj.last_answer.created|timesince }}</time>
-        </a>
+        {% trans name=display_name(obj.last_answer.creator)|truncate(20),
+                 b_open='<span class="question-entry--meta-bold">'|safe, b_close='</span>'|safe,
+                 when=obj.last_answer.created|timesince,
+                 a_open='<a href="'|safe + obj.last_answer.get_absolute_url() + '" rel="nofollow">'|safe, a_close='</a>'|safe %}
+          {{ b_open }}{{ name }}{{ b_close }} replied {{ a_open }}{{ when }}{{ a_close }}
+        {% endtrans %}
       </span>
     {% elif obj.channel == "direct_support" and obj.zd_updated_at and obj.zd_updated_at != obj.created %}
       <span class="question-entry--meta-item">
-        {{ _('Updated') }}
-        <time datetime="{{ obj.zd_updated_at.isoformat() }}">
-          {{ datetimeformat(obj.zd_updated_at, use_timesince=True) }}
-        </time>
+        {{ _('Updated {when}')|f(when=datetimeformat(obj.zd_updated_at, use_timesince=True)) }}
       </span>
     {% endif %}
   </div>
