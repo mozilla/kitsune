@@ -73,6 +73,7 @@
         {% else %}
           <a class="question-entry--meta-item"
              href="{{ url('questions.list', product_slug=obj.product.slug) }}"
+             {# L10n: A tooltip for the product title link on question cards, which will filter questions by the given product. Question cards are displayed when viewing a question list, e.g., on a support forum: https://support.mozilla.org/questions/firefox #}
              title="{{ _('{product} questions')|f(product=_product_title) }}">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -91,6 +92,7 @@
         {% else %}
           <a class="question-entry--meta-item"
              href="{{ url('questions.list_by_topic', topic_slug=obj.topic.slug) }}"
+             {# L10n: A tooltip for the topic title link on question cards, which will filter questions by the given topic. Question cards are displayed when viewing a question list, e.g., on a support forum: https://support.mozilla.org/questions/firefox #}
              title="{{ _('{topic} questions')|f(topic=_topic_title) }}">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -109,30 +111,34 @@
         </svg>
         <time {% if obj.channel != "direct_support" %}itemprop="dateCreated" {% endif %}datetime="{{ obj.created.isoformat() }}">
           {% if obj.channel == "direct_support" %}{{ datetimeformat(obj.created, use_timesince=True) }}
-          {% else %}{{ _('asked {when}')|f(when=obj.created|timesince) }}{% endif %}
+          {% else %}
+            {# L10n: This is a label displayed on question cards. `when` is how long ago the question was posted. Question cards are displayed when viewing a question list, e.g., on a support forum: https://support.mozilla.org/questions/firefox #}
+            {{ _('asked {when}')|f(when=obj.created|timesince) }}
+          {% endif %}
         </time>
       </span>
     </div>
     {% if obj.channel != "direct_support" and obj.last_answer %}
-      <span class="question-entry--last-reply"
+      <span class="question-entry--meta-item"
             title="{{ _('Last reply by {user}')|f(user=display_name(obj.last_answer.creator)) }}">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
              aria-hidden="true">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
-        <span class="question-entry--last-reply-name">{{ display_name(obj.last_answer.creator)|truncate(20) }}</span>
-        <span class="question-entry--last-reply-verb">{{ _('replied') }}</span>
-        <a class="question-entry--last-reply-time" href="{{ obj.last_answer.get_absolute_url() }}" rel="nofollow">
-          <time itemprop="dateModified" datetime="{{ obj.last_answer.created.isoformat() }}">{{ obj.last_answer.created|timesince }}</time>
-        </a>
+        <span class="question-entry--meta-item-text">
+          {# L10n: This is a label displayed on question cards and at the top of question pages, providing info about the latest reply in the thread (if present). `name` is the display name of the reply author, `when` is how long ago the reply was posted, and the other variables are HTML markup. Question cards are displayed when viewing a question list, e.g., on a support forum: https://support.mozilla.org/questions/firefox #}
+          {% trans name=display_name(obj.last_answer.creator)|truncate(20),
+                   b_open='<span class="question-entry--meta-bold">'|safe, b_close='</span>'|safe,
+                   when=obj.last_answer.created|timesince,
+                   a_open='<a href="'|safe + obj.last_answer.get_absolute_url() + '" rel="nofollow">'|safe, a_close='</a>'|safe %}
+            {{ b_open }}{{ name }}{{ b_close }} replied {{ a_open }}{{ when }}{{ a_close }}
+          {% endtrans %}
+        </span>
       </span>
     {% elif obj.channel == "direct_support" and obj.zd_updated_at and obj.zd_updated_at != obj.created %}
       <span class="question-entry--meta-item">
-        {{ _('Updated') }}
-        <time datetime="{{ obj.zd_updated_at.isoformat() }}">
-          {{ datetimeformat(obj.zd_updated_at, use_timesince=True) }}
-        </time>
+        {{ _('Updated {when}')|f(when=datetimeformat(obj.zd_updated_at, use_timesince=True)) }}
       </span>
     {% endif %}
   </div>
