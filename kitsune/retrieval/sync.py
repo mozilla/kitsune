@@ -12,7 +12,6 @@ shares the provider calls, so it is cheaper without being weaker.
 import logging
 from collections import Counter
 from collections.abc import Iterable
-from contextlib import ExitStack
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -69,6 +68,18 @@ class SyncOutcome(StrEnum):
     ABORTED_STALE = "aborted_stale"
 
 
+def _stored_is_newer(
+    manifest: ExpectedDocumentState | None, expected: ExpectedDocumentState
+) -> bool:
+    return bool(
+        manifest
+        and (
+            manifest.chunking_generation > expected.chunking_generation
+            or manifest.indexed_revision_id > expected.indexed_revision_id
+        )
+    )
+
+
 def plan_target(
     *,
     chunks: list[Chunk],
@@ -83,10 +94,7 @@ def plan_target(
     exceptional incomplete writes are replaced instead of making every normal sync prove that
     their individual vectors are reusable.
     """
-    if manifest and (
-        manifest.chunking_generation > expected_state.chunking_generation
-        or manifest.indexed_revision_id > expected_state.indexed_revision_id
-    ):
+    if _stored_is_newer(manifest, expected_state):
         return SyncOutcome.ABORTED_STALE
 
     if manifest is None or manifest.content_hash != expected_state.content_hash:
@@ -116,11 +124,11 @@ class SyncReport:
 
 @dataclass(frozen=True)
 class BatchSyncReport:
-    """What one batch attempt did. Contended and deferred documents are unfinished work."""
+    """What one optimistic batch did and which documents need ordinary sync."""
 
     reports: dict[int, SyncReport] = field(default_factory=dict)
-    contended: tuple[int, ...] = ()
-    deferred: tuple[int, ...] = ()
+    index: str | None = None
+    redispatch: tuple[int, ...] = ()
     embedding_calls: int = 0
 
 
@@ -333,6 +341,13 @@ def _revalidate(
     if not is_retrieval_indexable(document):
         lease.renew()
         return _evict(work.identity, index, embedding_calls)
+    # Batch planning is optimistic, so another worker may have advanced the index before this
+    # lease was acquired. Never let a lagging database read downgrade that committed state.
+    if _stored_is_newer(
+        read_manifest(index=index, identity=work.identity),
+        work.expected,
+    ):
+        return _report(work.identity, index, SyncOutcome.ABORTED_STALE, embedding_calls)
     fresh_chunks = chunk(CONTENT_TYPE, document.html, title=document.title)
     if expected_state_for(fresh_chunks, build_source(document), document) != work.expected:
         return _report(work.identity, index, SyncOutcome.ABORTED_STALE, embedding_calls)
@@ -479,34 +494,12 @@ def max_batch_documents() -> int:
     return _bulk_bound("RETRIEVAL_BULK_MAX_DOCUMENTS")
 
 
-def _within_input_budget(
-    works: dict[int, _DocumentWork], max_inputs: int
-) -> tuple[dict[int, _DocumentWork], tuple[int, ...]]:
-    """Trim the batch to the configured embedding-input bound.
-
-    The first document is always admitted, whatever it costs: an article with more chunks than
-    the bound would otherwise be deferred out of every batch forever.
-    """
-    admitted: dict[int, _DocumentWork] = {}
-    deferred: list[int] = []
-    used = 0
-    for document_id, work in works.items():
-        needed = len(work.chunks) if work.outcome is SyncOutcome.EMBED_REPLACE else 0
-        if admitted and used + needed > max_inputs:
-            deferred.append(document_id)
-            continue
-        admitted[document_id] = work
-        used += needed
-    return admitted, tuple(deferred)
-
-
 def sync_document_batch(document_ids, *, target_index: str | None = None) -> BatchSyncReport:
     """Bring documents into agreement with one target, sharing the provider call.
 
-    Per-document correctness is unchanged: each document is planned, revalidated, and committed
-    under its own lease, and holds that lease across its own writes. Only the embedding calls
-    are shared. A document another worker is already holding is reported rather than waited on,
-    so one contended document cannot stall the batch.
+    Planning and embedding are optimistic and hold no leases. Each write then gets one document
+    lease, reloads the source, and commits only if the prepared state is still current. Overflow,
+    source races, and contention all use the same ordinary per-document retry path.
     """
     ids = ordered_document_ids(document_ids)
     if not ids:
@@ -526,95 +519,94 @@ def sync_document_batch(document_ids, *, target_index: str | None = None) -> Bat
 
     ids, over_document_limit = ids[:max_documents], ids[max_documents:]
     reports: dict[int, SyncReport] = {}
-    contended: list[int] = []
+    redispatch = list(over_document_limit)
 
-    with ExitStack() as stack:
-        leases = {}
-        known = _load_many(ids)
-        for document_id in ids:
-            document = known.get(document_id)
-            if document is None:
-                reports[document_id] = _evict_object(str(document_id), index)
-                continue
-            try:
-                leases[document_id] = stack.enter_context(document_lock(_identity_for(document)))
-            except DocumentLockUnavailable:
-                contended.append(document_id)
-
-        eligible = {}
-        locked = _load_many(leases)  # authoritative read, now that nobody else may write
-        for document_id in leases:
-            document = locked.get(document_id)
-            if document is None:
-                reports[document_id] = _evict_object(str(document_id), index)
-            elif not is_retrieval_indexable(document):
-                reports[document_id] = _evict(_identity_for(document), index)
-            else:
-                eligible[document_id] = document
-
-        # Invalid target metadata must not prevent the safety evictions above. It still fails
-        # before any provider call or indexing write for eligible documents.
-        calls = 0
-        over_input_limit: tuple[int, ...] = ()
-        if eligible:
-            recipe = recipe_for_index(index)
-            works: dict[int, _DocumentWork] = {}
-            for document_id, document in eligible.items():
-                planned = _plan_document(document, index)
-                if isinstance(planned, SyncReport):
-                    reports[document_id] = planned
+    # Remove missing or ineligible content before reading the target recipe. Bad target metadata
+    # must not prevent a safety eviction. An ineligible document is reloaded under its own short
+    # lease; if it became eligible in the meantime, ordinary sync handles its new state.
+    eligible = {}
+    known = _load_many(ids)
+    for document_id in ids:
+        document = known.get(document_id)
+        if document is None:
+            reports[document_id] = _evict_object(str(document_id), index)
+            continue
+        if is_retrieval_indexable(document):
+            eligible[document_id] = document
+            continue
+        try:
+            with document_lock(_identity_for(document)):
+                fresh = _load(document_id)
+                if fresh is None:
+                    reports[document_id] = _evict_object(str(document_id), index)
+                elif is_retrieval_indexable(fresh):
+                    redispatch.append(document_id)
                 else:
-                    works[document_id] = planned
+                    reports[document_id] = _evict(_identity_for(fresh), index)
+        except DocumentLockUnavailable:
+            redispatch.append(document_id)
 
-            works, over_input_limit = _within_input_budget(works, max_inputs)
-            for document_id in over_input_limit:
-                # Nothing will be written for it, so stop holding it for the rest of the batch.
-                leases[document_id].release()
+    calls = 0
+    if eligible:
+        recipe = recipe_for_index(index)
+        planned_works: dict[int, _DocumentWork] = {}
+        for document_id, document in eligible.items():
+            planned = _plan_document(document, index)
+            if isinstance(planned, SyncReport):
+                reports[document_id] = planned
+            else:
+                planned_works[document_id] = planned
 
-            vectors, calls = _embed_for_works(works, recipe)
-            fresh = _load_many(works)
-            for document_id, work in works.items():
-                lease = leases[document_id]
-                try:
-                    terminal = _revalidate(work, fresh.get(document_id), index, lease)
+        # Keep the task's total embedding input bounded. Always admit the first document so an
+        # unusually large article cannot be rejected forever; overflow takes ordinary sync.
+        works: dict[int, _DocumentWork] = {}
+        used_inputs = 0
+        for document_id, work in planned_works.items():
+            needed = len(work.chunks) if work.outcome is SyncOutcome.EMBED_REPLACE else 0
+            if works and used_inputs + needed > max_inputs:
+                redispatch.append(document_id)
+                continue
+            works[document_id] = work
+            used_inputs += needed
+
+        vectors, calls = _embed_for_works(works, recipe)
+        for document_id, work in works.items():
+            try:
+                with document_lock(work.identity) as lease:
+                    terminal = _revalidate(work, _load(document_id), index, lease)
                     if terminal is not None:
-                        reports[document_id] = terminal
+                        if terminal.outcome is SyncOutcome.ABORTED_STALE:
+                            redispatch.append(document_id)
+                        else:
+                            reports[document_id] = terminal
                         continue
                     terminal, written_outcome, fallback_calls = _apply_plan(
                         work, index, recipe, lease, vectors.get(document_id, ())
                     )
                     calls += fallback_calls
                     if terminal is not None:
-                        reports[document_id] = terminal
+                        if terminal.outcome is SyncOutcome.ABORTED_STALE:
+                            redispatch.append(document_id)
+                        else:
+                            reports[document_id] = terminal
                         continue
-                except DocumentLockUnavailable:
-                    # One stolen lease is that document's problem; the rest of the batch stands.
-                    contended.append(document_id)
-                    continue
-                reports[document_id] = _report(
-                    work.identity,
-                    index,
-                    written_outcome,
-                    fallback_calls,
-                    approved_at=work.approved_at,
-                )
+                    reports[document_id] = _report(
+                        work.identity,
+                        index,
+                        written_outcome,
+                        fallback_calls,
+                        approved_at=work.approved_at,
+                    )
+            except DocumentLockUnavailable:
+                redispatch.append(document_id)
 
-    deferred = tuple(sorted(over_document_limit + over_input_limit))
-    if deferred:
-        emit(
-            "retrieval.batch.deferred",
-            level=logging.WARNING,
-            over_document_limit=len(over_document_limit),
-            over_input_limit=len(over_input_limit),
-            document_ids=",".join(str(document_id) for document_id in deferred),
-        )
+    redispatch = sorted(set(redispatch))
     emit(
         "retrieval.batch.completed",
         content_type=CONTENT_TYPE,
         document_count=len(ids) + len(over_document_limit),
-        synced=len(reports),
-        contended_count=len(contended),
-        deferred_count=len(deferred),
+        processed_count=len(reports),
+        redispatched_count=len(redispatch),
         embedding_calls=calls,
         outcomes=dict(
             Counter(
@@ -624,7 +616,12 @@ def sync_document_batch(document_ids, *, target_index: str | None = None) -> Bat
             )
         ),
     )
-    return BatchSyncReport(reports, tuple(sorted(contended)), deferred, calls)
+    return BatchSyncReport(
+        reports=reports,
+        index=index,
+        redispatch=tuple(redispatch),
+        embedding_calls=calls,
+    )
 
 
 def delete_document_chunks(

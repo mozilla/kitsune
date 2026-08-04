@@ -8,15 +8,11 @@ Arguments are JSON-safe primitives so a queued task never depends on unpickling 
 Results are ignored because sync outcomes are emitted as structured events.
 """
 
-import logging
-import random
-
 from celery import shared_task
 from django.conf import settings
 from elastic_transport import ConnectionError as ElasticsearchConnectionError
 from elastic_transport import ConnectionTimeout as ElasticsearchConnectionTimeout
 
-from kitsune.retrieval.events import emit
 from kitsune.retrieval.index import ChunkIdentity, IndexWriteError
 from kitsune.retrieval.locks import DocumentLockBackendError, DocumentLockUnavailable
 from kitsune.retrieval.sync import (
@@ -42,9 +38,6 @@ _LIMITS = {
     "time_limit": settings.RETRIEVAL_TASK_TIME_LIMIT_SECONDS,
     "ignore_result": True,
 }
-# Batch contention is retried separately so completed work is never repeated.
-_BULK_RETRY_SECONDS = 30
-
 _RETRY = {
     "autoretry_for": _RETRYABLE,
     "retry_backoff": True,
@@ -59,10 +52,10 @@ _SINGLE_DOCUMENT_RETRY = {
 
 @shared_task(**_LIMITS, **_SINGLE_DOCUMENT_RETRY)
 @skip_if_read_only_mode
-def sync_document(document_id: int):
-    """Bring the current write index into agreement with one KB document."""
-    if settings.RETRIEVAL_LIVE_INDEXING:
-        sync_document_chunks(document_id)
+def sync_document(document_id: int, target_index: str | None = None):
+    """Sync one KB document, optionally pinned to an explicit rebuild generation."""
+    if settings.RETRIEVAL_LIVE_INDEXING or target_index is not None:
+        sync_document_chunks(document_id, target_index=target_index)
 
 
 @shared_task(**_LIMITS, **_SINGLE_DOCUMENT_RETRY)
@@ -101,34 +94,11 @@ def enqueue_document_delete(identity: ChunkIdentity, *, target_index: str | None
 
 @shared_task(**_LIMITS, **_RETRY)
 @skip_if_read_only_mode
-def sync_documents(document_ids, target_index: str | None = None, contention_attempt: int = 0):
-    """Bring a batch of KB documents into agreement, sharing embedding calls across them.
-
-    Deferred work is queued immediately. Contended documents retry separately with jitter, so
-    neither path repeats work that this attempt already committed.
-    """
+def sync_documents(document_ids, target_index: str | None = None):
+    """Share embeddings across documents, then redispatch unfinished work individually."""
     report = sync_document_batch(document_ids, target_index=target_index)
-    if report.deferred:
-        enqueue_document_batch(report.deferred, target_index=target_index)
-
-    if not report.contended:
-        return
-    if contention_attempt >= sync_documents.max_retries:
-        emit(
-            "retrieval.batch.abandoned",
-            level=logging.WARNING,
-            reason="contention",
-            document_count=len(report.contended),
-        )
-        return
-    sync_documents.apply_async(
-        args=[list(report.contended)],
-        kwargs={
-            "target_index": target_index,
-            "contention_attempt": contention_attempt + 1,
-        },
-        countdown=random.uniform(1, _BULK_RETRY_SECONDS),
-    )
+    for document_id in report.redispatch:
+        sync_document.delay(document_id, target_index=report.index)
 
 
 def enqueue_document_batch(document_ids, *, target_index: str | None = None) -> None:

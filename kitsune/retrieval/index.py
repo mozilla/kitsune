@@ -1,5 +1,6 @@
 import re
 from collections.abc import Mapping
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import ClassVar
@@ -626,32 +627,33 @@ def read_index_summaries(
     if locales:
         filters.append({"terms": {"locale": list(locales)}})
     fields = sorted(_MANIFEST_SOURCE_FIELDS | {"position", "visibility", "access_group_ids"})
-    hits = scan(
-        es_client(),
-        index=index,
-        query={"query": {"bool": {"filter": filters}}, "_source": fields},
-    )
-
     manifests: dict[ChunkIdentity, ExpectedDocumentState] = {}
     chunks: dict[ChunkIdentity, list[StoredChunkSummary]] = {}
     identities: set[ChunkIdentity] = set()
-    for hit in hits:
-        source = hit.get("_source", {})
-        kind = source.get("kind")
-        if kind not in (MANIFEST_KIND, CHUNK_KIND):
-            raise InvalidDocumentState("indexed document has an unknown kind")
-        identity = ChunkIdentity(
-            content_type=source.get("content_type"),
-            object_id=source.get("object_id"),
-            locale=source.get("locale"),
+    with closing(
+        scan(
+            es_client(),
+            index=index,
+            query={"query": {"bool": {"filter": filters}}, "_source": fields},
         )
-        identities.add(identity)
-        if kind == MANIFEST_KIND:
-            if identity in manifests:
-                raise InvalidDocumentState(f"multiple manifests found for {identity!r}")
-            manifests[identity] = parse_manifest(source)
-        else:
-            chunks.setdefault(identity, []).append(_chunk_summary(source))
+    ) as hits:
+        for hit in hits:
+            source = hit.get("_source", {})
+            kind = source.get("kind")
+            if kind not in (MANIFEST_KIND, CHUNK_KIND):
+                raise InvalidDocumentState("indexed document has an unknown kind")
+            identity = ChunkIdentity(
+                content_type=source.get("content_type"),
+                object_id=source.get("object_id"),
+                locale=source.get("locale"),
+            )
+            identities.add(identity)
+            if kind == MANIFEST_KIND:
+                if identity in manifests:
+                    raise InvalidDocumentState(f"multiple manifests found for {identity!r}")
+                manifests[identity] = parse_manifest(source)
+            else:
+                chunks.setdefault(identity, []).append(_chunk_summary(source))
 
     return {
         identity: IndexedDocumentSummary(
