@@ -135,7 +135,9 @@ target-version = "py314"
 line-length = 99
 
 [tool.ruff.lint]
-extend-select = ["E", "W", "F", "I", "B", "C4", "UP", "N", "PL", "RUF"]
+# "select", not "extend-select": this is the whole rule set. With "extend-select",
+# a ruff release that widens its own defaults turns on hundreds of extra rules.
+select = ["E", "W", "F", "I", "B", "C4", "UP", "N", "PL", "RUF"]
 ignore = [
     "E501",  # Line too long - already ignored
     "RUF012",  # Mutable class attributes should be annotated with typing.ClassVar
@@ -145,6 +147,7 @@ ignore = [
     "N814",   # Camelcase imported as constant
     "N817",   # CamelCase imported as acronym
     "PLR0913", # Too many arguments in function definition
+    "PLR0917", # Too many positional arguments
     "PLR2004", # Magic value used in comparison
     "PLR1714", # Consider merging multiple comparisons
     "B904",   # Within an except clause, raise exceptions with raise ... from err

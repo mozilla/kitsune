@@ -66,7 +66,7 @@ def add_permission(user, model, permission_codename):
 
     """
     content_type = ContentType.objects.get_for_model(model)
-    permission, created = Permission.objects.get_or_create(
+    permission, _created = Permission.objects.get_or_create(
         codename=permission_codename,
         content_type=content_type,
         defaults={"name": permission_codename},

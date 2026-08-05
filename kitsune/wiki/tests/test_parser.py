@@ -89,14 +89,14 @@ class SimpleSyntaxTestCase(TestCase):
 
     def test_template_inline(self):
         """Inline templates are not wrapped in <p>s"""
-        doc, p = doc_parse_markup(
+        doc, _p = doc_parse_markup(
             '<span class="key">{{{1}}}</span>', "[[T:test|Cmd]] + [[T:test|Shift]]"
         )
         self.assertEqual(1, len(doc("p")))
 
     def test_template_multiline(self):
         """Multiline templates are wrapped in <p>s"""
-        doc, p = doc_parse_markup('<span class="key">\n{{{1}}}</span>', "[[T:test|Cmd]]")
+        doc, _p = doc_parse_markup('<span class="key">\n{{{1}}}</span>', "[[T:test|Cmd]]")
         self.assertEqual(3, len(doc("p")))
 
     def test_key_split_callback(self):

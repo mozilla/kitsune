@@ -79,7 +79,7 @@ def add_to_contributors(user, language_code, contribution_area=""):
     if not ContributionAreas.has_member(area):
         return
 
-    group, created = Group.objects.get_or_create(name=ContributionAreas[area].value)
+    group, _created = Group.objects.get_or_create(name=ContributionAreas[area].value)
 
     # don't do anything if the user is already member of the group
     if user.groups.filter(pk=group.pk).exists():

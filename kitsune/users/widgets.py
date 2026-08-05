@@ -42,7 +42,7 @@ class MonthYearWidget(Widget):
             if isinstance(value, str):
                 match = RE_DATE.match(value)
                 if match:
-                    year_val, month_val, day_val = [int(v) for v in match.groups()]
+                    year_val, month_val, _day_val = [int(v) for v in match.groups()]
 
         output = []
 

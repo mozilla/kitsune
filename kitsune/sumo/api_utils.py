@@ -43,7 +43,6 @@ class LocaleNegotiationMixin:
     def get_locale(self):
         return translation.get_language_from_request(self.request)
 
-    @override
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["locale"] = normalize_language(self.get_locale())

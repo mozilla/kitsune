@@ -12,7 +12,7 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.1
     hooks:
-      - id: ruff
+      - id: ruff-check
         files: "^kitsune/"
         exclude: "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
         language_version: python3.14

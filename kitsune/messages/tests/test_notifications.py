@@ -27,7 +27,7 @@ class NotificationsTests(TestCase):
         """
         get_current.return_value.domain = "testserver"
 
-        s, c = Setting.objects.get_or_create(user=self.to, name="email_private_messages")
+        s, _c = Setting.objects.get_or_create(user=self.to, name="email_private_messages")
         s.value = True
         s.save()
         # User has setting, and should recieve notification email.
@@ -59,7 +59,7 @@ class NotificationsTests(TestCase):
         """
         get_current.return_value.domain = "testserver"
 
-        s, c = Setting.objects.get_or_create(user=self.to, name="email_private_messages")
+        s, _c = Setting.objects.get_or_create(user=self.to, name="email_private_messages")
         # Now user should not recieve email.
         s.value = False
         s.save()

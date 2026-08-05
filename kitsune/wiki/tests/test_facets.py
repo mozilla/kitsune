@@ -470,14 +470,14 @@ class TestFacetHelpers(TestCase):
 
         # Test with the public documents_for function
         # Verify the child document appears in the privacy topic listing
-        docs_fr, fallbacks = documents_for(
+        docs_fr, _ = documents_for(
             self.anonymous, locale="fr", topics=[privacy_topic], products=[self.desktop]
         )
         doc_ids = [d["id"] for d in docs_fr]
         self.assertIn(child_doc.id, doc_ids)
 
         # Verify the child document doesn't appear in the billing topic listing
-        docs_fr, fallbacks = documents_for(
+        docs_fr, _ = documents_for(
             self.anonymous, locale="fr", topics=[billing_topic], products=[self.desktop]
         )
         doc_ids = [d["id"] for d in docs_fr]
@@ -491,7 +491,7 @@ class TestFacetHelpers(TestCase):
         cache.clear()
 
         # EXPECTED BEHAVIOR: The child document should now appear in the billing topic listing
-        docs_fr, fallbacks = documents_for(
+        docs_fr, _ = documents_for(
             self.anonymous, locale="fr", topics=[billing_topic], products=[self.desktop]
         )
         doc_ids = [d["id"] for d in docs_fr]
@@ -499,7 +499,7 @@ class TestFacetHelpers(TestCase):
 
         # EXPECTED BEHAVIOR: The child document should no longer appear in the
         # privacy topic listing
-        docs_fr, fallbacks = documents_for(
+        docs_fr, _ = documents_for(
             self.anonymous, locale="fr", topics=[privacy_topic], products=[self.desktop]
         )
         doc_ids = [d["id"] for d in docs_fr]

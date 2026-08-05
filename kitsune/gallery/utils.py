@@ -29,7 +29,7 @@ def create_image(files, user):
     image.description = "Autosaved draft."
     image.locale = settings.WIKI_DEFAULT_LANGUAGE
 
-    (up_file, is_animated) = _image_to_png(up_file)
+    (up_file, _is_animated) = _image_to_png(up_file)
 
     # Finally save the image along with uploading the file.
     image.file.save(up_file.name, File(up_file), save=True)

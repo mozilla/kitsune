@@ -95,7 +95,7 @@ class TestPermissionMod(TestCase):
         ]
 
         for case in cases:
-            allow, allow_obj, expected_val, expected_write_only = case
+            allow, allow_obj, expected_val, _expected_write_only = case
             serializer = MockSerializer(instance=obj)
             self.assertEqual(serializer.data.get("foo"), expected_val)
 

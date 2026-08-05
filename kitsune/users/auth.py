@@ -100,7 +100,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         user = super().create_user(claims)
         # Create a user profile for the user and populate it with data from
         # Mozilla accounts
-        profile, created = Profile.objects.get_or_create(user=user)
+        profile, _created = Profile.objects.get_or_create(user=user)
         profile.is_fxa_migrated = True
         profile.fxa_uid = claims.get("uid")
         profile.fxa_avatar = claims.get("avatar", "")
