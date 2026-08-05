@@ -376,6 +376,7 @@ RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS = config(
 # enabled separately. Task limits are retrieval-specific by design: a global Celery limit would
 # truncate unrelated Kitsune tasks. checks.py enforces
 # request deadline < soft < hard < lease ttl.
+RETRIEVAL_INGESTION_ENABLED = config("RETRIEVAL_INGESTION_ENABLED", default=False, cast=bool)
 RETRIEVAL_LIVE_INDEXING = config("RETRIEVAL_LIVE_INDEXING", default=False, cast=bool)
 RETRIEVAL_TASK_SOFT_TIME_LIMIT_SECONDS = config(
     "RETRIEVAL_TASK_SOFT_TIME_LIMIT_SECONDS", default=210, cast=float
