@@ -318,11 +318,17 @@ class QuestionViewSet(viewsets.ModelViewSet):
         question = self.get_object()
         answer_id = request.data.get("answer")
 
-        try:
-            answer = Answer.objects.get(pk=answer_id)
-        except Answer.DoesNotExist:
+        if answer_id is None:
             return Response(
                 {"answer": "This field is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            answer = Answer.objects.get(pk=answer_id, question=question)
+        except Answer.DoesNotExist:
+            return Response(
+                {"answer": "Invalid answer for this question."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         question.set_solution(answer, request.user)
