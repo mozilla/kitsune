@@ -1,4 +1,6 @@
-notification_handlers = set()
+from collections.abc import Callable
+
+notification_handlers: set[Callable] = set()
 
 
 def notification_handler(fn):

@@ -548,7 +548,7 @@ class TranslationQueryBuilderTests(TestCase):
 
         # Should only find non-archived document
         self.assertEqual(len(results), 1)
-        english_doc, translation_doc, locale = results[0]
+        english_doc, translation_doc, _locale = results[0]
         self.assertEqual(english_doc.id, self.doc1_en.id)
         self.assertEqual(translation_doc.locale, "es")
         self.assertFalse(english_doc.is_archived)

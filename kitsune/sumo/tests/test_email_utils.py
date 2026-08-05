@@ -106,7 +106,7 @@ class SafeTranslationTests(TestCase):
         bad_trans("fr")
         self.assertEqual(len(mocked_log.method_calls), 1)
 
-        method_name, method_args, method_kwargs = mocked_log.method_calls[0]
+        method_name, method_args, _method_kwargs = mocked_log.method_calls[0]
         self.assertEqual(method_name, "exception")
         assert "Bad translation" in method_args[0]
         self.assertEqual(method_args[1], "fr")

@@ -2218,7 +2218,7 @@ class FallbackSystem(TestCase):
         # Create a client with provided ACCEPT_LANGUAGE header information
         client = Client(HTTP_ACCEPT_LANGUAGE=header)
         # Create an English and a localized version of the document, based on create_doc_locale
-        en_doc, trans_doc = self.create_documents(create_doc_locale)
+        en_doc, _trans_doc = self.create_documents(create_doc_locale)
         # Get the data of the requested locale version of the document
         url = reverse("wiki.document", args=[en_doc.slug], locale=req_doc_locale)
         response = client.get(url, follow=True)
@@ -2401,7 +2401,7 @@ class FallbackSystem(TestCase):
             self.assertIn("This article is translated into pt-BR", doc_content)
 
     def test_skip_of_document_cache_when_fallback_uses_accept_language(self):
-        en_doc, es_doc = self.create_documents("es")
+        en_doc, _es_doc = self.create_documents("es")
         url = reverse("wiki.document", args=[en_doc.slug], locale="fr")
 
         # First, request the document in French via the English slug. Since a
@@ -2435,7 +2435,7 @@ class FallbackSystem(TestCase):
         self.assertIn("This article is in English", doc_content)
 
     def test_vary_header_when_fallback_uses_accept_language(self):
-        en_doc, es_doc = self.create_documents("es")
+        en_doc, _es_doc = self.create_documents("es")
         url = reverse("wiki.document", args=[en_doc.slug], locale="fr")
 
         with self.subTest("default in accept-language"):
@@ -2483,7 +2483,7 @@ class FallbackSystem(TestCase):
             self.assertIn("This article is in English", doc("#doc-content").text())
 
     def test_vary_header_when_fallback_does_not_use_accept_language(self):
-        en_doc, es_doc = self.create_documents("es")
+        en_doc, _es_doc = self.create_documents("es")
         url = reverse("wiki.document", args=[en_doc.slug], locale="ca")
         headers = {"accept-language": "en-us;q=0.8"}
         response = self.client.get(url, headers=headers)

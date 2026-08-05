@@ -45,7 +45,7 @@ def get_client():
     # within our GKE clusters. The GA_PROPERTY_ID and GOOGLE_CLOUD_PROJECT settings must
     # be defined properly. When running locally, you'll also need to impersonate one of
     # the GKE service accounts as well as define GOOGLE_APPLICATION_CREDENTIALS.
-    credentials, project_id = google.auth.default(scopes=GA_SCOPES)
+    credentials, _project_id = google.auth.default(scopes=GA_SCOPES)
     return BetaAnalyticsDataClient(credentials=credentials)
 
 
@@ -350,7 +350,7 @@ def pageviews_by_question(period=LAST_YEAR, verbose=False):
         # Current URL structure: /{locale}/questions/{question_id}
         try:
             num_page_views = int(row.metric_values[0].value)
-            locale, question_id = path.strip("/").split("/questions/")
+            _locale, question_id = path.strip("/").split("/questions/")
             question_id = int(question_id)
         except ValueError:
             continue

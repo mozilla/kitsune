@@ -400,7 +400,9 @@ def l10n_overview_rows(locale, product=None, user=None):
             "percent": percent_or_100(top_20_translated, 20 if total_docs > 20 else total_docs),
             # L10n: This is an entry description for the Overview table, displayed on
             # https://support.mozilla.org/localization (for non-en-US locales).
-            "description": _("These are the top 20 most visited articles in the last 30 days, which account for over 50% of the traffic to the Knowledge Base."),
+            "description": _(
+                "These are the top 20 most visited articles in the last 30 days, which account for over 50% of the traffic to the Knowledge Base."
+            ),
         },
         "top-50": {
             # L10n: This is an entry header for the Overview table, displayed on
@@ -422,7 +424,9 @@ def l10n_overview_rows(locale, product=None, user=None):
             "percent": percent_or_100(top_100_translated, 100 if total_docs > 100 else total_docs),
             # L10n: This is an entry description for the Overview table, displayed on
             # https://support.mozilla.org/localization (for non-en-US locales).
-            "description": _("These are the top 100 most visited articles in the last 30 days, which account for over 99% of the traffic to the Knowledge Base."),
+            "description": _(
+                "These are the top 100 most visited articles in the last 30 days, which account for over 99% of the traffic to the Knowledge Base."
+            ),
         },
         "templates": {
             # This string is reused in different contexts, so we should avoid providing an l10n comment.
@@ -433,7 +437,9 @@ def l10n_overview_rows(locale, product=None, user=None):
             "percent": percent_or_100(translated_templates, total_templates),
             # L10n: This is an entry description for the Overview table, displayed on
             # https://support.mozilla.org/localization (for non-en-US locales).
-            "description": _("Templates are a way of reusing pieces of content across KB articles. You can create and update a set of instructions in one place, and then refer to it in other pages."),
+            "description": _(
+                "Templates are a way of reusing pieces of content across KB articles. You can create and update a set of instructions in one place, and then refer to it in other pages."
+            ),
         },
         "all": {
             # L10n: This is an entry header for the Overview table, displayed on
@@ -444,7 +450,9 @@ def l10n_overview_rows(locale, product=None, user=None):
             "percent": percent_or_100(translated_docs, total_docs),
             # L10n: This is an entry description for the Overview table, displayed on
             # https://support.mozilla.org/localization (for non-en-US locales).
-            "description": _("This is the number of all Knowledge Base articles that are ready to be localized."),
+            "description": _(
+                "This is the number of all Knowledge Base articles that are ready to be localized."
+            ),
         },
     }
 
@@ -633,7 +641,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
 
     def row_to_dict(self, row):
         (slug, title, visits, needs_review) = row
-        status, view_name, dummy = REVIEW_STATUSES[needs_review]
+        status, view_name, _dummy = REVIEW_STATUSES[needs_review]
         return {
             "title": title,
             "url": reverse("wiki.document", args=[slug], locale=self.locale),
@@ -1142,7 +1150,9 @@ class UnreadyForLocalizationReadout(Readout):
     title = _lazy("Changes Not Ready For Localization")
     # L10n: Unused. This is a description for the Changes Not Ready For Localization table,
     # displayed on https://support.mozilla.org/contributors/unready.
-    description = _lazy("Articles which have approved revisions newer than the latest ready-for-localization one")
+    description = _lazy(
+        "Articles which have approved revisions newer than the latest ready-for-localization one"
+    )
     # No short_title; the Contributors dash lacks an Overview readout
     # L10n: Unused. This is a link to be displayed under the Changes Not Ready For Localization overview table,
     # which redirects users to the full Changes Not Ready For Localization table (https://support.mozilla.org/contributors/unready).

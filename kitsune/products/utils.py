@@ -67,7 +67,7 @@ def get_taxonomy(
         )
 
     # Get all of the topics and organize them by parent.
-    topics_by_parent: dict[None | int, list[Topic]] = {}
+    topics_by_parent: dict[int | None, list[Topic]] = {}
     for topic in qs_topics.only(
         "id", "title", "parent", "metadata" if include_metadata else "description"
     ).order_by("title"):

@@ -46,7 +46,7 @@ class WikiContentManager:
         Returns:
             DraftRevision: The created or updated draft revision
         """
-        draft, created = DraftRevision.objects.update_or_create(
+        draft, _created = DraftRevision.objects.update_or_create(
             creator=user, document=parent_doc, locale=target_locale, defaults=draft_data
         )
         return draft
