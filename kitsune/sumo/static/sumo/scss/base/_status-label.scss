@@ -29,9 +29,10 @@
     color: var(--status-success-text);
   }
 
-  // Yellow — tickets awaiting a reply (pending) or a third party (hold).
+  // Yellow — tickets awaiting a reply (pending) or a third party (hold) and spam questions.
   &--pending,
-  &--hold {
+  &--hold,
+  &--spam {
     background: var(--status-pending-bg);
     color: var(--status-pending-text);
   }
