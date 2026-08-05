@@ -44,6 +44,18 @@
   {% endif %}
 {% endmacro %}
 
+{# Tag filter's position depends on whether the user is a contributor, so we need a macro to avoid copy-pasting. #}
+{% macro sidebar_tag_filter(tags_url) %}
+  <li>
+    <div id="sidebar-tag-filter"
+         class="sidebar-tags"
+         hx-get="{{ tags_url }}"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+    </div>
+  </li>
+{% endmacro %}
+
 {% block breadcrumbs %}{% endblock %}
 
 {% block masthead %}
@@ -285,6 +297,18 @@
           <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
         {% endfor %}
       {% endif %}
+
+      {% if show != "spam" and _user_is_contributor %}
+        <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>
+        <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
+        <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
+      {% endif %}
+
+      {# For contributors, display the tag filter before the topics dropdown. #}
+      {% if _user_is_contributor and show != "spam" %}
+        {{ sidebar_tag_filter(tags_url=tags_url) }}
+      {% endif %}
+
       {% if topic_list and show != "spam" %}
         <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Topic') }}</li>
         <li>
@@ -311,21 +335,9 @@
         </li>
       {% endif %}
 
-      {% if show != "spam" %}
-        <li>
-          <div id="sidebar-tag-filter"
-               class="sidebar-tags"
-               hx-get="{{ tags_url }}"
-               hx-trigger="load"
-               hx-swap="innerHTML">
-          </div>
-        </li>
-      {% endif %}
-
-      {% if show != "spam" and _user_is_contributor %}
-      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>
-      <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
-      <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
+      {# For regular users, display the tag filter at the bottom. #}
+      {% if not _user_is_contributor and show != "spam" %}
+        {{ sidebar_tag_filter(tags_url=tags_url) }}
       {% endif %}
     </ul>
   </nav>
