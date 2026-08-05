@@ -9,6 +9,7 @@ from kitsune.retrieval.gate import GateCategory
 from kitsune.retrieval.index import ChunkDocument, ChunkIdentity
 from kitsune.retrieval.sync import sync_document_chunks
 from kitsune.retrieval.tests import ChunkIndexTestCase
+from kitsune.search.es_utils import es_client
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.models import Document
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
@@ -57,19 +58,19 @@ class SyncChunksTestCase(ChunkIndexTestCase):
 
 
 class BackfillTests(SyncChunksTestCase):
-    def test_every_eligible_document_is_enqueued_pinned_to_the_active_targets(self):
+    def test_every_eligible_document_is_enqueued_pinned_to_the_write_target(self):
         second = self._document("Sync bookmarks", "sync-bookmarks")
 
         with mock.patch(f"{COMMAND}.enqueue_document_batch") as enqueue:
             self._run("--backfill")
 
-        enqueue.assert_called_once_with([self.document.id, second.id], target_indexes=[self.index])
+        enqueue.assert_called_once_with([self.document.id, second.id], target_index=self.index)
 
     def test_an_explicit_index_pins_only_that_generation(self):
         with mock.patch(f"{COMMAND}.enqueue_document_batch") as enqueue:
             self._run("--backfill", "--index", self.index)
 
-        self.assertEqual(enqueue.call_args.kwargs["target_indexes"], [self.index])
+        self.assertEqual(enqueue.call_args.kwargs["target_index"], self.index)
 
     def test_an_alias_is_rejected_where_a_concrete_index_is_required(self):
         with self.assertRaises(CommandError):
@@ -84,8 +85,8 @@ class BackfillTests(SyncChunksTestCase):
         self.assertEqual(
             enqueue.call_args_list,
             [
-                mock.call([self.document.id], target_indexes=[self.index]),
-                mock.call([second.id], target_indexes=[self.index]),
+                mock.call([self.document.id], target_index=self.index),
+                mock.call([second.id], target_index=self.index),
             ],
         )
 
@@ -117,8 +118,8 @@ class BackfillTests(SyncChunksTestCase):
         self.assertIn("would enqueue 1 ", output)
         self.assertIn("dry run", output.lower())
 
-    def test_no_active_target_is_an_error_rather_than_a_silent_no_op(self):
-        with mock.patch(f"{COMMAND}.resolve_active_targets", return_value=()):
+    def test_no_write_target_is_an_error_rather_than_a_silent_no_op(self):
+        with mock.patch(f"{COMMAND}.resolve_write_target", return_value=None):
             with self.assertRaises(CommandError):
                 self._run("--backfill")
 
@@ -131,7 +132,7 @@ class ReconcileTests(SyncChunksTestCase):
         ):
             self._run("--reconcile")
 
-        enqueue.assert_called_once_with([self.document.id], target_indexes=[self.index])
+        enqueue.assert_called_once_with([self.document.id], target_index=self.index)
         evict.assert_not_called()
 
     def test_an_identity_with_no_eligible_document_is_enqueued_for_deletion(self):
@@ -144,7 +145,7 @@ class ReconcileTests(SyncChunksTestCase):
         ):
             self._run("--reconcile")
 
-        evict.assert_called_once_with(self.identity, target_indexes=[self.index])
+        evict.assert_called_once_with(self.identity, target_index=self.index)
         enqueue.assert_not_called()
 
     def test_a_clean_index_dispatches_nothing(self):
@@ -177,7 +178,7 @@ class ReconcileTests(SyncChunksTestCase):
         self.assertIn(GateCategory.ACCESS_DRIFT.value, output)
         self.assertNotIn(str(group.id), output)
         self.assertNotIn(group.name, output)
-        evict.assert_called_once_with(self.identity, target_indexes=[self.index])
+        evict.assert_called_once_with(self.identity, target_index=self.index)
 
     def test_a_dry_run_dispatches_nothing(self):
         with (
@@ -210,7 +211,21 @@ class GateModeTests(SyncChunksTestCase):
         with self.assertRaises(CommandError) as caught:
             self._run("--gate")
 
-        self.assertIn(GateCategory.MISSING_DOCUMENT.value, str(caught.exception))
+        self.assertIn(GateCategory.STALE_DOCUMENT.value, str(caught.exception))
+
+    def test_an_unparseable_index_is_an_operator_error(self):
+        es_client().index(
+            index=self.index,
+            id="stray",
+            document={"kind": "unknown", "content_type": "kb"},
+            refresh=True,
+        )
+
+        with self.assertRaises(CommandError) as caught:
+            self._run("--gate")
+
+        self.assertIn(self.index, str(caught.exception))
+        self.assertIn("unknown kind", str(caught.exception))
 
     def test_the_gate_mode_repairs_nothing(self):
         with (
@@ -231,5 +246,5 @@ class GateModeTests(SyncChunksTestCase):
         with self.assertRaises(CommandError):
             call_command("sync_chunks", "--gate", stdout=out, stderr=out)
 
-        self.assertIn(GateCategory.MISSING_DOCUMENT.value, out.getvalue())
+        self.assertIn(GateCategory.STALE_DOCUMENT.value, out.getvalue())
         self.assertIn(f"kb:{missing.id}:en-US", out.getvalue())

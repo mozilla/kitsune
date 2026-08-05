@@ -88,18 +88,26 @@ class TaskBehaviourTests(SimpleTestCase):
     def test_sync_delegates_to_the_sync_core(self):
         with mock.patch("kitsune.retrieval.tasks.sync_document_chunks") as core:
             sync_document(42)
-        core.assert_called_once_with(42)
+        core.assert_called_once_with(42, target_index=None)
+
+    def test_explicit_rebuild_work_runs_when_live_indexing_is_off(self):
+        with (
+            override_settings(RETRIEVAL_LIVE_INDEXING=False),
+            mock.patch("kitsune.retrieval.tasks.sync_document_chunks") as core,
+        ):
+            sync_document(42, target_index="chunks-n-plus-one")
+        core.assert_called_once_with(42, target_index="chunks-n-plus-one")
 
     def test_delete_takes_json_safe_arguments_and_rebuilds_the_identity(self):
         with mock.patch("kitsune.retrieval.tasks.delete_document_chunks") as core:
             delete_document("kb", "42", "en-US")
-        core.assert_called_once_with(self.identity, target_indexes=None)
+        core.assert_called_once_with(self.identity, target_index=None)
 
     def test_delete_evicts_only_the_pinned_index_when_reconciliation_names_one(self):
         # Reconciling one generation must not empty the other.
         with mock.patch("kitsune.retrieval.tasks.delete_document_chunks") as core:
-            delete_document("kb", "42", "en-US", target_indexes=["chunks_n_plus_one"])
-        core.assert_called_once_with(self.identity, target_indexes=["chunks_n_plus_one"])
+            delete_document("kb", "42", "en-US", target_index="chunks_n_plus_one")
+        core.assert_called_once_with(self.identity, target_index="chunks_n_plus_one")
 
     def test_transient_and_replayable_errors_are_retried(self):
         errors = (

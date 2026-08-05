@@ -127,6 +127,12 @@ database check is the authorization boundary for the indexed source document;
 Elasticsearch filtering protects recall and reduces unnecessary exposure inside the
 application but is not authoritative.
 
+The same rule applies during a physical-index rebuild. All ingestion mutations,
+including deletion and newly ineligible content, target only the current write
+generation. The old read generation may therefore retain stale candidates until the
+new generation passes its gate and is promoted. Database revalidation rejects those
+candidates; dual-generation eviction is not part of the authorization design.
+
 Changing a user's group membership does not require document reindexing. Queries use
 current server-side membership and the database check uses current authorization.
 
@@ -219,6 +225,9 @@ and performs their initial paid embedding. Existing public vectors remain reusab
 - Direct source-document authorization is current and database-backed at read time.
 - Access changes use the ordinary signal, hash, metadata-update, deletion, rerender,
   and reconciliation paths. There is no separate durable coordinator to operate.
+- During a rebuild, stale candidates may remain in the old read generation until
+  promotion; all mutations use the new write generation only, and the authoritative
+  database recheck prevents stale index state from granting access.
 - Under the current public-only policy, public-to-restricted changes evict rather than
   metadata-update the document.
 - After restricted ingestion is enabled, access-only source changes normally preserve

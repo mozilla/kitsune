@@ -21,7 +21,7 @@ from kitsune.retrieval.gate import DEFAULT_PAGE_SIZE, GateCategory, gate_index
 from kitsune.retrieval.index import (
     InvalidDocumentState,
     recipe_for_index,
-    resolve_active_targets,
+    resolve_write_target,
 )
 from kitsune.retrieval.tasks import enqueue_document_batch, enqueue_document_delete
 
@@ -38,7 +38,7 @@ class Command(BaseCommand):
         mode.add_argument(
             "--backfill",
             action="store_true",
-            help="Enqueue every eligible document, pinned to the selected target(s).",
+            help="Enqueue every eligible document, pinned to the selected target.",
         )
         mode.add_argument(
             "--reconcile",
@@ -52,13 +52,9 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--index",
-            action="append",
             default=None,
             metavar="NAME",
-            help=(
-                "Concrete index to act on; repeatable. Absent means one snapshot of the "
-                "currently active read and write targets."
-            ),
+            help=("Concrete index to act on. Absent means one snapshot of the write target."),
         )
         parser.add_argument(
             "--locale",
@@ -84,15 +80,13 @@ class Command(BaseCommand):
         if page_size <= 0:
             raise CommandError("--page-size must be a positive integer.")
 
-        selected_targets = options["index"] or resolve_active_targets()
-        targets = list(dict.fromkeys(selected_targets))
-        if not targets:
+        target = options["index"] or resolve_write_target()
+        if not target:
             raise CommandError(
-                "No active retrieval index. Run search_init first, or name one with --index."
+                "No retrieval write index. Run search_init first, or name one with --index."
             )
         try:
-            for target in targets:
-                recipe_for_index(target)
+            recipe_for_index(target)
         except (
             InvalidDocumentState,
             InvalidEmbeddingRecipe,
@@ -106,14 +100,17 @@ class Command(BaseCommand):
             raise CommandError("--locale must not be empty.")
         dry_run = options["dry_run"]
 
-        if options["backfill"]:
-            self._backfill(targets, locales, page_size, dry_run)
-        elif options["reconcile"]:
-            self._reconcile(targets, locales, page_size, dry_run)
-        else:
-            self._gate(targets, locales, page_size)
+        try:
+            if options["backfill"]:
+                self._backfill(target, locales, page_size, dry_run)
+            elif options["reconcile"]:
+                self._reconcile(target, locales, page_size, dry_run)
+            else:
+                self._gate(target, locales, page_size)
+        except InvalidDocumentState as exc:
+            raise CommandError(f"Could not inspect {target}: {exc}") from exc
 
-    def _backfill(self, targets, locales, page_size, dry_run):
+    def _backfill(self, target, locales, page_size, dry_run):
         documents = eligible_documents()
         if locales:
             documents = documents.filter(locale__in=locales)
@@ -124,56 +121,46 @@ class Command(BaseCommand):
         for ids in batched(document_ids, page_size, strict=False):
             count += len(ids)
             if not dry_run:
-                enqueue_document_batch(list(ids), target_indexes=targets)
+                enqueue_document_batch(list(ids), target_index=target)
 
         if dry_run:
-            self.stdout.write(
-                f"dry run: would enqueue {count} documents for {', '.join(targets)}."
-            )
+            self.stdout.write(f"dry run: would enqueue {count} documents for {target}.")
             return
         self.stdout.write(
-            f"Enqueued {count} documents for {', '.join(targets)}. "
+            f"Enqueued {count} documents for {target}. "
             "Rerun with --gate once the workers have drained."
         )
 
-    def _reconcile(self, targets, locales, page_size, dry_run):
+    def _reconcile(self, index, locales, page_size, dry_run):
         dispatched = False
-        for index in targets:
-            report = gate_index(index, locales=locales, page_size=page_size)
-            self._report(report)
-            if report.is_clean:
-                continue
+        report = gate_index(index, locales=locales, page_size=page_size)
+        self._report(report)
 
-            verb = "would enqueue" if dry_run else "Enqueued"
-            if report.stale_document_ids:
-                dispatched = True
-                if not dry_run:
-                    enqueue_document_batch(list(report.stale_document_ids), target_indexes=[index])
-                self.stdout.write(
-                    f"{index}: {verb} {len(report.stale_document_ids)} documents for re-sync."
-                )
-            if report.unexpected_identities:
-                dispatched = True
-                if not dry_run:
-                    for identity in report.unexpected_identities:
-                        enqueue_document_delete(identity, target_indexes=[index])
-                self.stdout.write(
-                    f"{index}: {verb} {len(report.unexpected_identities)} evictions."
-                )
+        verb = "would enqueue" if dry_run else "Enqueued"
+        if report.stale_document_ids:
+            dispatched = True
+            if not dry_run:
+                enqueue_document_batch(list(report.stale_document_ids), target_index=index)
+            self.stdout.write(
+                f"{index}: {verb} {len(report.stale_document_ids)} documents for re-sync."
+            )
+        if report.unexpected_identities:
+            dispatched = True
+            if not dry_run:
+                for identity in report.unexpected_identities:
+                    enqueue_document_delete(identity, target_index=index)
+            self.stdout.write(f"{index}: {verb} {len(report.unexpected_identities)} evictions.")
         if dry_run:
             self.stdout.write("dry run: nothing was enqueued.")
         elif dispatched:
             self.stdout.write("Rerun with --gate once the workers have drained.")
 
-    def _gate(self, targets, locales, page_size):
-        dirty = []
-        for index in targets:
-            report = gate_index(index, locales=locales, page_size=page_size)
-            self._report(report)
-            if not report.is_clean:
-                dirty.append(f"{index} ({', '.join(sorted(report.counts))})")
-        if dirty:
-            raise CommandError(f"Integrity gate failed for {'; '.join(dirty)}.")
+    def _gate(self, index, locales, page_size):
+        report = gate_index(index, locales=locales, page_size=page_size)
+        self._report(report)
+        if not report.is_clean:
+            counts = ", ".join(sorted(report.counts))
+            raise CommandError(f"Integrity gate failed for {index} ({counts}).")
 
     def _report(self, report):
         """One index's counts and bounded findings, without sensitive payloads."""

@@ -22,13 +22,12 @@ from kitsune.retrieval.index import (
     SIMILARITY,
     VECTOR_INDEX_OPTIONS,
     ChunkDocument,
-    ChunkIdentity,
+    InvalidDocumentState,
     RetrievalIndexUnavailable,
     configured_index_meta,
     create_write_generation,
-    read_indexed_document,
-    resolve_active_targets,
     resolve_read_target_and_recipe,
+    resolve_write_target,
 )
 from kitsune.retrieval.locks import DocumentLockUnavailable, lifecycle_lock
 from kitsune.retrieval.sync import sync_document_chunks
@@ -131,18 +130,17 @@ class CreateWriteGenerationTests(LifecycleTestCase):
         self.assertIsNone(_write_alias())
 
 
-class ResolveActiveTargetsTests(LifecycleTestCase):
-    def test_tracks_missing_shared_and_diverged_alias_targets(self):
-        self.assertEqual(resolve_active_targets(), ())
+class ResolveWriteTargetTests(LifecycleTestCase):
+    def test_tracks_only_the_write_alias(self):
+        self.assertIsNone(resolve_write_target())
         first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
-        self.assertEqual(resolve_active_targets(), (first,))
+        self.assertEqual(resolve_write_target(), first)
 
         ChunkDocument.migrate_reads()
-        self.assertEqual(resolve_active_targets(), (first,))
+        self.assertEqual(resolve_write_target(), first)
 
         second = create_write_generation(timestamp=TS2, meta=configured_index_meta())
-        self.assertEqual(set(resolve_active_targets()), {first, second})
-        self.assertEqual(len(resolve_active_targets()), 2)
+        self.assertEqual(resolve_write_target(), second)
 
 
 class ResolveReadTargetTests(LifecycleTestCase):
@@ -235,32 +233,21 @@ class SearchInitCommandTests(LifecycleTestCase):
             call_command("search_init", "--update-query-recipe")
         self.assertEqual(read_index_meta(name)["embedding"]["model"], "prior-model")
 
-    def test_query_recipe_update_preflights_all_targets_before_writing(self):
+    def test_query_recipe_update_refuses_during_a_rebuild(self):
         read_index = create_write_generation(timestamp=TS1, meta=_meta(query_task="PRIOR_QUERY"))
         ChunkDocument.migrate_reads()
-        write_index = create_write_generation(timestamp=TS2, meta=_meta(model="prior-model"))
+        write_index = create_write_generation(timestamp=TS2, meta=_meta(query_task="PRIOR_QUERY"))
 
         with self.assertRaises(CommandError):
             call_command("search_init", "--update-query-recipe")
 
         self.assertEqual(read_index_meta(read_index)["query"]["query_task"], "PRIOR_QUERY")
-        self.assertEqual(read_index_meta(write_index)["embedding"]["model"], "prior-model")
-
-    def test_query_recipe_update_applies_to_all_compatible_active_targets(self):
-        read_index = create_write_generation(timestamp=TS1, meta=_meta(query_task="PRIOR_QUERY"))
-        ChunkDocument.migrate_reads()
-        write_index = create_write_generation(timestamp=TS2, meta=_meta(query_task="PRIOR_QUERY"))
-
-        call_command("search_init", "--update-query-recipe")
-
-        desired_query = configured_index_meta()["query"]
-        self.assertEqual(read_index_meta(read_index)["query"], desired_query)
-        self.assertEqual(read_index_meta(write_index)["query"], desired_query)
+        self.assertEqual(read_index_meta(write_index)["query"]["query_task"], "PRIOR_QUERY")
 
     def test_unsupported_option_combinations_fail_without_creating_aliases(self):
         combinations = (
-            ("--update-query-recipe", "--migrate-writes"),
-            ("--migrate-writes", "--migrate-reads"),
+            ("--update-query-recipe", "--start-rebuild"),
+            ("--start-rebuild", "--migrate-reads"),
         )
         for options in combinations:
             with self.subTest(options=options), self.assertRaises(CommandError):
@@ -269,36 +256,26 @@ class SearchInitCommandTests(LifecycleTestCase):
             self.assertIsNone(_read_alias())
 
 
-class AuthorizedWriteMigrationTests(LifecycleTestCase):
+class AuthorizedRebuildTests(LifecycleTestCase):
     """Creating a generation is the expensive, irreversible step, so it is never implicit."""
 
-    def test_migration_without_a_named_action_is_refused(self):
-        name = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
+    def test_rebuild_is_refused_when_configuration_is_compatible(self):
+        name = create_write_generation(timestamp=TS1, meta=configured_index_meta())
         ChunkDocument.migrate_reads()
 
         with self.assertRaises(CommandError):
-            call_command("search_init", "--migrate-writes")
-
-        self.assertEqual(_write_alias(), name)
-
-    def test_an_action_that_disagrees_with_the_classification_is_refused(self):
-        # Config differs by embedding model, so the only authorized action is a re-embed.
-        name = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
-        ChunkDocument.migrate_reads()
-
-        with self.assertRaises(CommandError):
-            call_command("search_init", "--migrate-writes", "--action", "copy")
+            call_command("search_init", "--start-rebuild")
 
         self.assertEqual(_write_alias(), name)
         self.assertEqual(_read_alias(), name)
 
-    def test_a_matching_action_creates_and_stamps_the_next_generation(self):
+    def test_embedding_change_starts_a_full_rebuild(self):
         first = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
         ChunkDocument.migrate_reads()
         out = StringIO()
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
-            call_command("search_init", "--migrate-writes", "--action", "reembed", stdout=out)
+            call_command("search_init", "--start-rebuild", stdout=out)
 
         second = _write_alias()
         self.assertNotEqual(second, first)
@@ -308,22 +285,21 @@ class AuthorizedWriteMigrationTests(LifecycleTestCase):
         event = _event(logs, "retrieval.rebuild.write_migrated")
         self.assertEqual(event.source_index, first)
         self.assertEqual(event.target_index, second)
-        self.assertEqual(event.action, IndexMetaAction.REEMBED.value)
         self.assertIn(f"sync_chunks --backfill --index {second}", out.getvalue())
 
-    def test_a_mapping_change_authorizes_copy_population(self):
+    def test_mapping_change_also_starts_a_full_rebuild(self):
         first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
         ChunkDocument.migrate_reads()
         write_index_meta(first, _meta(schema_version=OTHER_SCHEMA_VERSION))
         out = StringIO()
 
-        call_command("search_init", "--migrate-writes", "--action", "copy", stdout=out)
+        call_command("search_init", "--start-rebuild", stdout=out)
 
         second = _write_alias()
         self.assertNotEqual(second, first)
         self.assertEqual(_read_alias(), first)
         self.assertEqual(read_index_meta(second), configured_index_meta())
-        self.assertIn("search_init --copy-vectors", out.getvalue())
+        self.assertIn(f"sync_chunks --backfill --index {second}", out.getvalue())
 
     def test_an_existing_divergence_cannot_create_a_third_generation(self):
         first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
@@ -331,7 +307,7 @@ class AuthorizedWriteMigrationTests(LifecycleTestCase):
         second = create_write_generation(timestamp=TS2, meta=_meta(model="prior-model"))
 
         with self.assertRaises(CommandError) as caught:
-            call_command("search_init", "--migrate-writes", "--action", "reembed")
+            call_command("search_init", "--start-rebuild")
 
         self.assertIn(second, str(caught.exception))
         self.assertIn("sync_chunks --backfill", str(caught.exception))
@@ -342,7 +318,7 @@ class AuthorizedWriteMigrationTests(LifecycleTestCase):
         first = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
 
         with self.assertRaises(CommandError):
-            call_command("search_init", "--migrate-writes", "--action", "reembed")
+            call_command("search_init", "--start-rebuild")
 
         self.assertEqual(_write_alias(), first)
         self.assertIsNone(_read_alias())
@@ -354,7 +330,7 @@ class LifecycleSerializationTests(LifecycleTestCase):
         ChunkDocument.migrate_reads()
 
         with lifecycle_lock(), self.assertRaises(CommandError):
-            call_command("search_init", "--migrate-writes", "--action", "reembed")
+            call_command("search_init", "--start-rebuild")
 
     def test_alias_state_is_rechecked_under_the_lease(self):
         # A racing operator wins between this command's first look and its lease.
@@ -362,6 +338,7 @@ class LifecycleSerializationTests(LifecycleTestCase):
         ChunkDocument.migrate_reads()
 
         real_lock = lifecycle_lock
+        winner = f"{ChunkDocument.Index.base_name}_{TS2.strftime('%Y%m%d%H%M%S')}"
 
         @contextmanager
         def race_then_lock(*args, **kwargs):
@@ -373,10 +350,10 @@ class LifecycleSerializationTests(LifecycleTestCase):
             mock.patch(f"{SEARCH_INIT}.lifecycle_lock", race_then_lock),
             self.assertRaises(CommandError),
         ):
-            call_command("search_init", "--migrate-writes", "--action", "reembed")
+            call_command("search_init", "--start-rebuild")
 
         # the loser must not have created a third generation
-        self.assertEqual(len(set(resolve_active_targets())), 2)
+        self.assertEqual(_write_alias(), winner)
         self.assertEqual(_read_alias(), first)
 
     def test_a_lease_lost_during_the_gate_prevents_the_read_swap(self):
@@ -399,99 +376,6 @@ class LifecycleSerializationTests(LifecycleTestCase):
         self.assertIsNone(_read_alias())
 
 
-class CopyVectorsTests(LifecycleTestCase):
-    """A mapping-only change reuses the stored vectors, so it must never pay the provider."""
-
-    def setUp(self):
-        super().setUp()
-        self.first = create_write_generation(timestamp=TS1, meta=configured_index_meta())
-        ChunkDocument.migrate_reads()
-        self.document = _approved_document()
-        self.identity = ChunkIdentity("kb", str(self.document.id), self.document.locale)
-        sync_document_chunks(self.document.id)
-        # The source generation represents a different mapping while retaining the same
-        # document embedding space. That is the only migration shape legal for a copy.
-        write_index_meta(self.first, _meta(schema_version=OTHER_SCHEMA_VERSION))
-
-    def _diverge(self):
-        return create_write_generation(timestamp=TS2, meta=configured_index_meta())
-
-    def test_it_copies_every_document_without_calling_the_embedder(self):
-        second = self._diverge()
-
-        with (
-            mock.patch("kitsune.retrieval.sync.get_embeddings") as embed,
-            self.assertLogs("k.retrieval", level="INFO") as logs,
-        ):
-            call_command("search_init", "--copy-vectors")
-
-        embed.assert_not_called()
-        copied = read_indexed_document(index=second, identity=self.identity)
-        self.assertIsNotNone(copied.manifest)
-        self.assertGreater(len(copied.chunks), 0)
-        event = _event(logs, "retrieval.rebuild.copy_completed")
-        self.assertEqual(event.source_index, self.first)
-        self.assertEqual(event.target_index, second)
-        self.assertGreater(event.documents_created, 0)
-        self.assertEqual(event.version_conflicts, 0)
-
-    def test_it_creates_rather_than_overwrites_so_newer_writes_survive(self):
-        second = self._diverge()
-        # A fanned-out incremental write reaches the new generation first, with newer content.
-        ApprovedRevisionFactory(document=self.document, content="Newer guidance for N+1.")
-        self.document.refresh_from_db()
-        sync_document_chunks(self.document.id, target_indexes=[second])
-        newer = read_indexed_document(index=second, identity=self.identity)
-
-        out = StringIO()
-        call_command("search_init", "--copy-vectors", stdout=out)
-
-        after = read_indexed_document(index=second, identity=self.identity)
-        self.assertEqual(after.manifest, newer.manifest)
-        self.assertIn("conflict", out.getvalue().lower())
-
-    def test_a_real_item_failure_is_fatal(self):
-        self._diverge()
-        broken = mock.Mock()
-        broken.reindex.return_value = {
-            "total": 1,
-            "created": 0,
-            "version_conflicts": 0,
-            "timed_out": False,
-            "failures": [{"index": "x", "id": "y", "cause": {"type": "boom"}}],
-        }
-        with (
-            mock.patch(f"{SEARCH_INIT}.es_client", return_value=broken),
-            self.assertRaises(CommandError),
-        ):
-            call_command("search_init", "--copy-vectors")
-
-    def test_it_refuses_when_the_aliases_do_not_diverge(self):
-        with self.assertRaises(CommandError):
-            call_command("search_init", "--copy-vectors")
-
-    def test_it_refuses_to_copy_across_embedding_spaces(self):
-        write_index_meta(self.first, _meta(model="prior-model"))
-        self._diverge()
-
-        with self.assertRaises(CommandError) as caught:
-            call_command("search_init", "--copy-vectors")
-
-        self.assertIn(IndexMetaAction.REEMBED.value, str(caught.exception))
-
-    def test_it_refuses_to_populate_a_target_that_no_longer_matches_config(self):
-        second = self._diverge()
-        write_index_meta(second, _meta(query_task="PRIOR_QUERY"))
-
-        with self.assertRaises(CommandError):
-            call_command("search_init", "--copy-vectors")
-
-        self.assertEqual(
-            read_indexed_document(index=second, identity=self.identity).chunks,
-            [],
-        )
-
-
 class GatedReadMigrationTests(LifecycleTestCase):
     def setUp(self):
         super().setUp()
@@ -505,6 +389,19 @@ class GatedReadMigrationTests(LifecycleTestCase):
 
         self.assertIsNone(_read_alias())
 
+    def test_an_unparseable_index_is_an_operator_error(self):
+        with (
+            mock.patch(
+                f"{SEARCH_INIT}.gate_index",
+                side_effect=InvalidDocumentState("indexed document has an unknown kind"),
+            ),
+            self.assertRaises(CommandError) as caught,
+        ):
+            call_command("search_init", "--migrate-reads")
+
+        self.assertIn("index state is invalid", str(caught.exception).lower())
+        self.assertIsNone(_read_alias())
+
     def test_a_clean_gate_attaches_reads_on_first_run(self):
         sync_document_chunks(self.document.id)
 
@@ -516,7 +413,7 @@ class GatedReadMigrationTests(LifecycleTestCase):
         sync_document_chunks(self.document.id)
         ChunkDocument.migrate_reads()
         second = create_write_generation(timestamp=TS2, meta=configured_index_meta())
-        sync_document_chunks(self.document.id, target_indexes=[second])
+        sync_document_chunks(self.document.id, target_index=second)
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             call_command("search_init", "--migrate-reads")

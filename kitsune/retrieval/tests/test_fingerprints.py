@@ -258,11 +258,11 @@ class ClassifyMismatchTests(SimpleTestCase):
                 _meta(replace(RECIPE, query_task="OTHER")),
                 IndexMetaAction.QUERY_META_UPDATE,
             ),
-            ("mapping", _meta(schema_version=2), IndexMetaAction.COPY_VECTORS),
+            ("mapping", _meta(schema_version=2), IndexMetaAction.REBUILD),
             (
                 "embedding",
                 _meta(replace(RECIPE, model="other-model")),
-                IndexMetaAction.REEMBED,
+                IndexMetaAction.REBUILD,
             ),
         )
         for reason, desired, expected in cases:
@@ -277,7 +277,7 @@ class ClassifyMismatchTests(SimpleTestCase):
             index_options=INDEX_OPTIONS,
             schema_version=1,
         )
-        self.assertEqual(classify_meta_mismatch(_meta(), desired), IndexMetaAction.REEMBED)
+        self.assertEqual(classify_meta_mismatch(_meta(), desired), IndexMetaAction.REBUILD)
 
 
 class IndexMetaIoTests(ElasticTestCase):

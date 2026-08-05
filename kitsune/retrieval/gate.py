@@ -1,10 +1,8 @@
-"""Read-only comparison of what the database expects against what one index actually holds.
+"""Read-only comparison of database truth with promotion-critical indexed state.
 
-The gate never repairs. It is what a read swap is allowed to trust, so it has to be able to
-fail for a reason an operator can act on, and it must not be able to hide a defect by fixing
-it. ``verify_indexed_document`` is pure — the whole defect matrix is decided from expected
-state plus stored state, with no Elasticsearch, Redis, or database access — and ``gate_index``
-only enumerates and aggregates.
+The gate never repairs. One bounded Elasticsearch scan loads manifests, positions, and access
+metadata for the corpus; article text and vectors are deliberately excluded. The database
+walk then compares each eligible document and classifies identities left only in the index.
 
 Findings carry categories, identities, and counts. They never carry article text, vectors,
 credentials, or restriction group names or identifiers, because a gate report is the artefact
@@ -15,24 +13,19 @@ from collections import Counter
 from dataclasses import dataclass, field
 from enum import StrEnum
 
-from elasticsearch.helpers import scan
-
-from kitsune.retrieval.chunking import Chunk, chunk
+from kitsune.retrieval.chunking import chunk
 from kitsune.retrieval.eligibility import eligible_documents, is_publicly_accessible
-from kitsune.retrieval.embeddings import EmbeddingRecipe
 from kitsune.retrieval.events import emit
 from kitsune.retrieval.index import (
-    PUBLIC_VISIBILITY,
     ChunkIdentity,
     ChunkSource,
     ExpectedDocumentState,
-    IndexedDocumentState,
+    IndexedDocumentSummary,
     access_metadata_matches,
-    read_indexed_document,
-    recipe_for_index,
+    chunk_layout_matches,
+    read_index_summaries,
 )
-from kitsune.retrieval.sync import CONTENT_TYPE, build_source, expected_state_for, is_usable_vector
-from kitsune.search.es_utils import es_client
+from kitsune.retrieval.sync import CONTENT_TYPE, build_source, expected_state_for
 from kitsune.wiki.models import Document
 
 MAX_REPORTED_FINDINGS = 200
@@ -46,32 +39,10 @@ class GateCategory(StrEnum):
     small enough to aggregate on.
     """
 
-    MISSING_DOCUMENT = "missing_document"
-    MISSING_MANIFEST = "missing_manifest"
-    STALE_MANIFEST = "stale_manifest"
-    POSITION_GAP = "position_gap"
-    ORPHAN_CHUNK = "orphan_chunk"
-    INVALID_VECTOR = "invalid_vector"
-    STALE_CHUNK_STATE = "stale_chunk_state"
+    STALE_DOCUMENT = "stale_document"
+    CHUNK_LAYOUT_MISMATCH = "chunk_layout_mismatch"
     ACCESS_DRIFT = "access_drift"
-    INELIGIBLE_IDENTITY = "ineligible_identity"
-    DELETED_IDENTITY = "deleted_identity"
-
-
-# Categories that mean "an eligible document needs re-syncing" rather than "this identity
-# should not be in the index at all".
-_REPAIRED_BY_SYNC = frozenset(
-    {
-        GateCategory.MISSING_DOCUMENT,
-        GateCategory.MISSING_MANIFEST,
-        GateCategory.STALE_MANIFEST,
-        GateCategory.POSITION_GAP,
-        GateCategory.ORPHAN_CHUNK,
-        GateCategory.INVALID_VECTOR,
-        GateCategory.STALE_CHUNK_STATE,
-        GateCategory.ACCESS_DRIFT,
-    }
-)
+    UNEXPECTED_IDENTITY = "unexpected_identity"
 
 
 @dataclass(frozen=True)
@@ -106,129 +77,49 @@ class GateReport:
 
 def verify_indexed_document(
     *,
-    chunks: list[Chunk],
     source: ChunkSource,
     expected_state: ExpectedDocumentState,
-    indexed: IndexedDocumentState,
-    recipe: EmbeddingRecipe,
+    indexed: IndexedDocumentSummary,
 ) -> tuple[GateFinding, ...]:
-    """Every way one document's stored state can disagree with what the database implies.
+    """Compare one eligible document without reading its stored text or vectors.
 
     Reports all findings rather than the first, because an operator deciding whether to promote
     a generation needs the shape of the damage, not one example of it.
     """
     identity = source.identity
     findings: list[GateFinding] = []
-    if source.visibility != PUBLIC_VISIBILITY or source.access_group_ids:
+    drifted = sum(not access_metadata_matches(stored, source) for stored in indexed.chunks)
+    if drifted:
         findings.append(
             GateFinding(
                 GateCategory.ACCESS_DRIFT,
                 identity,
-                "indexed while the database restricts it",
+                f"{drifted} of {len(indexed.chunks)} chunks disagree with the database",
             )
         )
-    else:
-        drifted = sum(not access_metadata_matches(stored, source) for stored in indexed.chunks)
-        if drifted:
-            findings.append(
-                GateFinding(
-                    GateCategory.ACCESS_DRIFT,
-                    identity,
-                    f"{drifted} of {len(indexed.chunks)} chunks disagree with the database",
-                )
-            )
 
-    if indexed.manifest is None and not indexed.chunks:
-        findings.append(GateFinding(GateCategory.MISSING_DOCUMENT, identity, "nothing indexed"))
-        return tuple(findings)
     if indexed.manifest is None:
         findings.append(
-            GateFinding(GateCategory.MISSING_MANIFEST, identity, "chunks without a manifest")
+            GateFinding(GateCategory.STALE_DOCUMENT, identity, "committed manifest is missing")
         )
     elif indexed.manifest != expected_state:
         findings.append(
             GateFinding(
-                GateCategory.STALE_MANIFEST, identity, "manifest is not the expected state"
+                GateCategory.STALE_DOCUMENT, identity, "manifest is not the expected state"
             )
         )
 
-    by_position = {stored.get("position"): stored for stored in indexed.chunks}
-    duplicate_positions = len(indexed.chunks) - len(by_position)
-    expected_positions = set(range(len(chunks)))
-    if missing := sorted(expected_positions - set(by_position)):
-        findings.append(
-            GateFinding(GateCategory.POSITION_GAP, identity, f"{len(missing)} positions absent")
-        )
-    orphans = sorted(set(by_position) - expected_positions, key=str)
-    if orphans or duplicate_positions:
+    if indexed.manifest is not None and not chunk_layout_matches(
+        indexed.chunks, expected_state.chunk_count
+    ):
         findings.append(
             GateFinding(
-                GateCategory.ORPHAN_CHUNK,
+                GateCategory.CHUNK_LAYOUT_MISMATCH,
                 identity,
-                f"{len(orphans) + duplicate_positions} unexpected or duplicate positions",
-            )
-        )
-
-    unusable = 0
-    stale = 0
-    for item in chunks:
-        stored = by_position.get(item.position)
-        if stored is None:
-            continue
-        if not is_usable_vector(stored.get("content_vector"), recipe):
-            unusable += 1
-        stored_text = stored.get("content_text")
-        if (
-            not isinstance(stored_text, dict)
-            or stored_text.get(source.locale) != item.text
-            or stored.get("content_hash") != expected_state.content_hash
-            or stored.get("index_state_hash") != expected_state.index_state_hash
-            or stored.get("chunking_generation") != expected_state.chunking_generation
-        ):
-            stale += 1
-    if unusable:
-        findings.append(
-            GateFinding(
-                GateCategory.INVALID_VECTOR, identity, f"{unusable} chunks have unusable vectors"
-            )
-        )
-    if stale:
-        findings.append(
-            GateFinding(
-                GateCategory.STALE_CHUNK_STATE,
-                identity,
-                f"{stale} chunks disagree with the commit",
+                "stored positions do not match the expected chunk layout",
             )
         )
     return tuple(findings)
-
-
-def _indexed_identities(index: str, locales: tuple[str, ...]) -> set[ChunkIdentity]:
-    """Every identity present in one index, scanned rather than paged by hit limit.
-
-    Vectors are deliberately excluded here: this pass exists to find identities, and holding a
-    whole corpus of vectors in memory to do it would be the difference between a command that
-    runs and one that does not.
-    """
-    filters: list[dict] = [{"term": {"content_type": CONTENT_TYPE}}]
-    if locales:
-        filters.append({"terms": {"locale": list(locales)}})
-    hits = scan(
-        es_client(),
-        index=index,
-        query={
-            "query": {"bool": {"filter": filters}},
-            "_source": ["content_type", "object_id", "locale"],
-        },
-    )
-    return {
-        ChunkIdentity(
-            content_type=hit["_source"]["content_type"],
-            object_id=hit["_source"]["object_id"],
-            locale=hit["_source"]["locale"],
-        )
-        for hit in hits
-    }
 
 
 def gate_index(
@@ -258,8 +149,7 @@ def gate_index(
         page = page_size
     if not isinstance(max_findings, int) or isinstance(max_findings, bool) or max_findings < 0:
         raise ValueError("max_findings must be a non-negative integer")
-    recipe = recipe_for_index(index)
-    remaining = _indexed_identities(index, locales)
+    remaining = read_index_summaries(index=index, content_type=CONTENT_TYPE, locales=locales)
     identities_indexed = len(remaining)
 
     counts: Counter[str] = Counter()
@@ -282,17 +172,14 @@ def gate_index(
     for document in documents.order_by("pk").iterator(chunk_size=page):
         documents_checked += 1
         identity = ChunkIdentity(CONTENT_TYPE, str(document.id), document.locale)
-        remaining.discard(identity)
         source = build_source(document)
         chunks = chunk(CONTENT_TYPE, document.html, title=document.title)
         findings = verify_indexed_document(
-            chunks=chunks,
             source=source,
             expected_state=expected_state_for(chunks, source, document),
-            indexed=read_indexed_document(index=index, identity=identity),
-            recipe=recipe,
+            indexed=remaining.pop(identity, IndexedDocumentSummary(None, ())),
         )
-        if any(finding.category in _REPAIRED_BY_SYNC for finding in findings):
+        if findings:
             stale_document_ids.append(document.id)
         for finding in findings:
             record(finding)
@@ -309,7 +196,7 @@ def gate_index(
             document = rows.get(int(identity.object_id))
             if document is None:
                 finding = GateFinding(
-                    GateCategory.DELETED_IDENTITY, identity, "source row no longer exists"
+                    GateCategory.UNEXPECTED_IDENTITY, identity, "source row no longer exists"
                 )
             elif not is_publicly_accessible(document):
                 finding = GateFinding(
@@ -319,7 +206,7 @@ def gate_index(
                 )
             else:
                 finding = GateFinding(
-                    GateCategory.INELIGIBLE_IDENTITY,
+                    GateCategory.UNEXPECTED_IDENTITY,
                     identity,
                     "source row is not retrieval-eligible",
                 )

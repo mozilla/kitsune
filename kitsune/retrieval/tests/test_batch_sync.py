@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import UTC, datetime
 from unittest import mock
 
@@ -24,7 +25,7 @@ from kitsune.retrieval.index import (
     IndexWriteError,
     configured_index_meta,
     create_write_generation,
-    read_indexed_document,
+    replace_chunks,
 )
 from kitsune.retrieval.locks import (
     DocumentLockBackendError,
@@ -36,11 +37,13 @@ from kitsune.retrieval.locks import (
 from kitsune.retrieval.sync import (
     BatchSyncReport,
     SyncOutcome,
+    build_source,
+    expected_state_for,
     sync_document_batch,
     sync_document_chunks,
 )
 from kitsune.retrieval.tasks import enqueue_document_batch, sync_documents
-from kitsune.retrieval.tests import ChunkIndexTestCase
+from kitsune.retrieval.tests import ChunkIndexTestCase, read_indexed_document
 from kitsune.sumo.redis_utils import redis_client
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
@@ -116,17 +119,24 @@ class BatchTestCase(ChunkIndexTestCase):
 class BatchExecutorTests(BatchTestCase):
     """The batch against real Elasticsearch, real leases, and the deterministic fake."""
 
-    def test_one_shared_call_covers_every_document(self):
+    def test_one_unlocked_shared_call_covers_every_document(self):
+        client = redis_client("default")
+
+        def assert_unlocked(*args, **kwargs):
+            for document in self.documents:
+                self.assertIsNone(client.get(document_lock_key(self._identity(document))))
+            return get_embeddings(*args, **kwargs)
+
         with mock.patch(
-            "kitsune.retrieval.sync.get_embeddings", side_effect=get_embeddings
+            "kitsune.retrieval.sync.get_embeddings", side_effect=assert_unlocked
         ) as embed:
             report = sync_document_batch(self.ids)
 
         self.assertEqual(embed.call_count, 1)
         self.assertEqual(report.embedding_calls, 1)
         self.assertEqual(
-            {document_id: report.reports[document_id].outcomes for document_id in self.ids},
-            {document_id: {self.index: SyncOutcome.EMBED_REPLACE} for document_id in self.ids},
+            {document_id: report.reports[document_id].outcome for document_id in self.ids},
+            dict.fromkeys(self.ids, SyncOutcome.EMBED_REPLACE),
         )
 
     def test_the_flattened_inputs_are_every_documents_chunks_in_id_order(self):
@@ -156,26 +166,18 @@ class BatchExecutorTests(BatchTestCase):
         self.assertEqual(list(report.reports), [self.ids[0]])
         self.assertEqual(embed.call_args.args[0], self._texts(self.documents[0]))
 
-    def test_leases_are_acquired_in_ascending_document_order(self):
-        with mock.patch(
-            "kitsune.retrieval.sync.document_lock", side_effect=document_lock
-        ) as acquire:
-            sync_document_batch(reversed(self.ids))
-
-        self.assertEqual(
-            [call.args[0].object_id for call in acquire.call_args_list],
-            [str(document_id) for document_id in sorted(self.ids)],
-        )
-
     def test_an_explicit_target_does_not_fan_out(self):
-        report = sync_document_batch(self.ids, target_indexes=[self.index])
+        report = sync_document_batch(self.ids, target_index=self.index)
 
         for document_id in self.ids:
-            self.assertEqual(list(report.reports[document_id].outcomes), [self.index])
+            self.assertEqual(report.reports[document_id].index, self.index)
 
-    def test_no_active_target_writes_nothing(self):
-        with self.assertLogs("k.retrieval", level="WARNING") as logs:
-            report = sync_document_batch(self.ids, target_indexes=[])
+    def test_no_write_target_writes_nothing(self):
+        with (
+            mock.patch("kitsune.retrieval.sync.resolve_write_target", return_value=None),
+            self.assertLogs("k.retrieval", level="WARNING") as logs,
+        ):
+            report = sync_document_batch(self.ids)
 
         self.assertEqual(report.reports, {})
         self.assertEqual(report.embedding_calls, 0)
@@ -186,11 +188,9 @@ class BatchExecutorTests(BatchTestCase):
 
         report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.reports[self.ids[0]].outcomes, {self.index: SyncOutcome.NO_OP})
+        self.assertEqual(report.reports[self.ids[0]].outcome, SyncOutcome.NO_OP)
         self.assertEqual(report.embedding_calls, 1)
-        self.assertEqual(
-            report.reports[self.ids[1]].outcomes, {self.index: SyncOutcome.EMBED_REPLACE}
-        )
+        self.assertEqual(report.reports[self.ids[1]].outcome, SyncOutcome.EMBED_REPLACE)
 
     def test_a_metadata_change_alone_pays_the_provider_nothing(self):
         sync_document_batch(self.ids)
@@ -198,9 +198,7 @@ class BatchExecutorTests(BatchTestCase):
 
         report = sync_document_batch(self.ids)
 
-        self.assertEqual(
-            report.reports[self.ids[0]].outcomes, {self.index: SyncOutcome.METADATA_ONLY}
-        )
+        self.assertEqual(report.reports[self.ids[0]].outcome, SyncOutcome.METADATA_ONLY)
         self.assertEqual(report.embedding_calls, 0)
         self.assertNotEqual(self._stored(self.documents[0]).chunks[0]["product_ids"], [])
 
@@ -211,7 +209,7 @@ class BatchExecutorTests(BatchTestCase):
 
         report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.reports[missing].outcomes, {self.index: SyncOutcome.DELETED})
+        self.assertEqual(report.reports[missing].outcome, SyncOutcome.DELETED)
         self.assertEqual(self._stored(self.documents[0]).chunks, [])
         self.assertIsNotNone(self._stored(self.documents[1]).manifest)
 
@@ -226,11 +224,11 @@ class BatchExecutorTests(BatchTestCase):
         ) as embed:
             report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.reports[self.ids[0]].outcomes, {self.index: SyncOutcome.DELETED})
+        self.assertEqual(report.reports[self.ids[0]].outcome, SyncOutcome.DELETED)
         self.assertEqual(self._stored(self.documents[0]).chunks, [])
         self.assertEqual(embed.call_args.args[0], self._texts(self.documents[1]))
 
-    def test_a_contended_document_costs_nothing_while_the_others_commit(self):
+    def test_a_contended_document_is_redispatched_without_blocking_the_others(self):
         with (
             document_lock(self._identity(self.documents[0])),
             mock.patch(
@@ -239,12 +237,10 @@ class BatchExecutorTests(BatchTestCase):
         ):
             report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.contended, (self.ids[0],))
+        self.assertEqual(report.redispatch, (self.ids[0],))
         self.assertNotIn(self.ids[0], report.reports)
         self.assertEqual(self._stored(self.documents[0]).chunks, [])
-        flattened = embed.call_args.args[0]
-        for text in self._texts(self.documents[0]):
-            self.assertNotIn(text, flattened)
+        self.assertTrue(set(self._texts(self.documents[0])).issubset(embed.call_args.args[0]))
         for document in self.documents[1:]:
             self.assertIsNotNone(self._stored(document).manifest)
 
@@ -260,7 +256,7 @@ class BatchExecutorTests(BatchTestCase):
         with mock.patch.object(RedisLease, "renew", renew):
             report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.contended, (stolen,))
+        self.assertEqual(report.redispatch, (stolen,))
         self.assertEqual(self._stored(self.documents[1]).chunks, [])
         for document in (self.documents[0], self.documents[2]):
             self.assertIsNotNone(self._stored(document).manifest)
@@ -284,12 +280,37 @@ class BatchExecutorTests(BatchTestCase):
         with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=edit_then_embed):
             report = sync_document_batch(self.ids)
 
-        self.assertEqual(
-            report.reports[self.ids[1]].outcomes, {self.index: SyncOutcome.ABORTED_STALE}
-        )
+        self.assertNotIn(self.ids[1], report.reports)
+        self.assertEqual(report.redispatch, (self.ids[1],))
         self.assertEqual(self._stored(self.documents[1]).chunks, [])
         for document in (self.documents[0], self.documents[2]):
             self.assertIsNotNone(self._stored(document).manifest)
+
+    def test_a_newer_manifest_committed_during_embedding_cannot_be_downgraded(self):
+        document = self.documents[0]
+        chunks = chunk("kb", document.html, title=document.title)
+        source = build_source(document)
+        expected = expected_state_for(chunks, source, document)
+        newer = replace(expected, indexed_revision_id=expected.indexed_revision_id + 1)
+
+        def commit_newer_then_return_vectors(texts, **kwargs):
+            vectors = get_embeddings(texts, **kwargs)
+            replace_chunks(
+                index=self.index,
+                chunks=chunks,
+                vectors=vectors,
+                source=source,
+                expected_state=newer,
+            )
+            return vectors
+
+        with mock.patch(
+            "kitsune.retrieval.sync.get_embeddings", side_effect=commit_newer_then_return_vectors
+        ):
+            report = sync_document_batch([document.id])
+
+        self.assertEqual(report.redispatch, (document.id,))
+        self.assertEqual(self._stored(document).manifest, newer)
 
     def test_a_restriction_during_the_shared_call_evicts_that_document_only(self):
         sync_document_batch(self.ids)
@@ -304,7 +325,7 @@ class BatchExecutorTests(BatchTestCase):
         with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=restrict_then_embed):
             report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.reports[self.ids[2]].outcomes, {self.index: SyncOutcome.DELETED})
+        self.assertEqual(report.reports[self.ids[2]].outcome, SyncOutcome.DELETED)
         self.assertEqual(self._stored(self.documents[2]).chunks, [])
         self.assertIsNotNone(self._stored(self.documents[0]).manifest)
 
@@ -358,7 +379,7 @@ class BatchEventTests(BatchTestCase):
 
         [record] = [r for r in logs.records if r.getMessage() == "retrieval.batch.completed"]
         self.assertEqual(record.document_count, len(self.ids))
-        self.assertEqual(record.synced, len(self.ids))
+        self.assertEqual(record.processed_count, len(self.ids))
         self.assertEqual(record.embedding_calls, 1)
         self.assertEqual(record.outcomes, {SyncOutcome.EMBED_REPLACE.value: len(self.ids)})
         for title in ("Install Firefox", "Sync bookmarks", "Clear cookies"):
@@ -375,24 +396,20 @@ class BatchEventTests(BatchTestCase):
 
 @override_settings(RETRIEVAL_BULK_MAX_DOCUMENTS=2)
 class BatchBoundTests(BatchTestCase):
-    def test_documents_past_the_document_limit_are_deferred_without_being_touched(self):
-        with self.assertLogs("k.retrieval", level="WARNING") as logs:
-            report = sync_document_batch(self.ids)
+    def test_documents_past_the_document_limit_use_ordinary_sync(self):
+        report = sync_document_batch(self.ids)
 
-        deferred = next(d for d in self.documents if d.id == sorted(self.ids)[2])
+        overflow = next(d for d in self.documents if d.id == sorted(self.ids)[2])
         self.assertEqual(len(report.reports), 2)
-        self.assertEqual(report.deferred, (deferred.id,))
-        self.assertEqual(self._stored(deferred).chunks, [])
-        [record] = [r for r in logs.records if r.getMessage() == "retrieval.batch.deferred"]
-        self.assertEqual(record.over_document_limit, 1)
-        self.assertEqual(record.over_input_limit, 0)
+        self.assertEqual(report.redispatch, (overflow.id,))
+        self.assertEqual(self._stored(overflow).chunks, [])
 
     @override_settings(RETRIEVAL_BULK_MAX_DOCUMENTS=10, RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS=1)
-    def test_documents_past_the_input_limit_are_deferred(self):
+    def test_documents_past_the_input_limit_use_ordinary_sync(self):
         report = sync_document_batch(self.ids)
 
         self.assertEqual(len(report.reports), 1)
-        self.assertEqual(len(report.deferred), 2)
+        self.assertEqual(len(report.redispatch), 2)
         self.assertEqual(report.embedding_calls, 1)
 
     @override_settings(RETRIEVAL_BULK_MAX_DOCUMENTS=10, RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS=1)
@@ -407,31 +424,12 @@ class BatchBoundTests(BatchTestCase):
 
         report = sync_document_batch([big.id])
 
-        self.assertEqual(report.deferred, ())
+        self.assertEqual(report.redispatch, ())
         self.assertEqual(len(self._stored(big).chunks), len(self._texts(big)))
 
-    @override_settings(RETRIEVAL_BULK_MAX_DOCUMENTS=10, RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS=1)
-    def test_a_deferred_document_does_not_keep_its_lease(self):
-        client = redis_client("default")
-        held = []
 
-        def record_then_embed(*args, **kwargs):
-            held.extend(
-                document.id
-                for document in self.documents
-                if client.get(document_lock_key(self._identity(document)))
-            )
-            return get_embeddings(*args, **kwargs)
-
-        with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=record_then_embed):
-            report = sync_document_batch(self.ids)
-
-        for document_id in report.deferred:
-            self.assertNotIn(document_id, held)
-
-
-class BatchMultiGenerationTests(BatchTestCase):
-    """One batch across a migration window, where read and write aliases differ."""
+class BatchSingleWriteGenerationTests(BatchTestCase):
+    """A batch also writes only to the current write generation."""
 
     def _second_generation(self, recipe=None):
         meta = (
@@ -446,25 +444,27 @@ class BatchMultiGenerationTests(BatchTestCase):
         )
         return create_write_generation(timestamp=datetime(2031, 5, 4, tzinfo=UTC), meta=meta)
 
-    def test_generations_sharing_a_vector_space_share_one_call_for_the_whole_batch(self):
+    def test_a_batch_populates_only_the_write_generation(self):
         second = self._second_generation()
 
         report = sync_document_batch(self.ids)
 
         self.assertEqual(report.embedding_calls, 1)
         for document in self.documents:
-            for index in (self.index, second):
-                self.assertIsNotNone(self._stored(document, index).manifest)
+            self.assertIsNone(self._stored(document, self.index).manifest)
+            self.assertIsNotNone(self._stored(document, second).manifest)
 
-    def test_divergent_vector_spaces_take_one_call_each_not_one_per_document(self):
+    def test_a_batch_uses_only_the_write_generations_recipe(self):
         other_space = EmbeddingRecipe(
             **{**recipe_to_payload(configured_embedding_recipe()), "model": "another-model"}
         )
         second = self._second_generation(other_space)
 
-        report = sync_document_batch(self.ids)
+        with mock.patch("kitsune.retrieval.sync.get_embeddings", wraps=get_embeddings) as embed:
+            report = sync_document_batch(self.ids)
 
-        self.assertEqual(report.embedding_calls, 2)
+        self.assertEqual(report.embedding_calls, 1)
+        self.assertEqual(embed.call_args.kwargs["recipe"], other_space)
         for document in self.documents:
             with self.subTest(document=document.slug):
                 self._assert_embeds(document, other_space, second)
@@ -487,61 +487,35 @@ class BulkTaskTests(SimpleTestCase):
         with mock.patch(
             "kitsune.retrieval.tasks.sync_document_batch", return_value=BatchSyncReport()
         ) as core:
-            sync_documents([2, 1], target_indexes=["chunks-n-plus-one"])
-        core.assert_called_once_with([2, 1], target_indexes=["chunks-n-plus-one"])
+            sync_documents([2, 1], target_index="chunks-n-plus-one")
+        core.assert_called_once_with([2, 1], target_index="chunks-n-plus-one")
 
     @override_settings(RETRIEVAL_LIVE_INDEXING=False, RETRIEVAL_BULK_MAX_DOCUMENTS=2)
     def test_enqueueing_splits_bounded_payloads_and_preserves_the_target(self):
         with mock.patch.object(sync_documents, "delay") as delay:
-            enqueue_document_batch([5, 4, 3, 2, 1], target_indexes=["chunks-n-plus-one"])
+            enqueue_document_batch([5, 4, 3, 2, 1], target_index="chunks-n-plus-one")
 
         self.assertEqual(
             delay.call_args_list,
             [
-                mock.call([1, 2], target_indexes=["chunks-n-plus-one"]),
-                mock.call([3, 4], target_indexes=["chunks-n-plus-one"]),
-                mock.call([5], target_indexes=["chunks-n-plus-one"]),
+                mock.call([1, 2], target_index="chunks-n-plus-one"),
+                mock.call([3, 4], target_index="chunks-n-plus-one"),
+                mock.call([5], target_index="chunks-n-plus-one"),
             ],
         )
 
-    def test_deferred_and_contended_documents_are_requeued_separately(self):
-        report = BatchSyncReport(reports={1: mock.Mock()}, contended=(2,), deferred=(3,))
+    def test_unfinished_documents_use_ordinary_sync_against_the_same_index(self):
+        report = BatchSyncReport(index="chunks-n-plus-one", redispatch=(2, 3))
         with (
             mock.patch("kitsune.retrieval.tasks.sync_document_batch", return_value=report),
-            mock.patch("kitsune.retrieval.tasks.enqueue_document_batch") as enqueue,
-            mock.patch.object(sync_documents, "apply_async") as requeue,
+            mock.patch("kitsune.retrieval.tasks.sync_document.delay") as redispatch,
         ):
-            sync_documents([1, 2, 3], target_indexes=["chunks-n-plus-one"])
+            sync_documents([1, 2, 3], target_index="chunks-n-plus-one")
 
-        enqueue.assert_called_once_with((3,), target_indexes=["chunks-n-plus-one"])
-        requeue.assert_called_once()
-        self.assertEqual(requeue.call_args.kwargs["args"], [[2]])
         self.assertEqual(
-            requeue.call_args.kwargs["kwargs"],
-            {"target_indexes": ["chunks-n-plus-one"], "contention_attempt": 1},
+            redispatch.call_args_list,
+            [
+                mock.call(2, target_index="chunks-n-plus-one"),
+                mock.call(3, target_index="chunks-n-plus-one"),
+            ],
         )
-        self.assertGreater(requeue.call_args.kwargs["countdown"], 0)
-
-    def test_unbroken_contention_stops_requeueing_and_says_so(self):
-        report = BatchSyncReport(contended=(2,))
-        with (
-            mock.patch("kitsune.retrieval.tasks.sync_document_batch", return_value=report),
-            mock.patch.object(sync_documents, "apply_async") as requeue,
-            self.assertLogs("k.retrieval", level="WARNING") as logs,
-        ):
-            sync_documents([2], contention_attempt=sync_documents.max_retries)
-
-        requeue.assert_not_called()
-        self.assertEqual(logs.records[0].getMessage(), "retrieval.batch.abandoned")
-
-    def test_a_finished_batch_is_not_requeued(self):
-        with (
-            mock.patch(
-                "kitsune.retrieval.tasks.sync_document_batch",
-                return_value=BatchSyncReport(reports={1: mock.Mock()}),
-            ),
-            mock.patch.object(sync_documents, "apply_async") as requeue,
-        ):
-            sync_documents([1])
-
-        requeue.assert_not_called()

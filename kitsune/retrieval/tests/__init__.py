@@ -1,8 +1,49 @@
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
-from kitsune.retrieval.index import ChunkDocument, configured_index_meta, create_write_generation
+from elasticsearch.helpers import scan
+
+from kitsune.retrieval.index import (
+    CHUNK_KIND,
+    ChunkDocument,
+    ChunkIdentity,
+    ExpectedDocumentState,
+    configured_index_meta,
+    create_write_generation,
+    read_manifest,
+)
 from kitsune.search.es_utils import es_client
 from kitsune.search.tests import ElasticTestCase
+
+
+@dataclass(frozen=True)
+class IndexedDocumentState:
+    """Full stored state used only by tests that inspect Elasticsearch writes."""
+
+    manifest: ExpectedDocumentState | None
+    chunks: list[dict]
+
+
+def read_indexed_document(*, index: str, identity: ChunkIdentity) -> IndexedDocumentState:
+    filters = [
+        {"term": {"content_type": identity.content_type}},
+        {"term": {"object_id": identity.object_id}},
+        {"term": {"locale": identity.locale}},
+        {"term": {"kind": CHUNK_KIND}},
+    ]
+    hits = scan(
+        es_client(),
+        index=index,
+        query={
+            "query": {"bool": {"filter": filters}},
+            "_source": {"exclude_vectors": False},
+        },
+    )
+    chunks = sorted((hit["_source"] for hit in hits), key=lambda item: item["position"])
+    return IndexedDocumentState(
+        manifest=read_manifest(index=index, identity=identity),
+        chunks=chunks,
+    )
 
 
 class ChunkIndexTestCase(ElasticTestCase):

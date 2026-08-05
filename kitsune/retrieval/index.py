@@ -1,5 +1,6 @@
 import re
 from collections.abc import Mapping
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import ClassVar
@@ -36,8 +37,7 @@ VECTOR_DIMS = settings.RETRIEVAL_EMBEDDING_DIMENSIONS
 # Vector-mapping properties, shared by the mapping and its fingerprint so they can't drift.
 SIMILARITY = "cosine"
 VECTOR_INDEX_OPTIONS = {"type": "hnsw", "m": 16, "ef_construction": 100}
-# Bump when an index-time mapping change requires a new physical index while allowing
-# existing vectors to be copied.
+# Bump when an index-time mapping change requires a new physical index and full rebuild.
 SCHEMA_VERSION = 1
 
 CHUNK_KIND = "chunk"
@@ -114,11 +114,6 @@ def _int_items(values, name: str, *, minimum: int) -> tuple[int, ...]:
     return items
 
 
-def _canonical_positions(values) -> tuple[int, ...]:
-    # A position set: repeats carry no meaning, so they collapse rather than fail.
-    return tuple(sorted(set(_int_items(values, "orphan_positions", minimum=0))))
-
-
 def _canonical_group_ids(values) -> tuple[int, ...]:
     items = _int_items(values, "access_group_ids", minimum=1)
     if len(set(items)) != len(items):
@@ -156,7 +151,8 @@ class ChunkDocument(SumoDocument):
     visibility = field.Keyword()
     access_group_ids = field.Keyword(multi=True)
 
-    # per-document state (repeated on chunks for recovery; authoritative on the manifest)
+    # Legacy per-chunk recovery fields. No reader depends on these; remove them with the
+    # next rebuild-requiring schema change rather than paying for a rebuild only for cleanup.
     content_hash = field.Keyword()
     index_state_hash = field.Keyword()
     chunking_generation = field.Integer()
@@ -248,13 +244,6 @@ class ChunkSource:
         return ChunkIdentity(self.content_type, self.object_id, self.locale)
 
 
-def access_metadata_matches(stored: Mapping, source: ChunkSource) -> bool:
-    """Whether one stored chunk has the access fields this source requires."""
-    stored_groups = stored.get("access_group_ids")
-    expected_groups = list(source.access_group_ids)
-    return stored.get("visibility") == source.visibility and stored_groups == expected_groups
-
-
 @dataclass(frozen=True)
 class ExpectedDocumentState:
     """One worker-computed expected commit, stored authoritatively on the manifest."""
@@ -336,17 +325,53 @@ def parse_manifest(source: Mapping) -> ExpectedDocumentState:
     )
 
 
-@dataclass(frozen=True)
-class IndexedDocumentState:
-    """What one concrete index holds for a document: its manifest (``None`` when missing)
-    and its chunk ``_source`` dicts, sorted by position."""
-
-    manifest: ExpectedDocumentState | None
-    chunks: list[dict]
-
-
 class IndexWriteError(Exception):
     """An Elasticsearch write or delete did not fully succeed."""
+
+
+class IncompleteDocumentState(Exception):
+    """A metadata-only update found an expected chunk position missing.
+
+    This is intentionally not a retryable ``IndexWriteError``. The sync executor must
+    convert it to full replacement; if it escapes that boundary, failing loudly is safer
+    than repeatedly scheduling metadata work against an incomplete layout.
+    """
+
+
+@dataclass(frozen=True)
+class StoredChunkSummary:
+    """The small part of one stored chunk needed by sync and promotion classification.
+
+    ``None`` preserves malformed or missing values as drift the planner can repair instead
+    of turning out-of-band index corruption into an unreadable document.
+    """
+
+    position: int | None
+    visibility: str | None
+    access_group_ids: tuple[int, ...] | None
+
+
+@dataclass(frozen=True)
+class IndexedDocumentSummary:
+    """Promotion-critical state for one indexed identity, excluding text and vectors."""
+
+    manifest: ExpectedDocumentState | None
+    chunks: tuple[StoredChunkSummary, ...]
+
+
+def access_metadata_matches(stored: StoredChunkSummary, source: ChunkSource) -> bool:
+    """Whether one stored chunk has the access fields this source requires."""
+    return (
+        stored.visibility == source.visibility
+        and stored.access_group_ids == source.access_group_ids
+    )
+
+
+def chunk_layout_matches(summaries: tuple[StoredChunkSummary, ...], expected_count: int) -> bool:
+    """Whether stored positions are exactly the contiguous expected layout."""
+    return len(summaries) == expected_count and {summary.position for summary in summaries} == set(
+        range(expected_count)
+    )
 
 
 def _require_concrete_index(index: str) -> None:
@@ -488,30 +513,6 @@ def delete_orphan_chunks(
     )
 
 
-def delete_chunk_positions(
-    *, index: str, identity: ChunkIdentity, positions: range | set[int] | tuple[int, ...]
-) -> None:
-    """Delete only the named chunk positions. The manifest is untouched.
-
-    The complement of ``delete_orphan_chunks``: naming the doomed positions instead of the
-    surviving ones keeps a caller working from a stale view of the document from evicting
-    chunks it never saw.
-    """
-    _require_concrete_index(index)
-    _verified_delete_by_query(
-        index,
-        {
-            "bool": {
-                "filter": [
-                    *_identity_filters(identity),
-                    {"term": {"kind": CHUNK_KIND}},
-                    {"terms": {"position": sorted(positions)}},
-                ]
-            }
-        },
-    )
-
-
 def replace_chunks(
     *,
     index: str,
@@ -545,10 +546,8 @@ def update_chunks_metadata_for(
     """Rewrite each existing position's metadata and state in place, delete orphans, commit.
 
     The cheapest correct path when only scope or source metadata changed: it preserves each
-    chunk's stored text and vector and makes no embedding call. The caller must already have
-    verified that every expected position's stored text, vector, and content hash are correct
-    — this never creates a missing position, because a chunk without text and a vector would
-    be indistinguishable from a real one.
+    chunk's stored text and vector and makes no embedding call. This never creates a missing
+    position, because a chunk without text and a vector would be incomplete.
 
     While ingestion is public-only, an access change never reaches here: it flips the
     document's eligibility, so the sync core evicts it or indexes it afresh instead. Once
@@ -574,44 +573,9 @@ def update_chunks_metadata_for(
     commit_manifest(index=index, identity=identity, expected_state=expected_state)
 
 
-def repair_document_commit(
-    *,
-    index: str,
-    identity: ChunkIdentity,
-    expected_state: ExpectedDocumentState,
-    orphan_positions,
-) -> None:
-    """Delete an enumerated set of leftover positions, then commit the manifest.
-
-    The narrow recovery for a crash between verified chunk writes and their manifest: it
-    writes no chunk content and makes no embedding call. Legal only once the caller has
-    validated every expected position's text, vector, hash, and state. Deleting an explicit
-    list rather than everything unexpected keeps a stale caller from evicting live chunks.
-    """
+def read_manifest(*, index: str, identity: ChunkIdentity) -> ExpectedDocumentState | None:
+    """Read and validate the final commit marker for one document identity."""
     _require_concrete_index(index)
-    orphans = _canonical_positions(orphan_positions)
-    conflicting = sorted(set(orphans) & set(range(expected_state.chunk_count)))
-    if conflicting:
-        raise InvalidDocumentState(
-            f"orphan positions {conflicting!r} are expected by the manifest being committed"
-        )
-
-    if orphans:
-        delete_chunk_positions(index=index, identity=identity, positions=orphans)
-    commit_manifest(index=index, identity=identity, expected_state=expected_state)
-
-
-def read_indexed_document(*, index: str, identity: ChunkIdentity) -> IndexedDocumentState:
-    """Read a document's manifest and every one of its chunks (scanned, then sorted by
-    position — never limited to Elasticsearch's default page)."""
-    _require_concrete_index(index)
-    return IndexedDocumentState(
-        manifest=_read_manifest(index, identity),
-        chunks=_read_chunks(index, identity),
-    )
-
-
-def _read_manifest(index: str, identity: ChunkIdentity) -> ExpectedDocumentState | None:
     try:
         response = es_client().get(index=index, id=manifest_id(identity))
     except NotFoundError:
@@ -630,17 +594,103 @@ def _read_manifest(index: str, identity: ChunkIdentity) -> ExpectedDocumentState
     return state
 
 
-def _read_chunks(index: str, identity: ChunkIdentity) -> list[dict]:
-    body = {
-        "query": {
-            "bool": {"filter": [*_identity_filters(identity), {"term": {"kind": CHUNK_KIND}}]}
+def read_chunk_summaries(*, index: str, identity: ChunkIdentity) -> tuple[StoredChunkSummary, ...]:
+    """Read every stored position and access value, never chunk text or vectors."""
+    _require_concrete_index(index)
+    hits = scan(
+        es_client(),
+        index=index,
+        query={
+            "query": {
+                "bool": {"filter": [*_identity_filters(identity), {"term": {"kind": CHUNK_KIND}}]}
+            },
+            "_source": ["position", "visibility", "access_group_ids"],
         },
-        # dense_vector is excluded from _source by default in ES 9.x; opt it back in so the
-        # sync core can verify each chunk's stored vector.
-        "_source": {"exclude_vectors": False},
+    )
+    return _sorted_chunk_summaries(_chunk_summary(hit.get("_source", {})) for hit in hits)
+
+
+def read_index_summaries(
+    *, index: str, content_type: str, locales: tuple[str, ...] = ()
+) -> dict[ChunkIdentity, IndexedDocumentSummary]:
+    """Scan one corpus into compact summaries held until comparison finishes.
+
+    Memory grows with indexed identities and chunks, so each hit is compacted immediately
+    rather than retaining its raw Elasticsearch ``_source`` mapping.
+    """
+    _require_concrete_index(index)
+    _require_identity_component(content_type, "content_type")
+    for locale in locales:
+        _require_identity_component(locale, "locale")
+
+    filters: list[dict] = [{"term": {"content_type": content_type}}]
+    if locales:
+        filters.append({"terms": {"locale": list(locales)}})
+    fields = sorted(_MANIFEST_SOURCE_FIELDS | {"position", "visibility", "access_group_ids"})
+    manifests: dict[ChunkIdentity, ExpectedDocumentState] = {}
+    chunks: dict[ChunkIdentity, list[StoredChunkSummary]] = {}
+    identities: set[ChunkIdentity] = set()
+    with closing(
+        scan(
+            es_client(),
+            index=index,
+            query={"query": {"bool": {"filter": filters}}, "_source": fields},
+        )
+    ) as hits:
+        for hit in hits:
+            source = hit.get("_source", {})
+            kind = source.get("kind")
+            if kind not in (MANIFEST_KIND, CHUNK_KIND):
+                raise InvalidDocumentState("indexed document has an unknown kind")
+            identity = ChunkIdentity(
+                content_type=source.get("content_type"),
+                object_id=source.get("object_id"),
+                locale=source.get("locale"),
+            )
+            identities.add(identity)
+            if kind == MANIFEST_KIND:
+                if identity in manifests:
+                    raise InvalidDocumentState(f"multiple manifests found for {identity!r}")
+                manifests[identity] = parse_manifest(source)
+            else:
+                chunks.setdefault(identity, []).append(_chunk_summary(source))
+
+    return {
+        identity: IndexedDocumentSummary(
+            manifest=manifests.get(identity),
+            chunks=_sorted_chunk_summaries(chunks.get(identity, ())),
+        )
+        for identity in identities
     }
-    hits = scan(es_client(), index=index, query=body)
-    return sorted((hit["_source"] for hit in hits), key=lambda chunk: chunk["position"])
+
+
+def _chunk_summary(source: Mapping) -> StoredChunkSummary:
+    position = source.get("position")
+    if not isinstance(position, int) or isinstance(position, bool) or position < 0:
+        position = None
+    visibility = source.get("visibility")
+    if not isinstance(visibility, str):
+        visibility = None
+    groups = source.get("access_group_ids")
+    if not isinstance(groups, list) or any(
+        not isinstance(group, int) or isinstance(group, bool) or group < 1 for group in groups
+    ):
+        groups = None
+    else:
+        groups = tuple(groups)
+    return StoredChunkSummary(position, visibility, groups)
+
+
+def _sorted_chunk_summaries(summaries) -> tuple[StoredChunkSummary, ...]:
+    return tuple(
+        sorted(
+            summaries,
+            key=lambda summary: (
+                summary.position is None,
+                summary.position if summary.position is not None else 0,
+            ),
+        )
+    )
 
 
 def delete_chunks_for(*, index: str, identity: ChunkIdentity) -> None:
@@ -678,8 +728,19 @@ def _verified_bulk(actions: list[dict]) -> None:
         chunk_size=settings.ES_DEFAULT_ELASTIC_CHUNK_SIZE,
         refresh=settings.TEST,
     )
-    if errors or succeeded != len(actions):
-        raise IndexWriteError(f"{len(actions) - succeeded} of {len(actions)} bulk items failed")
+    failed = len(actions) - succeeded
+    if (
+        errors
+        and failed == len(errors)
+        and all(
+            item.get("update", {}).get("status") == 404
+            and item.get("update", {}).get("error", {}).get("type") == "document_missing_exception"
+            for item in errors
+        )
+    ):
+        raise IncompleteDocumentState(f"{failed} expected chunk positions are missing")
+    if errors or failed:
+        raise IndexWriteError(f"{failed} of {len(actions)} bulk items failed")
 
 
 def _verified_delete_by_query(index: str, query: dict) -> None:
@@ -743,15 +804,9 @@ def create_write_generation(*, timestamp: datetime, meta: dict) -> str:
     return name
 
 
-def resolve_active_targets() -> tuple[str, ...]:
-    """The concrete indexes the read and write aliases point at — de-duplicated, with
-    absent aliases removed — resolved once so a mid-operation alias move can't split a
-    caller's reads and writes across generations."""
-    candidates = (
-        ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias),
-        ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias),
-    )
-    return tuple(dict.fromkeys(target for target in candidates if target))
+def resolve_write_target() -> str | None:
+    """Snapshot the concrete write generation for one ingestion operation."""
+    return ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
 
 
 def recipe_for_index(index: str) -> EmbeddingRecipe:

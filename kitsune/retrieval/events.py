@@ -54,14 +54,11 @@ EVENT_CATALOG = frozenset(
         # cross-document ingestion
         "retrieval.batch.completed",
         "retrieval.batch.skipped",
-        "retrieval.batch.deferred",
-        "retrieval.batch.abandoned",
         # integrity
         "retrieval.gate.completed",
         # generation lifecycle
         "retrieval.rebuild.write_initialized",
         "retrieval.rebuild.write_migrated",
-        "retrieval.rebuild.copy_completed",
         "retrieval.rebuild.read_migrated",
     }
 )
