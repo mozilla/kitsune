@@ -597,17 +597,24 @@ def read_manifest(*, index: str, identity: ChunkIdentity) -> ExpectedDocumentSta
 def read_chunk_summaries(*, index: str, identity: ChunkIdentity) -> tuple[StoredChunkSummary, ...]:
     """Read every stored position and access value, never chunk text or vectors."""
     _require_concrete_index(index)
-    hits = scan(
-        es_client(),
-        index=index,
-        query={
-            "query": {
-                "bool": {"filter": [*_identity_filters(identity), {"term": {"kind": CHUNK_KIND}}]}
+    # `closing` because an abandoned scan leaves its scroll open, and an open scroll pins a
+    # Lucene searcher until the ttl lapses. Nothing here raises today, but Celery's soft time
+    # limit arrives asynchronously and can land mid-iteration on this per-document hot path.
+    with closing(
+        scan(
+            es_client(),
+            index=index,
+            query={
+                "query": {
+                    "bool": {
+                        "filter": [*_identity_filters(identity), {"term": {"kind": CHUNK_KIND}}]
+                    }
+                },
+                "_source": ["position", "visibility", "access_group_ids"],
             },
-            "_source": ["position", "visibility", "access_group_ids"],
-        },
-    )
-    return _sorted_chunk_summaries(_chunk_summary(hit.get("_source", {})) for hit in hits)
+        )
+    ) as hits:
+        return _sorted_chunk_summaries(_chunk_summary(hit.get("_source", {})) for hit in hits)
 
 
 def read_index_summaries(
