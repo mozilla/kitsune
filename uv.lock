@@ -1941,7 +1941,7 @@ requires-dist = [
     { name = "django-ses", specifier = "==4.7.2" },
     { name = "django-silk", specifier = ">=5.1.0,<6" },
     { name = "django-statici18n", specifier = ">=2.4.0,<3" },
-    { name = "django-storages", extras = ["google"], specifier = ">=1.14.2,<2" },
+    { name = "django-storages", extras = ["google"], specifier = ">=1.14.6,<2" },
     { name = "django-taggit", specifier = ">=6.1.0,<7" },
     { name = "django-timezone-field", specifier = "~=7.2" },
     { name = "django-treebeard", specifier = ">=5.2.2" },
