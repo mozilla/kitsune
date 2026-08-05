@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 
@@ -17,4 +18,5 @@ class RetrievalConfig(AppConfig):
         if problems := task_timing_problems():
             raise ImproperlyConfigured("; ".join(problems))
 
-        from kitsune.retrieval import signals  # noqa: F401  (registers receivers)
+        if settings.RETRIEVAL_INGESTION_ENABLED:
+            from kitsune.retrieval import signals  # noqa: F401  (registers receivers)
