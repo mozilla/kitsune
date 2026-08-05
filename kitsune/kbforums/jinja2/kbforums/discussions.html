@@ -1,10 +1,10 @@
 {% extends "kbforums/base.html" %}
-{# L10n: {l} is the name of the locale. #}
 {% set title = _('{locale_name} Discussions | Knowledge Base')|f(locale_name=locale_name) %}
 {% set crumbs = [(None, _('{locale_name} Discussions')|f(locale_name=locale_name))] %}
 
 {% block content %}
     <article id="threads" class="content-box sumo-page-section">
+      {# L10n: {l} is the name of the locale. #}
       <h1 class="sumo-page-heading">{{ _('{l} Knowledge Base Discussions')|f(l=locale_name) }}</h1>
       {% if user.is_authenticated %}
         <form id="watch_locale" action="{{ url('wiki.discuss.watch_locale') }}" method="post">
