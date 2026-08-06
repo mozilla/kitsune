@@ -432,6 +432,17 @@ class QuestionTests(TestCase):
             kitsune.questions.managers.QuestionManager,
         )
 
+    def test_set_solution_rejects_answer_from_another_question(self):
+        """set_solution checks this itself, so any future caller is covered too."""
+        q = QuestionFactory()
+        foreign_answer = AnswerFactory()
+
+        with self.assertRaises(ValueError):
+            q.set_solution(foreign_answer, q.creator)
+
+        q.refresh_from_db()
+        self.assertIsNone(q.solution)
+
     def test_is_solved_property(self):
         a = AnswerFactory()
         q = a.question

@@ -304,6 +304,20 @@ class TestQuestionViewSet(TestCase):
         q = Question.objects.get(id=q.id)
         self.assertEqual(q.solution, a)
 
+    def test_solve_with_answer_from_another_question(self):
+        """An answer posted on someone else's question can't be used as the solution."""
+        q = QuestionFactory()
+        foreign_answer = AnswerFactory()
+
+        self.client.force_authenticate(user=q.creator)
+        res = self.client.post(
+            reverse("question-solve", args=[q.id]), data={"answer": foreign_answer.id}
+        )
+
+        self.assertEqual(res.status_code, 400)
+        q.refresh_from_db()
+        self.assertIsNone(q.solution)
+
     def test_filter_is_taken_true(self):
         q1 = QuestionFactory()
         q2 = QuestionFactory()

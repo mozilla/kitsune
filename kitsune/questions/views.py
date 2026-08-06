@@ -1306,7 +1306,7 @@ def solve(request, question_id, answer_id):
             # The provided watch secret is invalid.
             return HttpResponseForbidden()
 
-    answer = get_object_or_404(Answer, pk=answer_id, is_spam=False)
+    answer = get_object_or_404(Answer, pk=answer_id, question=question, is_spam=False)
 
     if not question.allows_solve(request.user):
         raise PermissionDenied

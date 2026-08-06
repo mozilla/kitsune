@@ -697,6 +697,38 @@ class TestMarkingSolved(TestCase):
         res = self.client.post(reverse("questions.solve", args=[self.question.id, self.answer.id]))
         self.assertEqual(res.status_code, 404)
 
+    def test_cannot_mark_answer_from_another_question(self):
+        """An answer posted on someone else's question can't be used as the solution."""
+        foreign_answer = AnswerFactory()
+
+        res = self.client.post(
+            reverse("questions.solve", args=[self.question.id, foreign_answer.id])
+        )
+
+        self.assertEqual(res.status_code, 404)
+        self.question.refresh_from_db()
+        self.assertIsNone(self.question.solution)
+
+    def test_cannot_mark_answer_from_another_question_via_watch_secret(self):
+        """The same check applies to the solve link we email to the asker."""
+        self.client.logout()
+
+        watch = Watch.objects.create(
+            secret="abcdefghjk", event_type="question reply", user=self.question.creator
+        )
+        foreign_answer = AnswerFactory()
+
+        url = urlparams(
+            reverse("questions.solve", args=[self.question.id, foreign_answer.id]),
+            watch=watch.secret,
+        )
+
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, 404)
+        self.question.refresh_from_db()
+        self.assertIsNone(self.question.solution)
+
     def test_mark_as_solved_via_watch_secret(self):
         self.client.logout()
 

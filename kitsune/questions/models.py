@@ -586,7 +586,12 @@ class Question(AAQBase):
         Sets the solution, and fires any needed events.
 
         Does not check permission of the user making the change.
+
+        Raises ValueError if the answer was posted on a different question.
         """
+        if answer.question_id != self.id:
+            raise ValueError("The answer does not belong to this question.")
+
         # Avoid circular import
         from kitsune.questions.events import QuestionSolvedEvent
 
