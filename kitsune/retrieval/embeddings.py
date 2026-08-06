@@ -26,11 +26,12 @@ MIN_EMBEDDING_TIMEOUT_SECONDS = 0.001
 _MAX_ATTEMPTS = 4
 _BACKOFF_BASE = 0.5
 _NORMALIZATIONS = frozenset({"none", "l2"})
-# Vertex allows 250 inputs and 2,048 tokens per input for the currently supported
-# Google embedding models. The provider remains authoritative because this estimate
-# deliberately avoids a separate remote token-count request.
+# Vertex allows 250 inputs, 2,048 tokens per input, and 20,000 tokens per request for
+# the currently supported Google embedding models. The provider remains authoritative
+# because the local token count is deliberately an estimate.
 _VERTEX_MAX_BATCH_SIZE = 250
 _VERTEX_MAX_INPUT_TOKENS = 2_048
+_VERTEX_MAX_REQUEST_TOKENS = 20_000
 _RECIPE_FIELDS = frozenset(
     {
         "provider",
@@ -253,17 +254,20 @@ def _fake_embed(
 def _vertex_embed(
     texts: list[str], *, task_type: str, recipe: EmbeddingRecipe, stats: _ProviderStats
 ) -> list[list[float]]:
-    if any(count_tokens(text) > _VERTEX_MAX_INPUT_TOKENS for text in texts):
+    input_tokens = [count_tokens(text) for text in texts]
+    if any(tokens > max_input_tokens() for tokens in input_tokens):
         raise InvalidEmbeddingResponse(
             "embedding input exceeds Vertex's estimated per-input token limit"
         )
 
-    batch_size = min(_configured_batch_size(), _VERTEX_MAX_BATCH_SIZE)
+    batch_lengths = provider_request_batch_lengths(input_tokens)
     timeout_ms = _configured_timeout_ms()
     client = _vertex_client(recipe.model)
     vectors: list[list[float]] = []
-    for start in range(0, len(texts), batch_size):
-        batch = texts[start : start + batch_size]
+    start = 0
+    for batch_length in batch_lengths:
+        batch = texts[start : start + batch_length]
+        start += batch_length
         batch_vectors = _embed_batch_with_retry(
             client,
             batch,
@@ -291,6 +295,31 @@ def _configured_timeout_ms() -> int:
             "of at least one millisecond"
         )
     return int(timeout * 1000)
+
+
+def max_input_tokens() -> int:
+    """The per-input ceiling the adapter refuses to exceed."""
+    return _VERTEX_MAX_INPUT_TOKENS
+
+
+def provider_request_batch_lengths(input_tokens: Sequence[int]) -> tuple[int, ...]:
+    """Pack inputs into requests using the same count and token bounds as Vertex."""
+    batch_lengths = []
+    max_inputs = min(_configured_batch_size(), _VERTEX_MAX_BATCH_SIZE)
+    batch_inputs = 0
+    batch_tokens = 0
+    for tokens in input_tokens:
+        if batch_inputs and (
+            batch_inputs >= max_inputs or batch_tokens + tokens > _VERTEX_MAX_REQUEST_TOKENS
+        ):
+            batch_lengths.append(batch_inputs)
+            batch_inputs = 0
+            batch_tokens = 0
+        batch_inputs += 1
+        batch_tokens += tokens
+    if batch_inputs:
+        batch_lengths.append(batch_inputs)
+    return tuple(batch_lengths)
 
 
 def _configured_batch_size() -> int:
