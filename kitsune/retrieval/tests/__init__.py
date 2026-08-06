@@ -1,3 +1,4 @@
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -31,15 +32,17 @@ def read_indexed_document(*, index: str, identity: ChunkIdentity) -> IndexedDocu
         {"term": {"locale": identity.locale}},
         {"term": {"kind": CHUNK_KIND}},
     ]
-    hits = scan(
-        es_client(),
-        index=index,
-        query={
-            "query": {"bool": {"filter": filters}},
-            "_source": {"exclude_vectors": False},
-        },
-    )
-    chunks = sorted((hit["_source"] for hit in hits), key=lambda item: item["position"])
+    with closing(
+        scan(
+            es_client(),
+            index=index,
+            query={
+                "query": {"bool": {"filter": filters}},
+                "_source": {"exclude_vectors": False},
+            },
+        )
+    ) as hits:
+        chunks = sorted((hit["_source"] for hit in hits), key=lambda item: item["position"])
     return IndexedDocumentState(
         manifest=read_manifest(index=index, identity=identity),
         chunks=chunks,

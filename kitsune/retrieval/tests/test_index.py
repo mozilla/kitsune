@@ -2,9 +2,11 @@ from dataclasses import FrozenInstanceError
 from datetime import UTC, datetime
 from unittest import mock
 
+from celery.exceptions import SoftTimeLimitExceeded
 from django.conf import settings
 from django.test import SimpleTestCase
 
+from kitsune.retrieval import index as index_module
 from kitsune.retrieval.chunking import CHUNKING_GENERATION, Chunk, chunk_kb
 from kitsune.retrieval.fingerprints import content_hash, index_state_hash, scope_envelope
 from kitsune.retrieval.index import (
@@ -979,3 +981,97 @@ class ConcreteIndexGuardTests(SimpleTestCase):
                     update_chunks_metadata_for(
                         index=index, chunks=chunks, source=source, expected_state=state
                     )
+
+
+class ScrollHygieneTests(ChunkIndexTestCase):
+    """A scan abandoned mid-iteration must be closed, not left to the garbage collector.
+
+    `scan` clears its scroll in a `finally`, so an unclosed generator keeps a scroll — and the
+    Lucene searcher it pins — alive for as long as something references the raising frame.
+    Checking Elasticsearch's open scroll contexts keeps this independent of when CPython
+    happens to collect the generator.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.index = ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
+        self.scans = []
+
+    def _tracking_scan(self):
+        """Patch in a `scan` that records every generator it hands out."""
+        real = index_module.scan
+
+        def tracking(*args, **kwargs):
+            generator = real(*args, **kwargs)
+            self.scans.append(generator)
+            return generator
+
+        return mock.patch.object(index_module, "scan", tracking)
+
+    def _open_scrolls(self) -> int:
+        stats = es_client().nodes.stats(metric="indices", index_metric="search")
+        return sum(node["indices"]["search"]["open_contexts"] for node in stats["nodes"].values())
+
+    def _assert_all_closed(self):
+        self.assertTrue(self.scans, "no scan was created, so nothing was proven")
+        # The server is the only witness that cannot be satisfied by CPython happening to
+        # collect the generator: an unclosed scan leaves its scroll context registered.
+        self.assertEqual(self._open_scrolls(), 0)
+
+    def _write(self, count):
+        source = _source()
+        chunks = [Chunk(text=f"body {i}", position=i, heading_path="H") for i in range(count)]
+        write_chunks(
+            index=self.index,
+            chunks=chunks,
+            vectors=[_vector(i) for i in range(count)],
+            source=source,
+            expected_state=_expected(chunks, source),
+        )
+        return source
+
+    def test_a_corpus_scan_abandoned_by_a_raise_is_closed(self):
+        self._write(1)
+        # A stored document the scan cannot classify is the only way to abandon this loop.
+        es_client().index(
+            index=self.index,
+            id="stray",
+            document={"kind": "not-a-kind", "content_type": "kb", "object_id": "1"},
+            refresh=True,
+        )
+
+        # The exception is retained, exactly as `sync_chunks` retains it by raising
+        # CommandError `from exc`: `__cause__` keeps the raising frame — and its scan
+        # generator — alive, so prompt refcount collection cannot stand in for closing it.
+        retained = None
+        with self._tracking_scan():
+            try:
+                read_index_summaries(index=self.index, content_type="kb")
+            except InvalidDocumentState as exc:
+                retained = exc
+        self.assertIsNotNone(retained)
+
+        self._assert_all_closed()
+
+    def test_a_per_document_scan_abandoned_by_a_raise_is_closed(self):
+        source = self._write(2)
+
+        # Nothing in this path raises today, but Celery's soft time limit arrives
+        # asynchronously and can land anywhere inside the loop.
+        with (
+            self._tracking_scan(),
+            mock.patch.object(index_module, "_chunk_summary", side_effect=SoftTimeLimitExceeded),
+            self.assertRaises(SoftTimeLimitExceeded),
+        ):
+            read_chunk_summaries(index=self.index, identity=source.identity)
+
+        self._assert_all_closed()
+
+    def test_a_completed_scan_is_also_closed(self):
+        source = self._write(2)
+
+        with self._tracking_scan():
+            summaries = read_chunk_summaries(index=self.index, identity=source.identity)
+
+        self.assertEqual(len(summaries), 2)
+        self._assert_all_closed()
