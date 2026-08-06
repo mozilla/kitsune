@@ -254,7 +254,8 @@ class TestQuestionViewSet(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def test_create(self):
+    def test_create_is_not_allowed(self):
+        """Questions are asked through the AAQ views, not this API."""
         u = UserFactory()
         p = ProductFactory()
         t = TopicFactory(products=[p])
@@ -265,34 +266,62 @@ class TestQuestionViewSet(TestCase):
             "product": p.slug,
             "topic": t.slug,
         }
-        self.assertEqual(Question.objects.count(), 0)
         res = self.client.post(reverse("question-list"), data)
-        self.assertEqual(res.status_code, 201)
-        self.assertEqual(Question.objects.count(), 1)
-        q = Question.objects.all()[0]
-        self.assertEqual(q.title, data["title"])
-        self.assertEqual(q.content, data["content"])
-        self.assertEqual(q.content_parsed, res.data["content"])
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(Question.objects.count(), 0)
 
-    def test_delete_permissions(self):
+    def test_delete_is_not_allowed(self):
+        """Deleting a question is for moderators via the page view, not this API."""
         u1 = UserFactory()
         u2 = UserFactory()
         q = QuestionFactory(creator=u1)
 
-        # Anonymous user can't delete
+        # Anonymous user can't delete.
         self.client.force_authenticate(user=None)
         res = self.client.delete(reverse("question-detail", args=[q.id]))
         self.assertEqual(res.status_code, 401)  # Unauthorized
 
-        # Non-owner can't delete
+        # Neither can another user.
         self.client.force_authenticate(user=u2)
         res = self.client.delete(reverse("question-detail", args=[q.id]))
-        self.assertEqual(res.status_code, 403)  # Forbidden
+        self.assertEqual(res.status_code, 405)
 
-        # Owner can delete
+        # Nor the creator.
         self.client.force_authenticate(user=u1)
         res = self.client.delete(reverse("question-detail", args=[q.id]))
-        self.assertEqual(res.status_code, 204)  # No content
+        self.assertEqual(res.status_code, 405)
+
+        self.assertTrue(Question.objects.filter(id=q.id).exists())
+
+    def test_moderation_flags_cannot_be_changed(self):
+        """A locked, archived or spam-flagged question cannot be reopened by its
+        creator. Unlocking your own question would reopen it for replies, which is
+        the reply restriction the lock exists to enforce."""
+        for flag in ("is_locked", "is_archived", "is_spam"):
+            with self.subTest(flag=flag):
+                creator = UserFactory()
+                q = QuestionFactory(creator=creator, **{flag: True})
+                self.client.force_authenticate(user=creator)
+
+                res = self.client.patch(reverse("question-detail", args=[q.id]), {flag: False})
+
+                self.assertEqual(res.status_code, 405)
+                q.refresh_from_db()
+                self.assertTrue(getattr(q, flag))
+
+    def test_update_is_not_allowed(self):
+        """Including on a locked question, which the edit view refuses to change."""
+        creator = UserFactory()
+        q = QuestionFactory(creator=creator, is_locked=True, title="Original title")
+        self.client.force_authenticate(user=creator)
+
+        res = self.client.patch(
+            reverse("question-detail", args=[q.id]), {"title": "Rewritten while locked"}
+        )
+
+        self.assertEqual(res.status_code, 405)
+        q.refresh_from_db()
+        self.assertEqual(q.title, "Original title")
 
     def test_solve(self):
         q = QuestionFactory()
@@ -317,6 +346,22 @@ class TestQuestionViewSet(TestCase):
         self.assertEqual(res.status_code, 400)
         q.refresh_from_db()
         self.assertIsNone(q.solution)
+
+    def test_cannot_solve_locked_or_archived_question(self):
+        """Matches the questions.solve view, which allows neither."""
+        for flag in ("is_locked", "is_archived"):
+            with self.subTest(flag=flag):
+                q = QuestionFactory(**{flag: True})
+                a = AnswerFactory(question=q)
+
+                self.client.force_authenticate(user=q.creator)
+                res = self.client.post(
+                    reverse("question-solve", args=[q.id]), data={"answer": a.id}
+                )
+
+                self.assertEqual(res.status_code, 403)
+                q.refresh_from_db()
+                self.assertIsNone(q.solution)
 
     def test_filter_is_taken_true(self):
         q1 = QuestionFactory()
