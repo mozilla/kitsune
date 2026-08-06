@@ -18,13 +18,12 @@ from kitsune.retrieval.embeddings import (
     provider_request_batch_lengths,
 )
 from kitsune.retrieval.events import emit
+from kitsune.retrieval.gate import DEFAULT_PAGE_SIZE
 from kitsune.retrieval.sync import (
     CONTENT_TYPE,
     max_batch_documents,
     max_batch_embedding_inputs,
 )
-
-DEFAULT_PAGE_SIZE = 500
 
 
 @dataclass(frozen=True)
