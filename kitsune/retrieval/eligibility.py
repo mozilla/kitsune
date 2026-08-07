@@ -58,7 +58,7 @@ def eligible_documents() -> QuerySet[Document]:
 
 
 def family_id_for(document) -> int:
-    """The cross-lingual family key: the original document's id."""
+    """The original document id used in the cross-lingual KB family key."""
     return document.parent_id or document.id
 
 
