@@ -533,6 +533,10 @@ TEMPLATES = [
 
 
 MIDDLEWARE: tuple[str, ...] = (
+    # StripNulCharactersMiddleware must be first in the middleware chain, so
+    # we prevent anything else reading request.GET before the cleaning happens.
+    # This is enforced by a system check.
+    "kitsune.sumo.middleware.StripNulCharactersMiddleware",
     "kitsune.sumo.middleware.HostnameMiddleware",
     "allow_cidr.middleware.AllowCIDRMiddleware",
     "kitsune.sumo.middleware.FilterByUserAgentMiddleware",
@@ -1086,7 +1090,9 @@ SHOW_DEBUG_INFO = show_debug_callback()
 if SHOW_DEBUG_INFO:
     INSTALLED_APPS = (*INSTALLED_APPS, "silk")
 
-    MIDDLEWARE = ("silk.middleware.SilkyMiddleware", *MIDDLEWARE)
+    # As early as possible, for accurate timings, but after NUL stripping (which
+    # is always first) because Silk reads request.GET.
+    MIDDLEWARE = (MIDDLEWARE[0], "silk.middleware.SilkyMiddleware", *MIDDLEWARE[1:])
 
 # Set this to True to wrap each HTTP request in a transaction on this database.
 ATOMIC_REQUESTS = config("ATOMIC_REQUESTS", default=True, cast=bool)
