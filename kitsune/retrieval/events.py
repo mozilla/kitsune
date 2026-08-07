@@ -56,6 +56,8 @@ EVENT_CATALOG = frozenset(
         "retrieval.batch.skipped",
         # integrity
         "retrieval.gate.completed",
+        # provider-free ingestion estimate
+        "retrieval.estimate.completed",
         # generation lifecycle
         "retrieval.rebuild.write_initialized",
         "retrieval.rebuild.write_migrated",
