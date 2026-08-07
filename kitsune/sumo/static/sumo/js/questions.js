@@ -379,8 +379,10 @@ function initReplyToAnswer() {
       var contentEl = document.getElementById(contentId);
       var rawEl = contentEl ? contentEl.querySelector('.content-raw') : null;
       var nameEl = contentEl ? contentEl.querySelector('.display-name') : null;
+      var authorEl = document.querySelector('.thread-post--author-name');
+      var author = authorEl ? authorEl.textContent.trim() : '';
+      var user = nameEl ? nameEl.textContent : author;
       var text = rawEl ? rawEl.textContent : '';
-      var user = nameEl ? nameEl.textContent : '';
       var reply_text = `''<p>${user} [[#${contentId}|${gettext('said')}]]</p>''\n<blockquote>${text}\n</blockquote>\n\n`;
       var textarea = document.getElementById('id_content');
 
