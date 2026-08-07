@@ -1,165 +1,81 @@
 {% extends "users/base.html" %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "kbadge/includes/macros.html" import awards_list with context %}
+{% from "sumo/includes/entity_card.html" import entity_card %}
 
 {% set title = _('{user} | Profile')|f(user=display_name(profile.user)) %}
 {% set classes = 'profile' %}
 {% set canonical_url = canonicalize(viewname='users.profile', username=profile.user.username) %}
 {% set active = 'my-profile' %}
 {% set is_owner = profile and request.user == profile.user %}
+{% set can_edit_profile = request.user.is_authenticated and request.user != profile.user and not profile.is_system_account and user.has_perm('users.change_profile') %}
+{% set can_report = request.user.is_authenticated and request.user != profile.user and not profile.is_system_account %}
+{% set can_deactivate = user.id != profile.user.id and user.has_perm('users.deactivate_users') and not profile.is_system_account and not profile.user.is_superuser %}
+{# profile.public_email only means the owner opted in to showing it — it's still
+   hidden from logged-out visitors below, so it can't count toward "there's
+   contact info to show" unless the current viewer can actually see it. #}
+{% set can_view_public_email = profile.public_email and request.user.is_authenticated %}
+{% set has_contact_info = can_view_public_email or profile.website or profile.twitter or profile.community_mozilla_org or profile.people_mozilla_org or profile.matrix_handle %}
 
 {% block breadcrumbs %}{% endblock %}
-{% block content %}
-  <article id="profile">
-    {% if is_owner and profile.is_fxa_migrated %}
-    <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
-    <p class="mb-0"><strong>{{ user.email }}</strong></p>
-    <p>
-      {# L10n: Deprecated. Learn more refers to https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts #}
-      {% set deprecated_visit_moz_accounts %}
-        {% trans a_open='<a href="https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
-          To change your email or avatar, visit the Mozilla account page. {{ a_open }} Learn more. {{ a_close }}
-        {% endtrans %}
-      {% endset %}
-      {# L10n: Learn more refers to https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts #}
-      {% trans a_open='<a href="https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
-        To change your email or avatar, visit the Mozilla accounts page. {{ a_open }}Learn more.{{ a_close }}
-      {% endtrans %}
-    </p>
-    <p>
-      {# L10n: Mozilla Support refers to https://support.mozilla.org #}
-      {% trans a_open='<a href="https://support.mozilla.org">'|safe, a_close='</a>'|safe %}
-      After changing your avatar, you will have to sign in again to {{ a_open }}Mozilla Support{{ a_close }} for the changes to be applied.
-      {% endtrans %}
-    </p>
-    <section class="avatar-group">
-      <figure class="avatar-group--figure">
-        <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
-      </figure>
-    </section>
-    <hr class="section-break"/>
-    {% endif %}
 
-    {% if request.user.is_authenticated and request.user != profile.user and not profile.is_system_account %}
-      {% if user.has_perm('users.change_profile') %}
-        <div id="admin-actions">
-          <a class="edit" rel="nofollow" href="{{ url('users.edit_profile', profile.user.username) }}">
-            {{ _('Edit user profile') }}
-          </a>
-        </div>
-      {% endif %}
-      {% if not profile.is_system_account %}
+{# .sumo-l-two-col defaults to flex-direction: row-reverse at desktop widths,
+   which puts the DOM-first <aside> (the identity card) on the right. The
+   mockup has it on the left, so this un-reverses it — despite the name,
+   .sidebar-on-right sets flex-direction: row (see layout/two-columns.scss),
+   which is what actually keeps DOM order = visual order here. #}
+{% block columns_modifier %}sidebar-on-right{% endblock %}
+
+{% block side_top %}
+  {% set _location %}
+    {% if profile.city and profile.country %}
+      {{ _('{city}, {country}')|f(city=profile.city, country=profile.get_country_display()) }}
+    {% elif profile.city %}
+      {{ profile.city }}
+    {% elif profile.country %}
+      {{ profile.get_country_display() }}
+    {% endif %}
+  {% endset %}
+  {% set _action %}
+    {% if profile.user == user %}
+      <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+        {% csrf_token %}
+      </form>
+      <a
+        class="sumo-button primary-button button-full-width"
+        data-type="submit"
+        data-form="sign-out"
+        href="#sign-out"
+        data-event-label="Sign Out">
+        {{ _('Sign Out') }}
+      </a>
+    {% else %}
+      {{ private_message(profile.user) }}
+      {% if can_report %}
         {{ flag_form(url('users.flag', object_id=profile.pk), profile.id, False) }}
       {% endif %}
     {% endif %}
-    <h2 class="sumo-callout-heading user">{{ display_name(profile.user) }}
-      {% if profile.name %}
-        <span class="username">({{ profile.user.username }})</span>
-      {% endif %}
-    </h2>
-    <p>
-      {% if is_owner %}
-        {# L10n: Deprecated. Edit your username refers to url("users.edit_my_profile"), which is https://support.mozilla.org/users/edit #}
-        {% set deprecated_edit_username %}
-          {% trans a_open='<a rel="nofollow" href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
-            Your privacy is important to us. Your username is always visible to the public -
-            you can always {{ a_open }} edit your username {{ a_close }} if you would like to do so.
-          {% endtrans %}
-        {% endset %}
-        {# L10n: Edit your username refers to url("users.edit_my_profile"), which is https://support.mozilla.org/users/edit #}
-        {% trans a_open='<a rel="nofollow" href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
-          Your privacy is important to us. Your username is always visible to the public –
-          you can always {{ a_open }}edit your username{{ a_close }} if you would like to do so.
-        {% endtrans %}
-      {% endif %}
-    </p>
-
-    <h2 class="sumo-page-subheading location">
-      {% if profile.city and profile.country %}
-        {{ _('{city}, {country}')|f(city=profile.city,
-                                    country=profile.get_country_display() ) }}
-      {% elif profile.city %}
-        {{ profile.city }}
-      {% elif profile.country %}
-        {{ profile.get_country_display() }}
-      {% endif %}
-    </h2>
-
-  <section class="avatar-group">
-    {% if not is_owner %}
-    <figure class="avatar-group--figure">
-      <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
-    </figure>
-    {% endif %}
-    <div class="avatar-group--details">
-      {% if profile.public_email or profile.website or profile.twitter or
-            profile.community_mozilla_org or profile.people_mozilla_org or profile.matrix_handle %}
-          <ul class="avatar-group--details-list">
-            {% if profile.public_email and request.user.is_authenticated %}
-              <li class="avatar-group--details-item">
-                <label class="avatar-group--details-label">{{ _('Email') }}:</label>
-                {{ profile.user.email|public_email }}
-              </li>
-            {% endif %}
-            {% if profile.website %}
-              <li class="avatar-group--details-item">
-                <label class="avatar-group--details-label">{{ _('Website') }}:</label>
-                  <a rel="nofollow" href="{{ profile.website }}">{{ profile.website }}</a>
-              </li>
-            {% endif %}
-            {% if profile.twitter %}
-              <li class="avatar-group--details-item">
-                <label class="avatar-group--details-label">{{ _('Twitter') }}:</label>
-                <a rel="nofollow" href="https://www.twitter.com/{{profile.twitter}}">{{ profile.twitter }}</a>
-              </li>
-            {% endif %}
-            {% if profile.community_mozilla_org %}
-              <li class="avatar-group--details-item">
-                <label class="avatar-group--details-label">{{ _('Community Portal') }}:</label>
-                <a rel="nofollow" href="https://community.mozilla.org/people/{{profile.community_mozilla_org}}/">{{ profile.community_mozilla_org }}</a>
-              </li>
-            {% endif %}
-            {% if profile.people_mozilla_org %}
-              <li class="avatar-group--details-item">
-                <label class="avatar-group--details-label">{{ _('People Directory') }}:</label>
-                <a rel="nofollow" href="https://people.mozilla.org/p/{{profile.people_mozilla_org}}/">{{ profile.people_mozilla_org }}</a>
-              </li>
-            {% endif %}
-            {% if profile.matrix_handle %}
-              <li class="avatar-group--details-item">
-                <label class="avatar-group--details-label">{{ _('Matrix') }}:</label>
-                {{ profile.matrix_handle }}
-              </li>
-            {% endif %}
-          </ul>
-      {% endif %}
-    </div>
-  </section>
-
-
-  {% if user.id != profile.user.id and user.has_perm('users.deactivate_users') and not profile.is_system_account and not profile.user.is_superuser %}
-    {% if profile.user.is_active %}
-      <form class="deactivate" method="post" action="{{ url('users.deactivate') }}">
-        {% csrf_token %}
-        <input type="hidden" name="user_id" value="{{ profile.user.id }}">
-        <input type="submit" value="{{ _('Deactivate this user') }}">
-      </form>
-      <form class="deactivate" method="post" action="{{ url('users.deactivate-spam') }}">
-        {% csrf_token %}
-        <input type="hidden" name="user_id" value="{{ profile.user.id }}">
-        <input type="submit" value="{{ _('Deactivate this user and mark all content as spam') }}">
-      </form>
-    {% else %}
-      <div id="deactivated-msg">{{ _('This user has been deactivated.') }}</div>
-    {% endif %}
-  {% endif %}
-
+  {% endset %}
+  {% set _entity_card_args = {
+    'avatar_url': profile_avatar(profile.user),
+    'name': display_name(profile.user),
+    'username': (profile.user.username if profile.name else None),
+    'location': _location,
+    'primary_action': (_action if not profile.is_system_account else None)
+  } %}
+  {# The contributions list is folded into the same card as the avatar via
+     entity_card()'s {% call %} slot (rendered inside its .stat-list), rather
+     than sitting in a separate card below it. The <section class="contributions">
+     and <li> structure itself is untouched, since the Playwright page object
+     locates rows by section class and by list position (see
+     contributed_from_info / provided_solutions_text). #}
   {% if num_answers or num_questions or num_solutions or num_documents or profile.involved_from %}
+  {% call entity_card(**_entity_card_args) %}
     <section class="contributions">
       <h2 class="sumo-page-subheading mt-lg">{{ _('Contributions') }}</h2>
       <ul>
         {% if profile.involved_from %}
-          <li>
+          <li class="contributions--since">
             {{ _('Involved with Mozilla since {date}')|f(date=profile.involved_from.strftime('%b %Y')) }}
           </li>
         {% endif %}
@@ -191,51 +107,205 @@
         {% endif %}
       </ul>
     </section>
+  {% endcall %}
+  {% else %}
+  {{ entity_card(**_entity_card_args) }}
   {% endif %}
 
-
-  {% if profile.bio %}
-    <section class="bio">
-      <h2 class="sumo-page-subheading mt-lg">{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
-      {{ profile.bio|wiki_to_safe_html(nofollow=True) }}
-    </section>
-  {% endif %}
-  {% if groups %}
-    <section class="groups">
-      <h2 class="sumo-page-subheading mt-lg">{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
-      <ul>
-        {% for g in groups %}
-          <li>{{ group_link(g.group) }}</li>
-        {% endfor %}
-      </ul>
-    </section>
-  {% endif %}
-  {% if awards %}
-    <section class="badges cf">
-      <h2 class="sumo-page-subheading mt-lg">{{ _('Badges') }}</h2>
-      {{ awards_list(awards) }}
-      <p><a href="{{ url('kbadge.badges_list') }}">{{ _('See all available SUMO badges') }}</a></p>
-    </section>
-  {% endif %}
-
-  {% if not profile.is_system_account %}
-    <div class="pm-or-signout sumo-button-wrap extra-pad-top">
-      {% if profile.user == user %}
-        <form id="sign-out" action="{{ url('users.logout') }}" method="post">
-          {% csrf_token %}
-        </form>
-        <a
-          class="sumo-button primary-button push-right"
-          data-type="submit"
-          data-form="sign-out"
-          href="#sign-out"
-          data-event-label="Sign Out">
-          {{ _('Sign Out') }}
+  {% if can_edit_profile or (can_deactivate and profile.user.is_active) %}
+  <div class="card elevation-01 lg-pad sidebar-moderator-card">
+    <h3 class="sidebar-moderator-card--title">{{ _('Moderator tools') }}</h3>
+    {% if can_edit_profile %}
+      <div id="admin-actions">
+        <a class="edit sumo-button secondary-button button-full-width" rel="nofollow" href="{{ url('users.edit_profile', profile.user.username) }}">
+          {{ _('Edit user profile') }}
         </a>
-      {% else %}
-        {{ private_message(profile.user) }}
+      </div>
+    {% endif %}
+    {% if can_deactivate and profile.user.is_active %}
+      <div class="sidebar-moderator-card--danger-zone">
+        <form class="deactivate" method="post" action="{{ url('users.deactivate') }}">
+          {% csrf_token %}
+          <input type="hidden" name="user_id" value="{{ profile.user.id }}">
+          <input type="submit" class="sumo-button link-button" value="{{ _('Deactivate this user') }}">
+        </form>
+        <form class="deactivate" method="post" action="{{ url('users.deactivate-spam') }}">
+          {% csrf_token %}
+          <input type="hidden" name="user_id" value="{{ profile.user.id }}">
+          <input type="submit" class="sumo-button link-button" value="{{ _('Deactivate this user and mark all content as spam') }}">
+        </form>
+      </div>
+    {% endif %}
+  </div>
+  {% endif %}
+  {{ super() }}
+{% endblock %}
+
+{% block content %}
+  <article id="profile">
+    {% if is_owner %}
+    <div class="card elevation-01 lg-pad card--callout">
+      {% if profile.is_fxa_migrated %}
+      <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
+      <p class="mb-0"><strong>{{ user.email }}</strong></p>
+      <p>
+        {# L10n: Deprecated. Learn more refers to https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts #}
+        {% set deprecated_visit_moz_accounts %}
+          {% trans a_open='<a href="https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
+            To change your email or avatar, visit the Mozilla account page. {{ a_open }} Learn more. {{ a_close }}
+          {% endtrans %}
+        {% endset %}
+        {# L10n: Learn more refers to https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts #}
+        {% trans a_open='<a href="https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
+          To change your email or avatar, visit the Mozilla accounts page. {{ a_open }}Learn more.{{ a_close }}
+        {% endtrans %}
+      </p>
+      <p>
+        {# L10n: Mozilla Support refers to https://support.mozilla.org #}
+        {% trans a_open='<a href="https://support.mozilla.org">'|safe, a_close='</a>'|safe %}
+        After changing your avatar, you will have to sign in again to {{ a_open }}Mozilla Support{{ a_close }} for the changes to be applied.
+        {% endtrans %}
+      </p>
+      {% endif %}
+      <p class="profile-privacy-hint">
+        {# L10n: Deprecated. Edit your username refers to url("users.edit_my_profile"), which is https://support.mozilla.org/users/edit #}
+        {% set deprecated_edit_username %}
+          {% trans a_open='<a rel="nofollow" href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
+            Your privacy is important to us. Your username is always visible to the public -
+            you can always {{ a_open }} edit your username {{ a_close }} if you would like to do so.
+          {% endtrans %}
+        {% endset %}
+        {# L10n: Edit your username refers to url("users.edit_my_profile"), which is https://support.mozilla.org/users/edit #}
+        {% trans a_open='<a rel="nofollow" href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
+          Your privacy is important to us. Your username is always visible to the public –
+          you can always {{ a_open }}edit your username{{ a_close }} if you would like to do so.
+        {% endtrans %}
+      </p>
+    </div>
+    {% endif %}
+
+    {% if can_deactivate and not profile.user.is_active %}
+      <div id="deactivated-msg" class="mzp-c-notification-bar mzp-t-warning">{{ _('This user has been deactivated.') }}</div>
+    {% endif %}
+
+    {% if profile.bio or has_contact_info %}
+    <div class="card elevation-01 lg-pad">
+      <div class="card-heading">
+        <h2 class="sumo-page-subheading">{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
+      </div>
+
+      {% if profile.bio %}
+        <section class="bio">
+          {{ profile.bio|wiki_to_safe_html(nofollow=True) }}
+        </section>
+      {% endif %}
+
+      {% if has_contact_info %}
+        <section class="avatar-group avatar-group--in-card">
+          <div class="avatar-group--details">
+            <ul class="avatar-group--details-list">
+              {% if can_view_public_email %}
+                <li class="avatar-group--details-item">
+                  <span class="avatar-group--details-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                  </span>
+                  <label class="avatar-group--details-label">{{ _('Email') }}:</label>
+                  {{ profile.user.email|public_email }}
+                </li>
+              {% endif %}
+              {% if profile.website %}
+                <li class="avatar-group--details-item">
+                  <span class="avatar-group--details-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 0 20 15.3 15.3 0 0 1 0-20Z"/></svg>
+                  </span>
+                  <label class="avatar-group--details-label">{{ _('Website') }}:</label>
+                    <a rel="nofollow" href="{{ profile.website }}">{{ profile.website }}</a>
+                </li>
+              {% endif %}
+              {% if profile.twitter %}
+                <li class="avatar-group--details-item">
+                  <span class="avatar-group--details-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 9.4-8.3 16.2-16.5 11.6 2.3.1 4.6-.6 6.3-2C6 16.5 3.8 13.7 3.3 9.9c1 .6 2.2.9 3.4.9C3.9 9 2.5 5.6 3.9 3c2.3 2.7 5.6 4.5 9.2 4.7-.7-2.9 2.4-5.6 5.3-4.5 1 .3 1.8 1 2.4 1.9 1-.2 2-.5 2.9-1.1-.3 1-1 1.9-1.9 2.5.9-.1 1.7-.3 2.5-.7-.5.9-1.3 1.6-2 2.2Z"/></svg>
+                  </span>
+                  <label class="avatar-group--details-label">{{ _('Twitter') }}:</label>
+                  <a rel="nofollow" href="https://www.twitter.com/{{profile.twitter}}">{{ profile.twitter }}</a>
+                </li>
+              {% endif %}
+              {% if profile.community_mozilla_org %}
+                <li class="avatar-group--details-item">
+                  <span class="avatar-group--details-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  </span>
+                  <label class="avatar-group--details-label">{{ _('Community Portal') }}:</label>
+                  <a rel="nofollow" href="https://community.mozilla.org/people/{{profile.community_mozilla_org}}/">{{ profile.community_mozilla_org }}</a>
+                </li>
+              {% endif %}
+              {% if profile.people_mozilla_org %}
+                <li class="avatar-group--details-item">
+                  <span class="avatar-group--details-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  </span>
+                  <label class="avatar-group--details-label">{{ _('People Directory') }}:</label>
+                  <a rel="nofollow" href="https://people.mozilla.org/p/{{profile.people_mozilla_org}}/">{{ profile.people_mozilla_org }}</a>
+                </li>
+              {% endif %}
+              {% if profile.matrix_handle %}
+                <li class="avatar-group--details-item">
+                  <span class="avatar-group--details-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                  </span>
+                  <label class="avatar-group--details-label">{{ _('Matrix') }}:</label>
+                  {{ profile.matrix_handle }}
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+        </section>
       {% endif %}
     </div>
-  {% endif %}
-</article>
+    {% endif %}
+
+    {% if awards %}
+      <div class="card elevation-01 lg-pad">
+        <div class="card-heading">
+          <h2 class="sumo-page-subheading">{{ _('Badges') }}</h2>
+        </div>
+        <section class="badges cf">
+          {{ awards_list(awards) }}
+          <p><a href="{{ url('kbadge.badges_list') }}">{{ _('See all available SUMO badges') }}</a></p>
+        </section>
+      </div>
+    {% endif %}
+
+    {% if groups %}
+      <div class="card elevation-01 lg-pad">
+        <section class="groups">
+          <h2 class="sumo-page-subheading mt-lg">{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
+          <ul>
+            {% for g in groups %}
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                {{ group_link(g.group) }}
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+      </div>
+    {% endif %}
+
+    {% if not (profile.bio or has_contact_info or awards or groups) %}
+      <div class="card elevation-01 lg-pad card--empty">
+        <div class="card--empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+        <h2 class="sumo-page-subheading">{{ _('Nothing here yet') }}</h2>
+        {% if is_owner %}
+          <p>{{ _("You haven't added a bio, joined a group, or earned a badge yet. Once you do, it'll show up here.") }}</p>
+          <a class="sumo-button secondary-button" rel="nofollow" href="{{ url('users.edit_my_profile') }}">{{ _('Edit your profile') }}</a>
+        {% else %}
+          <p>{{ _('{user} hasn\'t added a bio, joined a group, or earned a badge yet.')|f(user=display_name(profile.user)) }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </article>
 {% endblock %}

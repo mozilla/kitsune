@@ -116,9 +116,9 @@ class ViewProfileTests(TestCase):
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
         self.assertEqual(0, doc("#edit-profile-link").length)
-        self.assertEqual(self.u.username, doc("h2.user").text())
+        self.assertEqual(self.u.username, doc("h2.entity-card--name").text())
         # No name set => no optional fields.
-        self.assertEqual(0, doc(".contact").length)
+        self.assertEqual(0, doc(".avatar-group--details-list").length)
         # Check canonical url
         self.assertEqual(
             "{}/en-US/user/{}/".format(settings.CANONICAL_URL, self.u.username),
