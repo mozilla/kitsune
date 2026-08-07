@@ -269,7 +269,10 @@ class HasAddTagPermissions(permissions.BasePermission):
         return super().has_object_permission(request, view, obj)
 
 
-class QuestionViewSet(viewsets.ModelViewSet):
+# Read-only, apart from the actions defined on the viewset below. Questions are
+# created, edited and deleted through the site's own views, which check permissions
+# such as lock_question and delete_question.
+class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = QuestionSerializer
     # select_related/prefetch_related the related profiles (and other related
     # rows the serializer reads) so serialization is served from the relation
@@ -316,6 +319,15 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def solve(self, request, pk=None):
         """Accept an answer as the solution to the question."""
         question = self.get_object()
+
+        # The same rule the questions.solve view applies: the solution of a locked or
+        # archived question can no longer be changed.
+        if not question.allows_solve(request.user):
+            raise GenericAPIException(
+                status.HTTP_403_FORBIDDEN,
+                "Question is locked or archived; the solution cannot be changed.",
+            )
+
         answer_id = request.data.get("answer")
 
         if answer_id is None:
