@@ -86,6 +86,7 @@
               <p class="page-heading--intro-text">
                 {% if recent_unanswered_count > 0 %}
                   {% if request.user.is_authenticated %}
+                    {# L10n: Intro text displayed for authenticated users under the product name on product forums (such as https://support.mozilla.org/questions/firefox) when there is at least one recently unanswered question. #}
                     {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
                       {{recent_unanswered_count}} question in the last 24 hours has no reply.
                       <a href="{{url}}">Help solve it!</a>
@@ -94,22 +95,30 @@
                       <a href="{{url}}">Help solve them!</a>
                     {% endtrans %}
                   {% else %}
-                  {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
-                    {{recent_unanswered_count}} question in the last 24 hours has no reply.
-                    <a href="/contribute/forum">Learn how to help solve it!</a>
-                    {% pluralize recent_unanswered_count %}
-                    {{recent_unanswered_count}} questions in the last 24 hours have no reply.
-                    <a href="/contribute/forum">Learn how to help solve them!</a>
-                  {% endtrans %}
+                    {# L10n: Intro text displayed for unauthenticated users under the product name on product forums (such as https://support.mozilla.org/questions/firefox) when there is at least one recently unanswered question. #}
+                    {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
+                      {{recent_unanswered_count}} question in the last 24 hours has no reply.
+                      <a href="/contribute/forum">Learn how to help solve it!</a>
+                      {% pluralize recent_unanswered_count %}
+                      {{recent_unanswered_count}} questions in the last 24 hours have no reply.
+                      <a href="/contribute/forum">Learn how to help solve them!</a>
+                    {% endtrans %}
                   {% endif %}
                 {% else %}
+                  {# L10n: Intro text (par. 1) displayed under the product name on product forums (such as https://support.mozilla.org/questions/monitor) when there are no recently unanswered questions. #}
+                  {% trans %}
+                    All questions posted in the last 24 hours have been answered. Good job!
+                  {% endtrans %}
+                  <br>
                   {% if request.user.is_authenticated %}
-                    {% trans %}
-                      0 questions in the last 24 hours have no reply. Good job!
+                    {# L10n: Intro text (par. 2) displayed for authenticated users under the product name on product forums (such as https://support.mozilla.org/questions/monitor) when there are no recently unanswered questions. #}
+                    {% trans a_open='<a href="'|safe + questions_url(filter='new', show='needs-attention') + '" rel="nofollow">'|safe, a_close='</a>'|safe %}
+                      If you'd like to keep helping, {{ a_open }}check out our backlog{{ a_close }} of older questions that are still waiting for a reply.
                     {% endtrans %}
                   {% else %}
-                    {% trans %}
-                      0 questions in the last 24 hours have no reply. <a href="/contribute/forum">Learn how to help!</a>
+                    {# L10n: Intro text (par. 2) displayed for unauthenticated users under the product name on product forums (such as https://support.mozilla.org/questions/monitor) when there are no recently unanswered questions. #}
+                    {% trans a_open='<a href="/contribute/forum">'|safe, a_close='</a>'|safe %}
+                      Want to make a difference? Join the Mozilla community and {{ a_open }}learn how you can help{{ a_close }} users by answering questions in the community forum.
                     {% endtrans %}
                   {% endif %}
                 {% endif %}
