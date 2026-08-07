@@ -1,7 +1,7 @@
 {% extends 'email/base.html' %}
 
 {% block content %}
-  <p>{{ _('Hi') }} {{ display_name(user) }},</p>
+  <p>{{ _('Hi {username},')|f(username=display_name(user)) }}</p>
 
   <p>
     {% trans %}
@@ -33,7 +33,7 @@
 
   <p><strong>{{ _('Keep yourself updated') }}</strong></p>
   <p>
-    <img src="{{ webpack_static('sumo/img/community/edit-settings.png') }}" alt="Edit Settings">
+    <img src="{{ webpack_static('sumo/img/community/edit-settings.png') }}" alt="{{ _('Edit settings') }}">
   </p>
   <p>
     {% trans prefs_url='https://mzl.la/4mslgfo' %}
@@ -55,7 +55,7 @@
 
   <p><strong>{{ _('Stay updated') }}</strong></p>
   <p>
-    <img src="{{ webpack_static('sumo/img/community/support-forum-discussions.png') }}" alt="Support Forum Discussions">
+    <img src="{{ webpack_static('sumo/img/community/support-forum-discussions.png') }}" alt="{{ _('Support forum discussions') }}">
   </p>
   <p>
     {% trans forums_url='https://mzl.la/4myLzjZ' %}
