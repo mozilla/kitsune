@@ -1,6 +1,7 @@
 # 5 - Embedding location for the RAG retrieval layer
 
 Date: 2026-07-21
+Updated: 2026-08-07
 
 ## Status
 
@@ -29,9 +30,10 @@ discards the existing scope-aware chunker. The remaining viable options are:
 Chunking is unaffected either way; both keep our chunker's output as the retrieval
 unit (under B, `chunking_settings: none` disables Elasticsearch's internal re-chunk).
 
-Constraint: Kitsune's local development and CI both run Elasticsearch 9.2.2 on the
-**Basic** license (docker-compose, `xpack.security.enabled=false`, no license
-configured). **Local/CI parity is a project requirement.**
+The embedding boundary must support deterministic offline tests, explicit document and
+query task types, batching, deadlines, retries, and application-level cost controls.
+The decision should not depend on the capabilities currently provisioned in a particular
+deployment environment.
 
 ## Probe (evidence)
 
@@ -55,24 +57,23 @@ Run against the local Elasticsearch (9.2.2, Basic):
 - Create a `semantic_text` mapping —
   `PUT /spike_semantic_test` with a `semantic_text` field → **HTTP 200** (acknowledged).
 
-**Interpretation.** Basic permits the `semantic_text` *mapping*, but the *inference
-operation* B requires is unavailable: creating our own Vertex (or deterministic fake)
-inference endpoint returns a license-compliance 403. Mapping creation succeeds
-regardless of license and does **not** prove inference works — Elastic documents that
-indexing can still fail when inference is invoked, and the probe did not index a
-document, so it did not exercise inference through any endpoint. Any user-provisioned
-inference endpoint — `custom`, `googlevertexai`, or the fake endpoint we would need for
-tests — is gated behind the licensed `[inference]` feature.
+**Interpretation.** This probe establishes that the repository's default Elasticsearch
+environment cannot exercise B. Basic permits the `semantic_text` *mapping*, but the
+*inference operation* B requires is unavailable there: creating our own Vertex (or
+deterministic fake) inference endpoint returns a license-compliance 403. Mapping creation
+succeeds regardless of license and does **not** prove inference works — the probe did not
+index a document and therefore did not exercise inference through an endpoint.
 
 ## Decision
 
 Adopt **Option A (application-side embeddings)** for the RAG retrieval layer.
 
-B requires licensed Elasticsearch for its normal runtime *and* for meaningful
-integration tests (the fake-embedder endpoint itself cannot be created on Basic).
-Kitsune's local and CI environments intentionally use Basic Elasticsearch, and
-local/CI parity is a requirement. A permanently licensed test cluster could test B,
-but would introduce infrastructure, cost, and environment coupling. Therefore A.
+Application-side embedding keeps provider calls, document/query task types, batching,
+deadlines, retries, cost controls, and deterministic offline tests in the same application
+boundary as ingestion. It also avoids making normal local/CI tests depend on
+Elasticsearch's licensed inference feature. These are durable application-boundary and
+testability benefits rather than conclusions about a deployment environment's current
+license or capacity.
 
 **Scope guardrail for A:** implement one narrow Gemini/Vertex adapter behind
 `get_embeddings()` — explicit document/query task types, batching, and bounded
@@ -97,7 +98,6 @@ actually exists.
 
 ## Reconsideration trigger
 
-Revisit this decision if **dev and CI gain a durable, inference-capable Elasticsearch
-license** (not a transient trial). At that point B's advantages — no application-side
-embedding code, Elasticsearch-managed batching/retries, and `inference_id` version as
-a natural embedding fingerprint — become available without breaking local/CI parity.
+Revisit this decision if Elasticsearch-managed inference demonstrates a material
+reliability, latency, cost, or operational advantage over the application adapter.
+That evaluation must include a supported way to test the path locally and in CI.
