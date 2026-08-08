@@ -951,11 +951,11 @@ wheels = [
 
 [[package]]
 name = "dockerflow"
-version = "2022.8.0"
+version = "2026.3.4"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/90/a6/6f8bea2e73f760240595cf47c161a99e72e5ea5a133d4d3932a47dfc3b75/dockerflow-2022.8.0.tar.gz", hash = "sha256:fcb95ea8226551e1fd03c3c82f2b11de50434ddfa63cebc164399dabf5c78908", size = 57559, upload-time = "2022-08-18T21:17:46.992Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9c/03/935f8399094611981b37634a7ee078484b3995f744135339e51385638f6c/dockerflow-2026.3.4.tar.gz", hash = "sha256:6cc7fcab2a078d06aeca8b02e22fd7f6766dca322fb30aed6910684dbc08690c", size = 68701, upload-time = "2026-03-04T09:01:28.178Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0c/dc/bcd0c23c64aa305305690c325e27a1e28a91816fb08265802fbdebc61de3/dockerflow-2022.8.0-py2.py3-none-any.whl", hash = "sha256:cebd5e12ff08be43b02ea4fcaf044fb2cd4cec63c93dbfbe6e3c5b610849924c", size = 31731, upload-time = "2022-08-18T21:17:45.429Z" },
+    { url = "https://files.pythonhosted.org/packages/86/b9/2d7bf30eb0c24e60e61e4f6ae7574e123d3fa51b39a612e146c94158446a/dockerflow-2026.3.4-py2.py3-none-any.whl", hash = "sha256:38fe0ad30a4aedf68e589919695d502fc6f584a761b56a91f56e80cbadfbf61a", size = 36424, upload-time = "2026-03-04T09:01:26.631Z" },
 ]
 
 [[package]]
@@ -1936,7 +1936,7 @@ requires-dist = [
     { name = "django-waffle", specifier = ">=3.0.0,<6" },
     { name = "django-watchman", specifier = "==1.5.0" },
     { name = "djangorestframework", specifier = ">=3.15.2,<4" },
-    { name = "dockerflow", specifier = ">=2022.8.0,<2023" },
+    { name = "dockerflow", specifier = ">=2026.3.4,<2027" },
     { name = "elasticsearch", specifier = ">=9.4.1,<10" },
     { name = "factory-boy", specifier = ">=3.3.0,<4" },
     { name = "faker", specifier = ">=16.9.0,<17" },
