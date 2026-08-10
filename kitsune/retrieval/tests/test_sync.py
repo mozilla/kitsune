@@ -495,7 +495,7 @@ class BuildSourceTests(ChunkIndexTestCase):
 
         self.assertEqual(source.locale, "de")
         self.assertEqual(source.title, "Eltern")  # its own localized text
-        self.assertEqual(source.family_id, str(parent.id))  # the family key
+        self.assertEqual(source.family_id, f"kb:{parent.id}")
         self.assertEqual(source.product_ids, (str(product.id),))  # inherited
         self.assertEqual(source.visibility, "public")
         self.assertEqual(source.access_group_ids, ())

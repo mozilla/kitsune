@@ -174,7 +174,7 @@ def build_source(document) -> ChunkSource:
         content_type=CONTENT_TYPE,
         object_id=str(document.id),
         locale=document.locale,
-        family_id=str(family_id_for(document)),
+        family_id=f"{CONTENT_TYPE}:{family_id_for(document)}",
         title=document.title,
         summary=revision.summary,
         keywords=revision.keywords,
