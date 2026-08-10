@@ -3,6 +3,46 @@
 
 ## Development tips
 
+### Licensed features in local development and CI
+
+The shared Docker service runs Elasticsearch and Kibana at the same version as the hosted
+stage cluster and starts new Elasticsearch data volumes with a self-generated trial
+license. CircleCI uses this service too, which lets real integration tests exercise licensed
+features such as reciprocal rank fusion.
+
+The license belongs to the Elasticsearch data volume. Adding the Docker setting does not
+convert an existing Basic-license volume. Try starting the trial explicitly:
+
+```bash
+curl -X POST "http://localhost:9200/_license/start_trial?acknowledge=true"
+curl "http://localhost:9200/_license"
+```
+
+A trial lasts 30 days and can be started only once for a cluster. If the disposable local
+search volume has already used its trial, stop Elasticsearch, identify the volume whose
+Compose volume label is `esdata`, and remove only that exact volume before restarting the
+service. This deletes the local search indices, which can be recreated from the database;
+it must not remove the PostgreSQL volume. Kitsune never performs this destructive reset
+automatically.
+
+The recurring local/CI trial is temporary. The durable licensing follow-up must confirm
+what Mozilla's Enterprise subscription permits and replace this workflow when appropriate.
+
+### Adding `family_id` to existing AAQ documents
+
+The mixed retrieval query groups questions and answers with `aaq:<question-id>`. After
+deploying the additive `QuestionDocument.family_id` mapping, update the mapping before
+backfilling existing questions:
+
+```bash
+./manage.py es_init --limit QuestionDocument
+./manage.py es_reindex --limit QuestionDocument
+```
+
+The reindex command dispatches Celery work, so allow those jobs to finish before validating
+or enabling the mixed query. Existing answer documents do not need this backfill because
+search excludes them; future answer indexing still prepares the same family identifier.
+
 ### Adding fields to a live index
 
 Elastic supports adding new fields to an existing mapping,
