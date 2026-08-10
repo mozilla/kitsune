@@ -92,11 +92,8 @@
             <h1>{gettext("Answer questions in the support forum")}</h1>
             <h2>{gettext("Where all the action happens")}</h2>
             <p>
-                {gettext(`From hardcore web developers to "how do I install Firefox"
-                    first time users, everybody needs your help in the forum!
-                    Share your knowledge by pointing people to the right help
-                    articles and providing troubleshooting steps for their
-                    individual questions.`)}
+                {gettext(
+                    `From hardcore web developers to "how do I install Firefox" first-time users, everybody needs your help in the forum! Share your knowledge by pointing people to the right help articles and providing troubleshooting steps for their individual questions.`)}
             </p>
         </Area>
     </Route>
