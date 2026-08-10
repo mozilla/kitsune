@@ -96,6 +96,6 @@ class Command(BaseCommand):
                 comments = s["comments"]
                 if comments:
                     for c in comments:
-                        f.write("# {comment}\n".format(comment=c))
+                        f.write("# L10n: {comment}\n".format(comment=c))
 
                 f.write(L10N_STRING.format(id=s["id"], context=s["context"]))
