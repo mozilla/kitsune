@@ -274,6 +274,24 @@ class CacheHeadersMiddleware(MiddlewareMixin):
         return response
 
 
+class StripNulCharactersMiddleware(MiddlewareMixin):
+    """Remove NUL characters from the query string."""
+
+    # A NUL arrives percent-encoded, as a raw byte, or as a mix of the two. A "%" that
+    # isn't starting a real escape is a literal percent sign, and it's replaced with
+    # "%25" (the escape for a literal "%") because dropping the NUL next to it would
+    # otherwise leave it reading as the start of an escape:
+    #   "%<NUL>00"  ->  "%2500", the text "%00", rather than a fresh NUL
+    NUL_OR_LITERAL_PERCENT_REGEX = re.compile(r"%00|\x00|%(?![0-9A-Fa-f]{2})")
+
+    def process_request(self, request):
+        query_string = request.META.get("QUERY_STRING", "")
+        if "%00" in query_string or "\x00" in query_string:
+            request.META["QUERY_STRING"] = self.NUL_OR_LITERAL_PERCENT_REGEX.sub(
+                lambda m: "%25" if m[0] == "%" else "", query_string
+            )
+
+
 class PlusToSpaceMiddleware(MiddlewareMixin):
     """Replace old-style + with %20 in URLs."""
 

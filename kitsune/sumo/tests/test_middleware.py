@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import MiddlewareNotUsed
 from django.http import HttpResponse, HttpResponsePermanentRedirect
 from django.test import override_settings
@@ -9,6 +10,7 @@ from kitsune.sumo.middleware import (
     GeoIPCookieMiddleware,
     PlusToSpaceMiddleware,
     SetRemoteAddr,
+    StripNulCharactersMiddleware,
 )
 from kitsune.sumo.tests import TestCase
 
@@ -249,3 +251,112 @@ class GeoIPCookieMiddlewareTestCase(TestCase):
         response = HttpResponse()
         response = self.mw.process_response(request, response)
         self.assertNotIn("geoip_country_name", response.cookies)
+
+
+class StripNulCharactersMiddlewareTestCase(TestCase):
+    def setUp(self):
+        self.rf = RequestFactory()
+        self.mw = StripNulCharactersMiddleware(lambda r: HttpResponse())
+
+    def test_percent_encoded_nul_is_stripped(self):
+        """NULs go from names and values alike, however many there are, and the rest
+        of the query string keeps its shape."""
+        request = self.rf.get(
+            "/questions/?tag%00ged=%00%00a%00b&page=2&product=%00firefox&product=thunderbird%00"
+        )
+        self.mw.process_request(request)
+        self.assertEqual(request.GET["tagged"], "ab")
+        self.assertEqual(request.GET["page"], "2")
+        self.assertEqual(request.GET.getlist("product"), ["firefox", "thunderbird"])
+        # Redirect targets and logs are built from get_full_path().
+        self.assertEqual(
+            request.get_full_path(),
+            "/questions/?tagged=ab&page=2&product=firefox&product=thunderbird",
+        )
+
+    def test_raw_nul_is_stripped(self):
+        """A NUL can arrive unencoded rather than as %00. The environ carries the
+        query string as latin-1, so check non-ASCII text survives that too."""
+        request = self.rf.get("/questions/")
+        request.META["QUERY_STRING"] = "q=ca\x00fé".encode().decode("iso-8859-1")
+        self.mw.process_request(request)
+        self.assertEqual(request.GET["q"], "café")
+
+    def test_literal_percent_stays_literal(self):
+        """A "%" that isn't starting a real escape must still read as a plain percent
+        sign afterwards. Dropping the NUL beside it would otherwise leave it starting
+        one: "%<NUL>00" is the text "%00", not a fresh NUL."""
+        cases = [
+            ("tagged=%%0000abc", "%00abc"),
+            ("tagged=%\x0000abc", "%00abc"),
+            # A NUL anywhere rewrites every literal "%" in the whole query string,
+            # so an unrelated value has to come back as the client sent it.
+            ("tagged=100%&b=%00", "100%"),
+        ]
+        for query_string, expected in cases:
+            with self.subTest(query_string=query_string):
+                request = self.rf.get("/questions/")
+                request.META["QUERY_STRING"] = query_string
+                self.mw.process_request(request)
+                self.assertEqual(request.GET["tagged"], expected)
+                self.assertNotIn("\x00", request.GET["tagged"])
+
+    def test_real_escapes_are_preserved(self):
+        """%2500 is a literal "%00" in the value, not a NUL, so it must survive. The
+        NUL in the last parameter is what makes us rewrite this query string at all."""
+        request = self.rf.get("/questions/?q=caf%C3%A9&tagged=%2500&page=%002")
+        self.mw.process_request(request)
+        self.assertEqual(request.GET["q"], "café")
+        self.assertEqual(request.GET["tagged"], "%00")
+        self.assertEqual(request.GET["page"], "2")
+
+    def test_clean_query_string_is_left_alone(self):
+        request = self.rf.get("/questions/?tagged=abc&page=2")
+        self.mw.process_request(request)
+        self.assertEqual(request.META["QUERY_STRING"], "tagged=abc&page=2")
+
+    def test_missing_query_string(self):
+        """QUERY_STRING may be absent from the WSGI environ."""
+        request = self.rf.get("/questions/")
+        del request.META["QUERY_STRING"]
+        self.mw.process_request(request)
+        self.assertNotIn("QUERY_STRING", request.META)
+        self.assertEqual(dict(request.GET), {})
+
+    def test_survives_encoding_reassignment(self):
+        """Setting request.encoding discards the parsed GET, so it must re-parse clean."""
+        request = self.rf.get("/questions/?tagged=%00abc")
+        self.mw.process_request(request)
+        self.assertEqual(request.GET["tagged"], "abc")
+        request.encoding = "utf-8"
+        self.assertEqual(request.GET["tagged"], "abc")
+
+    def test_already_parsed_get_is_not_relied_upon(self):
+        """Cleaning QUERY_STRING cannot fix a GET that was parsed before we ran,
+        which is why the ordering in settings.MIDDLEWARE matters."""
+        request = self.rf.get("/questions/?tagged=%00abc")
+        self.assertEqual(request.GET["tagged"], "\x00abc")
+        self.mw.process_request(request)
+        self.assertEqual(request.GET["tagged"], "\x00abc")
+
+
+class StripNulCharactersRequestTestCase(TestCase):
+    """The unit tests above call the middleware directly. These go through the
+    real MIDDLEWARE, so they also cover it being wired in early enough."""
+
+    def test_middleware_runs_first(self):
+        """Cleaning only works if nothing reads request.GET before we do."""
+        self.assertEqual(
+            settings.MIDDLEWARE[0],
+            "kitsune.sumo.middleware.StripNulCharactersMiddleware",
+        )
+
+    def test_nul_in_a_filter_that_reaches_postgres(self):
+        """?tagged= is looked up with slug__in. Drop the middleware and this 500s."""
+        response = self.client.get("/en-US/questions/all", {"tagged": "\x00support"})
+        self.assertEqual(response.status_code, 200)
+
+    def test_doubled_percent_nul_in_a_filter(self):
+        """The malformed spelling has to survive the whole stack too."""
+        response = self.client.get("/en-US/questions/all?tagged=%%0000support")
+        self.assertEqual(response.status_code, 200)
