@@ -116,16 +116,17 @@ OR
 (visibility = group_restricted AND access_group_ids intersects caller_group_ids)
 ```
 
-Before a hit is returned or its text is placed in a prompt, the application
-batch-loads the source documents and revalidates:
+Before a hit is returned or its text is placed in a prompt, the application performs
+one set-based primary-database query over the bounded KB candidate IDs and revalidates:
 
 - current content eligibility, including the approved/current revision; and
 - current authorization for the caller.
 
-It fetches additional candidates as necessary to replace rejected stale hits. The
-database check is the authorization boundary for the indexed source document;
-Elasticsearch filtering protects recall and reduces unnecessary exposure inside the
-application but is not authoritative.
+The Elasticsearch query uses fixed over-fetch. After database rejection, the reader
+returns the remaining results, even when that produces a short page; it does not run an
+adaptive refill loop. The database check is the authorization boundary for the indexed
+source document. Elasticsearch filtering protects recall and reduces unnecessary
+exposure inside the application but is not authoritative.
 
 The same rule applies during a physical-index rebuild. All ingestion mutations,
 including deletion and newly ineligible content, target only the current write
@@ -140,6 +141,10 @@ The initial group-aware reader does not cache retrieval results or generated ans
 Introducing such a cache requires a separate reviewed design that prevents stale
 rendered content from surviving beyond index convergence. Keying solely by query text,
 caller ID, or a caller-group fingerprint is insufficient.
+
+A cache containing only a query vector is outside this restriction: it contains no
+selected document content or authorization decision. Every use still runs the current
+Elasticsearch access filter and authoritative database revalidation.
 
 ### Let access changes converge through ordinary ingestion
 
