@@ -20,7 +20,6 @@ export default [
                 // Project-specific globals
                 Mzp: "readonly",
                 $: "readonly",
-                jQuery: "readonly",
                 gettext: "readonly",
                 interpolate: "readonly",
                 Mozilla: "readonly",
