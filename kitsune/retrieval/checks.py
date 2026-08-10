@@ -1,4 +1,4 @@
-"""Validate the timing invariant that replaces a background lease renewer.
+"""Validate retrieval task safety and interactive-query settings.
 
 Nothing renews a retrieval lease in the background, so safety rests on a task being unable to
 outlive one:
@@ -59,9 +59,38 @@ def task_timing_problems() -> list[str]:
     return problems
 
 
+def query_configuration_problems() -> list[str]:
+    """Describe invalid independent query timeout/cache settings."""
+    problems: list[str] = []
+    timeout = settings.RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS
+    if (
+        isinstance(timeout, bool)
+        or not isinstance(timeout, int | float)
+        or not math.isfinite(timeout)
+        or timeout < MIN_EMBEDDING_TIMEOUT_SECONDS
+    ):
+        problems.append(
+            "RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS must be a finite number of seconds "
+            f"of at least {MIN_EMBEDDING_TIMEOUT_SECONDS}"
+        )
+
+    ttl = settings.RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS
+    if not isinstance(ttl, int) or isinstance(ttl, bool) or ttl <= 0:
+        problems.append("RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS must be a positive integer")
+    return problems
+
+
 @register()
 def check_retrieval_task_timing(app_configs, **kwargs):
     return [
         Error(problem, id="retrieval.E001", hint="See kitsune/retrieval/checks.py.")
         for problem in task_timing_problems()
+    ]
+
+
+@register()
+def check_retrieval_query_configuration(app_configs, **kwargs):
+    return [
+        Error(problem, id="retrieval.E002", hint="See kitsune/retrieval/checks.py.")
+        for problem in query_configuration_problems()
     ]

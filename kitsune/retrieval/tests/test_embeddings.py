@@ -1,11 +1,14 @@
 import json
 import math
+from dataclasses import replace
 from types import SimpleNamespace
 from unittest import mock
 
 from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase, override_settings
+from google.auth.exceptions import DefaultCredentialsError
 from google.genai.errors import ClientError, ServerError
+from httpx import ConnectError as HttpxConnectError
 from httpx import ReadTimeout as HttpxReadTimeout
 from requests import ReadTimeout as RequestsReadTimeout
 
@@ -14,6 +17,7 @@ from kitsune.retrieval.embeddings import (
     FAKE_BACKEND,
     VERTEX_BACKEND,
     EmbeddingRecipe,
+    EmbeddingUnavailable,
     InvalidEmbeddingRecipe,
     InvalidEmbeddingResponse,
     _vertex_client,
@@ -191,13 +195,59 @@ class VertexBackendTests(SimpleTestCase):
             get_embeddings(["a"], task="document", recipe=VERTEX)
         self.assertEqual(request.call_args.kwargs["config"].http_options.timeout, 1)
 
-    def test_query_uses_query_task_type(self):
+    @override_settings(RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS=2)
+    def test_query_uses_query_task_type_and_deadline(self):
         client, request = _mock_vertex_client()
 
         with mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client):
             get_embeddings(["how to reset"], task="query", recipe=VERTEX)
 
-        self.assertEqual(request.call_args.kwargs["config"].task_type, "RETRIEVAL_QUERY")
+        config = request.call_args.kwargs["config"]
+        self.assertEqual(config.task_type, "RETRIEVAL_QUERY")
+        self.assertEqual(config.http_options.timeout, 2_000)
+
+    def test_query_provider_failure_is_not_retried(self):
+        for error in (
+            ServerError(503, {"message": "busy"}),
+            HttpxConnectError("connection failed"),
+        ):
+            with self.subTest(error=type(error).__name__):
+                client, request = _mock_vertex_client()
+                request.side_effect = error
+                with (
+                    mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
+                    mock.patch("kitsune.retrieval.embeddings.time.sleep") as sleep,
+                    self.assertRaises(EmbeddingUnavailable),
+                ):
+                    get_embeddings(["how to reset"], task="query", recipe=VERTEX)
+
+                request.assert_called_once()
+                sleep.assert_not_called()
+
+    def test_query_credential_failure_is_unavailable(self):
+        with (
+            mock.patch(
+                "kitsune.retrieval.embeddings._vertex_client",
+                side_effect=DefaultCredentialsError("credentials unavailable"),
+            ),
+            self.assertRaises(EmbeddingUnavailable),
+        ):
+            get_embeddings(["how to reset"], task="query", recipe=VERTEX)
+
+    def test_query_invalid_response_is_unavailable(self):
+        client, request = _mock_vertex_client()
+        request.side_effect = None
+        request.return_value = _vertex_response(["truncated"], truncated=True)
+        with (
+            mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
+            self.assertRaises(EmbeddingUnavailable),
+        ):
+            get_embeddings(["truncated"], task="query", recipe=VERTEX)
+
+    def test_query_recipe_error_remains_a_correctness_failure(self):
+        invalid = replace(VERTEX, provider="unknown")
+        with self.assertRaises(InvalidEmbeddingRecipe):
+            get_embeddings(["how to reset"], task="query", recipe=invalid)
 
     def test_empty_input_never_builds_a_client(self):
         with mock.patch(
@@ -257,7 +307,7 @@ class VertexBackendTests(SimpleTestCase):
 
     def test_client_disables_its_nested_retry_loop(self):
         _vertex_client.cache_clear()
-        with mock.patch("langchain_google_vertexai.VertexAIEmbeddings") as client_class:
+        with mock.patch("kitsune.retrieval.embeddings.VertexAIEmbeddings") as client_class:
             _vertex_client("text-embedding-005")
         _vertex_client.cache_clear()
 

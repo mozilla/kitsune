@@ -362,6 +362,14 @@ RETRIEVAL_EMBEDDING_BATCH_SIZE = config("RETRIEVAL_EMBEDDING_BATCH_SIZE", defaul
 RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS = config(
     "RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS", default=30, cast=float
 )
+# Interactive queries get one short attempt and fall back to lexical retrieval when the
+# provider is unavailable. Successful exact-query vectors are cached independently.
+RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS = config(
+    "RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS", default=2, cast=float
+)
+RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS = config(
+    "RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS", default=60 * 60, cast=int
+)
 
 # Retrieval document leases have no background renewer. Keep each retrieval task's Celery
 # time limit below this ttl so the lease cannot lapse while the task is running.

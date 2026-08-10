@@ -11,6 +11,15 @@ from typing import Literal, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from google.api_core import exceptions as gexc
+from google.auth.exceptions import GoogleAuthError
+from google.genai.errors import APIError
+from google.genai.types import EmbedContentConfig, HttpOptions
+from httpx import TimeoutException as HttpxTimeout
+from httpx import TransportError as HttpxTransportError
+from langchain_google_vertexai import VertexAIEmbeddings
+from requests import RequestException
+from requests import Timeout as RequestsTimeout
 
 from kitsune.retrieval.chunking import count_tokens
 from kitsune.retrieval.events import emit
@@ -50,6 +59,19 @@ class InvalidEmbeddingRecipe(ValueError):
 
 class InvalidEmbeddingResponse(ValueError):
     """The provider returned vectors that are unsafe to index."""
+
+
+_QUERY_UNAVAILABLE_ERRORS = (
+    InvalidEmbeddingResponse,
+    APIError,
+    GoogleAuthError,
+    HttpxTransportError,
+    RequestException,
+)
+
+
+class EmbeddingUnavailable(RuntimeError):
+    """Query embedding failed in a way that may safely fall back to lexical retrieval."""
 
 
 @dataclass(frozen=True)
@@ -164,6 +186,7 @@ def get_embeddings(
     try:
         vectors = _EMBED_BACKENDS[recipe.provider](
             inputs,
+            task,
             task_type=task_type,
             recipe=recipe,
             stats=stats,
@@ -171,6 +194,11 @@ def get_embeddings(
         validate_embeddings(vectors, inputs, recipe)
     except Exception as exc:
         # Only the exception's type: a provider message can quote the input or the credential.
+        failure = (
+            exc.__cause__
+            if isinstance(exc, EmbeddingUnavailable) and exc.__cause__ is not None
+            else exc
+        )
         emit(
             "retrieval.embeddings.failed",
             level=logging.ERROR,
@@ -180,9 +208,11 @@ def get_embeddings(
             text_count=len(inputs),
             character_count=character_count,
             request_count=stats.request_count,
-            error_type=type(exc).__name__,
+            error_type=type(failure).__name__,
             duration_ms=_elapsed_ms(started),
         )
+        if task == "query" and isinstance(exc, _QUERY_UNAVAILABLE_ERRORS):
+            raise EmbeddingUnavailable("query embedding is unavailable") from exc
         raise
     emit(
         "retrieval.embeddings.completed",
@@ -227,7 +257,12 @@ def validate_embeddings(
 
 
 def _fake_embed(
-    texts: list[str], *, task_type: str, recipe: EmbeddingRecipe, stats: _ProviderStats
+    texts: list[str],
+    _task: Literal["document", "query"],
+    *,
+    task_type: str,
+    recipe: EmbeddingRecipe,
+    stats: _ProviderStats,
 ) -> list[list[float]]:
     byte_count = recipe.dimensions * 4  # 4 bytes per float
     vectors = []
@@ -252,7 +287,12 @@ def _fake_embed(
 
 
 def _vertex_embed(
-    texts: list[str], *, task_type: str, recipe: EmbeddingRecipe, stats: _ProviderStats
+    texts: list[str],
+    task: Literal["document", "query"],
+    *,
+    task_type: str,
+    recipe: EmbeddingRecipe,
+    stats: _ProviderStats,
 ) -> list[list[float]]:
     input_tokens = [count_tokens(text) for text in texts]
     if any(tokens > max_input_tokens() for tokens in input_tokens):
@@ -261,7 +301,7 @@ def _vertex_embed(
         )
 
     batch_lengths = provider_request_batch_lengths(input_tokens)
-    timeout_ms = _configured_timeout_ms()
+    timeout_ms = _configured_timeout_ms(task)
     client = _vertex_client(recipe.model)
     vectors: list[list[float]] = []
     start = 0
@@ -274,6 +314,7 @@ def _vertex_embed(
             task_type=task_type,
             dimensions=recipe.dimensions,
             timeout_ms=timeout_ms,
+            task=task,
             stats=stats,
         )
         validate_embeddings(batch_vectors, batch, recipe)
@@ -281,9 +322,14 @@ def _vertex_embed(
     return vectors
 
 
-def _configured_timeout_ms() -> int:
+def _configured_timeout_ms(task: Literal["document", "query"]) -> int:
     """Return the configured request deadline in provider milliseconds."""
-    timeout = settings.RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS
+    setting_name = (
+        "RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS"
+        if task == "document"
+        else "RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS"
+    )
+    timeout = getattr(settings, setting_name)
     if (
         isinstance(timeout, bool)
         or not isinstance(timeout, int | float)
@@ -291,8 +337,7 @@ def _configured_timeout_ms() -> int:
         or timeout < MIN_EMBEDDING_TIMEOUT_SECONDS
     ):
         raise ImproperlyConfigured(
-            "RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS must be a finite number of seconds "
-            "of at least one millisecond"
+            f"{setting_name} must be a finite number of seconds of at least one millisecond"
         )
     return int(timeout * 1000)
 
@@ -336,15 +381,11 @@ def _embed_batch_with_retry(
     task_type: str,
     dimensions: int,
     timeout_ms: int,
+    task: Literal["document", "query"],
     stats: _ProviderStats,
 ) -> list[list[float]]:
-    from google.api_core import exceptions as gexc
-    from google.genai import errors as genai_errors
-    from httpx import TimeoutException as HttpxTimeout
-    from requests import Timeout as RequestsTimeout
-
     provider_errors = (
-        genai_errors.APIError,
+        APIError,
         gexc.ResourceExhausted,
         gexc.ServiceUnavailable,
         gexc.TooManyRequests,
@@ -355,24 +396,24 @@ def _embed_batch_with_retry(
         HttpxTimeout,
         RequestsTimeout,
     )
-    for attempt in range(_MAX_ATTEMPTS):
+    max_attempts = _MAX_ATTEMPTS if task == "document" else 1
+    for attempt in range(max_attempts):
         try:
             stats.request_count += 1
             return _request_vertex_embeddings(
                 client, batch, task_type=task_type, dimensions=dimensions, timeout_ms=timeout_ms
             )
         except provider_errors as exc:
-            if isinstance(exc, genai_errors.APIError) and not (
-                exc.code == 429 or 500 <= exc.code < 600
-            ):
-                raise
-            if attempt == _MAX_ATTEMPTS - 1:
+            retryable = not isinstance(exc, APIError) or (exc.code == 429 or 500 <= exc.code < 600)
+            if not retryable or attempt == max_attempts - 1:
+                if task == "query":
+                    raise EmbeddingUnavailable("query embedding is unavailable") from exc
                 raise
             emit(
                 "retrieval.embeddings.retried",
                 level=logging.WARNING,
                 attempt=attempt + 1,
-                max_attempts=_MAX_ATTEMPTS,
+                max_attempts=max_attempts,
                 batch_size=len(batch),
                 error_type=type(exc).__name__,
             )
@@ -384,8 +425,6 @@ def _request_vertex_embeddings(
     client, batch: list[str], *, task_type: str, dimensions: int, timeout_ms: int
 ) -> list[list[float]]:
     """Call Google Gen AI directly so truncation cannot be hidden by the LangChain wrapper."""
-    from google.genai.types import EmbedContentConfig, HttpOptions
-
     response = client.client.models.embed_content(
         model=client.model_name,
         contents=batch,
@@ -412,9 +451,6 @@ def _request_vertex_embeddings(
 
 @cache
 def _vertex_client(model: str):
-    # Imported lazily so module load and non-Vertex paths need no client or credentials.
-    from langchain_google_vertexai import VertexAIEmbeddings
-
     # This adapter owns the retry policy; disable the client's nested retry loop.
     return VertexAIEmbeddings(model=model, max_retries=0)
 
