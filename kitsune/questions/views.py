@@ -1603,7 +1603,7 @@ def mark_spam(request):
 @permission_required("flagit.can_moderate")
 @require_POST
 def unmark_spam(request):
-    """Mark a question or an answer as spam"""
+    """Unmark a question or an answer as spam"""
     if request.POST.get("question_id"):
         question_id = request.POST.get("question_id")
         obj = get_object_or_404(Question, pk=question_id)
