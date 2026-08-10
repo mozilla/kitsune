@@ -402,7 +402,7 @@ DB_LOCALIZE = {
     "karma": {
         "Title": {
             "attrs": ["name"],
-            "comments": ["This is a karma title."],
+            "comments": ["This is a karma title, displayed for eligible users next to their username on the forums."],
         }
     },
     "products": {
