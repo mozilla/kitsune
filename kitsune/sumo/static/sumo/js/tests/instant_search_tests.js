@@ -90,5 +90,48 @@ describe('instant search', () => {
       const queryElem = document.querySelectorAll('.search-results-heading span')[0];
       expect(queryElem.innerHTML).to.equal('&lt;');
     });
+
+    it('renders approximate hybrid results with compact pagination', () => {
+      const searchInput = document.getElementById('search-q');
+      searchInput.value = 'firefox';
+      fireInput(searchInput);
+
+      clock.tick(600);
+      cxhrMock.firstCall.args[1].success({
+        num_results: 23,
+        total_is_approximate: true,
+        q: 'firefox',
+        product_titles: 'All Products',
+        products: [],
+        w: 3,
+        results: [{
+          type: 'document',
+          url: '/kb/article',
+          title: 'Article',
+          search_summary: '<strong>Matched</strong> summary',
+          rank: 11,
+          evidence_locale: 'en-US',
+          display_locale: 'en-US',
+          locale_fallback: false,
+        }],
+        pagination: {
+          number: 2,
+          has_previous: true,
+          has_next: true,
+        },
+      });
+
+      expect(document.querySelector('.search-results-heading').textContent)
+        .to.include('About 23');
+      expect(document.querySelector('.topic-article--text strong').textContent).to.equal('Matched');
+      expect(document.querySelectorAll('.pagination a')).to.have.length(2);
+
+      const event = JSON.parse(
+        document.querySelector('.topic-article a.title').dataset.eventParameters
+      );
+      expect(event.search_result_source).to.equal('kb');
+      expect(event.search_result_rank).to.equal(11);
+      expect(event).not.to.have.property('score');
+    });
   });
 });

@@ -3,11 +3,19 @@
 <h2 class="sumo-card-heading search-results-heading mb-0">
   {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
   {% if num_results > 0 %}
-    {{ ngettext('Found %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
-                'Found %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
-                num_results)
-        | f({n: num_results, q: q, product: product_titles}, true)
-        | safe }}
+    {% if total_is_approximate %}
+      {{ ngettext('About %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
+                  'About %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
+                  num_results)
+          | f({n: num_results, q: q, product: product_titles}, true)
+          | safe }}
+    {% else %}
+      {{ ngettext('Found %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
+                  'Found %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
+                  num_results)
+          | f({n: num_results, q: q, product: product_titles}, true)
+          | safe }}
+    {% endif %}
   {% else %}
     {{ _("Sorry! 0 results found for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’")
         | f({q: q, product: product_titles}, true)
@@ -66,13 +74,20 @@
   </section>
 {% endif %}
 
-{% if pagination.num_pages > 1 %}
+{% if total_is_approximate %}
+  {% set show_pagination = pagination.has_previous or pagination.has_next %}
+{% else %}
+  {% set show_pagination = pagination.num_pages > 1 %}
+{% endif %}
+{% if show_pagination %}
 <div class="pagination--wrap">
+  {% if not total_is_approximate %}
   <p>
   {{ _("Page %(current)s of %(total)s")
       | f({current: pagination.number, total: pagination.num_pages}, true)
       | safe }}
   </p>
+  {% endif %}
   <ol class="pagination">
   {% if pagination.has_previous %}
     <li class="prev">
@@ -86,18 +101,20 @@
       </a>
     </li>
   {% endif %}
-  {% if pagination.dotted_lower %}
+  {% if not total_is_approximate and pagination.dotted_lower %}
     <li><a href="#" data-instant-search="link" data-instant-search-set-params="page=1">{{ 1 }}</a></li>
     {% if pagination.page_range[0] != 2 %}
       <li class="skip">&hellip;</li>
     {% endif %}
   {% endif %}
-  {% for x in pagination.page_range %}
-    <li {{ x|class_selected(pagination.number) }}>
-      <a href="#" class="{% if x == pagination.number %}btn-page{% endif %}" data-instant-search="link" data-instant-search-set-params="page={{ x }}">{{ x }}</a>
-    </li>
-  {% endfor %}
-  {% if pagination.dotted_upper %}
+  {% if not total_is_approximate %}
+    {% for x in pagination.page_range %}
+      <li {{ x|class_selected(pagination.number) }}>
+        <a href="#" class="{% if x == pagination.number %}btn-page{% endif %}" data-instant-search="link" data-instant-search-set-params="page={{ x }}">{{ x }}</a>
+      </li>
+    {% endfor %}
+  {% endif %}
+  {% if not total_is_approximate and pagination.dotted_upper %}
     {% if pagination.page_range[-1] != pagination.num_pages-1 %}
       <li class="skip">&hellip;</li>
     {% endif %}

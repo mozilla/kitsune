@@ -24,9 +24,15 @@
       {% if num_results > 0 %}
         <p class="sumo-page-intro">
           {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
-          {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
-                      'Found <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
-                      num_results)|fe(n=num_results, q=q, product=product_titles) }}
+          {% if total_is_approximate %}
+            {{ ngettext('About <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
+                        'About <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
+                        num_results)|fe(n=num_results, q=q, product=product_titles) }}
+          {% else %}
+            {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
+                        'Found <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
+                        num_results)|fe(n=num_results, q=q, product=product_titles) }}
+          {% endif %}
         </p>
 
         <div class="content-box">
@@ -35,7 +41,6 @@
           {% endfor %}
         </div>
 
-        {% if pages %}{{ pages|paginator }}{% endif %}
       {% else %}
         <p class="sumo-page-intro">
           {# L10n: {q} is the search query, {l} is the language searched. #}
@@ -65,6 +70,39 @@
             {% endfor %}
           </div>
         </section>
+      {% endif %}
+
+      {% if num_results > 0 and total_is_approximate %}
+        {% if pagination.has_previous or pagination.has_next %}
+          <ol class="pagination cf">
+            {% if pagination.has_previous %}
+              <li class="prev">
+                <a class="btn-page btn-page-prev" href="{{ pagination_url|urlparams(page=pagination.number - 1) }}">
+                  <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline stroke="currentColor" stroke-width="2" points="15 5 8 12 15 19"></polyline>
+                    </g>
+                  </svg>
+                  <span class="sr-only">{{ _('Previous') }}</span>
+                </a>
+              </li>
+            {% endif %}
+            {% if pagination.has_next %}
+              <li class="next">
+                <a class="btn-page btn-page-next" href="{{ pagination_url|urlparams(page=pagination.number + 1) }}">
+                  <span class="sr-only">{{ _('Next') }}</span>
+                  <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline stroke="currentColor" stroke-width="2" points="9 19 16 12 9 5"></polyline>
+                    </g>
+                  </svg>
+                </a>
+              </li>
+            {% endif %}
+          </ol>
+        {% endif %}
+      {% elif pages and num_results > 0 %}
+        {{ pages|paginator }}
       {% endif %}
     </div>
     <div class="clear-floats">

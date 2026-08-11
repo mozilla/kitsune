@@ -15,7 +15,16 @@
     <h3 class="sumo-card-heading">
       <a class="title" href="{{ result.url }}"
         data-event-name="link_click"
-        data-event-parameters='{"link_name": "{{ link_name }}"}'>
+        data-event-parameters='{
+          "link_name": "{{ link_name }}"
+          {% if result.rank %},
+          "search_result_source": "{% if result.type == 'document' %}kb{% else %}aaq{% endif %}",
+          "search_result_rank": {{ result.rank }},
+          "search_result_evidence_locale": "{{ result.evidence_locale }}",
+          "search_result_display_locale": "{{ result.display_locale }}",
+          "search_result_locale_fallback": {% if result.locale_fallback %}1{% else %}0{% endif %}
+          {% endif %}
+        }'>
         {{ result.title }}
       </a>
     </h3>
