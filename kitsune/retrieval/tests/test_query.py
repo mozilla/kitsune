@@ -111,6 +111,22 @@ class LexicalClauseTests(SimpleTestCase):
                     viewer_group_ids=group_ids,  # type: ignore[arg-type]
                 )
 
+    def test_privileged_viewer_can_retrieve_public_and_restricted_kb_content(self):
+        clauses = build_lexical_clauses(
+            "firefox",
+            locale="en-US",
+            sources={"kb"},
+            viewer_group_ids=(),
+            privileged=True,
+        )
+
+        self.assertTrue(
+            _contains(
+                clauses.kb_requested.to_dict(),
+                {"terms": {"visibility": ["public", "group_restricted"]}},
+            )
+        )
+
     def test_advanced_fields_are_rendered_for_each_source(self):
         clauses = build_lexical_clauses(
             'field:content:"startup crash" OR field:title:firefox',

@@ -121,8 +121,8 @@ class UnvalidatedCandidate:
 
 
 @dataclass(frozen=True)
-class RetrievalResult:
-    candidates: tuple[UnvalidatedCandidate, ...]
+class RetrievalResult[Candidate]:
+    candidates: tuple[Candidate, ...]
     approximate_total: int
     has_more: bool
     mode: RetrievalMode
@@ -155,6 +155,7 @@ def _kb_clause(
     locale: str,
     product_id: int | None,
     viewer_group_ids: Sequence[int],
+    privileged: bool,
     default_operator: DefaultOperator,
     minimum_should_match: str | None,
 ) -> Query:
@@ -175,13 +176,20 @@ def _kb_clause(
     )
 
     filters = _kb_filters(
-        locales=[locale], product_id=product_id, viewer_group_ids=viewer_group_ids
+        locales=[locale],
+        product_id=product_id,
+        viewer_group_ids=viewer_group_ids,
+        privileged=privileged,
     )
     return DSLQ("bool", _name=f"lexical:{KB_SOURCE}:{locale}", filter=filters, must=lexical_query)
 
 
 def _kb_filters(
-    *, locales: Sequence[str], product_id: int | None, viewer_group_ids: Sequence[int]
+    *,
+    locales: Sequence[str],
+    product_id: int | None,
+    viewer_group_ids: Sequence[int],
+    privileged: bool,
 ) -> list[Query]:
     if isinstance(viewer_group_ids, str | bytes) or any(
         not isinstance(group_id, int) or isinstance(group_id, bool) or group_id <= 0
@@ -190,7 +198,9 @@ def _kb_filters(
         raise ValueError("viewer_group_ids must contain only positive integers")
 
     public = DSLQ("term", visibility=PUBLIC_VISIBILITY)
-    if viewer_group_ids:
+    if privileged:
+        access = DSLQ("terms", visibility=[PUBLIC_VISIBILITY, RESTRICTED_VISIBILITY])
+    elif viewer_group_ids:
         access = DSLQ(
             "bool",
             should=[
@@ -263,6 +273,7 @@ def build_lexical_clauses(
     sources: Collection[Source],
     viewer_group_ids: Sequence[int],
     product_id: int | None = None,
+    privileged: bool = False,
     default_operator: DefaultOperator = "AND",
     minimum_should_match: str | None = None,
 ) -> LexicalClauses:
@@ -283,6 +294,7 @@ def build_lexical_clauses(
             locale=locale,
             product_id=product_id,
             viewer_group_ids=viewer_group_ids,
+            privileged=privileged,
             default_operator=default_operator,
             minimum_should_match=minimum_should_match,
         )
@@ -292,6 +304,7 @@ def build_lexical_clauses(
                 locale=ENGLISH_LOCALE,
                 product_id=product_id,
                 viewer_group_ids=viewer_group_ids,
+                privileged=privileged,
                 default_operator=default_operator,
                 minimum_should_match=minimum_should_match,
             )
@@ -353,6 +366,7 @@ def _build_retriever(
     num_candidates: int,
     rank_window_size: int,
     locale_composition: LocaleComposition,
+    privileged: bool = False,
     default_operator: DefaultOperator = "AND",
     minimum_should_match: str | None = None,
 ) -> dict:
@@ -376,6 +390,7 @@ def _build_retriever(
         sources=sources,
         viewer_group_ids=viewer_group_ids,
         product_id=product_id,
+        privileged=privileged,
         default_operator=default_operator,
         minimum_should_match=minimum_should_match,
     )
@@ -409,6 +424,7 @@ def _build_retriever(
                     locales=locales,
                     product_id=product_id,
                     viewer_group_ids=viewer_group_ids,
+                    privileged=privileged,
                 ),
             ],
         )
@@ -455,10 +471,11 @@ def _retrieve_unvalidated(
     page_size: int,
     offset: int,
     max_offset: int,
+    privileged: bool = False,
     default_operator: DefaultOperator = "AND",
     minimum_should_match: str | None = None,
     strict: bool = False,
-) -> RetrievalResult:
+) -> RetrievalResult[UnvalidatedCandidate]:
     """Execute one bounded search and return evidence that still requires authorization."""
     if not isinstance(page_size, int) or isinstance(page_size, bool) or page_size <= 0:
         raise ValueError("page_size must be a positive integer")
@@ -487,6 +504,7 @@ def _retrieve_unvalidated(
         sources=source_set,
         viewer_group_ids=viewer_group_ids,
         product_id=product_id,
+        privileged=privileged,
         query_vector=query_vector,
         similarity_floor=similarity_floor,
         semantic_k=semantic_k,
@@ -557,7 +575,7 @@ def _retrieve_unvalidated(
 
 def _decode_response(
     response: Mapping, *, page_size: int, offset: int, mode: RetrievalMode
-) -> RetrievalResult:
+) -> RetrievalResult[UnvalidatedCandidate]:
     shards = response.get("_shards")
     if not isinstance(shards, Mapping):
         raise InvalidRetrievalResponse("response has no shard status")
