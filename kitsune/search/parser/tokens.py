@@ -28,20 +28,16 @@ class TermToken(BaseToken):
     def __repr__(self):
         return rf"t{self.term!r}"
 
-    def __iadd__(self, other):
-        if type(other) is not type(self):
-            raise TypeError
-        self.term += " " + other.term
-        return self
-
     def elastic_query(self, context):
-        return DSLQ(
-            "simple_query_string",
-            query=self.term,
-            default_operator="AND",
-            fields=context["fields"],
-            flags="PHRASE",
-        )
+        params = {
+            "query": self.term,
+            "default_operator": context.get("default_operator", "AND"),
+            "fields": context["fields"],
+            "flags": "PHRASE",
+        }
+        if minimum_should_match := context.get("minimum_should_match"):
+            params["minimum_should_match"] = minimum_should_match
+        return DSLQ("simple_query_string", **params)
 
 
 class RangeToken(BaseToken):

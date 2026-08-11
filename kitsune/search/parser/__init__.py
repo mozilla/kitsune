@@ -1,5 +1,7 @@
 from pyparsing import (
     Literal,
+    ParseException,
+    ParserElement,
     Regex,
     White,
     Word,
@@ -13,6 +15,11 @@ from pyparsing import (
 
 from .operators import AndOperator, FieldOperator, NotOperator, OrOperator, SpaceOperator
 from .tokens import ExactToken, RangeToken, TermToken
+
+_MAX_NESTING_DEPTH = 10
+
+# Avoid repeated backtracking through nested Boolean expressions.
+ParserElement.enable_packrat()
 
 # convenience:
 # DRY things up
@@ -38,7 +45,9 @@ _space = White()
 _range = (
     Literal("range:") + _arg("field") + _colon + _arg("operator") + _colon + _value("value")
 ).add_parse_action(RangeToken)
-_exact = (Literal("exact:") + _arg("field") + _colon + _value("value")).add_parse_action(ExactToken)
+_exact = (Literal("exact:") + _arg("field") + _colon + _value("value")).add_parse_action(
+    ExactToken
+)
 _term = (dblQuotedString | _token)("term").add_parse_action(TermToken)
 
 # the overall expression:
@@ -60,7 +69,28 @@ search_expression = (
 
 class Parser:
     def __init__(self, query):
-        self.parsed = search_expression.parse_string(query)[0]
+        depth = 0
+        quoted = False
+        escaped = False
+        for position, character in enumerate(query):
+            if escaped:
+                escaped = False
+            elif quoted and character == "\\":
+                escaped = True
+            elif character == '"':
+                quoted = not quoted
+            elif not quoted and character == "(":
+                depth += 1
+                if depth > _MAX_NESTING_DEPTH:
+                    raise ParseException(query, position, "query nesting is too deep")
+            elif not quoted and character == ")":
+                depth = max(0, depth - 1)
+        try:
+            self.parsed = search_expression.parse_string(query)[0]
+        except RecursionError as exc:
+            # The lightweight check above cannot exactly reproduce pyparsing's treatment of
+            # malformed quotes. Keep parser complexity failures on the existing fallback path.
+            raise ParseException(query, 0, "query nesting is too deep") from exc
 
     def __repr__(self):
         """Create a string representation of this parsed string suitable for debugging."""
@@ -68,8 +98,7 @@ class Parser:
 
     def elastic_query(self, context=None):
         """Create an elastic query out of this parsed string."""
-        if not context:
-            context = {}
-        context["fields"] = context.get("fields", {})
-        context["settings"] = context.get("settings", {})
+        context = dict(context or {})
+        context.setdefault("fields", {})
+        context.setdefault("settings", {})
         return self.parsed.elastic_query(context)

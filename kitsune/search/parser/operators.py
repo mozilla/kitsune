@@ -1,6 +1,6 @@
 from elasticsearch.dsl import Q as DSLQ
 
-from .tokens import BaseToken
+from .tokens import BaseToken, TermToken
 
 
 class UnaryOperator(BaseToken):
@@ -49,6 +49,9 @@ class FieldOperator(UnaryOperator):
 
 class NotOperator(UnaryOperator):
     def elastic_query(self, context):
+        # Conditional OR broadens discovery terms, but must not broaden an explicit exclusion.
+        context = {**context, "default_operator": "AND"}
+        context.pop("minimum_should_match", None)
         return DSLQ("bool", must_not=self.argument.elastic_query(context))
 
 
@@ -68,12 +71,8 @@ class SpaceOperator(BinaryOperator):
     def elastic_query(self, context):
         query = []
         for argument in self.arguments:
-            if len(query) > 0:
-                # attempt to collapse adjacent tokens
-                try:
-                    query[-1] += argument
-                except TypeError:
-                    query.append(argument)
+            if query and isinstance(query[-1], TermToken) and isinstance(argument, TermToken):
+                query[-1] = TermToken(f"{query[-1].term} {argument.term}")
             else:
                 query.append(argument)
         if len(query) == 1:

@@ -78,6 +78,7 @@ class ParserTests(SimpleTestCase, ElasticQueryContainsMixin):
             ('NOT "更新 firefox"', "NotOperator(t'\"更新 firefox\"')"),
             ('NOT "a b', "SpaceOperator(NotOperator(t'\"a'), t'b')"),
             ('"NOT a"', "t'\"NOT a\"'"),
+            ("(" * 10 + "a" + ")" * 10, "t'a'"),
             ("not a", "SpaceOperator(t'not', t'a')"),
             (
                 "range:a:b:c d",
@@ -96,11 +97,18 @@ class ParserTests(SimpleTestCase, ElasticQueryContainsMixin):
         [
             ("(a b", ""),
             ("exact:a:(NOT b", ""),
+            ("(" * 11 + "a" + ")" * 11, ""),
         ]
     )
     def test_exceptions(self, query, expected):
         with self.assertRaises(ParseException):
             repr(Parser(query))
+
+    def test_parser_recursion_is_a_parse_failure(self):
+        query = '" ' + "(" * 1_000 + "a" + ")" * 1_000
+
+        with self.assertRaises(ParseException):
+            Parser(query)
 
     @parameterized.expand(
         [
@@ -115,6 +123,49 @@ class ParserTests(SimpleTestCase, ElasticQueryContainsMixin):
     def test_elastic_query(self, query, expected):
         elastic_query = Parser(query).elastic_query()
         self.assertElasticQueryContains(elastic_query, expected)
+
+    def test_rendering_does_not_mutate_the_parsed_query(self):
+        parsed = Parser("firefox crashes")
+
+        first = parsed.elastic_query({"fields": ["title.en-US"]})
+        second = parsed.elastic_query({"fields": ["question_title.en-US"]})
+
+        self.assertEqual(first.to_dict()["simple_query_string"]["query"], "firefox crashes")
+        self.assertEqual(second.to_dict()["simple_query_string"]["query"], "firefox crashes")
+        self.assertEqual(repr(parsed), "SpaceOperator(t'firefox', t'crashes')")
+
+    def test_conditional_or_is_opt_in(self):
+        default = Parser("firefox crashes").elastic_query().to_dict()["simple_query_string"]
+        self.assertEqual(default["default_operator"], "AND")
+        self.assertNotIn("minimum_should_match", default)
+
+        query = Parser("firefox crashes").elastic_query(
+            {
+                "default_operator": "OR",
+                "minimum_should_match": "2<75%",
+            }
+        )
+
+        self.assertElasticQueryContains(
+            query,
+            S(
+                query="firefox crashes",
+                default_operator="OR",
+                minimum_should_match="2<75%",
+            ),
+        )
+
+    def test_conditional_or_does_not_broaden_negation(self):
+        query = Parser("NOT (firefox crashes startup)").elastic_query(
+            {
+                "default_operator": "OR",
+                "minimum_should_match": "2<75%",
+            }
+        )
+
+        negated = query.to_dict()["bool"]["must_not"][0]["simple_query_string"]
+        self.assertEqual(negated["default_operator"], "AND")
+        self.assertNotIn("minimum_should_match", negated)
 
     @parameterized.expand(
         [

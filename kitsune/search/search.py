@@ -75,6 +75,30 @@ def same_base_index(a, b):
     return a.split("_")[:-1] == b.split("_")[:-1]
 
 
+def build_question_search_query(*, locale, lexical_query, product_id=None, exclude_archived=False):
+    """Apply the shared AAQ eligibility filters to a rendered lexical query."""
+    filters = [
+        DSLQ("term", _index=QuestionDocument.Index.read_alias),
+        DSLQ("exists", field=f"question_title.{locale}"),
+        DSLQ(
+            "range",
+            question_created={"gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)},
+        ),
+        DSLQ("term", question_has_answers=True),
+    ]
+    if exclude_archived:
+        filters.append(DSLQ("term", question_is_archived=False))
+    if product_id is not None:
+        filters.append(DSLQ("term", question_product_id=product_id))
+    return DSLQ(
+        "bool",
+        filter=filters,
+        # AnswerDocument shares the question index and is identified by this field.
+        must_not=DSLQ("exists", field="updated"),
+        must=lexical_query,
+    )
+
+
 @dataclass
 class QuestionSearch(SumoSearch):
     """Search over questions."""
@@ -156,31 +180,11 @@ class QuestionSearch(SumoSearch):
         return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
     def get_filter(self):
-        filters = [
-            # restrict to the question index
-            DSLQ("term", _index=self.get_index()),
-            # ensure that there is a title for the passed locale
-            DSLQ("exists", field=f"question_title.{self.locale}"),
-            # only return questions created within QUESTION_DAYS_DELTA
-            DSLQ(
-                "range",
-                question_created={"gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)},
-            ),
-            # exclude unanswered questions from search results
-            DSLQ("term", question_has_answers=True),
-        ]
-
-        if self.is_simple_search():
-            filters.append(DSLQ("term", question_is_archived=False))
-
-        if self.product:
-            filters.append(DSLQ("term", question_product_id=self.product.id))
-        return DSLQ(
-            "bool",
-            filter=filters,
-            # exclude AnswerDocuments from the search:
-            must_not=DSLQ("exists", field="updated"),
-            must=self.build_query(),
+        return build_question_search_query(
+            locale=self.locale,
+            lexical_query=self.build_query(),
+            product_id=self.product.id if self.product else None,
+            exclude_archived=self.is_simple_search(),
         )
 
     def make_result(self, hit):
