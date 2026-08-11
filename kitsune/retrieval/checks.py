@@ -27,6 +27,12 @@ from kitsune.retrieval.fingerprints import is_valid_similarity_floor
 from kitsune.retrieval.index import SIMILARITY
 
 _SHA256_HEX = re.compile(r"[0-9a-f]{64}\Z")
+_RATE = re.compile(r"(?:0|[1-9][0-9]*)/(?:[1-9][0-9]*)?[smhd]\Z")
+
+
+def is_valid_query_embedding_rate(value: object) -> bool:
+    """Return whether value is a supported Django Ratelimit rate."""
+    return isinstance(value, str) and _RATE.fullmatch(value) is not None
 
 
 def task_timing_problems() -> list[str]:
@@ -100,6 +106,37 @@ def query_configuration_problems() -> list[str]:
         and settings.RETRIEVAL_KNN_NUM_CANDIDATES < settings.RETRIEVAL_SEMANTIC_K
     ):
         problems.append("RETRIEVAL_KNN_NUM_CANDIDATES must be at least RETRIEVAL_SEMANTIC_K")
+
+    overfetch = settings.RETRIEVAL_AUTHORIZATION_OVERFETCH
+    if not isinstance(overfetch, int) or isinstance(overfetch, bool) or overfetch < 0:
+        problems.append("RETRIEVAL_AUTHORIZATION_OVERFETCH must be a non-negative integer")
+
+    max_offset = settings.RETRIEVAL_MAX_PAGE_OFFSET
+    if not isinstance(max_offset, int) or isinstance(max_offset, bool) or max_offset < 0:
+        problems.append("RETRIEVAL_MAX_PAGE_OFFSET must be a non-negative integer")
+    elif (
+        "RETRIEVAL_RRF_RANK_WINDOW_SIZE" in valid_bounds
+        and isinstance(overfetch, int)
+        and not isinstance(overfetch, bool)
+        and overfetch >= 0
+        and max_offset + settings.SEARCH_RESULTS_PER_PAGE + overfetch + 1
+        > settings.RETRIEVAL_RRF_RANK_WINDOW_SIZE
+    ):
+        problems.append(
+            "RETRIEVAL_MAX_PAGE_OFFSET plus the result page, authorization over-fetch, "
+            "and has-more probe must fit within RETRIEVAL_RRF_RANK_WINDOW_SIZE"
+        )
+
+    if settings.RETRIEVAL_LEXICAL_DEFAULT_OPERATOR not in ("AND", "OR"):
+        problems.append("RETRIEVAL_LEXICAL_DEFAULT_OPERATOR must be AND or OR")
+    if not settings.RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH:
+        problems.append("RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH must not be empty")
+    if settings.RETRIEVAL_LOCALE_COMPOSITION not in ("combined", "separate"):
+        problems.append("RETRIEVAL_LOCALE_COMPOSITION must be combined or separate")
+    if not is_valid_query_embedding_rate(settings.RETRIEVAL_QUERY_EMBEDDING_RATE):
+        problems.append(
+            "RETRIEVAL_QUERY_EMBEDDING_RATE must use count/[duration]unit, such as 10/m"
+        )
 
     floors = settings.RETRIEVAL_KNN_SIMILARITY_FLOORS
     if not isinstance(floors, dict):

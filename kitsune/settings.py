@@ -376,6 +376,18 @@ RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS = config(
 RETRIEVAL_SEMANTIC_K = config("RETRIEVAL_SEMANTIC_K", default=100, cast=int)
 RETRIEVAL_KNN_NUM_CANDIDATES = config("RETRIEVAL_KNN_NUM_CANDIDATES", default=200, cast=int)
 RETRIEVAL_RRF_RANK_WINDOW_SIZE = config("RETRIEVAL_RRF_RANK_WINDOW_SIZE", default=100, cast=int)
+RETRIEVAL_AUTHORIZATION_OVERFETCH = config(
+    "RETRIEVAL_AUTHORIZATION_OVERFETCH", default=5, cast=int
+)
+RETRIEVAL_MAX_PAGE_OFFSET = config("RETRIEVAL_MAX_PAGE_OFFSET", default=40, cast=int)
+RETRIEVAL_LEXICAL_DEFAULT_OPERATOR = config("RETRIEVAL_LEXICAL_DEFAULT_OPERATOR", default="OR")
+RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH = config(
+    "RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH", default="2<75%"
+)
+RETRIEVAL_LOCALE_COMPOSITION = config("RETRIEVAL_LOCALE_COMPOSITION", default="combined")
+# Fail safely to lexical retrieval until each deployment selects an allowance from its
+# provider quota and observed search volume. Local and CI override this with the fake backend.
+RETRIEVAL_QUERY_EMBEDDING_RATE = config("RETRIEVAL_QUERY_EMBEDDING_RATE", default="0/s")
 RETRIEVAL_KNN_SIMILARITY_FLOORS = config(
     "RETRIEVAL_KNN_SIMILARITY_FLOORS", default="{}", cast=json.loads
 )

@@ -2,6 +2,7 @@ import json
 import logging
 from datetime import timedelta
 
+import waffle
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -15,6 +16,7 @@ from kitsune.products.managers import ProductSupportConfigManager
 from kitsune.products.models import Product, ProductSupportConfig
 from kitsune.search.base import SumoSearchPaginator
 from kitsune.search.forms import SimpleSearchForm
+from kitsune.search.hybrid import run_hybrid_search, sources_for_where
 from kitsune.search.search import CompoundSearch, QuestionSearch, WikiSearch
 from kitsune.search.utils import locale_or_default
 from kitsune.sumo.api_utils import JSONRenderer
@@ -98,24 +100,45 @@ def simple_search(request):
     # get product and product titles
     product, product_titles = _get_product_title(cleaned["product"])
 
-    # create search object
-    search = CompoundSearch()
-
-    # apply aaq/kb configs
-    if cleaned["w"] & constants.WHERE_WIKI:
-        search.add(WikiSearch(query=cleaned["q"], locale=language, product=product))
-    if cleaned["w"] & constants.WHERE_SUPPORT:
-        search.add(QuestionSearch(query=cleaned["q"], locale=language, product=product))
-
-    # execute search
-    page = paginate(
-        request,
-        search,
-        per_page=settings.SEARCH_RESULTS_PER_PAGE,
-        paginator_cls=SumoSearchPaginator,
+    hybrid = None
+    # The form still accepts the legacy discussion value, which retrieval does not index.
+    use_hybrid = (
+        waffle.switch_is_active("retrieval-hybrid-search")
+        and cleaned["w"] != constants.WHERE_DISCUSSION
     )
-    total = search.total
-    results = search.results
+    if use_hybrid:
+        try:
+            page_number = int(request.GET.get("page", 1))
+        except ValueError:
+            page_number = 1
+        max_page = settings.RETRIEVAL_MAX_PAGE_OFFSET // settings.SEARCH_RESULTS_PER_PAGE + 1
+        page_number = min(max(page_number, 1), max_page)
+        hybrid = run_hybrid_search(
+            request,
+            query=cleaned["q"],
+            locale=language,
+            sources=sources_for_where(cleaned["w"]),
+            product_id=product.id if product else None,
+            page=page_number,
+        )
+        page = None
+        results = list(hybrid.results)
+        total = hybrid.approximate_total if results else 0
+    else:
+        search = CompoundSearch()
+        if cleaned["w"] & constants.WHERE_WIKI:
+            search.add(WikiSearch(query=cleaned["q"], locale=language, product=product))
+        if cleaned["w"] & constants.WHERE_SUPPORT:
+            search.add(QuestionSearch(query=cleaned["q"], locale=language, product=product))
+
+        page = paginate(
+            request,
+            search,
+            per_page=settings.SEARCH_RESULTS_PER_PAGE,
+            paginator_cls=SumoSearchPaginator,
+        )
+        total = search.total
+        results = search.results
 
     # generate fallback results if necessary
     fallback_results = None
@@ -151,7 +174,15 @@ def simple_search(request):
                 {"slug": p.slug, "title": pgettext("DB: products.Product.title", p.title)}
                 for p in data["products"]
             ],
-            "pagination": _make_pagination(page),
+            "pagination": (
+                {
+                    "number": hybrid.page,
+                    "has_next": hybrid.has_next,
+                    "has_previous": hybrid.has_previous,
+                }
+                if hybrid
+                else _make_pagination(page)
+            ),
         }
     )
     if product:

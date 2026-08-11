@@ -36,8 +36,8 @@ from kitsune.search.search import (
     build_question_search_query,
 )
 
-KB_SOURCE = "kb"
-AAQ_SOURCE = "aaq"
+KB_SOURCE: Literal["kb"] = "kb"
+AAQ_SOURCE: Literal["aaq"] = "aaq"
 ENGLISH_LOCALE = "en-US"
 
 Source = Literal["kb", "aaq"]

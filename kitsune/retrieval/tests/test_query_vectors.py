@@ -99,6 +99,25 @@ class QueryConfigurationTests(SimpleTestCase):
         with override_settings(RETRIEVAL_SEMANTIC_K=20, RETRIEVAL_KNN_NUM_CANDIDATES=10):
             self.assertTrue(query_configuration_problems())
 
+    def test_invalid_serving_policy_is_reported(self):
+        for setting, value in (
+            ("RETRIEVAL_AUTHORIZATION_OVERFETCH", -1),
+            ("RETRIEVAL_MAX_PAGE_OFFSET", -1),
+            ("RETRIEVAL_LEXICAL_DEFAULT_OPERATOR", "XOR"),
+            ("RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH", ""),
+            ("RETRIEVAL_LOCALE_COMPOSITION", "weighted"),
+            ("RETRIEVAL_QUERY_EMBEDDING_RATE", "ten/m"),
+        ):
+            with self.subTest(setting=setting), override_settings(**{setting: value}):
+                self.assertTrue(query_configuration_problems())
+
+        with override_settings(
+            RETRIEVAL_RRF_RANK_WINDOW_SIZE=20,
+            RETRIEVAL_MAX_PAGE_OFFSET=10,
+            RETRIEVAL_AUTHORIZATION_OVERFETCH=5,
+        ):
+            self.assertTrue(query_configuration_problems())
+
     def test_invalid_similarity_floor_mapping_is_reported(self):
         for floors in (
             {"not-a-fingerprint": 0.8},

@@ -1,7 +1,9 @@
 import json
+from unittest import mock
 
 from django.test.utils import override_settings
 from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 
 from kitsune.products.tests import (
     ProductFactory,
@@ -9,7 +11,9 @@ from kitsune.products.tests import (
     ZendeskConfigFactory,
 )
 from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
+from kitsune.search.hybrid import HybridSearchResults
 from kitsune.search.tests import ElasticTestCase
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 
 
@@ -151,3 +155,52 @@ class TestSearchSupportCard(ElasticTestCase):
     def test_read_only_mode_no_support_url(self):
         data = self._search_json()
         self.assertIsNone(data["support_aaq_url"])
+
+
+class TestHybridSearchSwitch(TestCase):
+    @override_switch("retrieval-hybrid-search", active=False)
+    def test_disabled_switch_does_not_enter_retrieval(self):
+        url = reverse("search", locale="en-US")
+        with (
+            mock.patch("kitsune.search.views.run_hybrid_search") as hybrid,
+            mock.patch("kitsune.search.views.paginate", return_value=object()),
+            mock.patch("kitsune.search.views._fallback_results", return_value=[]),
+        ):
+            response = self.client.get(f"{url}?q=firefox")
+
+        self.assertEqual(response.status_code, 200)
+        hybrid.assert_not_called()
+
+    @override_switch("retrieval-hybrid-search", active=True)
+    def test_enabled_switch_maps_all_three_source_tabs(self):
+        result = HybridSearchResults(
+            results=(
+                {
+                    "type": "document",
+                    "url": "/kb/article",
+                    "title": "Article",
+                    "search_summary": "Summary",
+                },
+            ),
+            approximate_total=1,
+            page=1,
+            has_previous=False,
+            has_next=False,
+            mode="hybrid",
+            degraded=False,
+            failed_shards=0,
+            es_took_ms=2,
+            total_ms=3,
+            embedding_ms=1,
+            query_vector_cache_hit=False,
+            fallback_reason=None,
+        )
+        url = reverse("search", locale="en-US")
+        cases = ((1, {"kb"}), (2, {"aaq"}), (3, {"kb", "aaq"}))
+        with mock.patch("kitsune.search.views.run_hybrid_search", return_value=result) as hybrid:
+            for where, expected in cases:
+                with self.subTest(where=where):
+                    response = self.client.get(f"{url}?format=json&q=firefox&w={where}")
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(hybrid.call_args.kwargs["sources"], expected)
+                    hybrid.reset_mock()
