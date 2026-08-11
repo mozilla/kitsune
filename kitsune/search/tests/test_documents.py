@@ -19,7 +19,6 @@ class QuestionDocumentTests(TestCase):
         family_id = f"aaq:{question.id}"
         self.assertEqual(QuestionDocument.prepare(question).family_id, family_id)
         self.assertEqual(AnswerDocument.prepare(answer).family_id, family_id)
-        self.assertNotEqual(family_id, f"kb:{question.id}")
 
     def test_annotation_has_correct_counts(self):
         question = QuestionFactory()

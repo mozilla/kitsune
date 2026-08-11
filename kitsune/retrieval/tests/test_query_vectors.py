@@ -86,3 +86,29 @@ class QueryConfigurationTests(SimpleTestCase):
         ):
             with self.subTest(setting=setting), override_settings(**{setting: value}):
                 self.assertTrue(query_configuration_problems())
+
+    def test_invalid_retrieval_bounds_are_reported(self):
+        for setting, value in (
+            ("RETRIEVAL_SEMANTIC_K", 0),
+            ("RETRIEVAL_KNN_NUM_CANDIDATES", True),
+            ("RETRIEVAL_RRF_RANK_WINDOW_SIZE", -1),
+        ):
+            with self.subTest(setting=setting), override_settings(**{setting: value}):
+                self.assertTrue(query_configuration_problems())
+
+        with override_settings(RETRIEVAL_SEMANTIC_K=20, RETRIEVAL_KNN_NUM_CANDIDATES=10):
+            self.assertTrue(query_configuration_problems())
+
+    def test_invalid_similarity_floor_mapping_is_reported(self):
+        for floors in (
+            {"not-a-fingerprint": 0.8},
+            {"a" * 64: float("inf")},
+            {"a" * 64: -1.01},
+            {"a" * 64: 1.01},
+            [],
+        ):
+            with (
+                self.subTest(floors=floors),
+                override_settings(RETRIEVAL_KNN_SIMILARITY_FLOORS=floors),
+            ):
+                self.assertTrue(query_configuration_problems())

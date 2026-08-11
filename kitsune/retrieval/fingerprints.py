@@ -2,17 +2,18 @@
 
 Pure functions on explicit inputs so this module carries no dependency on the sync core
 or the ES mapping value objects. Two per-document hashes drive the worker's cheapest
-correct outcome; three index-level fingerprints classify whether an index change needs
-a re-embed, a vector copy, or only a `_meta` update.
+correct outcome; index-level fingerprints classify whether a change requires a full rebuild
+or only a query-recipe `_meta` update.
 """
 
 import hashlib
 import json
+import math
 import re
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Protocol
+from typing import Protocol, TypeGuard
 
 from kitsune.retrieval.chunking import Chunk
 from kitsune.retrieval.embeddings import (
@@ -185,6 +186,28 @@ def mapping_fingerprint(
         "schema_version": schema_version,
     }
     return payload, _digest(payload)
+
+
+def similarity_profile_fingerprint(meta: dict) -> tuple[dict, str]:
+    """Identify the values that determine raw query/document vector similarity."""
+    _validate_index_meta(meta)
+    payload = {
+        "document_embedding": meta["embedding"]["digest"],
+        "query_embedding": meta["query"]["digest"],
+        "similarity": meta["mapping"]["similarity"],
+    }
+    return payload, _digest(payload)
+
+
+def is_valid_similarity_floor(value: object, similarity: str) -> TypeGuard[int | float]:
+    """Return whether a raw floor is valid for a supported similarity function."""
+    return (
+        similarity == "cosine"
+        and not isinstance(value, bool)
+        and isinstance(value, int | float)
+        and math.isfinite(value)
+        and -1 <= value <= 1
+    )
 
 
 def build_index_meta(

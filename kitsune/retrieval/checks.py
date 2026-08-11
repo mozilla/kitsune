@@ -16,12 +16,17 @@ checks — and the worker is where it matters.
 """
 
 import math
+import re
 from itertools import pairwise
 
 from django.conf import settings
 from django.core.checks import Error, register
 
 from kitsune.retrieval.embeddings import MIN_EMBEDDING_TIMEOUT_SECONDS
+from kitsune.retrieval.fingerprints import is_valid_similarity_floor
+from kitsune.retrieval.index import SIMILARITY
+
+_SHA256_HEX = re.compile(r"[0-9a-f]{64}\Z")
 
 
 def task_timing_problems() -> list[str]:
@@ -60,7 +65,7 @@ def task_timing_problems() -> list[str]:
 
 
 def query_configuration_problems() -> list[str]:
-    """Describe invalid independent query timeout/cache settings."""
+    """Describe invalid interactive-query settings and bounded retrieval work."""
     problems: list[str] = []
     timeout = settings.RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS
     if (
@@ -77,6 +82,39 @@ def query_configuration_problems() -> list[str]:
     ttl = settings.RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS
     if not isinstance(ttl, int) or isinstance(ttl, bool) or ttl <= 0:
         problems.append("RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS must be a positive integer")
+
+    bounds = (
+        ("RETRIEVAL_SEMANTIC_K", settings.RETRIEVAL_SEMANTIC_K),
+        ("RETRIEVAL_KNN_NUM_CANDIDATES", settings.RETRIEVAL_KNN_NUM_CANDIDATES),
+        ("RETRIEVAL_RRF_RANK_WINDOW_SIZE", settings.RETRIEVAL_RRF_RANK_WINDOW_SIZE),
+    )
+    valid_bounds = set()
+    for name, value in bounds:
+        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+            problems.append(f"{name} must be a positive integer")
+        else:
+            valid_bounds.add(name)
+    if (
+        "RETRIEVAL_SEMANTIC_K" in valid_bounds
+        and "RETRIEVAL_KNN_NUM_CANDIDATES" in valid_bounds
+        and settings.RETRIEVAL_KNN_NUM_CANDIDATES < settings.RETRIEVAL_SEMANTIC_K
+    ):
+        problems.append("RETRIEVAL_KNN_NUM_CANDIDATES must be at least RETRIEVAL_SEMANTIC_K")
+
+    floors = settings.RETRIEVAL_KNN_SIMILARITY_FLOORS
+    if not isinstance(floors, dict):
+        problems.append("RETRIEVAL_KNN_SIMILARITY_FLOORS must be an object")
+    else:
+        for fingerprint, floor in floors.items():
+            if not isinstance(fingerprint, str) or not _SHA256_HEX.fullmatch(fingerprint):
+                problems.append(
+                    "RETRIEVAL_KNN_SIMILARITY_FLOORS keys must be SHA-256 fingerprints"
+                )
+            if not is_valid_similarity_floor(floor, SIMILARITY):
+                problems.append(
+                    "RETRIEVAL_KNN_SIMILARITY_FLOORS values must be cosine similarities "
+                    "between -1 and 1"
+                )
     return problems
 
 

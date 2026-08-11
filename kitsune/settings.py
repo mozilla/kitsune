@@ -1,6 +1,7 @@
 """Django settings for kitsune project."""
 
 import datetime
+import json
 import logging
 import os
 import platform
@@ -369,6 +370,14 @@ RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS = config(
 )
 RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS = config(
     "RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS", default=60 * 60, cast=int
+)
+# Calibrate these initial retrieval bounds in each serving environment before enabling
+# hybrid search.
+RETRIEVAL_SEMANTIC_K = config("RETRIEVAL_SEMANTIC_K", default=100, cast=int)
+RETRIEVAL_KNN_NUM_CANDIDATES = config("RETRIEVAL_KNN_NUM_CANDIDATES", default=200, cast=int)
+RETRIEVAL_RRF_RANK_WINDOW_SIZE = config("RETRIEVAL_RRF_RANK_WINDOW_SIZE", default=100, cast=int)
+RETRIEVAL_KNN_SIMILARITY_FLOORS = config(
+    "RETRIEVAL_KNN_SIMILARITY_FLOORS", default="{}", cast=json.loads
 )
 
 # Retrieval document leases have no background renewer. Keep each retrieval task's Celery
