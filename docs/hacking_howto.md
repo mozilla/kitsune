@@ -198,7 +198,7 @@ pip install pre-commit
 Then set up its git pre-commit hook:
 
 ```bash
-$ pre-commit install
+pre-commit install
 ```
 
 After this,
@@ -207,14 +207,14 @@ pre-commit will check your changes for style problems.
 To run it manually you can use the command:
 
 ```bash
-$ pre-commit run
+pre-commit run
 ```
 
 which will run the checks for only your changes,
 or if you want to run the lint checks for all files:
 
 ```bash
-$ pre-commit run --all-files
+pre-commit run --all-files
 ```
 
 For more details see the [pre-commit docs](https://pre-commit.com).
