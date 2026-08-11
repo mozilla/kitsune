@@ -136,6 +136,21 @@ class VertexBackendTests(SimpleTestCase):
         self.assertEqual(first_call.kwargs["config"].output_dimensionality, 8)
         self.assertIs(first_call.kwargs["config"].auto_truncate, False)
 
+    def test_batches_within_the_total_request_token_limit(self):
+        client, request = _mock_vertex_client()
+        texts = [chr(ord("a") + number) for number in range(11)]
+
+        with (
+            mock.patch("kitsune.retrieval.embeddings.count_tokens", return_value=2_000),
+            mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
+        ):
+            get_embeddings(texts, task="document", recipe=VERTEX)
+
+        self.assertEqual(
+            [len(call.kwargs["contents"]) for call in request.call_args_list],
+            [10, 1],
+        )
+
     @override_settings(RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS=12)
     def test_every_request_carries_an_explicit_deadline(self):
         client, request = _mock_vertex_client()

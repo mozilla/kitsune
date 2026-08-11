@@ -494,6 +494,11 @@ def max_batch_documents() -> int:
     return _bulk_bound("RETRIEVAL_BULK_MAX_DOCUMENTS")
 
 
+def max_batch_embedding_inputs() -> int:
+    """The configured ceiling on embedding inputs in one document batch."""
+    return _bulk_bound("RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS")
+
+
 def sync_document_batch(document_ids, *, target_index: str | None = None) -> BatchSyncReport:
     """Bring documents into agreement with one target, sharing the provider call.
 
@@ -506,7 +511,7 @@ def sync_document_batch(document_ids, *, target_index: str | None = None) -> Bat
         return BatchSyncReport()
 
     max_documents = max_batch_documents()
-    max_inputs = _bulk_bound("RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS")
+    max_inputs = max_batch_embedding_inputs()
     index = _resolve_target(target_index)
     if not index:
         emit(
