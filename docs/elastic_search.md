@@ -1,5 +1,9 @@
 # Search
 
+This page documents Kitsune's legacy Elasticsearch document indices and their operations. For
+the chunk index, embeddings, ingestion lifecycle, native RRF, and the hybrid public-search path,
+see [Retrieval and hybrid search](retrieval.md).
+
 
 ## Development tips
 

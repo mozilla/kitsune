@@ -79,6 +79,7 @@ nav:
         - l10n-system.md
         - classifier.md
         - elastic_search.md
+        - retrieval.md
         - frontend.md
         - svelte.md
         - browser_permissions.md
@@ -102,4 +103,5 @@ nav:
         - Search - L10N content: architecture/decisions/0002-es-l10n-content.md
         - Search - AAQ content: architecture/decisions/0003-es-aaq-documents.md
         - Type Checking: architecture/decisions/0004-type-checking.md
-
+        - RAG embedding location: architecture/decisions/0005-rag-embedding-location.md
+        - Access-controlled retrieval: architecture/decisions/0006-access-controlled-retrieval.md
