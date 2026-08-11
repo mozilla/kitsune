@@ -8,8 +8,13 @@ from kitsune.retrieval.fingerprints import similarity_profile_fingerprint
 from kitsune.retrieval.index import VECTOR_DIMS, ChunkDocument, configured_index_meta
 from kitsune.retrieval.query import (
     RRF_RANK_CONSTANT,
+    InvalidRetrievalResponse,
+    LegacyQuestion,
+    RetrievalPassage,
     SimilarityFloorUnavailable,
     _build_retriever,
+    _decode_response,
+    _retrieve_unvalidated,
     build_lexical_clauses,
     similarity_floor_for_index,
 )
@@ -261,6 +266,139 @@ class NativeRetrieverCompositionTests(SimpleTestCase):
             )
 
 
+class BoundedRetrievalTests(SimpleTestCase):
+    def test_executes_and_decodes_bounded_mixed_results(self):
+        response = {
+            "took": 7,
+            "timed_out": False,
+            "_shards": {"total": 2, "successful": 1, "skipped": 0, "failed": 1},
+            "hits": {
+                "hits": [
+                    {
+                        "_score": 0.03,
+                        "matched_queries": ["lexical:kb:en-US", "semantic:kb"],
+                        "_source": {
+                            "kind": "chunk",
+                            "content_type": "kb",
+                            "object_id": "41",
+                            "family_id": "kb:41",
+                            "locale": "en-US",
+                            "position": 2,
+                            "heading_path": "Firefox > Startup",
+                            "scope": {"version": 1, "clauses": [["win", "mac"]]},
+                            "content_text": {"en-US": "Firefox starts in safe mode."},
+                            "product_ids": ["1"],
+                            "topic_ids": ["7"],
+                            "category": "10",
+                        },
+                        "highlight": {
+                            "content_text.en-US": ["<strong>Firefox</strong> starts."],
+                            "summary.en-US": ["Fix <strong>Firefox</strong> startup."],
+                        },
+                    },
+                    {
+                        "_score": 0.02,
+                        "_source": {
+                            "question_id": "9",
+                            "family_id": "aaq:9",
+                            "locale": "en-US",
+                            "question_title": {"en-US": "Firefox will not start"},
+                            "question_content": {"en-US": "How can I open Firefox?"},
+                            "answer_content": {"en-US": ["Try safe mode."]},
+                            "question_updated": "2026-08-11T10:00:00+00:00",
+                            "question_has_solution": True,
+                            "question_num_votes": 3,
+                        },
+                        "highlight": {
+                            "question_content.en-US": ["How can I open <strong>Firefox</strong>?"],
+                        },
+                    },
+                    {"extra_collapsed_family": True},
+                ]
+            },
+            "aggregations": {"families": {"value": 3}},
+        }
+        client = mock.Mock()
+        client.search.return_value = response
+
+        with mock.patch("kitsune.retrieval.query.es_client", return_value=client):
+            result = _retrieve_unvalidated(
+                "firefox startup",
+                kb_index="retrieval-42",
+                locale="en-US",
+                sources={"kb", "aaq"},
+                viewer_group_ids=(),
+                product_id=None,
+                query_vector=[1.0, 0.0],
+                similarity_floor=0.75,
+                semantic_k=10,
+                num_candidates=20,
+                rank_window_size=20,
+                locale_composition="combined",
+                page_size=2,
+                offset=4,
+                max_offset=10,
+            )
+
+        self.assertEqual([candidate.rank for candidate in result.candidates], [5, 6])
+        self.assertEqual(result.approximate_total, 3)
+        self.assertTrue(result.has_more)
+        self.assertTrue(result.degraded)
+        self.assertEqual(result.failed_shards, 1)
+        self.assertEqual(result.took_ms, 7)
+        self.assertEqual(result.mode, "hybrid")
+
+        passage = result.candidates[0].evidence
+        self.assertIsInstance(passage, RetrievalPassage)
+        self.assertEqual(passage.scope, (frozenset({"win", "mac"}),))
+        self.assertEqual(passage.provenance, {"lexical", "semantic"})
+        self.assertEqual(passage.body_highlight.field, "content_text")
+
+        question = result.candidates[1].evidence
+        self.assertIsInstance(question, LegacyQuestion)
+        self.assertEqual(question.num_answers, 1)
+        self.assertEqual(question.provenance, frozenset())
+        self.assertEqual(question.highlight.field, "question_content")
+
+        request = client.search.call_args.kwargs
+        self.assertTrue(request["allow_partial_search_results"])
+        self.assertNotIn("content_vector", request["source_includes"])
+        self.assertEqual(request["size"], 3)
+
+        response["hits"]["hits"][0]["_source"]["scope"]["version"] = 2
+        with self.assertLogs("k.retrieval", level="WARNING") as logs:
+            degraded = _decode_response(response, page_size=2, offset=0, mode="hybrid")
+        self.assertEqual([candidate.family_id for candidate in degraded.candidates], ["aaq:9"])
+        self.assertTrue(degraded.degraded)
+        self.assertEqual(logs.records[0].getMessage(), "retrieval.query.hits_rejected")
+        self.assertEqual(logs.records[0].rejected_count, 1)
+
+        response["hits"]["hits"][0]["_source"]["scope"]["version"] = 1
+        response["_shards"]["successful"] = 0
+        with self.assertRaisesRegex(InvalidRetrievalResponse, "no Elasticsearch shard"):
+            _decode_response(response, page_size=2, offset=0, mode="hybrid")
+
+    def test_rejects_pages_outside_either_bound(self):
+        common = {
+            "query": "firefox",
+            "kb_index": "retrieval-42",
+            "locale": "en-US",
+            "sources": {"kb"},
+            "viewer_group_ids": (),
+            "product_id": None,
+            "query_vector": None,
+            "similarity_floor": None,
+            "semantic_k": 10,
+            "num_candidates": 20,
+            "locale_composition": "combined",
+            "page_size": 2,
+        }
+        with self.assertRaisesRegex(ValueError, "max_offset"):
+            _retrieve_unvalidated(**common, rank_window_size=20, offset=11, max_offset=10)
+        with self.assertRaisesRegex(ValueError, "has_more"):
+            _retrieve_unvalidated(**common, rank_window_size=10, offset=8, max_offset=10)
+
+
 class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
     def test_native_rrf_collapses_families_and_applies_the_semantic_floor(self):
         client = es_client().options(request_timeout=30)
@@ -280,11 +418,16 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
                         "family_id": "kb:1",
                         "locale": "en-US",
                         "position": position,
+                        "heading_path": "Firefox > Startup",
+                        "scope": {"version": 1, "clauses": []},
                         "visibility": "public",
                         "access_group_ids": [],
                         "product_ids": ["3"],
+                        "topic_ids": ["7"],
+                        "category": "10",
                         "title": {"en-US": "firefox startup crash"},
-                        "content_text": {"en-US": f"long article passage {position}"},
+                        "summary": {"en-US": "fix a firefox startup crash"},
+                        "content_text": {"en-US": f"firefox startup crash passage {position}"},
                         "content_vector": distant,
                         "updated": now,
                     },
@@ -302,11 +445,18 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
                         "family_id": "kb:2",
                         "locale": "en-US",
                         "position": 0,
+                        "heading_path": "Firefox > Safe mode",
+                        "scope": {"version": 1, "clauses": []},
                         "visibility": "public",
                         "access_group_ids": [],
                         "product_ids": ["3"],
+                        "topic_ids": ["7"],
+                        "category": "10",
                         "title": {"en-US": "firefox startup crash"},
-                        "content_text": {"en-US": "short exact semantic passage"},
+                        "summary": {"en-US": "fix a firefox startup crash"},
+                        "content_text": {
+                            "en-US": "short exact semantic firefox startup crash passage"
+                        },
                         "content_vector": exact,
                         "updated": now,
                     },
@@ -320,10 +470,24 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
                         "locale": "en-US",
                         "question_title": {"en-US": "firefox startup crash"},
                         "question_content": {"en-US": "community troubleshooting"},
+                        "answer_content": {"en-US": ["try firefox safe mode"]},
                         "question_created": now,
+                        "question_updated": now,
                         "question_has_answers": True,
+                        "question_has_solution": True,
+                        "question_num_votes": 2,
                         "question_is_archived": False,
                         "question_product_id": 3,
+                    },
+                },
+                {
+                    "_index": ChunkDocument.Index.write_alias,
+                    "_id": "manifest-1",
+                    "_source": {
+                        "kind": "manifest",
+                        "content_type": "kb",
+                        "object_id": "1",
+                        "locale": "en-US",
                     },
                 },
             ]
@@ -389,3 +553,59 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
             [hit["_source"]["family_id"] for hit in semantic_hits["hits"]["hits"]],
             ["kb:2"],
         )
+
+        result = _retrieve_unvalidated(
+            "firefox startup crash",
+            kb_index=ChunkDocument.Index.read_alias,
+            locale="en-US",
+            sources={"kb", "aaq"},
+            viewer_group_ids=(),
+            product_id=3,
+            query_vector=exact,
+            similarity_floor=0.99,
+            semantic_k=12,
+            num_candidates=20,
+            rank_window_size=20,
+            locale_composition="combined",
+            page_size=2,
+            offset=0,
+            max_offset=10,
+            strict=True,
+        )
+        self.assertEqual(len(result.candidates), 2)
+        self.assertEqual(result.approximate_total, 3)
+        self.assertTrue(result.has_more)
+        self.assertEqual(result.mode, "hybrid")
+        self.assertTrue(
+            all(
+                candidate.family_id in {"kb:1", "kb:2", "aaq:3"} for candidate in result.candidates
+            )
+        )
+        passages = [
+            candidate.evidence
+            for candidate in result.candidates
+            if isinstance(candidate.evidence, RetrievalPassage)
+        ]
+        self.assertTrue(any(passage.body_highlight for passage in passages))
+
+        aaq_result = _retrieve_unvalidated(
+            "community troubleshooting",
+            kb_index=None,
+            locale="en-US",
+            sources={"aaq"},
+            viewer_group_ids=(),
+            product_id=3,
+            query_vector=None,
+            similarity_floor=None,
+            semantic_k=2,
+            num_candidates=2,
+            rank_window_size=2,
+            locale_composition="combined",
+            page_size=1,
+            offset=0,
+            max_offset=0,
+            strict=True,
+        )
+        [aaq_candidate] = aaq_result.candidates
+        self.assertIsInstance(aaq_candidate.evidence, LegacyQuestion)
+        self.assertEqual(aaq_candidate.evidence.highlight.field, "question_content")
