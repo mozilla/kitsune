@@ -69,6 +69,7 @@
 .question-entry--body {
   flex: 1;
   min-width: 0;
+  word-wrap: break-word;
 }
 
 .question-entry--title {
