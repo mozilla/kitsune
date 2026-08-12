@@ -123,6 +123,29 @@ class TestNewQuestionForm(TestCase):
         actual = form.cleaned_metadata
         self.assertDictEqual(actual, expected)
 
+    def test_invalid_troubleshooting_json(self):
+        """Troubleshooting information must be a valid JSON object."""
+        topic = TopicFactory(slug="cookies", products=[self.product], in_aaq=True)
+        base_data = {
+            "title": "Test question",
+            "content": "Test question content",
+            "email": "t@t.com",
+            "category": topic.id,
+        }
+
+        for troubleshooting in ("[1,2,3]", "123", "true", '"hello"', "not json"):
+            with self.subTest(troubleshooting=troubleshooting):
+                form = NewQuestionForm(
+                    product=self.product,
+                    data={**base_data, "troubleshooting": troubleshooting},
+                )
+
+                self.assertFalse(form.is_valid())
+                self.assertEqual(
+                    "Troubleshooting information must be a valid JSON object.",
+                    form.errors["troubleshooting"][0],
+                )
+
     def test_clean_content_with_html_entities(self):
         """Test that content with only HTML entities is rejected."""
         topic = TopicFactory(slug="cookies", products=[self.product], in_aaq=True)
