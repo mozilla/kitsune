@@ -24,6 +24,7 @@ from kitsune.retrieval.fingerprints import (
     query_embedding_fingerprint,
     read_index_meta,
     scope_envelope,
+    similarity_profile_fingerprint,
     write_index_meta,
 )
 from kitsune.search.es_utils import es_client
@@ -247,6 +248,26 @@ class MappingFingerprintTests(SimpleTestCase):
                 **changed,
             }
             self.assertNotEqual(base, mapping_fingerprint(**kwargs)[1])
+
+
+class SimilarityProfileFingerprintTests(SimpleTestCase):
+    def test_tracks_only_the_vector_profiles_and_raw_similarity(self):
+        _, base = similarity_profile_fingerprint(_meta())
+
+        self.assertNotEqual(
+            base,
+            similarity_profile_fingerprint(_meta(replace(RECIPE, query_task="OTHER")))[1],
+        )
+        self.assertNotEqual(
+            base,
+            similarity_profile_fingerprint(_meta(similarity="dot_product"))[1],
+        )
+        self.assertEqual(
+            base,
+            similarity_profile_fingerprint(
+                _meta(index_options={"type": "hnsw", "m": 32, "ef_construction": 100})
+            )[1],
+        )
 
 
 class ClassifyMismatchTests(SimpleTestCase):

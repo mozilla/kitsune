@@ -1,6 +1,7 @@
 """Django settings for kitsune project."""
 
 import datetime
+import json
 import logging
 import os
 import platform
@@ -361,6 +362,34 @@ RETRIEVAL_EMBEDDING_BATCH_SIZE = config("RETRIEVAL_EMBEDDING_BATCH_SIZE", defaul
 # the complete operation across retries and batches.
 RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS = config(
     "RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS", default=30, cast=float
+)
+# Interactive queries get one short attempt and fall back to lexical retrieval when the
+# provider is unavailable. Successful exact-query vectors are cached independently.
+RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS = config(
+    "RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS", default=2, cast=float
+)
+RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS = config(
+    "RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS", default=60 * 60, cast=int
+)
+# Calibrate these initial retrieval bounds in each serving environment before enabling
+# hybrid search.
+RETRIEVAL_SEMANTIC_K = config("RETRIEVAL_SEMANTIC_K", default=100, cast=int)
+RETRIEVAL_KNN_NUM_CANDIDATES = config("RETRIEVAL_KNN_NUM_CANDIDATES", default=200, cast=int)
+RETRIEVAL_RRF_RANK_WINDOW_SIZE = config("RETRIEVAL_RRF_RANK_WINDOW_SIZE", default=100, cast=int)
+RETRIEVAL_AUTHORIZATION_OVERFETCH = config(
+    "RETRIEVAL_AUTHORIZATION_OVERFETCH", default=5, cast=int
+)
+RETRIEVAL_MAX_PAGE_OFFSET = config("RETRIEVAL_MAX_PAGE_OFFSET", default=40, cast=int)
+RETRIEVAL_LEXICAL_DEFAULT_OPERATOR = config("RETRIEVAL_LEXICAL_DEFAULT_OPERATOR", default="OR")
+RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH = config(
+    "RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH", default="2<75%"
+)
+RETRIEVAL_LOCALE_COMPOSITION = config("RETRIEVAL_LOCALE_COMPOSITION", default="combined")
+# Fail safely to lexical retrieval until each deployment selects an allowance from its
+# provider quota and observed search volume. Local and CI override this with the fake backend.
+RETRIEVAL_QUERY_EMBEDDING_RATE = config("RETRIEVAL_QUERY_EMBEDDING_RATE", default="0/s")
+RETRIEVAL_KNN_SIMILARITY_FLOORS = config(
+    "RETRIEVAL_KNN_SIMILARITY_FLOORS", default="{}", cast=json.loads
 )
 
 # Retrieval document leases have no background renewer. Keep each retrieval task's Celery

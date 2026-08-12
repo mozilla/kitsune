@@ -109,6 +109,7 @@ class QuestionDocument(SumoDocument):
     """
 
     question_id = field.Keyword()
+    family_id = field.Keyword()
 
     question_title = SumoLocaleAwareTextField()
     question_creator_id = field.Keyword()
@@ -151,6 +152,10 @@ class QuestionDocument(SumoDocument):
             instance.es_discard_doc = "unindex_me"
 
         return super().prepare(instance)
+
+    def prepare_family_id(self, instance):
+        question_id = instance.question_id if isinstance(instance, Answer) else instance.id
+        return f"aaq:{question_id}"
 
     def prepare_question_tag_ids(self, instance):
         return [tag.id for tag in instance.tags.all()]

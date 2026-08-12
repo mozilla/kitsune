@@ -30,6 +30,19 @@ def is_retrieval_indexable(document) -> bool:
     return is_retrieval_content_eligible(document) and is_publicly_accessible(document)
 
 
+def content_eligible_documents(
+    queryset: QuerySet[Document] | None = None,
+) -> QuerySet[Document]:
+    """Apply the queryset equivalent of ``is_retrieval_content_eligible``."""
+    queryset = Document.objects.all() if queryset is None else queryset
+    return queryset.filter(current_revision__isnull=False).exclude(
+        Q(html__startswith=REDIRECT_HTML)
+        | Q(is_template=True)
+        | Q(is_archived=True)
+        | Q(category__in=EXCLUDED_CATEGORIES)
+    )
+
+
 def eligible_documents() -> QuerySet[Document]:
     """The queryset equivalent of ``is_retrieval_indexable``, proven equal in tests.
 
@@ -38,13 +51,7 @@ def eligible_documents() -> QuerySet[Document]:
     ``is_indexable_content`` on the document's own (parent-synced) fields.
     """
     return (
-        Document.objects.visible()
-        .exclude(
-            Q(html__startswith=REDIRECT_HTML)
-            | Q(is_template=True)
-            | Q(is_archived=True)
-            | Q(category__in=EXCLUDED_CATEGORIES)
-        )
+        content_eligible_documents(Document.objects.visible())
         .select_related("parent", "current_revision")
         .prefetch_related(
             "topics",

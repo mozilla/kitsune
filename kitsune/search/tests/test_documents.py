@@ -12,6 +12,14 @@ from kitsune.tags.tests import TagFactory
 
 
 class QuestionDocumentTests(TestCase):
+    def test_question_and_answer_share_namespaced_family(self):
+        question = QuestionFactory()
+        answer = AnswerFactory(question=question)
+
+        family_id = f"aaq:{question.id}"
+        self.assertEqual(QuestionDocument.prepare(question).family_id, family_id)
+        self.assertEqual(AnswerDocument.prepare(answer).family_id, family_id)
+
     def test_annotation_has_correct_counts(self):
         question = QuestionFactory()
         AnswerFactory(question=question, content="answer 1")
