@@ -8,14 +8,13 @@ title: All about testing
 
 
 Kitsune has a fairly comprehensive Python test suite. Changes should not
-break tests\-\--only change a test if there is a good reason to change
-the expected behavior\-\--and new code should come with tests.
+break tests—only change a test if there is a good reason to change
+the expected behavior—and new code should come with tests.
 
 # Running the Test Suite
 
-If you followed the steps in `the installation docs
-<hacking_howto>`{.interpreted-text role="any"}, then you should be all
-set setup-wise.
+If you followed the steps in [the installation docs](hacking_howto.md),
+then you should be all set setup-wise.
 
 To run the tests, you need to do:
 
@@ -129,13 +128,13 @@ Frontend JavaScript is currently tested with
 To run tests, make sure you have have the NPM dependencies installed,
 and then run:
 
-    $ npm run webpack:test
+    npm run webpack:test
 
 ## Writing JavaScript Tests
 
 Mocha tests are discovered using the pattern
 `kitsune/*/static/*/js/tests/**/*.js`. That means that any app can have
-a [tests]{.title-ref} directory in its JavaScript directory, and the
+a `tests` directory in its JavaScript directory, and the
 files in there will all be considered test files. Files that don't
 define tests won't cause issues, so it is safe to put testing utilities
 in these directories as well.
@@ -144,7 +143,7 @@ Here are a few tips for writing tests:
 
 -   Any HTML required for your test should be added by the tests or a
     `beforeEach` function in that test suite. React is useful for this.
--   You can use [sinon]{.title-ref} to mock out parts of libraries or
+-   You can use `sinon` to mock out parts of libraries or
     functions under test. This is useful for testing AJAX.
 -   The tests run in a Node.js environment. A browser environment can be
     simulated using `jsdom`.
