@@ -287,6 +287,77 @@ The setting is a JSON object, for example
 value measured for that deployment's model and corpus. Enable the Waffle switch through the
 Django admin only after the read alias, floor, rate limit, and serving checks are ready.
 
+## One-off relevance evaluation
+
+`evaluate_retrieval` freezes two environment-specific inputs before comparing retrieval
+configurations. The positive artifact is derived from solved AAQ threads whose accepted answer
+cites a KB article. The no-answer artifact is a small manually reviewed JSON list whose queries
+have no useful result in the current corpus:
+
+```json
+[
+  {"query": "printer catches fire", "locale": "en-US"},
+  {"query": "fax machine sings", "locale": "en-US"}
+]
+```
+
+The freeze command requires both deterministic splits to contain at least one query. Add more
+reviewed examples if either tuning or holdout is empty; do not move queries between splits by
+hand.
+
+Create both artifacts while the Waffle switch remains off:
+
+```bash
+./manage.py evaluate_retrieval derive-positive \
+  --environment production \
+  --output /controlled/tmp/retrieval-positive.json
+
+./manage.py evaluate_retrieval freeze-no-answer \
+  --environment production \
+  --input /controlled/tmp/reviewed-no-answer.json \
+  --output /controlled/tmp/retrieval-no-answer.json
+```
+
+Each artifact records its environment, concrete read generation, derivation contract,
+deterministic tuning/holdout split, and artifact digest. Evaluation refuses changed artifacts or
+artifacts from another environment or read generation.
+
+Run one explicit configuration at a time. This example uses illustrative values, not production
+recommendations:
+
+```bash
+./manage.py evaluate_retrieval evaluate \
+  --environment production \
+  --positive /controlled/tmp/retrieval-positive.json \
+  --no-answer /controlled/tmp/retrieval-no-answer.json \
+  --split tuning \
+  --similarity-floor 0.72 \
+  --default-operator OR \
+  --minimum-should-match '2<75%' \
+  --locale-composition combined \
+  --output /controlled/tmp/retrieval-tuning.json
+```
+
+The report compares current KB lexical search, the new KB lexical query, semantic-only KB
+retrieval, and KB RRF at family level. It separately reports semantic and full-hybrid returns for
+the reviewed no-answer set, mixed KB/AAQ source distribution, KB-label displacement, semantic
+family concentration, and requested-locale versus English evidence. The source AAQ thread is
+excluded from its own mixed result list, and unlabelled AAQ results are not scored as irrelevant.
+
+To compare lexical rules, similarity floors, candidate bounds, or locale composition, rerun the
+same tuning artifacts while changing only the intended argument. After choosing one
+configuration, run it once against `--split holdout`; do not tune from the holdout output. Query
+vectors are embedded in batches and reused across every mode within a run. This bypasses the HTTP
+rate limiter by design and is a paid operator action. Output paths are creation-only: the command
+refuses to overwrite an artifact or report. An interrupted or failed evaluation writes no partial
+report, because incomplete results must not become activation evidence.
+
+Stage and production must derive and evaluate their own artifacts. The old local dump is suitable
+only for functional command smoke tests, never for relevance, threshold, latency, or activation
+evidence. These files contain public user-authored query text and result identities: keep them in
+an operator-controlled temporary location, never commit or upload them, and delete them after
+recording the digests, selected configuration, aggregate metrics, and go/no-go decision.
+
 ## Routine operations
 
 ### Inspect or repair drift

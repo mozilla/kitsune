@@ -142,7 +142,7 @@ def retrieve(
         minimum_should_match=minimum_should_match,
         strict=strict,
     )
-    return _authorize(
+    return authorize_candidates(
         result,
         viewer_access=viewer_access,
         locale=locale,
@@ -152,7 +152,7 @@ def retrieve(
     )
 
 
-def _authorize(
+def authorize_candidates(
     result: RetrievalResult[UnvalidatedCandidate],
     *,
     viewer_access: ViewerAccess,
@@ -161,6 +161,7 @@ def _authorize(
     page_size: int,
     page_offset: int,
 ) -> RetrievalResult[AuthorizedCandidate]:
+    """Apply the primary-database authorization boundary to indexed candidates."""
     passages = [
         candidate.evidence
         for candidate in result.candidates
