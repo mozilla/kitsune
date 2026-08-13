@@ -8,6 +8,7 @@ from google.genai.errors import ServerError
 from redis.exceptions import ConnectionError as RedisConnectionError
 
 import kitsune.retrieval
+import kitsune.search.hybrid
 from kitsune.retrieval.embeddings import get_embeddings
 from kitsune.retrieval.events import EVENT_CATALOG, UnknownEvent, emit
 from kitsune.retrieval.gate import gate_index
@@ -61,8 +62,9 @@ _FORBIDDEN_FIELDS = frozenset(
 def _emitted_event_names():
     """Every event name the package can emit, read from the source rather than from imports."""
     package = Path(kitsune.retrieval.__file__).parent
+    paths = [*package.rglob("*.py"), Path(kitsune.search.hybrid.__file__)]
     names = set()
-    for path in package.rglob("*.py"):
+    for path in paths:
         if "tests" in path.parts:
             continue
         names.update(_EMIT_CALL.findall(path.read_text()))

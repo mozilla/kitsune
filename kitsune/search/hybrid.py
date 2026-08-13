@@ -1,6 +1,8 @@
 """Search-specific orchestration for the authorized hybrid retrieval path."""
 
+import logging
 from collections.abc import Collection
+from contextlib import suppress
 from dataclasses import dataclass
 from functools import lru_cache
 from time import perf_counter
@@ -20,6 +22,7 @@ from kitsune.retrieval.access import (
 )
 from kitsune.retrieval.checks import is_valid_query_embedding_rate
 from kitsune.retrieval.embeddings import EmbeddingUnavailable
+from kitsune.retrieval.events import emit
 from kitsune.retrieval.index import resolve_read_target_and_recipe
 from kitsune.retrieval.query import (
     AAQ_SOURCE,
@@ -29,6 +32,8 @@ from kitsune.retrieval.query import (
     similarity_floor_for_index,
 )
 from kitsune.retrieval.query_vectors import (
+    CacheLookupOutcome,
+    CacheWriteOutcome,
     embed_and_cache_query_vector,
     get_cached_query_vector,
 )
@@ -52,7 +57,8 @@ class HybridSearchResults:
     es_took_ms: int
     total_ms: int
     embedding_ms: int | None
-    query_vector_cache_hit: bool | None
+    query_vector_cache_lookup: CacheLookupOutcome | None
+    query_vector_cache_write: CacheWriteOutcome | None
     fallback_reason: FallbackReason | None
 
 
@@ -80,91 +86,145 @@ def run_hybrid_search(
 ) -> HybridSearchResults:
     """Run one bounded retrieval request and return current search-result dictionaries."""
     started = perf_counter()
-    source_set = frozenset(sources)
-    viewer_access = viewer_access_for(request.user)
-    kb_index = None
-    query_vector = None
-    similarity_floor = None
-    embedding_ms = None
-    cache_hit = None
-    fallback_reason: FallbackReason | None = None
+    phase = "access"
+    try:
+        source_set = frozenset(sources)
+        access_started = perf_counter()
+        viewer_access = viewer_access_for(request.user)
+        db_ms = round((perf_counter() - access_started) * 1000)
+        kb_index = None
+        query_vector = None
+        similarity_floor = None
+        embedding_ms = None
+        cache_lookup: CacheLookupOutcome | None = None
+        cache_write: CacheWriteOutcome | None = None
+        fallback_reason: FallbackReason | None = None
 
-    if KB_SOURCE in source_set:
-        kb_index, recipe = resolve_read_target_and_recipe()
-        query_vector = get_cached_query_vector(query, recipe)
-        cache_hit = query_vector is not None
-        if query_vector is None:
-            rate = settings.RETRIEVAL_QUERY_EMBEDDING_RATE
-            if not is_valid_query_embedding_rate(rate):
-                raise ImproperlyConfigured("RETRIEVAL_QUERY_EMBEDDING_RATE is invalid")
+        if KB_SOURCE in source_set:
+            phase = "index_resolution"
+            kb_index, recipe = resolve_read_target_and_recipe()
+            phase = "cache"
+            query_vector, cache_lookup = get_cached_query_vector(query, recipe)
+            if query_vector is None:
+                phase = "rate_limit"
+                rate = settings.RETRIEVAL_QUERY_EMBEDDING_RATE
+                if not is_valid_query_embedding_rate(rate):
+                    raise ImproperlyConfigured("RETRIEVAL_QUERY_EMBEDDING_RATE is invalid")
 
-            limited = rate.startswith("0/")
-            if not limited:
-                try:
-                    limited = is_ratelimited(
-                        request,
-                        group="retrieval-query-embedding",
-                        key="user_or_ip",
-                        rate=rate,
-                        increment=True,
-                    )
-                except Exception:
-                    limited = True
-                    fallback_reason = "rate_limit_unavailable"
+                limited = rate.startswith("0/")
+                if not limited:
+                    try:
+                        limited = is_ratelimited(
+                            request,
+                            group="retrieval-query-embedding",
+                            key="user_or_ip",
+                            rate=rate,
+                            increment=True,
+                        )
+                    except Exception:
+                        limited = True
+                        fallback_reason = "rate_limit_unavailable"
 
-            if limited:
-                fallback_reason = fallback_reason or "rate_limited"
+                if limited:
+                    fallback_reason = fallback_reason or "rate_limited"
+                else:
+                    phase = "similarity_floor"
+                    similarity_floor = cached_similarity_floor(kb_index)
+                    phase = "embedding"
+                    embedding_started = perf_counter()
+                    try:
+                        query_vector, cache_write = embed_and_cache_query_vector(query, recipe)
+                    except EmbeddingUnavailable:
+                        fallback_reason = "embedding_unavailable"
+                    finally:
+                        embedding_ms = round((perf_counter() - embedding_started) * 1000)
             else:
+                phase = "similarity_floor"
                 similarity_floor = cached_similarity_floor(kb_index)
-                embedding_started = perf_counter()
-                try:
-                    query_vector = embed_and_cache_query_vector(query, recipe)
-                except EmbeddingUnavailable:
-                    fallback_reason = "embedding_unavailable"
-                finally:
-                    embedding_ms = round((perf_counter() - embedding_started) * 1000)
-        else:
-            similarity_floor = cached_similarity_floor(kb_index)
 
-    result = retrieve(
-        query,
-        viewer_access=viewer_access,
-        kb_index=kb_index,
-        locale=locale,
-        sources=source_set,
-        product_id=product_id,
-        query_vector=query_vector,
-        similarity_floor=similarity_floor,
-        semantic_k=settings.RETRIEVAL_SEMANTIC_K,
-        num_candidates=settings.RETRIEVAL_KNN_NUM_CANDIDATES,
-        rank_window_size=settings.RETRIEVAL_RRF_RANK_WINDOW_SIZE,
-        locale_composition=settings.RETRIEVAL_LOCALE_COMPOSITION,
-        page_size=settings.SEARCH_RESULTS_PER_PAGE,
-        authorization_overfetch=settings.RETRIEVAL_AUTHORIZATION_OVERFETCH,
-        offset=(page - 1) * settings.SEARCH_RESULTS_PER_PAGE,
-        max_offset=settings.RETRIEVAL_MAX_PAGE_OFFSET,
-        default_operator=settings.RETRIEVAL_LEXICAL_DEFAULT_OPERATOR,
-        minimum_should_match=(
-            settings.RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH
-            if settings.RETRIEVAL_LEXICAL_DEFAULT_OPERATOR == "OR"
-            else None
-        ),
-    )
-    return HybridSearchResults(
-        results=tuple(result_from_candidate(candidate, locale) for candidate in result.candidates),
-        approximate_total=result.approximate_total,
-        page=page,
-        has_previous=page > 1,
-        has_next=result.has_more,
-        mode=result.mode,
-        degraded=result.degraded,
-        failed_shards=result.failed_shards,
-        es_took_ms=result.took_ms,
-        total_ms=round((perf_counter() - started) * 1000),
-        embedding_ms=embedding_ms,
-        query_vector_cache_hit=cache_hit,
-        fallback_reason=fallback_reason,
-    )
+        phase = "retrieval"
+        result = retrieve(
+            query,
+            viewer_access=viewer_access,
+            kb_index=kb_index,
+            locale=locale,
+            sources=source_set,
+            product_id=product_id,
+            query_vector=query_vector,
+            similarity_floor=similarity_floor,
+            semantic_k=settings.RETRIEVAL_SEMANTIC_K,
+            num_candidates=settings.RETRIEVAL_KNN_NUM_CANDIDATES,
+            rank_window_size=settings.RETRIEVAL_RRF_RANK_WINDOW_SIZE,
+            locale_composition=settings.RETRIEVAL_LOCALE_COMPOSITION,
+            page_size=settings.SEARCH_RESULTS_PER_PAGE,
+            authorization_overfetch=settings.RETRIEVAL_AUTHORIZATION_OVERFETCH,
+            offset=(page - 1) * settings.SEARCH_RESULTS_PER_PAGE,
+            max_offset=settings.RETRIEVAL_MAX_PAGE_OFFSET,
+            default_operator=settings.RETRIEVAL_LEXICAL_DEFAULT_OPERATOR,
+            minimum_should_match=(
+                settings.RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH
+                if settings.RETRIEVAL_LEXICAL_DEFAULT_OPERATOR == "OR"
+                else None
+            ),
+        )
+        db_ms += result.db_ms
+        phase = "presentation"
+        presented = tuple(
+            result_from_candidate(candidate, locale) for candidate in result.candidates
+        )
+        total_ms = round((perf_counter() - started) * 1000)
+        response = HybridSearchResults(
+            results=presented,
+            approximate_total=result.approximate_total,
+            page=page,
+            has_previous=page > 1,
+            has_next=result.has_more,
+            mode=result.mode,
+            degraded=result.degraded,
+            failed_shards=result.failed_shards,
+            es_took_ms=result.took_ms,
+            total_ms=total_ms,
+            embedding_ms=embedding_ms,
+            query_vector_cache_lookup=cache_lookup,
+            query_vector_cache_write=cache_write,
+            fallback_reason=fallback_reason,
+        )
+    except Exception as exc:
+        # Observability must never replace the failure the request actually encountered.
+        with suppress(Exception):
+            emit(
+                "retrieval.query.failed",
+                level=logging.ERROR,
+                phase=phase,
+                error_type=type(exc).__name__,
+                total_ms=round((perf_counter() - started) * 1000),
+            )
+        raise
+
+    # Search results remain usable even if structured logging is unavailable.
+    with suppress(Exception):
+        emit(
+            "retrieval.query.completed",
+            outcome=(
+                "degraded" if result.degraded else "fallback" if fallback_reason else "success"
+            ),
+            mode=result.mode,
+            kb_result_count=sum(item["type"] == "document" for item in presented),
+            aaq_result_count=sum(item["type"] == "question" for item in presented),
+            invalid_hit_count=result.invalid_hit_count,
+            authorization_rejection_count=result.authorization_rejection_count,
+            failed_shard_count=result.failed_shards,
+            requested_locale=locale,
+            locale_fallback_count=sum(bool(item["locale_fallback"]) for item in presented),
+            cache_lookup=cache_lookup,
+            cache_write=cache_write,
+            fallback_reason=fallback_reason,
+            total_ms=total_ms,
+            embedding_ms=embedding_ms,
+            es_ms=result.took_ms,
+            db_ms=db_ms,
+        )
+    return response
 
 
 @lru_cache(maxsize=8)

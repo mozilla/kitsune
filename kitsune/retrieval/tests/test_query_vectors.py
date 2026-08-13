@@ -29,14 +29,16 @@ class QueryVectorCacheTests(SimpleTestCase):
         cache.clear()
 
     def test_cache_is_scoped_to_the_exact_query_and_query_recipe(self):
-        vector = embed_and_cache_query_vector("Firefox crashes", RECIPE)
+        vector, cached = embed_and_cache_query_vector("Firefox crashes", RECIPE)
 
-        self.assertEqual(get_cached_query_vector("Firefox crashes", RECIPE), vector)
-        self.assertIsNone(get_cached_query_vector("Firefox crashes ", RECIPE))
-        self.assertIsNone(
+        self.assertEqual(cached, "stored")
+        self.assertEqual(get_cached_query_vector("Firefox crashes", RECIPE), (vector, "hit"))
+        self.assertEqual(get_cached_query_vector("Firefox crashes ", RECIPE), (None, "miss"))
+        self.assertEqual(
             get_cached_query_vector(
                 "Firefox crashes", replace(RECIPE, query_task="OTHER_QUERY_TASK")
-            )
+            ),
+            (None, "miss"),
         )
 
     @override_settings(RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS=3600)
@@ -47,7 +49,7 @@ class QueryVectorCacheTests(SimpleTestCase):
             mock.patch("kitsune.retrieval.query_vectors.get_embeddings", return_value=[vector]),
             mock.patch("kitsune.retrieval.query_vectors.cache.set") as cache_set,
         ):
-            self.assertEqual(embed_and_cache_query_vector(query, RECIPE), vector)
+            self.assertEqual(embed_and_cache_query_vector(query, RECIPE), (vector, "stored"))
 
         key, cached = cache_set.call_args.args
         self.assertNotIn(query, key)
@@ -59,13 +61,13 @@ class QueryVectorCacheTests(SimpleTestCase):
             mock.patch("kitsune.retrieval.query_vectors.cache.get", return_value=[0.0]),
             mock.patch("kitsune.retrieval.query_vectors.cache.delete") as delete,
         ):
-            self.assertIsNone(get_cached_query_vector("query", RECIPE))
+            self.assertEqual(get_cached_query_vector("query", RECIPE), (None, "invalid"))
         delete.assert_called_once()
 
         with mock.patch(
             "kitsune.retrieval.query_vectors.cache.get", side_effect=RuntimeError("offline")
         ):
-            self.assertIsNone(get_cached_query_vector("query", RECIPE))
+            self.assertEqual(get_cached_query_vector("query", RECIPE), (None, "read_failed"))
 
     def test_cache_write_failure_still_returns_the_new_vector(self):
         vector = [0.0] * RECIPE.dimensions
@@ -75,7 +77,10 @@ class QueryVectorCacheTests(SimpleTestCase):
                 "kitsune.retrieval.query_vectors.cache.set", side_effect=RuntimeError("offline")
             ),
         ):
-            self.assertEqual(embed_and_cache_query_vector("query", RECIPE), vector)
+            self.assertEqual(
+                embed_and_cache_query_vector("query", RECIPE),
+                (vector, "write_failed"),
+            )
 
 
 class QueryConfigurationTests(SimpleTestCase):

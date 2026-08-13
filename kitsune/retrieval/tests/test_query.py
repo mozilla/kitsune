@@ -427,12 +427,10 @@ class BoundedRetrievalTests(SimpleTestCase):
         self.assertEqual(request["size"], 3)
 
         response["hits"]["hits"][0]["_source"]["scope"]["version"] = 2
-        with self.assertLogs("k.retrieval", level="WARNING") as logs:
-            degraded = _decode_response(response, page_size=2, offset=0, mode="hybrid")
+        degraded = _decode_response(response, page_size=2, offset=0, mode="hybrid")
         self.assertEqual([candidate.family_id for candidate in degraded.candidates], ["aaq:9"])
         self.assertTrue(degraded.degraded)
-        self.assertEqual(logs.records[0].getMessage(), "retrieval.query.hits_rejected")
-        self.assertEqual(logs.records[0].rejected_count, 1)
+        self.assertEqual(degraded.invalid_hit_count, 1)
 
         response["hits"]["hits"][0]["_source"]["scope"]["version"] = 1
         response["_shards"]["successful"] = 0

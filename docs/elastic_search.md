@@ -47,6 +47,21 @@ The reindex command dispatches Celery work, so allow those jobs to finish before
 or enabling the mixed query. Existing answer documents do not need this backfill because
 search excludes them; future answer indexing still prepares the same family identifier.
 
+### Hybrid-query observability
+
+Each public hybrid-search request emits one `retrieval.query.completed` event, or one
+`retrieval.query.failed` event when the request cannot complete. The completion event records
+only bounded operational facts: outcome and mode, KB/AAQ result counts, malformed-index hits and
+database authorization rejections, failed shards, requested locale and fallback count, separate
+query-vector cache lookup/write outcomes, lexical-fallback reason, and
+total/embedding/Elasticsearch/database durations.
+
+The failure event records only the failed phase, exception type, and elapsed time. Neither event
+contains the query, query vector, cache key, result text or title, score, access groups, user/IP
+identity, or exception message. Cache, embedding, or rate-limit failures may leave the request in
+lexical mode; the completion event makes that fallback visible without turning selected content
+into telemetry.
+
 ### Adding fields to a live index
 
 Elastic supports adding new fields to an existing mapping,

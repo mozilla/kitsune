@@ -2,6 +2,7 @@
 
 from collections.abc import Collection, Sequence
 from dataclasses import dataclass
+from time import perf_counter
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
@@ -162,6 +163,7 @@ def authorize_candidates(
     page_offset: int,
 ) -> RetrievalResult[AuthorizedCandidate]:
     """Apply the primary-database authorization boundary to indexed candidates."""
+    started = perf_counter()
     passages = [
         candidate.evidence
         for candidate in result.candidates
@@ -270,4 +272,10 @@ def authorize_candidates(
         degraded=result.degraded,
         failed_shards=result.failed_shards,
         took_ms=result.took_ms,
+        family_counts=result.family_counts,
+        invalid_hit_count=result.invalid_hit_count,
+        authorization_rejection_count=(
+            result.authorization_rejection_count + len(result.candidates) - len(authorized)
+        ),
+        db_ms=round((perf_counter() - started) * 1000) if passages else 0,
     )

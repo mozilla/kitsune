@@ -1,4 +1,3 @@
-import logging
 import math
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
@@ -11,7 +10,6 @@ from elasticsearch.dsl import Q as DSLQ
 from elasticsearch.dsl.query import Query
 from pyparsing import ParseException
 
-from kitsune.retrieval.events import emit
 from kitsune.retrieval.fingerprints import (
     SCOPE_ENVELOPE_VERSION,
     is_valid_similarity_floor,
@@ -130,6 +128,9 @@ class RetrievalResult[Candidate]:
     failed_shards: int
     took_ms: int
     family_counts: tuple[tuple[str, int], ...] = ()
+    invalid_hit_count: int = 0
+    authorization_rejection_count: int = 0
+    db_ms: int = 0
 
 
 def _render(
@@ -704,13 +705,6 @@ def _decode_response(
             candidates.append(_decode_hit(hit, rank=offset + rank))
         except InvalidRetrievalResponse:
             rejected += 1
-    if rejected:
-        emit(
-            "retrieval.query.hits_rejected",
-            level=logging.WARNING,
-            rejected_count=rejected,
-            inspected_count=min(len(hits), page_size),
-        )
     return RetrievalResult(
         candidates=tuple(candidates),
         approximate_total=int(approximate_total),
@@ -720,6 +714,7 @@ def _decode_response(
         failed_shards=failed,
         took_ms=took,
         family_counts=family_counts,
+        invalid_hit_count=rejected,
     )
 
 
