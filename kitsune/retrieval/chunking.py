@@ -31,6 +31,8 @@ HEADING_TAGS = ("h1", "h2", "h3")
 CONTAINER_TAGS = ("div", "section")
 MAX_TOKENS = 512
 OVERLAP_TOKENS = 64
+# Guarantees a positive content budget for every chunk, whatever the headings hold.
+MAX_HEADING_PATH_TOKENS = MAX_TOKENS // 2
 # Bump on any change that can alter chunk text, order, boundaries, headings, or scope.
 CHUNKING_GENERATION: int = 1
 _SEGMENT_BOUNDARY = re.compile(r"(\n+|(?<=[.!?])\s+)")
@@ -328,10 +330,12 @@ def chunk_kb(html: str, *, title: str) -> list[Chunk]:
 
     chunks: list[Chunk] = []
     for (_, path, signature), texts in groups.items():
+        # A pathological heading path must not sink its document (or the batch and gate runs
+        # that chunk it): cap it and keep indexing. A code-point slice is a safe token cap.
+        if count_tokens(path) > MAX_HEADING_PATH_TOKENS:
+            path = path[:MAX_HEADING_PATH_TOKENS]
         prefix = f"{path}\n"
         budget = MAX_TOKENS - count_tokens(prefix) - 1
-        if budget <= 0:
-            raise ValueError(f"heading path exceeds the {MAX_TOKENS}-token chunk budget: {path!r}")
         for piece in _split_oversized(" ".join(texts), budget):
             chunks.append(
                 Chunk(

@@ -502,8 +502,15 @@ class ChunkSizeTests(SimpleTestCase):
             self.assertLessEqual(count_tokens(chunk_obj.text), MAX_TOKENS)
 
     def test_heading_path_cannot_consume_the_entire_chunk_budget(self):
-        with self.assertRaisesRegex(ValueError, "heading path exceeds"):
-            chunk_kb("<p>Body must not disappear.</p>", title="x" * (MAX_TOKENS * 4))
+        for title in ("x" * (MAX_TOKENS * 4), "漢" * (MAX_TOKENS * 2)):
+            chunks = chunk_kb("<p>Body must not disappear.</p>", title=title)
+
+            self.assertTrue(chunks)
+            self.assertIn("Body must not disappear.", chunks[0].text)
+            self.assertTrue(chunks[0].heading_path.startswith(title[0]))
+            for chunk_obj in chunks:
+                self.assertLessEqual(count_tokens(chunk_obj.heading_path), MAX_TOKENS // 2)
+                self.assertLessEqual(count_tokens(chunk_obj.text), MAX_TOKENS)
 
     def test_oversized_pre_block_preserves_line_breaks(self):
         code = "\n".join(f"    indented line {i} of code" for i in range(400))
