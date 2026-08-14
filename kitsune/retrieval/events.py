@@ -59,6 +59,8 @@ EVENT_CATALOG = frozenset(
         # interactive retrieval
         "retrieval.query.completed",
         "retrieval.query.failed",
+        # serving degradation
+        "retrieval.query.degraded",
         # provider-free ingestion estimate
         "retrieval.estimate.completed",
         # generation lifecycle

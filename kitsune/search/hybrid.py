@@ -4,7 +4,6 @@ import logging
 from collections.abc import Collection
 from contextlib import suppress
 from dataclasses import dataclass
-from functools import lru_cache
 from time import perf_counter
 from typing import Literal
 
@@ -23,13 +22,14 @@ from kitsune.retrieval.access import (
 from kitsune.retrieval.checks import is_valid_query_embedding_rate
 from kitsune.retrieval.embeddings import EmbeddingUnavailable
 from kitsune.retrieval.events import emit
-from kitsune.retrieval.index import resolve_read_target_and_recipe
+from kitsune.retrieval.index import resolve_read_state
 from kitsune.retrieval.query import (
     AAQ_SOURCE,
     KB_SOURCE,
     LegacyQuestion,
+    SimilarityFloorUnavailable,
     Source,
-    similarity_floor_for_index,
+    similarity_floor_for_meta,
 )
 from kitsune.retrieval.query_vectors import (
     CacheLookupOutcome,
@@ -41,7 +41,12 @@ from kitsune.search import SNIPPET_LENGTH
 from kitsune.search.search import strip_html
 from kitsune.sumo.urlresolvers import reverse
 
-FallbackReason = Literal["rate_limited", "rate_limit_unavailable", "embedding_unavailable"]
+FallbackReason = Literal[
+    "rate_limited",
+    "rate_limit_unavailable",
+    "embedding_unavailable",
+    "similarity_floor_unavailable",
+]
 
 
 @dataclass(frozen=True)
@@ -102,45 +107,48 @@ def run_hybrid_search(
 
         if KB_SOURCE in source_set:
             phase = "index_resolution"
-            kb_index, recipe = resolve_read_target_and_recipe()
-            phase = "cache"
-            query_vector, cache_lookup = get_cached_query_vector(query, recipe)
-            if query_vector is None:
-                phase = "rate_limit"
-                rate = settings.RETRIEVAL_QUERY_EMBEDDING_RATE
-                if not is_valid_query_embedding_rate(rate):
-                    raise ImproperlyConfigured("RETRIEVAL_QUERY_EMBEDDING_RATE is invalid")
-
-                limited = rate.startswith("0/")
-                if not limited:
-                    try:
-                        limited = is_ratelimited(
-                            request,
-                            group="retrieval-query-embedding",
-                            key="user_or_ip",
-                            rate=rate,
-                            increment=True,
-                        )
-                    except Exception:
-                        limited = True
-                        fallback_reason = "rate_limit_unavailable"
-
-                if limited:
-                    fallback_reason = fallback_reason or "rate_limited"
-                else:
-                    phase = "similarity_floor"
-                    similarity_floor = cached_similarity_floor(kb_index)
-                    phase = "embedding"
-                    embedding_started = perf_counter()
-                    try:
-                        query_vector, cache_write = embed_and_cache_query_vector(query, recipe)
-                    except EmbeddingUnavailable:
-                        fallback_reason = "embedding_unavailable"
-                    finally:
-                        embedding_ms = round((perf_counter() - embedding_started) * 1000)
+            kb_index, recipe, meta = resolve_read_state()
+            phase = "similarity_floor"
+            try:
+                similarity_floor = similarity_floor_for_meta(meta)
+            except SimilarityFloorUnavailable:
+                # No floor for the active profile means no bounded kNN; search stays available.
+                fallback_reason = "similarity_floor_unavailable"
+                emit("retrieval.query.degraded", level=logging.WARNING, reason=fallback_reason)
             else:
-                phase = "similarity_floor"
-                similarity_floor = cached_similarity_floor(kb_index)
+                phase = "cache"
+                query_vector, cache_lookup = get_cached_query_vector(query, recipe)
+                if query_vector is None:
+                    phase = "rate_limit"
+                    rate = settings.RETRIEVAL_QUERY_EMBEDDING_RATE
+                    if not is_valid_query_embedding_rate(rate):
+                        raise ImproperlyConfigured("RETRIEVAL_QUERY_EMBEDDING_RATE is invalid")
+
+                    limited = rate.startswith("0/")
+                    if not limited:
+                        try:
+                            limited = is_ratelimited(
+                                request,
+                                group="retrieval-query-embedding",
+                                key="user_or_ip",
+                                rate=rate,
+                                increment=True,
+                            )
+                        except Exception:
+                            limited = True
+                            fallback_reason = "rate_limit_unavailable"
+
+                    if limited:
+                        fallback_reason = fallback_reason or "rate_limited"
+                    else:
+                        phase = "embedding"
+                        embedding_started = perf_counter()
+                        try:
+                            query_vector, cache_write = embed_and_cache_query_vector(query, recipe)
+                        except EmbeddingUnavailable:
+                            fallback_reason = "embedding_unavailable"
+                        finally:
+                            embedding_ms = round((perf_counter() - embedding_started) * 1000)
 
         phase = "retrieval"
         result = retrieve(
@@ -225,12 +233,6 @@ def run_hybrid_search(
             db_ms=db_ms,
         )
     return response
-
-
-@lru_cache(maxsize=8)
-def cached_similarity_floor(index: str) -> float:
-    """Cache immutable physical-index similarity metadata within this process."""
-    return similarity_floor_for_index(index)
 
 
 def result_from_candidate(candidate: AuthorizedCandidate, requested_locale: str) -> dict:

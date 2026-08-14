@@ -17,6 +17,7 @@ from kitsune.retrieval.fingerprints import (
     IndexMetaAction,
     classify_meta_mismatch,
     read_index_meta,
+    similarity_profile_fingerprint,
     write_index_meta,
 )
 from kitsune.retrieval.gate import gate_index
@@ -31,6 +32,7 @@ from kitsune.retrieval.locks import (
     DocumentLockUnavailable,
     lifecycle_lock,
 )
+from kitsune.retrieval.query import SimilarityFloorUnavailable, similarity_floor_for_meta
 
 
 class Command(BaseCommand):
@@ -89,6 +91,22 @@ class Command(BaseCommand):
             ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias),
         )
 
+    def _report_floor_status(self, meta):
+        """Preflight for semantic serving: say whether the active profile has a floor."""
+        try:
+            similarity_floor_for_meta(meta)
+        except SimilarityFloorUnavailable:
+            _, fingerprint = similarity_profile_fingerprint(meta)
+            self.stdout.write(
+                self.style.WARNING(
+                    f"No similarity floor is configured for profile {fingerprint}; semantic "
+                    "retrieval degrades to lexical until RETRIEVAL_KNN_SIMILARITY_FLOORS "
+                    "gains a calibrated entry."
+                )
+            )
+        else:
+            self.stdout.write("Similarity floor configured for the active profile.")
+
     def _classify_or_initialize(self, meta):
         read_index, write_index = self._aliases()
         if not write_index:
@@ -116,12 +134,14 @@ class Command(BaseCommand):
             )
             return
 
-        action = classify_meta_mismatch(read_index_meta(write_index), meta)
+        current = read_index_meta(write_index)
+        action = classify_meta_mismatch(current, meta)
         if action is IndexMetaAction.NONE:
             self.stdout.write(
                 f"Configuration matches; updating mapping in place on {write_index}."
             )
             ChunkDocument.init(index=write_index)
+            self._report_floor_status(current)
             return
         if action is IndexMetaAction.QUERY_META_UPDATE:
             raise CommandError(
@@ -176,7 +196,8 @@ class Command(BaseCommand):
             raise CommandError(
                 "There is no write generation to promote. Run 'retrieval_init' first."
             )
-        mismatch = classify_meta_mismatch(read_index_meta(write_index), desired_meta)
+        current = read_index_meta(write_index)
+        mismatch = classify_meta_mismatch(current, desired_meta)
         if mismatch is not IndexMetaAction.NONE:
             raise CommandError(
                 f"The write generation {write_index} no longer matches the configured "
@@ -184,6 +205,7 @@ class Command(BaseCommand):
             )
         if read_index == write_index:
             self.stdout.write(f"Reads already serve {write_index}; nothing to promote.")
+            self._report_floor_status(current)
             return
 
         report = gate_index(write_index)
@@ -206,6 +228,7 @@ class Command(BaseCommand):
             f"Reads now serve {write_index}. {read_index or 'No previous generation'} is "
             "retained for rollback and will not be deleted automatically."
         )
+        self._report_floor_status(current)
 
     def _update_query_recipe(self, meta):
         read_index, write_index = self._aliases()
@@ -229,5 +252,7 @@ class Command(BaseCommand):
                 "refusing to rewrite _meta."
             )
 
-        write_index_meta(write_index, {**current, "query": dict(meta["query"])})
+        updated = {**current, "query": dict(meta["query"])}
+        write_index_meta(write_index, updated)
         self.stdout.write(f"{write_index}: updated query-recipe _meta.")
+        self._report_floor_status(updated)

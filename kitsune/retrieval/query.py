@@ -329,9 +329,8 @@ def build_lexical_clauses(
     )
 
 
-def similarity_floor_for_index(index: str) -> float:
-    """Resolve the exact configured floor for one concrete index similarity profile."""
-    meta = read_index_meta(index)
+def similarity_floor_for_meta(meta: dict) -> float:
+    """Resolve the exact configured floor for one validated index ``_meta``'s profile."""
     _, fingerprint = similarity_profile_fingerprint(meta)
     floors = settings.RETRIEVAL_KNN_SIMILARITY_FLOORS
     floor = floors.get(fingerprint) if isinstance(floors, Mapping) else None
@@ -340,6 +339,11 @@ def similarity_floor_for_index(index: str) -> float:
             f"no valid RETRIEVAL_KNN_SIMILARITY_FLOORS entry for profile {fingerprint}"
         )
     return float(floor)
+
+
+def similarity_floor_for_index(index: str) -> float:
+    """Resolve the exact configured floor for one concrete index similarity profile."""
+    return similarity_floor_for_meta(read_index_meta(index))
 
 
 def _one_or_many(queries: Sequence[Query]) -> Query:

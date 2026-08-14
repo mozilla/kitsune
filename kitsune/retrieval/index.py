@@ -807,15 +807,8 @@ def resolve_write_target() -> str | None:
     return ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
 
 
-def recipe_for_index(index: str) -> EmbeddingRecipe:
-    """The embedding recipe stamped on one concrete index.
-
-    Reconstructed from `_meta` rather than from current settings, so a worker writing to an
-    older generation embeds into the vector space that generation actually holds. An
-    un-stamped or tampered `_meta` raises through ``read_index_meta``.
-    """
-    _require_concrete_index(index)
-    meta = read_index_meta(index)
+def recipe_for_meta(meta: dict) -> EmbeddingRecipe:
+    """The embedding recipe stamped in one validated index ``_meta``."""
     embedding = meta["embedding"]
     return recipe_from_payload(
         {
@@ -829,12 +822,32 @@ def recipe_for_index(index: str) -> EmbeddingRecipe:
     )
 
 
-def resolve_read_target_and_recipe() -> tuple[str, EmbeddingRecipe]:
-    """Bind a query to one concrete read index and the recipe stamped on it.
+def recipe_for_index(index: str) -> EmbeddingRecipe:
+    """The embedding recipe stamped on one concrete index.
 
-    Fails closed: a missing read alias raises rather than silently querying the write alias.
+    Reconstructed from `_meta` rather than from current settings, so a worker writing to an
+    older generation embeds into the vector space that generation actually holds. An
+    un-stamped or tampered `_meta` raises through ``read_index_meta``.
+    """
+    _require_concrete_index(index)
+    return recipe_for_meta(read_index_meta(index))
+
+
+def resolve_read_state() -> tuple[str, EmbeddingRecipe, dict]:
+    """Bind a query to one concrete read index, its stamped recipe, and its validated `_meta`.
+
+    One mapping read serves recipe and similarity-floor resolution, so the two cannot come
+    from different generations. Fails closed: a missing read alias raises rather than
+    silently querying the write alias.
     """
     read_index = ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias)
     if not read_index:
         raise RetrievalIndexUnavailable("the retrieval read alias points at no index")
-    return read_index, recipe_for_index(read_index)
+    meta = read_index_meta(read_index)
+    return read_index, recipe_for_meta(meta), meta
+
+
+def resolve_read_target_and_recipe() -> tuple[str, EmbeddingRecipe]:
+    """Bind a query to one concrete read index and the recipe stamped on it."""
+    index, recipe, _ = resolve_read_state()
+    return index, recipe

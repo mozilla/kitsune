@@ -6,6 +6,7 @@ from unittest import mock
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.test import override_settings
 
 from kitsune.retrieval.chunking import CHUNKING_GENERATION
 from kitsune.retrieval.embeddings import configured_embedding_recipe
@@ -15,6 +16,7 @@ from kitsune.retrieval.fingerprints import (
     build_index_meta,
     classify_meta_mismatch,
     read_index_meta,
+    similarity_profile_fingerprint,
     write_index_meta,
 )
 from kitsune.retrieval.index import (
@@ -225,6 +227,21 @@ class RetrievalInitCommandTests(LifecycleTestCase):
         self.assertEqual(after["embedding"], before["embedding"])
         self.assertEqual(after["mapping"], before["mapping"])
         self.assertEqual(after["query"], configured_index_meta()["query"])
+
+    def test_the_floor_preflight_reports_the_active_profile_status(self):
+        name = create_write_generation(timestamp=TS1, meta=_meta(query_task="PRIOR_QUERY"))
+        ChunkDocument.migrate_reads()
+
+        out = StringIO()
+        with override_settings(RETRIEVAL_KNN_SIMILARITY_FLOORS={}):
+            call_command("retrieval_init", "--update-query-recipe", stdout=out)
+        self.assertIn("No similarity floor is configured", out.getvalue())
+
+        _, fingerprint = similarity_profile_fingerprint(read_index_meta(name))
+        out = StringIO()
+        with override_settings(RETRIEVAL_KNN_SIMILARITY_FLOORS={fingerprint: 0.7}):
+            call_command("retrieval_init", stdout=out)
+        self.assertIn("Similarity floor configured", out.getvalue())
 
     def test_query_recipe_update_refuses_a_non_query_change(self):
         name = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))

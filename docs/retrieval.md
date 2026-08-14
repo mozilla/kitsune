@@ -265,7 +265,9 @@ work and returns; it does not wait for the queues to drain.
 
 Before enabling semantic queries, calibrate a similarity floor for that environment and bind it
 to the active index's similarity profile. A missing or stale profile is a configuration error,
-not permission to issue an unbounded kNN query. Configure a positive query embedding rate, then
+not permission to issue an unbounded kNN query. Serving fails soft: while the active profile has
+no configured floor, hybrid search answers lexically and emits a `retrieval.query.degraded`
+warning on each affected request. Configure a positive query embedding rate, then
 enable the `retrieval-hybrid-search` Waffle switch. The deterministic `fake` backend is for local
 development and tests, not relevance evaluation.
 
@@ -388,7 +390,8 @@ A query-task-only change does not alter stored document vectors:
 
 The first command classifies the mismatch; the second explicitly updates the stable generation's
 query metadata. Recalibrate and configure the similarity floor for the resulting profile before
-serving semantic queries.
+serving semantic queries. `retrieval_init` reports the active profile's floor status after each
+step; until the recalibrated floor is deployed, semantic retrieval degrades to lexical.
 
 ### Rebuild for a document recipe or vector mapping change
 

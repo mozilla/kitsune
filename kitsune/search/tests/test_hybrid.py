@@ -30,6 +30,7 @@ from kitsune.search.hybrid import (
 
 RECIPE = EmbeddingRecipe("fake", "model", 2, "document", "query", "l2")
 STANDARD_LOG_FIELDS = set(logging.makeLogRecord({}).__dict__) | {"asctime", "message"}
+META = {"sentinel": "meta"}  # opaque to hybrid; handed to the floor resolver as-is
 
 
 def _result(*candidates, degraded=False, invalid_hits=0, authorization_rejections=0, db_ms=0):
@@ -56,9 +57,9 @@ def _request():
 @contextmanager
 def _run(**patches):
     defaults = {
-        "resolve_read_target_and_recipe": ("retrieval-1", RECIPE),
+        "resolve_read_state": ("retrieval-1", RECIPE, META),
         "get_cached_query_vector": ([1.0, 0.0], "hit"),
-        "cached_similarity_floor": 0.8,
+        "similarity_floor_for_meta": 0.8,
         "retrieve": _result(
             degraded=True,
             invalid_hits=2,
@@ -70,8 +71,8 @@ def _run(**patches):
     defaults.update(patches)
     with (
         mock.patch(
-            "kitsune.search.hybrid.resolve_read_target_and_recipe",
-            return_value=defaults["resolve_read_target_and_recipe"],
+            "kitsune.search.hybrid.resolve_read_state",
+            return_value=defaults["resolve_read_state"],
         ) as target,
         mock.patch(
             "kitsune.search.hybrid.get_cached_query_vector",
@@ -80,8 +81,8 @@ def _run(**patches):
         mock.patch("kitsune.search.hybrid.is_ratelimited") as limited,
         mock.patch("kitsune.search.hybrid.embed_and_cache_query_vector") as embed,
         mock.patch(
-            "kitsune.search.hybrid.cached_similarity_floor",
-            return_value=defaults["cached_similarity_floor"],
+            "kitsune.search.hybrid.similarity_floor_for_meta",
+            return_value=defaults["similarity_floor_for_meta"],
         ) as floor,
         mock.patch(
             "kitsune.search.hybrid.viewer_access_for",
@@ -131,7 +132,7 @@ class HybridOrchestrationTests(SimpleTestCase):
         cached.assert_called_once_with("firefox", RECIPE)
         limited.assert_not_called()
         embed.assert_not_called()
-        floor.assert_called_once_with("retrieval-1")
+        floor.assert_called_once_with(META)
         retrieval_settings = {
             "semantic_k": 11,
             "num_candidates": 23,
@@ -233,10 +234,8 @@ class HybridOrchestrationTests(SimpleTestCase):
                 self.assertNotIn("method", limited.call_args.kwargs)
             else:
                 embed.assert_not_called()
-            if limiter is False:
-                floor.assert_called_once_with("retrieval-1")
-            else:
-                floor.assert_not_called()
+            # The floor is resolved for every KB request before any vector work.
+            floor.assert_called_once_with(META)
             self.assertEqual(retrieve.call_args.kwargs["query_vector"], vector)
             self.assertEqual(result.fallback_reason, fallback)
             self.assertEqual(result.query_vector_cache_lookup, "miss")
@@ -412,19 +411,11 @@ class HybridOrchestrationTests(SimpleTestCase):
         retrieve.assert_not_called()
 
     @override_settings(RETRIEVAL_QUERY_EMBEDDING_RATE="10/m")
-    def test_missing_similarity_floor_fails_before_paid_embedding(self):
-        with _run(get_cached_query_vector=(None, "miss")) as (
-            _,
-            _,
-            limited,
-            embed,
-            floor,
-            retrieve,
-        ):
-            limited.return_value = False
+    def test_missing_similarity_floor_degrades_to_lexical_without_spending(self):
+        with _run() as (_, cached, limited, embed, floor, retrieve):
             floor.side_effect = SimilarityFloorUnavailable("missing")
-            with self.assertRaises(SimilarityFloorUnavailable):
-                run_hybrid_search(
+            with self.assertLogs("k.retrieval", level="WARNING") as logs:
+                result = run_hybrid_search(
                     _request(),
                     query="firefox",
                     locale="en-US",
@@ -432,8 +423,19 @@ class HybridOrchestrationTests(SimpleTestCase):
                     product_id=None,
                     page=1,
                 )
+
+        # Without a floor there is no bounded kNN: no cache read, no limiter hit, no spend.
+        cached.assert_not_called()
+        limited.assert_not_called()
         embed.assert_not_called()
-        retrieve.assert_not_called()
+        self.assertIsNone(retrieve.call_args.kwargs["query_vector"])
+        self.assertIsNone(retrieve.call_args.kwargs["similarity_floor"])
+        self.assertEqual(result.fallback_reason, "similarity_floor_unavailable")
+        self.assertIsNone(result.query_vector_cache_lookup)
+        self.assertIsNone(result.query_vector_cache_write)
+        [record] = logs.records
+        self.assertEqual(record.getMessage(), "retrieval.query.degraded")
+        self.assertEqual(record.reason, "similarity_floor_unavailable")
 
     def test_aaq_only_skips_the_retrieval_index_and_embedding_path(self):
         with _run() as (target, cached, limited, embed, floor, retrieve):
