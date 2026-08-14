@@ -69,16 +69,6 @@ def family_id_for(document) -> int:
     return document.parent_id or document.id
 
 
-def family_documents(document) -> QuerySet[Document]:
-    """The original document and all of its translations."""
-    original_id = family_id_for(document)
-    return Document.objects.filter(Q(pk=original_id) | Q(parent_id=original_id))
-
-
-def family_document_ids(document) -> list[int]:
-    return list(family_documents(document).values_list("id", flat=True))
-
-
 def access_group_ids_for(document) -> list[int]:
     """Sorted restriction group ids from the original (translations inherit)."""
     return sorted(group.id for group in document.original.restrict_to_groups.all())
