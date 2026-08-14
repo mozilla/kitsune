@@ -25,7 +25,7 @@
     <h3 class="flagged-content__subheading">{{ _('Take Action:') }}</h3>
     <div class="flagged-content__topic-update">
       <label> {{ _('Current topic:') }} </label>
-      <p id="current-topic-{{ object.content_object.id }}" class="current-topic">{{ object.content_object.topic }}</p>
+      <p id="current-topic-{{ object.content_object.id }}" class="current-topic">{{ pgettext('DB: products.Topic.title', object.content_object.topic.title) }}</p>
 
       <form id="topic-update-form-{{ object.content_object.id }}" method="POST">
         {% csrf_token %}

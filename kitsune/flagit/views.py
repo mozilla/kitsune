@@ -19,6 +19,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import pgettext
 from django.views.decorators.http import require_http_methods, require_POST
 
 from kitsune.access.decorators import group_required, login_required, permission_required
@@ -201,36 +202,46 @@ def get_hierarchical_topics(product, cache_timeout=3600):
                        given product. Defaults to 1 hour.
 
     Returns:
-        A list of dictionaries representing the hierarchical structure of topics.
+        A list of dictionaries representing the hierarchical structure of topics,
+        with the titles localized for the currently active locale.
     """
-    cache_key = f"hierarchical_topics_{product.slug}"
-    if cached_topics := cache.get(cache_key):
-        return cached_topics
+    # We cache the titles as they're stored in the database, in English, so that a single
+    # entry serves every locale and can be invalidated with one delete (see Topic.save).
+    cache_key = f"hierarchical_topics_v2_{product.slug}"
+    cached_topics = cache.get(cache_key)
 
-    topics = list(
-        Topic.active.filter(products=product, visible=True)
-        .order_by("title")
-        .values("id", "title", "parent_id")
-    )
-    topic_dict = {}
-    for topic in topics:
-        parent_id = topic["parent_id"]
-        if parent_id not in topic_dict:
-            topic_dict[parent_id] = []
-        topic_dict[parent_id].append(topic)
+    if not cached_topics:
+        topics = list(
+            Topic.active.filter(products=product, visible=True)
+            .order_by("title")
+            .values("id", "title", "parent_id")
+        )
+        topic_dict = {}
+        for topic in topics:
+            parent_id = topic["parent_id"]
+            if parent_id not in topic_dict:
+                topic_dict[parent_id] = []
+            topic_dict[parent_id].append(topic)
 
-    hierarchical = []
+        cached_topics = []
 
-    def build_hierarchy(parent_id=None, level=0):
-        children = topic_dict.get(parent_id, [])
-        for child in children:
-            spaces = "&nbsp;" * (level * 4)
-            hierarchical.append({"id": child["id"], "title": f"{spaces}{child['title']}"})
-            build_hierarchy(child["id"], level + 1)
+        def build_hierarchy(parent_id=None, level=0):
+            children = topic_dict.get(parent_id, [])
+            for child in children:
+                cached_topics.append({"id": child["id"], "title": child["title"], "level": level})
+                build_hierarchy(child["id"], level + 1)
 
-    build_hierarchy()
-    cache.set(cache_key, hierarchical, cache_timeout)
-    return hierarchical
+        build_hierarchy()
+        cache.set(cache_key, cached_topics, cache_timeout)
+
+    return [
+        {
+            "id": topic["id"],
+            "title": "&nbsp;" * (topic["level"] * 4)
+            + pgettext("DB: products.Topic.title", topic["title"]),
+        }
+        for topic in cached_topics
+    ]
 
 
 @group_required(settings.STAFF_GROUP)

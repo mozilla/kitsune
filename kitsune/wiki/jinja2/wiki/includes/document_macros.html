@@ -151,14 +151,6 @@
   </section>
 {%- endmacro %}
 
-{% macro topic_list(topics) -%}
-  {% set comma = joiner(', ') %}
-  {% for topic in topics -%}
-    {{ comma() }}
-    <a href="{{ url('wiki.topic', topic.slug) }}">{{ _(topic.name) }}</a>
-  {%- endfor %}
-{%- endmacro %}
-
 {% macro edit_messages(document, show_revision_warning) -%}
   {% if show_revision_warning %}
   <div class="mzp-c-notification-bar mzp-t-warning">

@@ -17,8 +17,13 @@ from zenpy.lib.exception import APIException, RecordNotFoundException
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import GroupProfile
-from kitsune.products.tests import ProductSupportConfigFactory, ZendeskConfigFactory
-from kitsune.sumo.tests import TestCase
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    TopicFactory,
+    ZendeskConfigFactory,
+)
+from kitsune.sumo.tests import TestCase, translated_db_strings
 from kitsune.sumo.urlresolvers import reverse as reverse_locale
 from kitsune.users.tests import UserFactory
 
@@ -160,6 +165,34 @@ class TicketDetailViewTests(TestCase):
             reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
         )
         self.assertEqual(200, response.status_code)
+
+    def test_product_and_topic_titles_are_localized(self):
+        product = ProductFactory(title="Firefox Focus", slug="focus")
+        topic = TopicFactory(title="Battery life", slug="battery-life", products=[product])
+        ticket = SupportTicketFactory(user=self.owner, product=product, topic=topic)
+        self.client.force_login(self.owner)
+
+        with translated_db_strings(
+            "de",
+            {
+                ("DB: products.Product.title", "Firefox Focus"): "Feuerfuchs Fokus",
+                ("DB: products.Topic.title", "Battery life"): "Akkulaufzeit",
+            },
+        ):
+            response = self.client.get(
+                reverse_locale(
+                    "customercare.ticket_detail",
+                    args=[self.owner.username, ticket.id],
+                    locale="de",
+                )
+            )
+
+        self.assertEqual(200, response.status_code)
+        context = pq(response.content)(".thread-detail--context-left").text()
+        self.assertIn("Feuerfuchs Fokus", context)
+        self.assertNotIn("Firefox Focus", context)
+        self.assertIn("Akkulaufzeit", context)
+        self.assertNotIn("Battery life", context)
 
     def test_other_user_gets_404(self):
         self.client.force_login(self.other)

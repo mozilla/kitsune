@@ -67,10 +67,10 @@
   <div class="thread-detail--context">
     <div class="thread-detail--context-left">
       {% if obj.product %}
+        {% set _product_title = pgettext('DB: products.Product.title', obj.product.title) %}
         {% if obj.channel == "direct_support" %}
-          <span class="question-entry--meta-item">{{ obj.product.title }}</span>
+          <span class="question-entry--meta-item">{{ _product_title }}</span>
         {% else %}
-          {% set _product_title = pgettext('DB: products.Product.title', obj.product.title) %}
           <a class="question-entry--meta-item"
              href="{{ url('questions.list', product_slug=obj.product.slug) }}"
              title="{{ _('{product} questions')|f(product=_product_title) }}">
@@ -85,10 +85,10 @@
         {% endif %}
       {% endif %}
       {% if obj.topic %}
+        {% set _topic_title = pgettext('DB: products.Topic.title', obj.topic.title) %}
         {% if obj.channel == "direct_support" %}
-          <span class="question-entry--meta-item">{{ obj.topic.title }}</span>
+          <span class="question-entry--meta-item">{{ _topic_title }}</span>
         {% else %}
-          {% set _topic_title = pgettext('DB: products.Topic.title', obj.topic.title) %}
           <a class="question-entry--meta-item"
              href="{{ url('questions.list_by_topic', topic_slug=obj.topic.slug) }}"
              title="{{ _('{topic} questions')|f(topic=_topic_title) }}">

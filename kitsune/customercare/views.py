@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext as _
+from django.utils.translation import pgettext
 from django.views import View
 from django.views.decorators.http import require_http_methods, require_POST
 from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyException
@@ -264,7 +265,7 @@ def update_topic(request, ticket_id):
     ticket.zendesk_tags = system_tags + classification_tags
     ticket.save(update_fields=["zendesk_tags"])
 
-    return JsonResponse({"updated_topic": str(new_topic)})
+    return JsonResponse({"updated_topic": pgettext("DB: products.Topic.title", new_topic.title)})
 
 
 class ZendeskWebhookView(View):

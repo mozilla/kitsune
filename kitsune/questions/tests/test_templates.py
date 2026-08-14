@@ -22,7 +22,14 @@ from kitsune.questions.models import Answer, Question, QuestionLocale, VoteMetad
 from kitsune.questions.tests import AAQConfigFactory, AnswerFactory, QuestionFactory, tags_eq
 from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG, question_details
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import TestCase, attrs_eq, emailmessage_raise_smtp, get, post
+from kitsune.sumo.tests import (
+    TestCase,
+    attrs_eq,
+    emailmessage_raise_smtp,
+    get,
+    post,
+    translated_db_strings,
+)
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.models import SumoTag
 from kitsune.tags.tests import TagFactory
@@ -1344,6 +1351,27 @@ class QuestionsTemplateTestCase(TestCase):
         check({"topic": t2.slug}, [q3])
         # Filter on p3 -> No results
         check({"topic": t3.slug}, [])
+
+    def test_question_entry_localizes_product_and_topic(self):
+        product = ProductFactory(title="Firefox Focus", slug="focus")
+        topic = TopicFactory(title="Battery life", slug="battery-life", products=[product])
+        QuestionFactory(product=product, topic=topic)
+
+        with translated_db_strings(
+            "de",
+            {
+                ("DB: products.Product.title", "Firefox Focus"): "Feuerfuchs Fokus",
+                ("DB: products.Topic.title", "Battery life"): "Akkulaufzeit",
+            },
+        ):
+            response = self.client.get(reverse("questions.list", args=["all"], locale="de"))
+
+        self.assertEqual(200, response.status_code)
+        meta = pq(response.content)(".question-entry--meta-primary").text()
+        self.assertIn("Feuerfuchs Fokus", meta)
+        self.assertNotIn("Firefox Focus", meta)
+        self.assertIn("Akkulaufzeit", meta)
+        self.assertNotIn("Battery life", meta)
 
     def test_topic_notification_absent_without_filter(self):
         response = self.client.get(reverse("questions.list", args=["all"]))

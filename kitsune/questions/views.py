@@ -28,7 +28,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
-from django.utils.translation import pgettext_lazy
+from django.utils.translation import pgettext, pgettext_lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
 from elasticsearch.dsl import A as DSLA
@@ -1179,7 +1179,9 @@ def edit_question(request, question_id):
             question.save()
             question.auto_tag()
 
-        return JsonResponse({"updated_topic": str(new_topic)})
+        return JsonResponse(
+            {"updated_topic": pgettext("DB: products.Topic.title", new_topic.title)}
+        )
 
     initial_data = {
         "title": question.title,
