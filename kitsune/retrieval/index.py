@@ -697,6 +697,10 @@ def _sorted_chunk_summaries(summaries) -> tuple[StoredChunkSummary, ...]:
 def delete_chunks_for(*, index: str, identity: ChunkIdentity) -> None:
     """Remove a document's chunks and manifest from one concrete index."""
     _require_concrete_index(index)
+    # Chunks written within the refresh interval are invisible to delete_by_query and a full
+    # miss passes verification (total == deleted == 0); evictions are rare, so pay for a
+    # refresh rather than leave withdrawn content searchable until reconciliation.
+    es_client().indices.refresh(index=index)
     _verified_delete_by_query(index, {"bool": {"filter": _identity_filters(identity)}})
 
 
@@ -706,6 +710,8 @@ def delete_chunks_for_object(*, index: str, content_type: str, object_id: str) -
     _require_concrete_index(index)
     _require_identity_component(content_type, "content_type")
     _require_identity_component(object_id, "object_id")
+    # Same freshness rule as delete_chunks_for: an eviction must see recent writes.
+    es_client().indices.refresh(index=index)
     _verified_delete_by_query(
         index,
         {

@@ -1075,3 +1075,30 @@ class ScrollHygieneTests(ChunkIndexTestCase):
 
         self.assertEqual(len(summaries), 2)
         self._assert_all_closed()
+
+
+class EvictionFreshnessTests(SimpleTestCase):
+    """Evictions must see writes newer than the refresh interval, or a full miss passes."""
+
+    def test_evictions_refresh_before_deleting(self):
+        index = f"{index_module.ChunkDocument.Index.base_name}_20260101000000"
+        identity = index_module.ChunkIdentity("kb", "1", "en-US")
+        evictions = (
+            lambda: index_module.delete_chunks_for(index=index, identity=identity),
+            lambda: index_module.delete_chunks_for_object(
+                index=index, content_type="kb", object_id="1"
+            ),
+        )
+        for evict in evictions:
+            client = mock.Mock()
+            client.delete_by_query.return_value = {
+                "total": 0,
+                "deleted": 0,
+                "version_conflicts": 0,
+                "timed_out": False,
+                "failures": [],
+            }
+            with mock.patch.object(index_module, "es_client", return_value=client):
+                evict()
+            self.assertEqual(client.mock_calls[0], mock.call.indices.refresh(index=index))
+            client.delete_by_query.assert_called_once()

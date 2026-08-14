@@ -27,6 +27,7 @@ from kitsune.retrieval.index import (
 )
 from kitsune.retrieval.sync import CONTENT_TYPE, build_source, expected_state_for
 from kitsune.retrieval.validation import is_nonnegative_int, is_positive_int
+from kitsune.search.es_utils import es_client
 from kitsune.wiki.models import Document
 
 MAX_REPORTED_FINDINGS = 200
@@ -150,6 +151,9 @@ def gate_index(
         page = page_size
     if not is_nonnegative_int(max_findings):
         raise ValueError("max_findings must be a non-negative integer")
+    # Gate findings drive promotion and reconciliation; they must describe the current
+    # index, not the last refresh. These scans are operator-run or daily, never per-write.
+    es_client().indices.refresh(index=index)
     remaining = read_index_summaries(index=index, content_type=CONTENT_TYPE, locales=locales)
     identities_indexed = len(remaining)
 
