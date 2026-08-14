@@ -7,10 +7,9 @@ from unittest import mock
 from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase, override_settings
 from google.auth.exceptions import DefaultCredentialsError
-from google.genai.errors import ClientError, ServerError
+from google.genai.errors import APIError, ClientError, ServerError
 from httpx import ConnectError as HttpxConnectError
 from httpx import ReadTimeout as HttpxReadTimeout
-from requests import ReadTimeout as RequestsReadTimeout
 
 from kitsune.retrieval.embeddings import (
     _MAX_ATTEMPTS,
@@ -164,11 +163,11 @@ class VertexBackendTests(SimpleTestCase):
         http_options = request.call_args.kwargs["config"].http_options
         self.assertEqual(http_options.timeout, 12_000)  # the provider expects milliseconds
 
-    def test_transport_timeout_is_retried(self):
-        for timeout in (HttpxReadTimeout("timed out"), RequestsReadTimeout("timed out")):
-            with self.subTest(timeout=type(timeout).__name__):
+    def test_transport_errors_are_retried(self):
+        for transient in (HttpxReadTimeout("timed out"), HttpxConnectError("connection reset")):
+            with self.subTest(transient=type(transient).__name__):
                 client, request = _mock_vertex_client()
-                request.side_effect = [timeout, _vertex_response(["a"])]
+                request.side_effect = [transient, _vertex_response(["a"])]
                 with (
                     mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
                     mock.patch("kitsune.retrieval.embeddings.time.sleep"),
@@ -454,6 +453,18 @@ class VertexRetryTests(SimpleTestCase):
             mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
             mock.patch("kitsune.retrieval.embeddings.time.sleep"),
             self.assertRaises(ClientError),
+        ):
+            get_embeddings(["a"], task="document", recipe=VERTEX)
+
+        self.assertEqual(request.call_count, 1)
+
+    def test_an_apierror_without_a_code_fails_without_retry(self):
+        client, request = _mock_vertex_client()
+        request.side_effect = APIError(None, {"message": "no status code"})
+        with (
+            mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
+            mock.patch("kitsune.retrieval.embeddings.time.sleep"),
+            self.assertRaises(APIError),
         ):
             get_embeddings(["a"], task="document", recipe=VERTEX)
 
