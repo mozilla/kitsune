@@ -69,7 +69,11 @@ integrity gate.
 | Celery tasks and wiki triggers | `kitsune/retrieval/tasks.py`, `signals.py` |
 | Index lifecycle and integrity | `retrieval_init`, `sync_chunks`, `gate.py` |
 | Lexical, kNN, RRF, and response decoding | `kitsune/retrieval/query.py` |
+| Query-vector caching | `kitsune/retrieval/query_vectors.py` |
 | Authoritative access checks | `kitsune/retrieval/access.py` |
+| Structured observability events | `kitsune/retrieval/events.py` |
+| Settings and task-timing checks | `kitsune/retrieval/checks.py` |
+| Redis leases | `kitsune/retrieval/locks.py` |
 | Public-search orchestration | `kitsune/search/hybrid.py` |
 
 ## Ingestion model
@@ -194,6 +198,10 @@ These bounds and relevance settings must be calibrated with environment-appropri
 data before enabling the feature. Do not derive production thresholds from an old or different
 environment's corpus.
 
+The solved-question positive artifact requires an eligible KB document in the query locale. It
+therefore measures same-locale ranking quality and cannot credit relevance gains from the
+`en-US` fallback; evaluate that later with a separate labelled fallback cohort.
+
 ## Flags and configuration
 
 Three controls have different jobs:
@@ -220,6 +228,23 @@ Important query controls include:
   `RETRIEVAL_RRF_RANK_WINDOW_SIZE`: semantic and fusion work bounds; and
 - `RETRIEVAL_AUTHORIZATION_OVERFETCH` and `RETRIEVAL_MAX_PAGE_OFFSET`: bounded authorization and
   pagination behavior.
+
+Ingestion and worker-safety controls include:
+
+- `RETRIEVAL_EMBEDDING_BACKEND`, `RETRIEVAL_EMBEDDING_MODEL`, and
+  `RETRIEVAL_EMBEDDING_DIMENSIONS`: the embedding recipe stamped on new generations (`fake` is
+  the deterministic offline backend);
+- `RETRIEVAL_EMBEDDING_BATCH_SIZE`: inputs per provider request, capped by the provider's own
+  bounds;
+- `RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS`: the document-side provider deadline — the "embedding
+  request timeout" in the invariant below;
+- `RETRIEVAL_TASK_SOFT_TIME_LIMIT_SECONDS` and `RETRIEVAL_TASK_TIME_LIMIT_SECONDS`: deadlines
+  for ordinary single-document and batch sync tasks (scheduled corpus reconciliation carries
+  separate limits);
+- `RETRIEVAL_LOCK_TTL_SECONDS` and `RETRIEVAL_LIFECYCLE_LOCK_TTL_SECONDS`: the document and
+  lifecycle lease lifetimes; and
+- `RETRIEVAL_BULK_MAX_DOCUMENTS` and `RETRIEVAL_BULK_MAX_EMBEDDING_INPUTS`: batch-task payload
+  and embedding-input ceilings.
 
 Run Django's system checks after changing these settings. Retrieval checks enforce relationships
 such as `num_candidates >= semantic_k`, the pagination window bound, valid floors, and:
@@ -366,7 +391,9 @@ While `RETRIEVAL_LIVE_INDEXING` is enabled, a daily scheduled task (`reconcile_w
 02:00) runs the same gate-and-repair flow against the write generation. It is the backstop for
 changes that bypass the signal receivers — notably the nightly `rebuild_kb`, which rewrites
 `Document.html` with `.update()` — and for any lost task. The commands below remain the
-operator tools for investigations and rebuilds.
+operator tools for investigations and rebuilds. Scheduled reconciliation runs only when the
+read and write aliases share one stable generation; first-run and rebuild population remain
+explicit operator actions.
 
 ### Inspect or repair drift
 
