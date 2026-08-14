@@ -362,6 +362,12 @@ recording the digests, selected configuration, aggregate metrics, and go/no-go d
 
 ## Routine operations
 
+While `RETRIEVAL_LIVE_INDEXING` is enabled, a daily scheduled task (`reconcile_write_index`,
+02:00) runs the same gate-and-repair flow against the write generation. It is the backstop for
+changes that bypass the signal receivers — notably the nightly `rebuild_kb`, which rewrites
+`Document.html` with `.update()` — and for any lost task. The commands below remain the
+operator tools for investigations and rebuilds.
+
 ### Inspect or repair drift
 
 ```bash

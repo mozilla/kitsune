@@ -19,4 +19,5 @@ app.conf.task_routes = {
     "kitsune.retrieval.tasks.sync_document": {"queue": "retrieval"},
     "kitsune.retrieval.tasks.sync_documents": {"queue": "retrieval_bulk"},
     "kitsune.retrieval.tasks.delete_document": {"queue": "retrieval"},
+    "kitsune.retrieval.tasks.reconcile_write_index": {"queue": "retrieval_bulk"},
 }

@@ -13,7 +13,13 @@ from django.conf import settings
 from elastic_transport import ConnectionError as ElasticsearchConnectionError
 from elastic_transport import ConnectionTimeout as ElasticsearchConnectionTimeout
 
-from kitsune.retrieval.index import ChunkIdentity, IndexWriteError
+from kitsune.retrieval.gate import gate_index
+from kitsune.retrieval.index import (
+    ChunkDocument,
+    ChunkIdentity,
+    IndexWriteError,
+    resolve_write_target,
+)
 from kitsune.retrieval.locks import DocumentLockBackendError, DocumentLockUnavailable
 from kitsune.retrieval.sync import (
     delete_document_chunks,
@@ -114,3 +120,37 @@ def enqueue_document_batch(document_ids, *, target_index: str | None = None) -> 
             list(ids[start : start + size]),
             target_index=target_index,
         )
+
+
+# The gate re-chunks the whole corpus, so the per-document limits above are far too small.
+_RECONCILE_LIMITS = {
+    "soft_time_limit": 3540,
+    "time_limit": 3600,
+    "ignore_result": True,
+}
+
+
+@shared_task(**_RECONCILE_LIMITS)
+@skip_if_read_only_mode
+def reconcile_write_index():
+    """Daily backstop for missed signals and index drift.
+
+    The nightly ``rebuild_kb`` rewrites ``Document.html`` via ``.update()``, deliberately
+    bypassing ``post_save`` (bug 797038), so signal-driven freshness alone cannot converge.
+    """
+    if not settings.RETRIEVAL_LIVE_INDEXING:
+        return
+    index = resolve_write_target()
+    if not index:
+        return
+    # First-run and rebuild generations are intentionally incomplete; their backfills remain
+    # explicit so this backstop cannot duplicate paid corpus work.
+    if ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias) != index:
+        return
+    report = gate_index(index)
+    # Resolve the write target in each child: a lifecycle operation may move the alias while
+    # this full-corpus scan is running.
+    if report.stale_document_ids:
+        enqueue_document_batch(report.stale_document_ids)
+    for identity in report.unexpected_identities:
+        enqueue_document_delete(identity)
