@@ -415,12 +415,10 @@ def _chunk_metadata(
 ) -> dict:
     """Every per-chunk field a metadata-only update owns.
 
-    Shared by the full write and the metadata-only update so the two cannot drift into
-    disagreeing about what a chunk's recovery state should look like. Deliberately excluded:
-    ``kind``, ``content_type``, ``object_id``, ``locale`` and ``position`` (they identify the
-    document, and changing one means a different chunk), ``content_text``/``content_vector``
-    (only a re-embed may rewrite those), and ``indexed_on``, which keeps meaning "when this
-    chunk's text and vector were written" rather than "last touched".
+    Shared by the full write and the metadata-only update so the two cannot drift. Identity
+    fields, text/vector, and ``indexed_on`` are deliberately excluded: only a re-embed may
+    rewrite text and vectors, and ``indexed_on`` keeps meaning "when this chunk's text and
+    vector were written" rather than "last touched".
     """
     locale = source.locale
     return {
@@ -548,12 +546,9 @@ def update_chunks_metadata_for(
 
     The cheapest correct path when only scope or source metadata changed: it preserves each
     chunk's stored text and vector and makes no embedding call. This never creates a missing
-    position, because a chunk without text and a vector would be incomplete.
-
-    While ingestion is public-only, an access change never reaches here: it flips the
-    document's eligibility, so the sync core evicts it or indexes it afresh instead. Once
-    restricted ingestion is enabled, a change to `visibility`/`access_group_ids` becomes an
-    ordinary metadata change and this is the path it takes (ADR 0006).
+    position, because a chunk without text and a vector would be incomplete. Access changes
+    reach here only once restricted ingestion lands; until then they flip eligibility and
+    sync evicts or reindexes instead (ADR 0006).
     """
     _require_concrete_index(index)
     _verify_expected_state(chunks, source, expected_state)

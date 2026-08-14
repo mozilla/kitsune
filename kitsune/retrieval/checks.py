@@ -5,14 +5,8 @@ outlive one:
 
     provider request deadline < task soft limit < task hard limit < lease ttl
 
-Each step earns its place. A request that can outlast the soft limit means the wind-down never
-runs. A soft limit at or past the hard limit leaves no room to wind down at all. A hard limit at
-or past the lease ttl is the failure this exists to prevent: the lease lapses while the worker
-is still writing, and a second worker can pick the document up.
-
-The same function backs a Django system check and ``RetrievalConfig.ready()``, because
-``manage.py check`` runs on deploy but a Celery worker start-up does not necessarily run system
-checks — and the worker is where it matters.
+Backs both the Django system check and ``RetrievalConfig.ready()``, because a Celery worker
+start-up does not necessarily run system checks — and the worker is where it matters.
 """
 
 import re

@@ -1,12 +1,8 @@
 """Decide and perform what documents need in the current retrieval write index.
 
-The decision is separated from the work. ``plan_target`` is pure: given what a worker computed
-and what an index currently holds, it names an outcome and touches nothing. That keeps the
-whole outcome matrix testable without Elasticsearch, Redis, or the database, and leaves the
-executor with no judgement of its own to make.
-
-One document and a batch of documents run the same decisions on the same seams; a batch only
-shares the provider calls, so it is cheaper without being weaker.
+``plan_target`` is pure — it names an outcome and touches nothing — so the whole outcome
+matrix is testable without Elasticsearch, Redis, or the database. A batch runs the same
+decisions as a single document and only shares the provider calls.
 """
 
 import logging
