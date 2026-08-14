@@ -67,7 +67,7 @@ integrity gate.
 | Eligibility and access metadata | `kitsune/retrieval/eligibility.py` |
 | Sync planning and execution | `kitsune/retrieval/sync.py` |
 | Celery tasks and wiki triggers | `kitsune/retrieval/tasks.py`, `signals.py` |
-| Index lifecycle and integrity | `search_init`, `sync_chunks`, `gate.py` |
+| Index lifecycle and integrity | `retrieval_init`, `sync_chunks`, `gate.py` |
 | Lexical, kNN, RRF, and response decoding | `kitsune/retrieval/query.py` |
 | Authoritative access checks | `kitsune/retrieval/access.py` |
 | Public-search orchestration | `kitsune/search/hybrid.py` |
@@ -248,7 +248,7 @@ With a configured embedding backend:
 
 ```bash
 # Create and stamp the first write generation. It is not served yet.
-./manage.py search_init
+./manage.py retrieval_init
 
 # Use the concrete index name printed above.
 ./manage.py sync_chunks --backfill --index sumo_chunkdocument_<timestamp>
@@ -257,7 +257,7 @@ With a configured embedding backend:
 ./manage.py sync_chunks --gate --index sumo_chunkdocument_<timestamp>
 
 # The command runs the gate again and atomically moves the read alias.
-./manage.py search_init --migrate-reads
+./manage.py retrieval_init --migrate-reads
 ```
 
 The Celery deployment must consume both `retrieval` and `retrieval_bulk`. `sync_chunks` enqueues
@@ -382,8 +382,8 @@ the current write target. Name a concrete index when operating on a rebuild gene
 A query-task-only change does not alter stored document vectors:
 
 ```bash
-./manage.py search_init
-./manage.py search_init --update-query-recipe
+./manage.py retrieval_init
+./manage.py retrieval_init --update-query-recipe
 ```
 
 The first command classifies the mismatch; the second explicitly updates the stable generation's
@@ -393,16 +393,16 @@ serving semantic queries.
 ### Rebuild for a document recipe or vector mapping change
 
 ```bash
-# Confirm search_init classifies the change as rebuild-requiring.
-./manage.py search_init
+# Confirm retrieval_init classifies the change as rebuild-requiring.
+./manage.py retrieval_init
 
 # Explicitly authorize a new physical generation and move writes to it.
-./manage.py search_init --start-rebuild
+./manage.py retrieval_init --start-rebuild
 
 # Populate the printed concrete generation, wait, repair if necessary, and promote.
 ./manage.py sync_chunks --backfill --index sumo_chunkdocument_<new-timestamp>
 ./manage.py sync_chunks --gate --index sumo_chunkdocument_<new-timestamp>
-./manage.py search_init --migrate-reads
+./manage.py retrieval_init --migrate-reads
 ```
 
 All mutations target only the write generation. Reads remain self-consistent on the old

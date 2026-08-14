@@ -97,7 +97,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"First run: created {name}. It is intentionally not yet a read target — "
                 f"backfill it with 'sync_chunks --backfill --index {name}', then promote it "
-                "with 'search_init --migrate-reads'."
+                "with 'retrieval_init --migrate-reads'."
             )
             return
 
@@ -106,13 +106,13 @@ class Command(BaseCommand):
                 self.stdout.write(
                     f"First-run population is in flight on {write_index}. Backfill it with "
                     f"'sync_chunks --backfill --index {write_index}', then promote it with "
-                    "'search_init --migrate-reads'."
+                    "'retrieval_init --migrate-reads'."
                 )
                 return
             self.stdout.write(
                 f"A migration is in flight: reads on {read_index}, writes on {write_index}. "
                 f"Finish it with 'sync_chunks --backfill --index {write_index}', then "
-                "'search_init --migrate-reads'."
+                "'retrieval_init --migrate-reads'."
             )
             return
 
@@ -126,17 +126,19 @@ class Command(BaseCommand):
         if action is IndexMetaAction.QUERY_META_UPDATE:
             raise CommandError(
                 f"{write_index} requires a query-recipe metadata update. Run "
-                "'search_init --update-query-recipe'; no corpus rebuild is required."
+                "'retrieval_init --update-query-recipe'; no corpus rebuild is required."
             )
         raise CommandError(
             f"{write_index} requires a paid full rebuild before it matches the configured "
-            "recipe/mapping. Run 'search_init --start-rebuild' to authorize it."
+            "recipe/mapping. Run 'retrieval_init --start-rebuild' to authorize it."
         )
 
     def _start_rebuild(self, meta):
         read_index, write_index = self._aliases()
         if not write_index:
-            raise CommandError("There is no generation to migrate from. Run 'search_init' first.")
+            raise CommandError(
+                "There is no generation to migrate from. Run 'retrieval_init' first."
+            )
         if read_index != write_index:
             if not read_index:
                 raise CommandError(
@@ -165,13 +167,15 @@ class Command(BaseCommand):
         self.stdout.write(
             f"Created {name} and moved writes to it. Reads stay on {read_index} "
             f"until the gate passes. Populate it with 'sync_chunks --backfill --index {name}', "
-            "then promote it with 'search_init --migrate-reads'."
+            "then promote it with 'retrieval_init --migrate-reads'."
         )
 
     def _migrate_reads(self, desired_meta, lease):
         read_index, write_index = self._aliases()
         if not write_index:
-            raise CommandError("There is no write generation to promote. Run 'search_init' first.")
+            raise CommandError(
+                "There is no write generation to promote. Run 'retrieval_init' first."
+            )
         mismatch = classify_meta_mismatch(read_index_meta(write_index), desired_meta)
         if mismatch is not IndexMetaAction.NONE:
             raise CommandError(
