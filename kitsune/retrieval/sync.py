@@ -53,6 +53,7 @@ from kitsune.retrieval.index import (
     update_chunks_metadata_for,
 )
 from kitsune.retrieval.locks import DocumentLockUnavailable, document_lock
+from kitsune.retrieval.validation import is_int, is_positive_int
 from kitsune.wiki.models import Document
 
 CONTENT_TYPE = "kb"
@@ -476,7 +477,7 @@ def ordered_document_ids(document_ids) -> tuple[int, ...]:
         raise TypeError("a batch must be an iterable of document ids")
     ids = set()
     for value in document_ids:
-        if isinstance(value, bool) or not isinstance(value, int):
+        if not is_int(value):
             raise TypeError(f"document id {value!r} is not an integer")
         ids.add(value)
     return tuple(sorted(ids))
@@ -484,7 +485,7 @@ def ordered_document_ids(document_ids) -> tuple[int, ...]:
 
 def _bulk_bound(name: str) -> int:
     value = getattr(settings, name, None)
-    if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+    if not is_positive_int(value):
         raise ImproperlyConfigured(f"{name} must be a positive integer")
     return value
 

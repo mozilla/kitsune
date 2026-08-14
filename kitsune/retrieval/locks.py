@@ -11,7 +11,6 @@ state.
 """
 
 import logging
-import math
 from contextlib import contextmanager
 from functools import cache
 from uuid import uuid4
@@ -23,6 +22,7 @@ from redis.exceptions import RedisError as RedisBackendFailure
 
 from kitsune.retrieval.events import emit
 from kitsune.retrieval.index import ChunkIdentity
+from kitsune.retrieval.validation import is_finite_number
 from kitsune.sumo.redis_utils import RedisError as RedisUnavailable
 from kitsune.sumo.redis_utils import redis_client
 
@@ -67,12 +67,7 @@ def _validated_ttl(ttl_seconds, *, name: str = "ttl_seconds") -> float:
     # A caller reading its own setting passes that setting's name.
     if ttl_seconds is None:
         ttl_seconds, name = settings.RETRIEVAL_LOCK_TTL_SECONDS, "RETRIEVAL_LOCK_TTL_SECONDS"
-    if (
-        isinstance(ttl_seconds, bool)
-        or not isinstance(ttl_seconds, int | float)
-        or not math.isfinite(ttl_seconds)
-        or ttl_seconds < _MIN_TTL_SECONDS
-    ):
+    if not is_finite_number(ttl_seconds) or ttl_seconds < _MIN_TTL_SECONDS:
         raise ImproperlyConfigured(
             f"{name} must be a positive, finite number of seconds of at least one millisecond"
         )

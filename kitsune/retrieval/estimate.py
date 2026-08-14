@@ -24,6 +24,7 @@ from kitsune.retrieval.sync import (
     max_batch_documents,
     max_batch_embedding_inputs,
 )
+from kitsune.retrieval.validation import is_positive_int
 
 
 @dataclass(frozen=True)
@@ -95,7 +96,7 @@ def _batched_requests(
 
 def estimate_ingestion(*, locales=(), page_size: int = DEFAULT_PAGE_SIZE) -> IngestionEstimate:
     """Measure the corpus and predict the provider requests made by a full backfill."""
-    if isinstance(page_size, bool) or not isinstance(page_size, int) or page_size <= 0:
+    if not is_positive_int(page_size):
         raise ValueError("page_size must be a positive integer")
 
     # Eligibility is enforced in SQL. Ingestion metadata is irrelevant to this estimate, so

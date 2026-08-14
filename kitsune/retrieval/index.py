@@ -27,6 +27,7 @@ from kitsune.retrieval.fingerprints import (
     scope_envelope,
     write_index_meta,
 )
+from kitsune.retrieval.validation import is_int, is_nonnegative_int, is_positive_int
 from kitsune.search.base import SumoDocument
 from kitsune.search.es_utils import es_client
 from kitsune.search.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
@@ -79,7 +80,7 @@ def _require_identity_component(value, name: str) -> None:
 
 
 def _require_int(value, name: str, *, minimum: int) -> None:
-    if not isinstance(value, int) or isinstance(value, bool) or value < minimum:
+    if not is_int(value) or value < minimum:
         raise InvalidDocumentState(f"{name} must be an integer >= {minimum}")
 
 
@@ -673,15 +674,13 @@ def read_index_summaries(
 
 def _chunk_summary(source: Mapping) -> StoredChunkSummary:
     position = source.get("position")
-    if not isinstance(position, int) or isinstance(position, bool) or position < 0:
+    if not is_nonnegative_int(position):
         position = None
     visibility = source.get("visibility")
     if not isinstance(visibility, str):
         visibility = None
     groups = source.get("access_group_ids")
-    if not isinstance(groups, list) or any(
-        not isinstance(group, int) or isinstance(group, bool) or group < 1 for group in groups
-    ):
+    if not isinstance(groups, list) or any(not is_positive_int(group) for group in groups):
         groups = None
     else:
         groups = tuple(groups)
@@ -757,10 +756,7 @@ def _verified_delete_by_query(index: str, query: dict) -> None:
     total = response.get("total")
     deleted = response.get("deleted")
     version_conflicts = response.get("version_conflicts")
-    valid_counts = all(
-        isinstance(value, int) and not isinstance(value, bool) and value >= 0
-        for value in (total, deleted, version_conflicts)
-    )
+    valid_counts = all(is_nonnegative_int(value) for value in (total, deleted, version_conflicts))
     if (
         response.get("timed_out") is not False
         or response.get("failures") != []

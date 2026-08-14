@@ -23,6 +23,7 @@ from requests import Timeout as RequestsTimeout
 
 from kitsune.retrieval.chunking import count_tokens
 from kitsune.retrieval.events import emit
+from kitsune.retrieval.validation import is_finite_number, is_positive_int
 
 FAKE_BACKEND = "fake"
 VERTEX_BACKEND = "vertex"
@@ -120,11 +121,7 @@ def _validate_recipe(recipe: EmbeddingRecipe) -> None:
 
     if recipe.provider not in _EMBED_BACKENDS:
         raise InvalidEmbeddingRecipe(f"unknown embedding backend {recipe.provider!r}")
-    if (
-        not isinstance(recipe.dimensions, int)
-        or isinstance(recipe.dimensions, bool)
-        or recipe.dimensions <= 0
-    ):
+    if not is_positive_int(recipe.dimensions):
         raise InvalidEmbeddingRecipe("embedding dimensions must be a positive integer")
     if not recipe.document_task:
         raise InvalidEmbeddingRecipe("document_task must not be empty")
@@ -330,12 +327,7 @@ def _configured_timeout_ms(task: Literal["document", "query"]) -> int:
         else "RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS"
     )
     timeout = getattr(settings, setting_name)
-    if (
-        isinstance(timeout, bool)
-        or not isinstance(timeout, int | float)
-        or not math.isfinite(timeout)
-        or timeout < MIN_EMBEDDING_TIMEOUT_SECONDS
-    ):
+    if not is_finite_number(timeout) or timeout < MIN_EMBEDDING_TIMEOUT_SECONDS:
         raise ImproperlyConfigured(
             f"{setting_name} must be a finite number of seconds of at least one millisecond"
         )
@@ -369,7 +361,7 @@ def provider_request_batch_lengths(input_tokens: Sequence[int]) -> tuple[int, ..
 
 def _configured_batch_size() -> int:
     batch_size = settings.RETRIEVAL_EMBEDDING_BATCH_SIZE
-    if not isinstance(batch_size, int) or isinstance(batch_size, bool) or batch_size <= 0:
+    if not is_positive_int(batch_size):
         raise ImproperlyConfigured("RETRIEVAL_EMBEDDING_BATCH_SIZE must be a positive integer")
     return batch_size
 
