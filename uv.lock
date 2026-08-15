@@ -890,14 +890,14 @@ wheels = [
 
 [[package]]
 name = "django-treebeard"
-version = "5.2.2"
+version = "7.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/43/0d/a7d57d9c9231f91f239ae49a256e0645da2646ed62e6f5150223fc88b427/django_treebeard-5.2.2.tar.gz", hash = "sha256:4863191d8cd63daaa985f0853293ccae8c459e3d44963c4e4eec80dae7156e98", size = 311070, upload-time = "2026-06-05T11:19:40.185Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/32/a9/bd9dd251cd327f8a06014a3bc9c3f057eb0bff4ab481ae04eab35fb1dafa/django_treebeard-7.0.0.tar.gz", hash = "sha256:54dc526a25c4e5083cf7ae7b37bf0a02c5c2878b693027663db7604de2869d7a", size = 229757, upload-time = "2026-08-04T04:31:20.197Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/64/ee/a2b4ae5e65beabc28eeb8f125bd2dab38ee110dac6020129fc35f6c7a998/django_treebeard-5.2.2-py3-none-any.whl", hash = "sha256:1ca902609860e1e9d87a531c34397ebca7f0d5fc72c6f8dd83c808eb6838c0c5", size = 80942, upload-time = "2026-06-05T11:19:38.467Z" },
+    { url = "https://files.pythonhosted.org/packages/cd/62/bb57239e4ce9061ab2fd44d91bb4462db3a91ab414b47cadba0952499fa8/django_treebeard-7.0.0-py3-none-any.whl", hash = "sha256:b730c1ae67da26a68a8a87a9378714ea1c3dd9dbcea200599fe904bb747ec472", size = 79759, upload-time = "2026-08-04T04:31:18.557Z" },
 ]
 
 [[package]]
@@ -1931,7 +1931,7 @@ requires-dist = [
     { name = "django-storages", extras = ["google"], specifier = ">=1.14.6,<2" },
     { name = "django-taggit", specifier = ">=6.1.0,<7" },
     { name = "django-timezone-field", specifier = "~=7.2" },
-    { name = "django-treebeard", specifier = ">=5.2.2" },
+    { name = "django-treebeard", specifier = ">=7.0.0" },
     { name = "django-user-agents", specifier = ">=0.4.0,<0.5" },
     { name = "django-waffle", specifier = ">=3.0.0,<6" },
     { name = "django-watchman", specifier = "==1.5.0" },
