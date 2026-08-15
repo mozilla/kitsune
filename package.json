@@ -81,7 +81,7 @@
     "kss": "^3.1.0",
     "locutus": "^3.0.32",
     "mini-css-extract-plugin": "^2.10.1",
-    "mocha": "^11.7.5",
+    "mocha": "^11.8.0",
     "onchange": "^7.1.0",
     "path-parse": "^1.0.7",
     "postcss": "^8.5.23",
