@@ -8,7 +8,7 @@
           data-product-id="{{ product.id }}"
           data-topic-ids='{{ product.topics_as_json }}'
           value="{{ product.id }}"{% if product.checked %} checked{% endif %}/>
-        <label for="id_product_{{ product.id }}">{{ product.title }}</label>
+        <label for="id_product_{{ product.id }}">{{ pgettext('DB: products.Product.title', product.title) }}</label>
       </div>
     </li>
     {% endfor %}

@@ -20,6 +20,7 @@ from django.utils import timezone
 from django.utils.cache import patch_vary_headers
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import pgettext
 from django.utils.translation.trans_real import parse_accept_lang_header
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
@@ -296,8 +297,15 @@ def document(request, document_slug, document=None):
     document_topics = doc.get_topics().order_by("display_order")
     if len(document_topics) > 0:
         topic = document_topics.first()
-        breadcrumbs.append((topic.get_absolute_url(product.slug), topic.title))
-    breadcrumbs.append((product.get_absolute_url(), product.title))
+        breadcrumbs.append(
+            (
+                topic.get_absolute_url(product.slug),
+                pgettext("DB: products.Topic.title", topic.title),
+            )
+        )
+    breadcrumbs.append(
+        (product.get_absolute_url(), pgettext("DB: products.Product.title", product.title))
+    )
     # The list above was built backwards, so flip this.
     breadcrumbs.reverse()
     votes = HelpfulVote.objects.filter(revision=doc.current_revision).aggregate(
@@ -347,7 +355,9 @@ def document(request, document_slug, document=None):
         "switching_devices_product": switching_devices_product,
         "switching_devices_topic": switching_devices_topic,
         "switching_devices_subtopics": switching_devices_subtopics,
-        "product_titles": ", ".join(p.title for p in sorted(products, key=lambda p: p.title)),
+        "product_titles": ", ".join(
+            sorted(pgettext("DB: products.Product.title", p.title) for p in products)
+        ),
         "related_docs": related_documents,
     }
 

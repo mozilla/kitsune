@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import pgettext
 
 from kitsune.products.models import ProductSupportConfig, Topic
 from kitsune.questions.events import QuestionReplyEvent
@@ -237,10 +238,17 @@ class EditQuestionForm(forms.ModelForm):
         return clean
 
 
+class TopicChoiceField(forms.ModelChoiceField):
+    """A topic choice field that localizes the topic titles stored in the database."""
+
+    def label_from_instance(self, obj):
+        return pgettext("DB: products.Topic.title", obj.title)
+
+
 class NewQuestionForm(EditQuestionForm):
     """Form to start a new question"""
 
-    category = forms.ModelChoiceField(
+    category = TopicChoiceField(
         label=CATEGORY_LABEL,
         queryset=Topic.objects.none(),
         # L10n: A default option for dropdown menus (displayed when none of the actual options is selected).

@@ -194,17 +194,18 @@
   <div class="question-entry--meta">
     <div class="question-entry--meta-primary">
       {% if question.product and _product_url %}
+      {% set _product_title = pgettext('DB: products.Product.title', question.product.title) %}
       <span class="question-entry--meta-item">
         <a class="question-entry--meta-item"
            href="{{ _product_url }}"
-           title="{{ _('{product} questions')|f(product=question.product.title) }}">
+           title="{{ _('{product} questions')|f(product=_product_title) }}">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                aria-hidden="true">
             <rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/>
             <rect x="2" y="14" width="7" height="7"/><rect x="15" y="14" width="7" height="7"/>
           </svg>
-          {{ question.product.title }}
+          {{ _product_title }}
         </a>
         {% if question.channel != "direct_support" and user_is_contributor and question.product_version %}
          {{ question.product_version }}
@@ -212,6 +213,7 @@
       </span>
       {% endif %}
       {% if question.topic and _topic_url %}
+        {% set _topic_title = pgettext('DB: products.Topic.title', question.topic.title) %}
         <a class="question-entry--meta-item"
            href="{{ _topic_url }}"
            {% if htmx_filters -%}
@@ -222,13 +224,13 @@
            hx-swap="outerHTML"
            hx-push-url="true"
            {%- endif %}
-           title="{{ _('{topic} questions')|f(topic=question.topic.title) }}">
+           title="{{ _('{topic} questions')|f(topic=_topic_title) }}">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                aria-hidden="true">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
           </svg>
-          {{ question.topic.title }}
+          {{ _topic_title }}
         </a>
       {% endif %}
       <span class="question-entry--meta-item">

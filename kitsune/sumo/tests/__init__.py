@@ -1,4 +1,5 @@
 import inspect
+from contextlib import contextmanager
 from functools import wraps
 from smtplib import SMTPRecipientsRefused
 from unittest import SkipTest
@@ -50,6 +51,27 @@ class TestCase(OriginalTestCase):
 
     def tearDown(self):
         super().tearDown()
+
+
+@contextmanager
+def translated_db_strings(locale, strings):
+    """
+    Install translations of database strings (see kitsune/sumo/db_strings.py) into the
+    catalog of the given locale, so tests can assert that a code path localizes them.
+
+    The strings are given as a dict keyed by (l10n context, English string), e.g.::
+
+        with translated_db_strings("de", {("DB: products.Topic.title", "Privacy"): "Daten"}):
+            ...
+    """
+    catalog = trans_real.translation(locale)._catalog
+    for (context, msgid), msgstr in strings.items():
+        catalog[f"{context}{trans_real.CONTEXT_SEPARATOR}{msgid}"] = msgstr
+    try:
+        yield
+    finally:
+        # The catalog can't have entries removed, so drop it and let it be rebuilt.
+        trans_real._translations.pop(locale, None)
 
 
 def attrs_eq(received, **expected):

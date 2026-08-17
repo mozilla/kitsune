@@ -13,7 +13,7 @@ from waffle.testutils import override_switch
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import SumoPyQuery as pq
-from kitsune.sumo.tests import TestCase, attrs_eq, get, post
+from kitsune.sumo.tests import TestCase, attrs_eq, get, post, translated_db_strings
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.config import (
@@ -501,6 +501,46 @@ class DocumentTests(TestCase):
         response = self.client.get(r.document.get_absolute_url())
         doc = pq(response.content)
         self.assertEqual(doc(".wiki-doc .share-link a").attr("href"), "https://www.example.org")
+
+
+class DocumentLocalizedTaxonomyTests(TestCase):
+    """The document template must localize the product and topic titles it displays."""
+
+    def setUp(self):
+        super().setUp()
+        self.product = ProductFactory(title="Firefox Focus", slug="focus")
+        self.topic = TopicFactory(
+            title="Privacy and security", slug="privacy-and-security", products=[self.product]
+        )
+        self.revision = ApprovedRevisionFactory(content="Test")
+        self.revision.document.products.add(self.product)
+        self.revision.document.topics.add(self.topic)
+        self.translations = {
+            ("DB: products.Topic.title", "Privacy and security"): "Datenschutz",
+            ("DB: products.Product.title", "Firefox Focus"): "Feuerfuchs Fokus",
+        }
+
+    def get_document(self):
+        with translated_db_strings("de", self.translations):
+            return self.client.get(
+                reverse("wiki.document", args=[self.revision.document.slug], locale="de")
+            )
+
+    def test_breadcrumbs(self):
+        response = self.get_document()
+        self.assertEqual(200, response.status_code)
+        crumbs = pq(response.content)("#main-breadcrumbs li").text()
+        assert "Datenschutz" in crumbs
+        assert "Privacy and security" not in crumbs
+        assert "Feuerfuchs Fokus" in crumbs
+        assert "Firefox Focus" not in crumbs
+
+    def test_metadata_product_titles(self):
+        response = self.get_document()
+        self.assertEqual(200, response.status_code)
+        metadata = pq(response.content)("#document_metadata .product").text()
+        assert "Feuerfuchs Fokus" in metadata
+        assert "Firefox Focus" not in metadata
 
 
 class RevisionTests(TestCase):

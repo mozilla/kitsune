@@ -223,7 +223,7 @@ class Topic(BaseProductTopic):
         # Check if the is_archived field has changed
         if self._topic_is_archived != self.is_archived:
             for product in self.products.all():
-                cache_key = f"hierarchical_topics_{product.slug}"
+                cache_key = f"hierarchical_topics_v2_{product.slug}"
                 cache.delete(cache_key)
 
         # Ensure that the "metadata" field is a dict.

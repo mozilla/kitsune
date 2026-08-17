@@ -1,10 +1,13 @@
 from django.contrib.contenttypes.models import ContentType
+from django.utils import translation
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.tests import TestCaseBase
+from kitsune.flagit.views import get_hierarchical_topics
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
-from kitsune.sumo.tests import get, post
+from kitsune.sumo.tests import get, post, translated_db_strings
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 
@@ -310,3 +313,43 @@ class ModerationFlagSupersedeTestCase(TestCaseBase):
         new_flag = FlaggedObject.objects.get(creator=self.flagger)
         self.assertEqual(new_flag.status, FlaggedObject.FLAG_DUPLICATE)
         self.assertEqual(new_flag.reason, FlaggedObject.REASON_CONTENT_MODERATION)
+
+
+class GetHierarchicalTopicsTestCase(TestCaseBase):
+    """Tests for the hierarchical topics used by the moderation and AAQ topic pickers."""
+
+    def setUp(self):
+        super().setUp()
+        self.product = ProductFactory()
+        parent = TopicFactory(title="Settings", products=[self.product])
+        TopicFactory(title="Extensions", parent=parent, products=[self.product])
+        self.translations = {
+            ("DB: products.Topic.title", "Settings"): "Einstellungen",
+            ("DB: products.Topic.title", "Extensions"): "Erweiterungen",
+        }
+
+    def test_titles_are_localized(self):
+        with (
+            translated_db_strings("de", self.translations),
+            translation.override("de"),
+        ):
+            topics = get_hierarchical_topics(self.product)
+
+        self.assertEqual(
+            [topic["title"] for topic in topics],
+            ["Einstellungen", "&nbsp;" * 4 + "Erweiterungen"],
+        )
+
+    def test_cached_titles_are_not_reused_across_locales(self):
+        with (
+            translated_db_strings("de", self.translations),
+            translation.override("de"),
+        ):
+            get_hierarchical_topics(self.product)
+
+        topics = get_hierarchical_topics(self.product)
+
+        self.assertEqual(
+            [topic["title"] for topic in topics],
+            ["Settings", "&nbsp;" * 4 + "Extensions"],
+        )

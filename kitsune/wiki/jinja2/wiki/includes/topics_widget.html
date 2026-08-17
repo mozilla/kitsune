@@ -8,7 +8,7 @@
         data-topic-id="{{ topic.id }}"
         data-product-ids='{{ topic.products_as_json }}'
         value="{{ topic.id }}"{% if topic.checked %} checked{% endif %}/>
-      <label for="id_topic_{{ topic.id }}">{{ topic.title }}</label>
+      <label for="id_topic_{{ topic.id }}">{{ pgettext('DB: products.Topic.title', topic.title) }}</label>
     </div>
       {% if topic.my_subtopics %}
         <ul class="checkbox-list--sublist">
@@ -21,7 +21,7 @@
                   data-parent-topic-id="{{ topic.id }}"
                   data-product-ids='{{ subtopic.products_as_json }}'
                   value="{{ subtopic.id }}"{% if subtopic.checked %} checked{% endif %}/>
-                <label for="id_topic_{{ subtopic.id }}">{{ subtopic.title }}</label>
+                <label for="id_topic_{{ subtopic.id }}">{{ pgettext('DB: products.Topic.title', subtopic.title) }}</label>
               </div>
             </li>
           {% endfor %}

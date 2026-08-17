@@ -2,12 +2,13 @@ import json
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.utils import translation
 
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.forms import NewQuestionForm, WatchQuestionForm
 from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
-from kitsune.sumo.tests import TestCase
+from kitsune.sumo.tests import TestCase, translated_db_strings
 from kitsune.users.tests import UserFactory
 
 
@@ -53,6 +54,27 @@ class TestNewQuestionForm(TestCase):
             is_active=True,
             default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
         )
+
+    def test_category_choices_are_localized(self):
+        """The topic titles offered by the AAQ form are stored in English in the database."""
+        TopicFactory(
+            title="Privacy and security",
+            slug="privacy-and-security",
+            products=[self.product],
+            in_aaq=True,
+        )
+        form = NewQuestionForm(product=self.product)
+
+        with (
+            translated_db_strings(
+                "de", {("DB: products.Topic.title", "Privacy and security"): "Datenschutz"}
+            ),
+            translation.override("de"),
+        ):
+            labels = [str(label) for _, label in form.fields["category"].choices]
+
+        assert "Datenschutz" in labels
+        assert "Privacy and security" not in labels
 
     def test_metadata_keys(self):
         """Test metadata_field_keys property."""
