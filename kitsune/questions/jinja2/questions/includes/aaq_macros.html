@@ -24,10 +24,10 @@
                     "link_name": "aaq-step-2",
                     "link_detail": "{{ product.slug }}"
                   }'>
-                  {{ product.title }}
+                  {{ pgettext('DB: products.Product.title', product.title) }}
                 </a>
               </h3>
-              <p class="card--desc">{{ product.description }}</p>
+              <p class="card--desc">{{ pgettext('DB: products.Product.description', product.description) }}</p>
             </div>
           </div>
         {% endfor %}
@@ -165,11 +165,12 @@
 
     <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
       <div class="sumo-l-two-col--main home-search-section--content">
+        {% set product_title = pgettext('DB: products.Product.title', product.title) %}
         {# L10n: Alt text for a product logo. #}
-        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="{{ _('{product} logo')|f(product=product.title) }}">
+        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="{{ _('{product} logo')|f(product=product_title) }}">
         <h1 class="sumo-page-heading ">
           {# L10n: A header, displayed when asking a new question with a product selected (e.g., on https://support.mozilla.org/questions/new/firefox). #}
-          <span class="product-title-text">{{ _('{product} Solutions')|f(product=product.title) }}</span>
+          <span class="product-title-text">{{ _('{product} Solutions')|f(product=product_title) }}</span>
         </h1>
         {{ search_box(settings, id='question-search-masthead', params=search_params) }}
 

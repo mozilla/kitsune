@@ -28,8 +28,9 @@ behaviors like editing them can be provided by overriding blocks.
     {% endif %}
 
     {% block formwrap %}
+    {% set product_title = pgettext('DB: products.Product.title', current_product.title) %}
     {# L10n: Alt text for a product logo. #}
-    <img class="page-heading--logo" src="{{ current_product.image_alternate_url }}" alt="{{ _('{product} logo')|f(product=current_product.title) }}" />
+    <img class="page-heading--logo" src="{{ current_product.image_alternate_url }}" alt="{{ _('{product} logo')|f(product=product_title) }}" />
 
     {# TODO: hook this up to the backend when subproducts are in.
     <div class="mzp-c-menu-list subheading-dropdown">
@@ -40,7 +41,7 @@ behaviors like editing them can be provided by overriding blocks.
       </ul>
     </div> #}
     <h3 class="mzp-c-menu-list-title sumo-card-heading back-to-product-list">
-      {{ current_product.title }}
+      {{ product_title }}
     </h3>
 
 
