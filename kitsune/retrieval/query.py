@@ -1,4 +1,3 @@
-import logging
 import math
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
@@ -11,7 +10,6 @@ from elasticsearch.dsl import Q as DSLQ
 from elasticsearch.dsl.query import Query
 from pyparsing import ParseException
 
-from kitsune.retrieval.events import emit
 from kitsune.retrieval.fingerprints import (
     SCOPE_ENVELOPE_VERSION,
     is_valid_similarity_floor,
@@ -129,6 +127,10 @@ class RetrievalResult[Candidate]:
     degraded: bool
     failed_shards: int
     took_ms: int
+    family_counts: tuple[tuple[str, int], ...] = ()
+    invalid_hit_count: int = 0
+    authorization_rejection_count: int = 0
+    db_ms: int = 0
 
 
 def _render(
@@ -281,7 +283,6 @@ def build_lexical_clauses(
     source_set = frozenset(sources)
     if not source_set or source_set - _SOURCES:
         raise ValueError("sources must contain 'kb', 'aaq', or both")
-
     try:
         parsed = Parser(query).parsed
     except ParseException:
@@ -352,6 +353,12 @@ def _standard_retriever(query: Query) -> dict:
     }
 
 
+def _exclude_families(query: Query, family_ids: Sequence[str]) -> Query:
+    if not family_ids:
+        return query
+    return DSLQ("bool", must=query, must_not=DSLQ("terms", family_id=list(family_ids)))
+
+
 def _build_retriever(
     query: str,
     *,
@@ -369,6 +376,8 @@ def _build_retriever(
     privileged: bool = False,
     default_operator: DefaultOperator = "AND",
     minimum_should_match: str | None = None,
+    include_lexical: bool = True,
+    excluded_family_ids: Collection[str] = (),
 ) -> dict:
     """Build the private native retriever tree used by serving and evaluation."""
     bounds = {
@@ -383,29 +392,48 @@ def _build_retriever(
         raise ValueError("num_candidates must be at least semantic_k")
     if locale_composition not in ("combined", "separate"):
         raise ValueError("locale_composition must be 'combined' or 'separate'")
+    if isinstance(excluded_family_ids, str | bytes) or any(
+        not isinstance(family_id, str)
+        or not family_id.startswith((f"{KB_SOURCE}:", f"{AAQ_SOURCE}:"))
+        for family_id in excluded_family_ids
+    ):
+        raise ValueError("excluded_family_ids must contain namespaced family IDs")
+    excluded_family_ids = tuple(sorted(set(excluded_family_ids)))
 
-    clauses = build_lexical_clauses(
-        query,
-        locale=locale,
-        sources=sources,
-        viewer_group_ids=viewer_group_ids,
-        product_id=product_id,
-        privileged=privileged,
-        default_operator=default_operator,
-        minimum_should_match=minimum_should_match,
-    )
-    requested = [
-        clause for clause in (clauses.kb_requested, clauses.aaq_requested) if clause is not None
-    ]
-    if locale_composition == "combined":
-        lexical = [*requested]
-        if clauses.kb_english is not None:
-            lexical.append(clauses.kb_english)
-        retrievers = [_standard_retriever(_one_or_many(lexical))]
-    else:
-        retrievers = [_standard_retriever(_one_or_many(requested))]
-        if clauses.kb_english is not None:
-            retrievers.append(_standard_retriever(clauses.kb_english))
+    retrievers = []
+    if include_lexical:
+        clauses = build_lexical_clauses(
+            query,
+            locale=locale,
+            sources=sources,
+            viewer_group_ids=viewer_group_ids,
+            product_id=product_id,
+            privileged=privileged,
+            default_operator=default_operator,
+            minimum_should_match=minimum_should_match,
+        )
+        requested = [
+            clause
+            for clause in (clauses.kb_requested, clauses.aaq_requested)
+            if clause is not None
+        ]
+        if locale_composition == "combined":
+            lexical = [*requested]
+            if clauses.kb_english is not None:
+                lexical.append(clauses.kb_english)
+            retrievers.append(
+                _standard_retriever(_exclude_families(_one_or_many(lexical), excluded_family_ids))
+            )
+        else:
+            retrievers.append(
+                _standard_retriever(
+                    _exclude_families(_one_or_many(requested), excluded_family_ids)
+                )
+            )
+            if clauses.kb_english is not None:
+                retrievers.append(
+                    _standard_retriever(_exclude_families(clauses.kb_english, excluded_family_ids))
+                )
 
     source_set = frozenset(sources)
     if query_vector is not None and KB_SOURCE in source_set:
@@ -427,6 +455,9 @@ def _build_retriever(
                     privileged=privileged,
                 ),
             ],
+            must_not=(
+                [DSLQ("terms", family_id=list(excluded_family_ids))] if excluded_family_ids else []
+            ),
         )
         retrievers.append(
             _standard_retriever(
@@ -443,6 +474,8 @@ def _build_retriever(
             )
         )
 
+    if not retrievers:
+        raise ValueError("retrieval requires a lexical or semantic child")
     if len(retrievers) == 1:
         return retrievers[0]
     return {
@@ -475,6 +508,9 @@ def _retrieve_unvalidated(
     default_operator: DefaultOperator = "AND",
     minimum_should_match: str | None = None,
     strict: bool = False,
+    include_lexical: bool = True,
+    excluded_family_ids: Collection[str] = (),
+    family_distribution_size: int | None = None,
 ) -> RetrievalResult[UnvalidatedCandidate]:
     """Execute one bounded search and return evidence that still requires authorization."""
     if not isinstance(page_size, int) or isinstance(page_size, bool) or page_size <= 0:
@@ -487,6 +523,12 @@ def _retrieve_unvalidated(
         raise ValueError("offset exceeds max_offset")
     if offset + page_size + 1 > rank_window_size:
         raise ValueError("the page and has_more probe must fit within rank_window_size")
+    if family_distribution_size is not None and (
+        not isinstance(family_distribution_size, int)
+        or isinstance(family_distribution_size, bool)
+        or family_distribution_size <= 0
+    ):
+        raise ValueError("family_distribution_size must be a positive integer")
 
     source_set = frozenset(sources)
     if KB_SOURCE in source_set and not kb_index:
@@ -513,6 +555,8 @@ def _retrieve_unvalidated(
         locale_composition=locale_composition,
         default_operator=default_operator,
         minimum_should_match=minimum_should_match,
+        include_lexical=include_lexical,
+        excluded_family_ids=excluded_family_ids,
     )
 
     highlight_fields = {}
@@ -529,13 +573,19 @@ def _retrieve_unvalidated(
         for field in ("question_content", "answer_content"):
             highlight_fields[f"{field}.{locale}"] = FVH_HIGHLIGHT_OPTIONS
 
+    aggregations: dict[str, dict] = {"families": {"cardinality": {"field": "family_id"}}}
+    if family_distribution_size is not None:
+        aggregations["family_distribution"] = {
+            "terms": {"field": "family_id", "size": family_distribution_size}
+        }
+
     response = es_client().search(
         index=indices,
         retriever=retriever,
         from_=offset,
         size=page_size + 1,
         collapse={"field": "family_id"},
-        aggregations={"families": {"cardinality": {"field": "family_id"}}},
+        aggregations=aggregations,
         source_includes=[
             "kind",
             "content_type",
@@ -570,11 +620,22 @@ def _retrieve_unvalidated(
     mode: RetrievalMode = (
         "hybrid" if query_vector is not None and KB_SOURCE in source_set else "lexical"
     )
-    return _decode_response(raw, page_size=page_size, offset=offset, mode=mode)
+    return _decode_response(
+        raw,
+        page_size=page_size,
+        offset=offset,
+        mode=mode,
+        include_family_distribution=family_distribution_size is not None,
+    )
 
 
 def _decode_response(
-    response: Mapping, *, page_size: int, offset: int, mode: RetrievalMode
+    response: Mapping,
+    *,
+    page_size: int,
+    offset: int,
+    mode: RetrievalMode,
+    include_family_distribution: bool = False,
 ) -> RetrievalResult[UnvalidatedCandidate]:
     shards = response.get("_shards")
     if not isinstance(shards, Mapping):
@@ -612,6 +673,31 @@ def _decode_response(
     ):
         raise InvalidRetrievalResponse("response has no valid approximate family count")
 
+    family_counts: tuple[tuple[str, int], ...] = ()
+    if include_family_distribution:
+        distribution = (
+            aggregations.get("family_distribution") if isinstance(aggregations, Mapping) else None
+        )
+        buckets = distribution.get("buckets") if isinstance(distribution, Mapping) else None
+        if not isinstance(buckets, list):
+            raise InvalidRetrievalResponse("response has no valid family distribution")
+        parsed_counts = []
+        for bucket in buckets:
+            if not isinstance(bucket, Mapping):
+                raise InvalidRetrievalResponse("response has an invalid family distribution")
+            family_id = bucket.get("key")
+            count = bucket.get("doc_count")
+            if (
+                not isinstance(family_id, str)
+                or not family_id
+                or not isinstance(count, int)
+                or isinstance(count, bool)
+                or count <= 0
+            ):
+                raise InvalidRetrievalResponse("response has an invalid family distribution")
+            parsed_counts.append((family_id, count))
+        family_counts = tuple(parsed_counts)
+
     candidates = []
     rejected = 0
     for rank, hit in enumerate(hits[:page_size], start=1):
@@ -619,13 +705,6 @@ def _decode_response(
             candidates.append(_decode_hit(hit, rank=offset + rank))
         except InvalidRetrievalResponse:
             rejected += 1
-    if rejected:
-        emit(
-            "retrieval.query.hits_rejected",
-            level=logging.WARNING,
-            rejected_count=rejected,
-            inspected_count=min(len(hits), page_size),
-        )
     return RetrievalResult(
         candidates=tuple(candidates),
         approximate_total=int(approximate_total),
@@ -634,6 +713,8 @@ def _decode_response(
         degraded=failed > 0 or timed_out or rejected > 0,
         failed_shards=failed,
         took_ms=took,
+        family_counts=family_counts,
+        invalid_hit_count=rejected,
     )
 
 

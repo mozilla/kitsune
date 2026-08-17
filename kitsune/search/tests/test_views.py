@@ -40,7 +40,8 @@ HYBRID_RESULT = HybridSearchResults(
     es_took_ms=2,
     total_ms=3,
     embedding_ms=1,
-    query_vector_cache_hit=False,
+    query_vector_cache_lookup="miss",
+    query_vector_cache_write="stored",
     fallback_reason=None,
 )
 

@@ -171,6 +171,41 @@ class LexicalClauseTests(SimpleTestCase):
 
 
 class NativeRetrieverCompositionTests(SimpleTestCase):
+    def test_evaluation_can_exclude_its_source_thread_and_run_semantic_only(self):
+        mixed = _build_retriever(
+            "firefox",
+            kb_index="retrieval-42",
+            locale="en-US",
+            sources={"kb", "aaq"},
+            viewer_group_ids=(),
+            product_id=None,
+            query_vector=[1.0, 0.0],
+            similarity_floor=0.75,
+            semantic_k=10,
+            num_candidates=20,
+            rank_window_size=20,
+            locale_composition="combined",
+            excluded_family_ids={"aaq:7"},
+        )
+        semantic = _build_retriever(
+            "firefox",
+            kb_index="retrieval-42",
+            locale="en-US",
+            sources={"kb"},
+            viewer_group_ids=(),
+            product_id=None,
+            query_vector=[1.0, 0.0],
+            similarity_floor=0.75,
+            semantic_k=10,
+            num_candidates=20,
+            rank_window_size=20,
+            locale_composition="combined",
+            include_lexical=False,
+        )
+
+        self.assertTrue(_contains(mixed, {"terms": {"family_id": ["aaq:7"]}}))
+        self.assertEqual(set(semantic["standard"]["query"]), {"knn"})
+
     def test_separate_locale_composition_uses_collapsed_children_and_distinct_bounds(self):
         retriever = _build_retriever(
             "firefox startup",
@@ -332,7 +367,15 @@ class BoundedRetrievalTests(SimpleTestCase):
                     {"extra_collapsed_family": True},
                 ]
             },
-            "aggregations": {"families": {"value": 3}},
+            "aggregations": {
+                "families": {"value": 3},
+                "family_distribution": {
+                    "buckets": [
+                        {"key": "kb:41", "doc_count": 4},
+                        {"key": "aaq:9", "doc_count": 1},
+                    ]
+                },
+            },
         }
         client = mock.Mock()
         client.search.return_value = response
@@ -354,10 +397,12 @@ class BoundedRetrievalTests(SimpleTestCase):
                 page_size=2,
                 offset=4,
                 max_offset=10,
+                family_distribution_size=10,
             )
 
         self.assertEqual([candidate.rank for candidate in result.candidates], [5, 6])
         self.assertEqual(result.approximate_total, 3)
+        self.assertEqual(result.family_counts, (("kb:41", 4), ("aaq:9", 1)))
         self.assertTrue(result.has_more)
         self.assertTrue(result.degraded)
         self.assertEqual(result.failed_shards, 1)
@@ -382,12 +427,10 @@ class BoundedRetrievalTests(SimpleTestCase):
         self.assertEqual(request["size"], 3)
 
         response["hits"]["hits"][0]["_source"]["scope"]["version"] = 2
-        with self.assertLogs("k.retrieval", level="WARNING") as logs:
-            degraded = _decode_response(response, page_size=2, offset=0, mode="hybrid")
+        degraded = _decode_response(response, page_size=2, offset=0, mode="hybrid")
         self.assertEqual([candidate.family_id for candidate in degraded.candidates], ["aaq:9"])
         self.assertTrue(degraded.degraded)
-        self.assertEqual(logs.records[0].getMessage(), "retrieval.query.hits_rejected")
-        self.assertEqual(logs.records[0].rejected_count, 1)
+        self.assertEqual(degraded.invalid_hit_count, 1)
 
         response["hits"]["hits"][0]["_source"]["scope"]["version"] = 1
         response["_shards"]["successful"] = 0

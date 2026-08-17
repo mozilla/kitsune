@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from unittest import mock
@@ -28,9 +29,10 @@ from kitsune.search.hybrid import (
 )
 
 RECIPE = EmbeddingRecipe("fake", "model", 2, "document", "query", "l2")
+STANDARD_LOG_FIELDS = set(logging.makeLogRecord({}).__dict__) | {"asctime", "message"}
 
 
-def _result(*candidates, degraded=False):
+def _result(*candidates, degraded=False, invalid_hits=0, authorization_rejections=0, db_ms=0):
     return RetrievalResult(
         candidates=candidates,
         approximate_total=len(candidates),
@@ -39,6 +41,9 @@ def _result(*candidates, degraded=False):
         degraded=degraded,
         failed_shards=1 if degraded else 0,
         took_ms=7,
+        invalid_hit_count=invalid_hits,
+        authorization_rejection_count=authorization_rejections,
+        db_ms=db_ms,
     )
 
 
@@ -52,9 +57,14 @@ def _request():
 def _run(**patches):
     defaults = {
         "resolve_read_target_and_recipe": ("retrieval-1", RECIPE),
-        "get_cached_query_vector": [1.0, 0.0],
+        "get_cached_query_vector": ([1.0, 0.0], "hit"),
         "cached_similarity_floor": 0.8,
-        "retrieve": _result(degraded=True),
+        "retrieve": _result(
+            degraded=True,
+            invalid_hits=2,
+            authorization_rejections=3,
+            db_ms=4,
+        ),
         "viewer_access_for": ViewerAccess(),
     }
     defaults.update(patches)
@@ -104,7 +114,10 @@ class HybridOrchestrationTests(SimpleTestCase):
         RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH="2<-1",
     )
     def test_cache_hit_avoids_limiter_and_preserves_bounded_diagnostics(self):
-        with _run() as (target, cached, limited, embed, floor, retrieve):
+        with (
+            _run() as (target, cached, limited, embed, floor, retrieve),
+            self.assertLogs("k.retrieval", level="INFO") as logs,
+        ):
             result = run_hybrid_search(
                 _request(),
                 query="firefox",
@@ -135,10 +148,46 @@ class HybridOrchestrationTests(SimpleTestCase):
         )
         self.assertEqual(retrieve.call_args.kwargs["query_vector"], [1.0, 0.0])
         self.assertEqual(retrieve.call_args.kwargs["offset"], 10)
-        self.assertTrue(result.query_vector_cache_hit)
+        self.assertEqual(result.query_vector_cache_lookup, "hit")
+        self.assertIsNone(result.query_vector_cache_write)
         self.assertTrue(result.degraded)
         self.assertEqual(result.failed_shards, 1)
         self.assertEqual(result.es_took_ms, 7)
+        [event] = [
+            record for record in logs.records if record.getMessage() == "retrieval.query.completed"
+        ]
+        self.assertEqual(event.outcome, "degraded")
+        self.assertEqual(event.mode, "lexical")
+        self.assertEqual(event.kb_result_count, 0)
+        self.assertEqual(event.aaq_result_count, 0)
+        self.assertEqual(event.failed_shard_count, 1)
+        self.assertEqual(event.invalid_hit_count, 2)
+        self.assertEqual(event.authorization_rejection_count, 3)
+        self.assertGreaterEqual(event.db_ms, 4)
+        self.assertEqual(event.cache_lookup, "hit")
+        self.assertIsNone(event.cache_write)
+        self.assertSetEqual(
+            set(event.__dict__) - STANDARD_LOG_FIELDS,
+            {
+                "aaq_result_count",
+                "authorization_rejection_count",
+                "cache_lookup",
+                "cache_write",
+                "db_ms",
+                "embedding_ms",
+                "es_ms",
+                "failed_shard_count",
+                "fallback_reason",
+                "kb_result_count",
+                "locale_fallback_count",
+                "mode",
+                "outcome",
+                "invalid_hit_count",
+                "requested_locale",
+                "total_ms",
+            },
+        )
+        self.assertNotIn("firefox", repr(event.__dict__))
 
     @override_settings(RETRIEVAL_QUERY_EMBEDDING_RATE="10/m")
     def test_paid_miss_embeds_once_while_expected_failures_use_lexical(self):
@@ -151,7 +200,10 @@ class HybridOrchestrationTests(SimpleTestCase):
         for limiter, vector, error, fallback in cases:
             with (
                 self.subTest(fallback=fallback),
-                _run(get_cached_query_vector=None) as (
+                _run(
+                    get_cached_query_vector=(None, "miss"),
+                    retrieve=_result(),
+                ) as (
                     _,
                     _,
                     limited,
@@ -159,10 +211,11 @@ class HybridOrchestrationTests(SimpleTestCase):
                     floor,
                     retrieve,
                 ),
+                self.assertLogs("k.retrieval", level="INFO") as logs,
             ):
                 limited.side_effect = limiter if isinstance(limiter, Exception) else None
                 limited.return_value = limiter if isinstance(limiter, bool) else False
-                embed.return_value = vector
+                embed.return_value = (vector, "stored") if vector is not None else None
                 embed.side_effect = error
                 result = run_hybrid_search(
                     _request(),
@@ -186,11 +239,146 @@ class HybridOrchestrationTests(SimpleTestCase):
                 floor.assert_not_called()
             self.assertEqual(retrieve.call_args.kwargs["query_vector"], vector)
             self.assertEqual(result.fallback_reason, fallback)
+            self.assertEqual(result.query_vector_cache_lookup, "miss")
+            self.assertEqual(
+                result.query_vector_cache_write,
+                "stored" if vector is not None else None,
+            )
+            [event] = [
+                record
+                for record in logs.records
+                if record.getMessage() == "retrieval.query.completed"
+            ]
+            self.assertEqual(event.fallback_reason, fallback)
+            self.assertEqual(event.outcome, "fallback" if fallback else "success")
+            self.assertEqual(event.cache_lookup, "miss")
+            self.assertEqual(event.cache_write, "stored" if vector is not None else None)
+
+    @override_settings(RETRIEVAL_QUERY_EMBEDDING_RATE="10/m")
+    def test_cache_lookup_and_write_failures_remain_distinct(self):
+        with (
+            _run(
+                get_cached_query_vector=(None, "read_failed"),
+                retrieve=_result(),
+            ) as (_, _, limited, embed, _, _),
+            self.assertLogs("k.retrieval", level="INFO") as logs,
+        ):
+            limited.return_value = False
+            embed.return_value = ([0.0, 1.0], "write_failed")
+            result = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"kb"},
+                product_id=None,
+                page=1,
+            )
+
+        self.assertEqual(result.query_vector_cache_lookup, "read_failed")
+        self.assertEqual(result.query_vector_cache_write, "write_failed")
+        [event] = [
+            record for record in logs.records if record.getMessage() == "retrieval.query.completed"
+        ]
+        self.assertEqual(event.cache_lookup, "read_failed")
+        self.assertEqual(event.cache_write, "write_failed")
+
+    @override_settings(RETRIEVAL_QUERY_EMBEDDING_RATE="10/m")
+    def test_cache_and_rate_limit_failures_leave_lexical_search_available(self):
+        with (
+            _run(
+                get_cached_query_vector=(None, "read_failed"),
+                retrieve=_result(),
+            ) as (
+                _,
+                _,
+                limited,
+                embed,
+                _,
+                retrieve,
+            ),
+            self.assertLogs("k.retrieval", level="INFO") as logs,
+        ):
+            limited.side_effect = RuntimeError("redis leaked-message")
+            result = run_hybrid_search(
+                _request(),
+                query="private-looking query",
+                locale="en-US",
+                sources={"kb"},
+                product_id=None,
+                page=1,
+            )
+
+        embed.assert_not_called()
+        self.assertIsNone(retrieve.call_args.kwargs["query_vector"])
+        self.assertEqual(result.mode, "lexical")
+        self.assertEqual(result.fallback_reason, "rate_limit_unavailable")
+        self.assertEqual(result.query_vector_cache_lookup, "read_failed")
+        self.assertIsNone(result.query_vector_cache_write)
+        [event] = [
+            record for record in logs.records if record.getMessage() == "retrieval.query.completed"
+        ]
+        self.assertEqual(event.outcome, "fallback")
+        self.assertNotIn("private-looking query", repr(event.__dict__))
+        self.assertNotIn("leaked-message", repr(event.__dict__))
+
+    def test_hard_failure_reports_only_phase_and_exception_type(self):
+        with (
+            _run() as (_, _, _, _, _, retrieve),
+            self.assertLogs("k.retrieval", level="ERROR") as logs,
+            self.assertRaisesRegex(RuntimeError, "provider leaked-message"),
+        ):
+            retrieve.side_effect = RuntimeError("provider leaked-message")
+            run_hybrid_search(
+                _request(),
+                query="private-looking query",
+                locale="en-US",
+                sources={"kb"},
+                product_id=None,
+                page=1,
+            )
+
+        [event] = logs.records
+        self.assertEqual(event.getMessage(), "retrieval.query.failed")
+        self.assertEqual(event.phase, "retrieval")
+        self.assertEqual(event.error_type, "RuntimeError")
+        self.assertGreaterEqual(event.total_ms, 0)
+        self.assertSetEqual(
+            set(event.__dict__) - STANDARD_LOG_FIELDS,
+            {"error_type", "phase", "total_ms"},
+        )
+        self.assertNotIn("private-looking query", repr(event.__dict__))
+        self.assertNotIn("leaked-message", repr(event.__dict__))
+
+    def test_observability_failure_does_not_change_the_search_outcome(self):
+        with (
+            _run(retrieve=_result()) as (_, _, _, _, _, retrieve),
+            mock.patch("kitsune.search.hybrid.emit", side_effect=RuntimeError("logging offline")),
+        ):
+            result = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"kb"},
+                product_id=None,
+                page=1,
+            )
+            retrieve.side_effect = ValueError("original failure")
+            with self.assertRaisesMessage(ValueError, "original failure"):
+                run_hybrid_search(
+                    _request(),
+                    query="firefox",
+                    locale="en-US",
+                    sources={"kb"},
+                    product_id=None,
+                    page=1,
+                )
+
+        self.assertEqual(result.mode, "lexical")
 
     def test_zero_rate_disables_semantic_and_invalid_rate_fails_visibly(self):
         with (
             override_settings(RETRIEVAL_QUERY_EMBEDDING_RATE="0/s"),
-            _run(get_cached_query_vector=None) as (_, _, limited, embed, _, _),
+            _run(get_cached_query_vector=(None, "miss")) as (_, _, limited, embed, _, _),
         ):
             result = run_hybrid_search(
                 _request(),
@@ -207,7 +395,7 @@ class HybridOrchestrationTests(SimpleTestCase):
 
         with (
             override_settings(RETRIEVAL_QUERY_EMBEDDING_RATE="ten/m"),
-            _run(get_cached_query_vector=None) as (_, _, limited, embed, _, retrieve),
+            _run(get_cached_query_vector=(None, "miss")) as (_, _, limited, embed, _, retrieve),
             self.assertRaises(ImproperlyConfigured),
         ):
             run_hybrid_search(
@@ -225,7 +413,14 @@ class HybridOrchestrationTests(SimpleTestCase):
 
     @override_settings(RETRIEVAL_QUERY_EMBEDDING_RATE="10/m")
     def test_missing_similarity_floor_fails_before_paid_embedding(self):
-        with _run(get_cached_query_vector=None) as (_, _, limited, embed, floor, retrieve):
+        with _run(get_cached_query_vector=(None, "miss")) as (
+            _,
+            _,
+            limited,
+            embed,
+            floor,
+            retrieve,
+        ):
             limited.return_value = False
             floor.side_effect = SimilarityFloorUnavailable("missing")
             with self.assertRaises(SimilarityFloorUnavailable):
@@ -257,7 +452,8 @@ class HybridOrchestrationTests(SimpleTestCase):
         embed.assert_not_called()
         floor.assert_not_called()
         self.assertIsNone(retrieve.call_args.kwargs["kb_index"])
-        self.assertIsNone(result.query_vector_cache_hit)
+        self.assertIsNone(result.query_vector_cache_lookup)
+        self.assertIsNone(result.query_vector_cache_write)
 
 
 class ResultConversionTests(SimpleTestCase):

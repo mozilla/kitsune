@@ -182,17 +182,22 @@ class CandidateAuthorizationTests(TestCase):
         deleted.delete()
         Document.objects.filter(pk=stale_translation.pk).update(is_archived=True)
 
-        indexed = _result(
-            _passage(stale_translation),
-            _passage(no_revision),
-            deleted_passage,
-            replace(_passage(no_revision), object_id="²", family_id="kb:²"),
+        indexed = replace(
+            _result(
+                _passage(stale_translation),
+                _passage(no_revision),
+                deleted_passage,
+                replace(_passage(no_revision), object_id="²", family_id="kb:²"),
+            ),
+            invalid_hit_count=2,
         )
         with self.assertNumQueries(1):
             result, _ = _retrieve(indexed)
 
         self.assertEqual(result.candidates, ())
         self.assertEqual(result.approximate_total, 4)
+        self.assertEqual(result.invalid_hit_count, 2)
+        self.assertEqual(result.authorization_rejection_count, 4)
 
     def test_authorizes_a_prefix_before_selecting_a_later_page(self):
         wrong_product = _approved(locale="en-US")

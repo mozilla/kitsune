@@ -1,164 +1,311 @@
 import json
-import tempfile
-from io import StringIO
+from dataclasses import replace
 from math import log2
-from pathlib import Path
 from unittest import mock
 
-from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase
 
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
+from kitsune.retrieval.embeddings import EmbeddingRecipe
 from kitsune.retrieval.evaluation import (
     DERIVATION,
-    GoldenPair,
-    GoldenSet,
-    build_golden_set,
-    score_lexical_search,
+    EvaluationArtifact,
+    EvaluationConfig,
+    EvaluationQuery,
+    InvalidEvaluationArtifact,
+    InvalidEvaluationResult,
+    _current_lexical_ranking,
+    _run_retrieval,
+    build_positive_artifact,
+    evaluate_artifacts,
+    freeze_no_answer_artifact,
+    score_no_answer,
+    score_rankings,
+    validate_split_coverage,
 )
+from kitsune.retrieval.query import RetrievalResult
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
-def _article(title, slug, locale="en-US", parent=None):
-    document = DocumentFactory(title=title, slug=slug, locale=locale, parent=parent)
+def _article(title, slug, locale="en-US", parent=None, **kwargs):
+    document = DocumentFactory(title=title, slug=slug, locale=locale, parent=parent, **kwargs)
     ApprovedRevisionFactory(document=document, content=f"How to {title}.")
     document.refresh_from_db()
     return document
 
 
-def _solved(title, content, locale="en-US", product=None):
-    question = QuestionFactory(title=title, content=title, locale=locale, product=product)
+def _solved(title, content, locale="en-US", **kwargs):
+    question = QuestionFactory(title=title, content=title, locale=locale, **kwargs)
     answer = AnswerFactory(question=question, content=content)
     question.solution = answer
     question.save()
     return question
 
 
-class GoldenSetDerivationTests(TestCase):
-    def setUp(self):
-        super().setUp()
-        self.article = _article("Clear cookies", "clear-cookies")
+def _query(query_id, relevant=()):
+    return EvaluationQuery(
+        query_id=query_id,
+        query="firefox problem",
+        locale="en-US",
+        relevant_family_ids=tuple(relevant),
+        source_family_id=query_id if relevant else None,
+        product_id=None,
+        split="tuning",
+    )
 
-    def test_derives_a_pair_from_an_accepted_solution(self):
-        question = _solved(
-            "how do I delete cookies",
-            "See https://support.mozilla.org/en-US/kb/clear-cookies.",
+
+class EvaluationArtifactTests(TestCase):
+    def test_positive_artifact_uses_namespaced_families_and_frozen_metadata(self):
+        original = _article("Clear cookies", "clear-cookies")
+        _article("Cookies loeschen", "cookies-loeschen", "de", parent=original)
+        question = _solved("wie loesche ich cookies", "See [[Cookies loeschen]].", locale="de")
+
+        artifact = build_positive_artifact(
+            environment="stage",
+            read_generation="sumo_chunkdocument_20260813010101",
+        )
+        restored = EvaluationArtifact.from_json(json.loads(artifact.to_json()))
+
+        self.assertEqual(restored, artifact)
+        self.assertEqual(artifact.derivation, DERIVATION)
+        self.assertEqual(artifact.environment, "stage")
+        self.assertEqual(artifact.read_generation, "sumo_chunkdocument_20260813010101")
+        self.assertEqual(artifact.queries[0].query_id, f"aaq:{question.id}")
+        self.assertEqual(artifact.queries[0].relevant_family_ids, (f"kb:{original.id}",))
+        self.assertIn(artifact.queries[0].split, ("tuning", "holdout"))
+
+    def test_no_answer_artifact_rejects_changed_content(self):
+        artifact = freeze_no_answer_artifact(
+            [{"query": "unrelated words", "locale": "en-US"}],
+            environment="production",
+            read_generation="sumo_chunkdocument_20260813010101",
+        )
+        payload = json.loads(artifact.to_json())
+        payload["queries"][0]["query"] = "changed words"
+
+        with self.assertRaisesMessage(InvalidEvaluationArtifact, "digest"):
+            EvaluationArtifact.from_json(payload)
+
+        payload["digest"] = 7
+        with self.assertRaises(InvalidEvaluationArtifact):
+            EvaluationArtifact.from_json(payload)
+
+    def test_an_artifact_must_support_both_evaluation_splits(self):
+        artifact = freeze_no_answer_artifact(
+            [{"query": "unrelated words", "locale": "en-US"}],
+            environment="production",
+            read_generation="sumo_chunkdocument_20260813010101",
         )
 
-        [pair] = build_golden_set().pairs
+        with self.assertRaisesMessage(InvalidEvaluationArtifact, "tuning and one holdout"):
+            validate_split_coverage(artifact)
 
-        self.assertEqual(pair.query, question.title)
-        self.assertEqual(pair.locale, "en-US")
-        self.assertEqual(pair.relevant_document_ids, (self.article.id,))
-        self.assertEqual(pair.question_id, question.id)
 
-    def test_wiki_links_use_the_canonical_document_family(self):
-        _article("Cookies loeschen", "cookies-loeschen", "de", parent=self.article)
-        _solved("wie loesche ich cookies", "See [[Cookies loeschen]].", locale="de")
+class EvaluationMetricTests(SimpleTestCase):
+    def test_scores_multilabel_relevance_and_misses(self):
+        queries = (_query("aaq:1", ("kb:5", "kb:6")), _query("aaq:2", ("kb:9",)))
 
-        [pair] = build_golden_set().pairs
+        score = score_rankings(queries, {"aaq:1": ["kb:5"], "aaq:2": []})
 
-        self.assertEqual(pair.relevant_document_ids, (self.article.id,))
+        self.assertEqual(score.recall_at_k[1], 0.25)
+        self.assertAlmostEqual(score.ndcg_at_10, 1 / (1 + 1 / log2(3)) / 2)
+        self.assertEqual(score.empty_results, 1)
+        self.assertEqual(score.missed_query_ids, ("aaq:2",))
 
-    def test_rejects_external_and_product_incompatible_links(self):
-        _solved(
-            "external",
-            "See https://example.com/en-US/kb/clear-cookies.",
-        )
-        _solved(
-            "wrong product",
-            "See /kb/clear-cookies.",
-            product=ProductFactory(),
-        )
+        with self.assertRaisesMessage(ValueError, "at least one label"):
+            score_rankings((_query("no-answer:1"),), {"no-answer:1": []})
 
-        self.assertEqual(build_golden_set().pairs, ())
+    def test_keeps_no_answer_semantic_and_hybrid_returns_separate(self):
+        queries = (_query("no-answer:1"), _query("no-answer:2"))
 
-    def test_keeps_distinct_observations_with_the_same_query(self):
-        second = _article("Clear cache", "clear-cache")
-        _solved("same words", "See /kb/clear-cookies.")
-        _solved("same words", "See /kb/clear-cache.")
-
-        golden = build_golden_set()
-
-        self.assertEqual(
-            {pair.relevant_document_ids for pair in golden.pairs},
-            {(self.article.id,), (second.id,)},
+        score = score_no_answer(
+            queries,
+            {"no-answer:1": ["kb:1"], "no-answer:2": []},
+            {"no-answer:1": ["kb:1"], "no-answer:2": ["aaq:7"]},
         )
 
+        self.assertEqual(score["semantic_kb_returns"], 1)
+        self.assertEqual(score["full_hybrid_returns"], 2)
+        self.assertEqual(score["semantic_returned_query_ids"], ["no-answer:1"])
 
-class GoldenSetFormatTests(SimpleTestCase):
-    def test_round_trips_through_json(self):
-        golden = GoldenSet(
-            generation="2026-08-06",
-            derivation=DERIVATION,
-            pairs=(GoldenPair("why is it slow", "en-US", (9, 7), 42),),
+    def test_configuration_records_the_fixed_rrf_policy(self):
+        config = EvaluationConfig(
+            similarity_floor=0.75,
+            similarity_profile="a" * 64,
+            semantic_k=100,
+            num_candidates=200,
+            rank_window_size=100,
+            default_operator="OR",
+            minimum_should_match="2<-1",
+            locale_composition="combined",
         )
 
-        restored = GoldenSet.from_json(json.loads(golden.to_json()))
+        self.assertEqual(config.to_payload()["rank_constant"], 60)
+        self.assertEqual(config.to_payload()["minimum_should_match"], "2<-1")
 
-        self.assertEqual(
-            restored,
-            GoldenSet(
-                "2026-08-06", DERIVATION, (GoldenPair("why is it slow", "en-US", (7, 9), 42),)
+        with self.assertRaisesMessage(ValueError, "applies only to OR"):
+            replace(config, default_operator="AND")
+
+
+class EvaluationRunTests(TestCase):
+    def test_legacy_search_names_a_malformed_index_result(self):
+        with (
+            mock.patch("kitsune.retrieval.evaluation.WikiSearch") as wiki_search,
+            self.assertRaisesMessage(
+                InvalidEvaluationResult,
+                "repair or reindex WikiDocument before evaluation",
             ),
+        ):
+            wiki_search.return_value.run.side_effect = KeyError("en-US")
+            _current_lexical_ranking(_query("aaq:1"), None)
+
+    def test_new_modes_cross_the_database_authorization_boundary(self):
+        config = EvaluationConfig(
+            similarity_floor=0.75,
+            similarity_profile="a" * 64,
+            semantic_k=10,
+            num_candidates=20,
+            rank_window_size=20,
+            default_operator="AND",
+            minimum_should_match=None,
+            locale_composition="combined",
+        )
+        indexed = mock.sentinel.indexed
+        authorized = mock.sentinel.authorized
+
+        with (
+            mock.patch(
+                "kitsune.retrieval.evaluation._retrieve_unvalidated",
+                return_value=indexed,
+            ),
+            mock.patch(
+                "kitsune.retrieval.evaluation.authorize_candidates",
+                return_value=authorized,
+            ) as authorize,
+        ):
+            result = _run_retrieval(
+                _query("aaq:1", ("kb:1",)),
+                vector=None,
+                config=config,
+                read_generation="retrieval-1",
+                sources={"kb"},
+            )
+
+        self.assertIs(result, authorized)
+        authorize.assert_called_once_with(
+            indexed,
+            viewer_access=mock.ANY,
+            locale="en-US",
+            product_id=None,
+            page_size=10,
+            page_offset=0,
         )
 
+    def test_runs_fixed_modes_and_excludes_the_source_question(self):
+        article = _article("Clear cookies", "clear-cookies")
+        question = _solved("delete cookies", "See /kb/clear-cookies.")
+        generation = "sumo_chunkdocument_20260813010101"
+        config = EvaluationConfig(
+            similarity_floor=0.75,
+            similarity_profile="a" * 64,
+            semantic_k=10,
+            num_candidates=20,
+            rank_window_size=20,
+            default_operator="OR",
+            minimum_should_match="2<75%",
+            locale_composition="combined",
+        )
+        recipe = EmbeddingRecipe("fake", "", 2, "doc", "query", "none")
 
-class LexicalScoringTests(TestCase):
-    def test_scores_against_the_full_ideal_ranking(self):
-        golden = GoldenSet("g", DERIVATION, (GoldenPair("q", "en-US", (5, 6), 1),))
-        with mock.patch("kitsune.retrieval.evaluation._ranked_document_ids", return_value=[5]):
-            score = score_lexical_search(golden)
+        def run(evaluation_query, *, sources, excluded_family_ids=(), **kwargs):
+            if "aaq" in sources and evaluation_query.source_family_id:
+                self.assertEqual(excluded_family_ids, (f"aaq:{question.id}",))
+            family = (
+                evaluation_query.relevant_family_ids[0]
+                if evaluation_query.relevant_family_ids
+                else "kb:99"
+            )
+            candidate = mock.Mock(family_id=family)
+            return RetrievalResult(
+                (candidate,),
+                1,
+                False,
+                "hybrid",
+                False,
+                0,
+                1,
+                ((family, 2),),
+            )
 
-        self.assertEqual(score.recall_at_k[1], 0.5)
-        self.assertAlmostEqual(score.ndcg_at_10, 1 / (1 + 1 / log2(3)))
+        with (
+            mock.patch("kitsune.retrieval.evaluation._split_for", return_value="tuning"),
+            mock.patch("kitsune.retrieval.evaluation.get_embeddings", return_value=[[1, 0]] * 2),
+            mock.patch("kitsune.retrieval.evaluation._run_retrieval", side_effect=run),
+            mock.patch(
+                "kitsune.retrieval.evaluation._current_lexical_ranking",
+                return_value=[f"kb:{article.id}"],
+            ),
+        ):
+            positive = build_positive_artifact(environment="stage", read_generation=generation)
+            no_answer = freeze_no_answer_artifact(
+                [{"query": "no useful answer", "locale": "en-US"}],
+                environment="stage",
+                read_generation=generation,
+            )
+            report = evaluate_artifacts(
+                positive,
+                no_answer,
+                environment="stage",
+                read_generation=generation,
+                recipe=recipe,
+                config=config,
+                split="tuning",
+            )
 
-    def test_uses_the_production_search_with_the_pairs_scope(self):
+        self.assertEqual(report["positive"]["rrf"]["recall_at_k"]["1"], 1.0)
+        self.assertEqual(report["no_answer"]["semantic_kb_returns"], 1)
+        self.assertFalse(report["mixed"]["unlabelled_aaq_treated_as_irrelevant"])
+
+    def test_evaluation_rejects_a_product_removed_after_freezing(self):
         product = ProductFactory()
-        golden = GoldenSet(
-            "g",
-            DERIVATION,
-            (GoldenPair("cookies", "de", (1,), 1, product_id=product.id),),
+        _article("Clear cookies", "clear-cookies", products=[product])
+        _solved(
+            "delete cookies",
+            "See /kb/clear-cookies.",
+            product=product,
+        )
+        generation = "sumo_chunkdocument_20260813010101"
+        config = EvaluationConfig(
+            similarity_floor=0.75,
+            similarity_profile="a" * 64,
+            semantic_k=10,
+            num_candidates=20,
+            rank_window_size=20,
+            default_operator="AND",
+            minimum_should_match=None,
+            locale_composition="combined",
         )
 
-        with mock.patch("kitsune.retrieval.evaluation.WikiSearch") as search:
-            search.return_value.results = [{"id": "1"}]
-            score = score_lexical_search(golden)
-
-        self.assertEqual(
-            search.call_args.kwargs, {"query": "cookies", "locale": "de", "product": product}
-        )
-        search.return_value.run.assert_called_once_with(slice(0, 10))
-        self.assertEqual(score.recall_at_k[1], 1.0)
-
-
-class BaselineCommandTests(TestCase):
-    def test_writes_and_reloads_the_derived_fixture(self):
-        _article("Clear cookies", "clear-cookies")
-        _solved("how do I delete cookies", "See /kb/clear-cookies.")
-
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "golden.json"
-            output = StringIO()
-            call_command(
-                "relevance_baseline",
-                "--derive-only",
-                "--write",
-                str(path),
-                stdout=output,
+        with mock.patch("kitsune.retrieval.evaluation._split_for", return_value="tuning"):
+            positive = build_positive_artifact(environment="stage", read_generation=generation)
+            no_answer = freeze_no_answer_artifact(
+                [{"query": "no useful answer", "locale": "en-US"}],
+                environment="stage",
+                read_generation=generation,
             )
-
-            payload = json.loads(path.read_text())
-            self.assertEqual(len(payload["pairs"]), 1)
-            self.assertIn("user-generated", output.getvalue())
-
-            reloaded = StringIO()
-            call_command(
-                "relevance_baseline",
-                "--derive-only",
-                "--read",
-                str(path),
-                stdout=reloaded,
-            )
-            self.assertIn("Golden set:   1 pairs", reloaded.getvalue())
+            with (
+                mock.patch(
+                    "kitsune.retrieval.evaluation.Product.objects.in_bulk", return_value={}
+                ),
+                self.assertRaisesMessage(ValueError, "product that no longer exists"),
+            ):
+                evaluate_artifacts(
+                    positive,
+                    no_answer,
+                    environment="stage",
+                    read_generation=generation,
+                    recipe=EmbeddingRecipe("fake", "", 2, "doc", "query", "none"),
+                    config=config,
+                    split="tuning",
+                )
