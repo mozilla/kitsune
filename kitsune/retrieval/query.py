@@ -1,4 +1,3 @@
-import math
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
@@ -21,6 +20,12 @@ from kitsune.retrieval.index import (
     PUBLIC_VISIBILITY,
     RESTRICTED_VISIBILITY,
     SIMILARITY,
+)
+from kitsune.retrieval.validation import (
+    is_finite_number,
+    is_int,
+    is_nonnegative_int,
+    is_positive_int,
 )
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.documents import QuestionDocument
@@ -194,8 +199,7 @@ def _kb_filters(
     privileged: bool,
 ) -> list[Query]:
     if isinstance(viewer_group_ids, str | bytes) or any(
-        not isinstance(group_id, int) or isinstance(group_id, bool) or group_id <= 0
-        for group_id in viewer_group_ids
+        not is_positive_int(group_id) for group_id in viewer_group_ids
     ):
         raise ValueError("viewer_group_ids must contain only positive integers")
 
@@ -325,9 +329,8 @@ def build_lexical_clauses(
     )
 
 
-def similarity_floor_for_index(index: str) -> float:
-    """Resolve the exact configured floor for one concrete index similarity profile."""
-    meta = read_index_meta(index)
+def similarity_floor_for_meta(meta: dict) -> float:
+    """Resolve the exact configured floor for one validated index ``_meta``'s profile."""
     _, fingerprint = similarity_profile_fingerprint(meta)
     floors = settings.RETRIEVAL_KNN_SIMILARITY_FLOORS
     floor = floors.get(fingerprint) if isinstance(floors, Mapping) else None
@@ -336,6 +339,11 @@ def similarity_floor_for_index(index: str) -> float:
             f"no valid RETRIEVAL_KNN_SIMILARITY_FLOORS entry for profile {fingerprint}"
         )
     return float(floor)
+
+
+def similarity_floor_for_index(index: str) -> float:
+    """Resolve the exact configured floor for one concrete index similarity profile."""
+    return similarity_floor_for_meta(read_index_meta(index))
 
 
 def _one_or_many(queries: Sequence[Query]) -> Query:
@@ -386,7 +394,7 @@ def _build_retriever(
         "rank_window_size": rank_window_size,
     }
     for name, value in bounds.items():
-        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+        if not is_positive_int(value):
             raise ValueError(f"{name} must be a positive integer")
     if num_candidates < semantic_k:
         raise ValueError("num_candidates must be at least semantic_k")
@@ -513,11 +521,11 @@ def _retrieve_unvalidated(
     family_distribution_size: int | None = None,
 ) -> RetrievalResult[UnvalidatedCandidate]:
     """Execute one bounded search and return evidence that still requires authorization."""
-    if not isinstance(page_size, int) or isinstance(page_size, bool) or page_size <= 0:
+    if not is_positive_int(page_size):
         raise ValueError("page_size must be a positive integer")
-    if not isinstance(offset, int) or isinstance(offset, bool) or offset < 0:
+    if not is_nonnegative_int(offset):
         raise ValueError("offset must be a non-negative integer")
-    if not isinstance(max_offset, int) or isinstance(max_offset, bool) or max_offset < 0:
+    if not is_nonnegative_int(max_offset):
         raise ValueError("max_offset must be a non-negative integer")
     if offset > max_offset:
         raise ValueError("offset exceeds max_offset")
@@ -642,9 +650,9 @@ def _decode_response(
         raise InvalidRetrievalResponse("response has no shard status")
     successful = shards.get("successful")
     failed = shards.get("failed")
-    if not isinstance(successful, int) or isinstance(successful, bool) or successful < 0:
+    if not is_nonnegative_int(successful):
         raise InvalidRetrievalResponse("response has invalid shard counts")
-    if not isinstance(failed, int) or isinstance(failed, bool) or failed < 0:
+    if not is_nonnegative_int(failed):
         raise InvalidRetrievalResponse("response has invalid shard counts")
     if successful == 0:
         raise InvalidRetrievalResponse("no Elasticsearch shard completed successfully")
@@ -653,7 +661,7 @@ def _decode_response(
     took = response.get("took")
     if not isinstance(timed_out, bool):
         raise InvalidRetrievalResponse("response has invalid timeout status")
-    if not isinstance(took, int) or isinstance(took, bool) or took < 0:
+    if not is_nonnegative_int(took):
         raise InvalidRetrievalResponse("response has invalid timing")
 
     hits_block = response.get("hits")
@@ -665,9 +673,7 @@ def _decode_response(
     families = aggregations.get("families") if isinstance(aggregations, Mapping) else None
     approximate_total = families.get("value") if isinstance(families, Mapping) else None
     if (
-        not isinstance(approximate_total, int | float)
-        or isinstance(approximate_total, bool)
-        or not math.isfinite(approximate_total)
+        not is_finite_number(approximate_total)
         or approximate_total < 0
         or not float(approximate_total).is_integer()
     ):
@@ -726,7 +732,7 @@ def _decode_hit(hit: object, *, rank: int) -> UnvalidatedCandidate:
     score = hit.get("_score")
     if not isinstance(family_id, str) or not family_id:
         raise InvalidRetrievalResponse("hit has no family identity")
-    if not isinstance(score, int | float) or isinstance(score, bool) or not math.isfinite(score):
+    if not is_finite_number(score):
         raise InvalidRetrievalResponse("hit has no finite score")
     provenance = _provenance(hit.get("matched_queries"))
 
@@ -760,7 +766,7 @@ def _decode_passage(
         raise InvalidRetrievalResponse("KB evidence has an invalid object identity")
     if not isinstance(locale, str) or not locale or ":" in locale:
         raise InvalidRetrievalResponse("KB evidence has an invalid locale")
-    if not isinstance(position, int) or isinstance(position, bool) or position < 0:
+    if not is_nonnegative_int(position):
         raise InvalidRetrievalResponse("KB evidence has an invalid position")
     if not isinstance(heading_path, str) or not isinstance(category, str):
         raise InvalidRetrievalResponse("KB evidence has invalid metadata")
@@ -790,7 +796,7 @@ def _decode_question(
     provenance: frozenset[RetrievalProvenance],
 ) -> LegacyQuestion:
     question_id = source.get("question_id")
-    if isinstance(question_id, int) and not isinstance(question_id, bool):
+    if is_int(question_id):
         question_id = str(question_id)
     locale = source.get("locale")
     if (
@@ -815,7 +821,7 @@ def _decode_question(
     num_votes = source.get("question_num_votes")
     if not isinstance(is_solved, bool):
         raise InvalidRetrievalResponse("AAQ evidence has an invalid solved state")
-    if not isinstance(num_votes, int) or isinstance(num_votes, bool):
+    if not is_int(num_votes):
         raise InvalidRetrievalResponse("AAQ evidence has an invalid vote count")
 
     answer_content = source.get("answer_content")

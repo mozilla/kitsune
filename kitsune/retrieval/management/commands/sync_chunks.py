@@ -83,7 +83,7 @@ class Command(BaseCommand):
         target = options["index"] or resolve_write_target()
         if not target:
             raise CommandError(
-                "No retrieval write index. Run search_init first, or name one with --index."
+                "No retrieval write index. Run retrieval_init first, or name one with --index."
             )
         try:
             recipe_for_index(target)

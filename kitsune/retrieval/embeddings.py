@@ -11,18 +11,15 @@ from typing import Literal, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from google.api_core import exceptions as gexc
 from google.auth.exceptions import GoogleAuthError
 from google.genai.errors import APIError
 from google.genai.types import EmbedContentConfig, HttpOptions
-from httpx import TimeoutException as HttpxTimeout
 from httpx import TransportError as HttpxTransportError
 from langchain_google_vertexai import VertexAIEmbeddings
-from requests import RequestException
-from requests import Timeout as RequestsTimeout
 
 from kitsune.retrieval.chunking import count_tokens
 from kitsune.retrieval.events import emit
+from kitsune.retrieval.validation import is_finite_number, is_int, is_positive_int
 
 FAKE_BACKEND = "fake"
 VERTEX_BACKEND = "vertex"
@@ -66,7 +63,6 @@ _QUERY_UNAVAILABLE_ERRORS = (
     APIError,
     GoogleAuthError,
     HttpxTransportError,
-    RequestException,
 )
 
 
@@ -120,11 +116,7 @@ def _validate_recipe(recipe: EmbeddingRecipe) -> None:
 
     if recipe.provider not in _EMBED_BACKENDS:
         raise InvalidEmbeddingRecipe(f"unknown embedding backend {recipe.provider!r}")
-    if (
-        not isinstance(recipe.dimensions, int)
-        or isinstance(recipe.dimensions, bool)
-        or recipe.dimensions <= 0
-    ):
+    if not is_positive_int(recipe.dimensions):
         raise InvalidEmbeddingRecipe("embedding dimensions must be a positive integer")
     if not recipe.document_task:
         raise InvalidEmbeddingRecipe("document_task must not be empty")
@@ -330,12 +322,7 @@ def _configured_timeout_ms(task: Literal["document", "query"]) -> int:
         else "RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS"
     )
     timeout = getattr(settings, setting_name)
-    if (
-        isinstance(timeout, bool)
-        or not isinstance(timeout, int | float)
-        or not math.isfinite(timeout)
-        or timeout < MIN_EMBEDDING_TIMEOUT_SECONDS
-    ):
+    if not is_finite_number(timeout) or timeout < MIN_EMBEDDING_TIMEOUT_SECONDS:
         raise ImproperlyConfigured(
             f"{setting_name} must be a finite number of seconds of at least one millisecond"
         )
@@ -369,7 +356,7 @@ def provider_request_batch_lengths(input_tokens: Sequence[int]) -> tuple[int, ..
 
 def _configured_batch_size() -> int:
     batch_size = settings.RETRIEVAL_EMBEDDING_BATCH_SIZE
-    if not isinstance(batch_size, int) or isinstance(batch_size, bool) or batch_size <= 0:
+    if not is_positive_int(batch_size):
         raise ImproperlyConfigured("RETRIEVAL_EMBEDDING_BATCH_SIZE must be a positive integer")
     return batch_size
 
@@ -384,18 +371,9 @@ def _embed_batch_with_retry(
     task: Literal["document", "query"],
     stats: _ProviderStats,
 ) -> list[list[float]]:
-    provider_errors = (
-        APIError,
-        gexc.ResourceExhausted,
-        gexc.ServiceUnavailable,
-        gexc.TooManyRequests,
-        gexc.InternalServerError,
-        gexc.DeadlineExceeded,
-        gexc.GatewayTimeout,
-        gexc.BadGateway,
-        HttpxTimeout,
-        RequestsTimeout,
-    )
+    # google-genai's transport is httpx: connection resets and timeouts both arrive as
+    # HttpxTransportError subclasses and are as transient as a retryable status code.
+    provider_errors = (APIError, HttpxTransportError)
     max_attempts = _MAX_ATTEMPTS if task == "document" else 1
     for attempt in range(max_attempts):
         try:
@@ -404,7 +382,11 @@ def _embed_batch_with_retry(
                 client, batch, task_type=task_type, dimensions=dimensions, timeout_ms=timeout_ms
             )
         except provider_errors as exc:
-            retryable = not isinstance(exc, APIError) or (exc.code == 429 or 500 <= exc.code < 600)
+            # APIError.code can be None when the payload carries no status; treat that as
+            # permanent rather than comparing None against integers.
+            retryable = not isinstance(exc, APIError) or (
+                exc.code == 429 or (is_int(exc.code) and 500 <= exc.code < 600)
+            )
             if not retryable or attempt == max_attempts - 1:
                 if task == "query":
                     raise EmbeddingUnavailable("query embedding is unavailable") from exc

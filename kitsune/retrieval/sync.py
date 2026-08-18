@@ -1,12 +1,8 @@
 """Decide and perform what documents need in the current retrieval write index.
 
-The decision is separated from the work. ``plan_target`` is pure: given what a worker computed
-and what an index currently holds, it names an outcome and touches nothing. That keeps the
-whole outcome matrix testable without Elasticsearch, Redis, or the database, and leaves the
-executor with no judgement of its own to make.
-
-One document and a batch of documents run the same decisions on the same seams; a batch only
-shares the provider calls, so it is cheaper without being weaker.
+``plan_target`` is pure — it names an outcome and touches nothing — so the whole outcome
+matrix is testable without Elasticsearch, Redis, or the database. A batch runs the same
+decisions as a single document and only shares the provider calls.
 """
 
 import logging
@@ -53,6 +49,7 @@ from kitsune.retrieval.index import (
     update_chunks_metadata_for,
 )
 from kitsune.retrieval.locks import DocumentLockUnavailable, document_lock
+from kitsune.retrieval.validation import is_int, is_positive_int
 from kitsune.wiki.models import Document
 
 CONTENT_TYPE = "kb"
@@ -476,7 +473,7 @@ def ordered_document_ids(document_ids) -> tuple[int, ...]:
         raise TypeError("a batch must be an iterable of document ids")
     ids = set()
     for value in document_ids:
-        if isinstance(value, bool) or not isinstance(value, int):
+        if not is_int(value):
             raise TypeError(f"document id {value!r} is not an integer")
         ids.add(value)
     return tuple(sorted(ids))
@@ -484,7 +481,7 @@ def ordered_document_ids(document_ids) -> tuple[int, ...]:
 
 def _bulk_bound(name: str) -> int:
     value = getattr(settings, name, None)
-    if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+    if not is_positive_int(value):
         raise ImproperlyConfigured(f"{name} must be a positive integer")
     return value
 

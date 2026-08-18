@@ -306,3 +306,19 @@ class GateEnumerationTests(GateIndexTestCase):
         self.assertNotIn("Install Firefox", repr(record.__dict__))
         for field in ("content_text", "content_vector", "access_group_ids", "title"):
             self.assertNotIn(field, record.__dict__)
+
+
+class GateFreshnessTests(SimpleTestCase):
+    def test_the_scan_refreshes_the_index_first(self):
+        client = mock.Mock()
+        documents = mock.Mock()
+        documents.order_by.return_value.iterator.return_value = iter(())
+        with (
+            mock.patch("kitsune.retrieval.gate.es_client", return_value=client),
+            mock.patch("kitsune.retrieval.gate.read_index_summaries", return_value={}),
+            mock.patch("kitsune.retrieval.gate.eligible_documents", return_value=documents),
+        ):
+            report = gate_index("sumo_chunkdocument_20260101000000")
+
+        client.indices.refresh.assert_called_once_with(index="sumo_chunkdocument_20260101000000")
+        self.assertTrue(report.is_clean)

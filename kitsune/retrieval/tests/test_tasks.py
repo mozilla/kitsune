@@ -8,10 +8,11 @@ from django.test import SimpleTestCase, override_settings
 from elastic_transport import ConnectionError as ElasticsearchConnectionError
 from elastic_transport import ConnectionTimeout as ElasticsearchConnectionTimeout
 
+from kitsune.celery import app
 from kitsune.retrieval.checks import task_timing_problems
-from kitsune.retrieval.index import ChunkIdentity, IndexWriteError
+from kitsune.retrieval.index import ChunkDocument, ChunkIdentity, IndexWriteError
 from kitsune.retrieval.locks import DocumentLockBackendError, DocumentLockUnavailable
-from kitsune.retrieval.tasks import delete_document, sync_document
+from kitsune.retrieval.tasks import delete_document, reconcile_write_index, sync_document
 
 
 class TaskTimingTests(SimpleTestCase):
@@ -66,18 +67,31 @@ class TaskTimingTests(SimpleTestCase):
         self.assertIsNone(getattr(settings, "CELERY_TASK_TIME_LIMIT", None))
         self.assertIsNone(getattr(settings, "CELERY_TASK_SOFT_TIME_LIMIT", None))
 
+    def test_reconciliation_carries_corpus_scale_limits(self):
+        self.assertGreater(
+            reconcile_write_index.soft_time_limit, settings.RETRIEVAL_TASK_SOFT_TIME_LIMIT_SECONDS
+        )
+        self.assertLess(reconcile_write_index.soft_time_limit, reconcile_write_index.time_limit)
+        self.assertTrue(reconcile_write_index.ignore_result)
+
 
 class TaskRoutingTests(SimpleTestCase):
-    def test_both_tasks_are_routed_to_the_retrieval_queue(self):
-        from kitsune.celery import app
-
-        for name in (sync_document.name, delete_document.name):
+    def test_tasks_use_their_retrieval_queues(self):
+        routes = (
+            (sync_document.name, "retrieval"),
+            (delete_document.name, "retrieval"),
+            (reconcile_write_index.name, "retrieval_bulk"),
+        )
+        for name, queue in routes:
             with self.subTest(task=name):
-                self.assertEqual(app.conf.task_routes[name], {"queue": "retrieval"})
+                self.assertEqual(app.conf.task_routes[name], {"queue": queue})
 
     def test_the_task_names_are_stable(self):
         self.assertEqual(sync_document.name, "kitsune.retrieval.tasks.sync_document")
         self.assertEqual(delete_document.name, "kitsune.retrieval.tasks.delete_document")
+        self.assertEqual(
+            reconcile_write_index.name, "kitsune.retrieval.tasks.reconcile_write_index"
+        )
 
 
 @override_settings(RETRIEVAL_LIVE_INDEXING=True)
@@ -155,3 +169,41 @@ class TaskBehaviourTests(SimpleTestCase):
         ):
             delete_document("kb", "42", "en-US")
         core.assert_called_once()
+
+    def test_reconciliation_gates_then_repairs_the_write_index(self):
+        report = mock.Mock(stale_document_ids=(7, 9), unexpected_identities=(self.identity,))
+        with (
+            mock.patch("kitsune.retrieval.tasks.resolve_write_target", return_value="chunks-1"),
+            mock.patch.object(ChunkDocument, "alias_points_at", return_value="chunks-1"),
+            mock.patch("kitsune.retrieval.tasks.gate_index", return_value=report) as gate,
+            mock.patch("kitsune.retrieval.tasks.enqueue_document_batch") as batch,
+            mock.patch("kitsune.retrieval.tasks.enqueue_document_delete") as delete,
+        ):
+            reconcile_write_index()
+
+        gate.assert_called_once_with("chunks-1")
+        batch.assert_called_once_with((7, 9))
+        delete.assert_called_once_with(self.identity)
+
+    def test_reconciliation_skips_until_a_stable_generation_is_live(self):
+        with (
+            override_settings(RETRIEVAL_LIVE_INDEXING=False),
+            mock.patch("kitsune.retrieval.tasks.gate_index") as gate,
+        ):
+            reconcile_write_index()
+        gate.assert_not_called()
+
+        with (
+            mock.patch("kitsune.retrieval.tasks.resolve_write_target", return_value=None),
+            mock.patch("kitsune.retrieval.tasks.gate_index") as gate,
+        ):
+            reconcile_write_index()
+        gate.assert_not_called()
+
+        with (
+            mock.patch("kitsune.retrieval.tasks.resolve_write_target", return_value="chunks-2"),
+            mock.patch.object(ChunkDocument, "alias_points_at", return_value="chunks-1"),
+            mock.patch("kitsune.retrieval.tasks.gate_index") as gate,
+        ):
+            reconcile_write_index()
+        gate.assert_not_called()

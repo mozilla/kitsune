@@ -6,6 +6,7 @@ from unittest import mock
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.test import override_settings
 
 from kitsune.retrieval.chunking import CHUNKING_GENERATION
 from kitsune.retrieval.embeddings import configured_embedding_recipe
@@ -15,6 +16,7 @@ from kitsune.retrieval.fingerprints import (
     build_index_meta,
     classify_meta_mismatch,
     read_index_meta,
+    similarity_profile_fingerprint,
     write_index_meta,
 )
 from kitsune.retrieval.index import (
@@ -38,7 +40,7 @@ from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 TS1 = datetime(2026, 1, 1, tzinfo=UTC)
 TS2 = datetime(2026, 1, 2, tzinfo=UTC)
 OTHER_SCHEMA_VERSION = SCHEMA_VERSION + 1
-SEARCH_INIT = "kitsune.retrieval.management.commands.search_init"
+RETRIEVAL_INIT = "kitsune.retrieval.management.commands.retrieval_init"
 
 
 def _meta(*, schema_version=SCHEMA_VERSION, **recipe_overrides):
@@ -178,10 +180,10 @@ class ResolveReadTargetTests(LifecycleTestCase):
         self.assertEqual(resolved_second, second)
 
 
-class SearchInitCommandTests(LifecycleTestCase):
+class RetrievalInitCommandTests(LifecycleTestCase):
     def test_first_run_creates_write_generation_without_a_read_alias(self):
         with self.assertLogs("k.retrieval", level="INFO") as logs:
-            call_command("search_init")
+            call_command("retrieval_init")
 
         write_index = _write_alias()
         self.assertTrue(write_index)
@@ -194,7 +196,7 @@ class SearchInitCommandTests(LifecycleTestCase):
         name = create_write_generation(timestamp=TS1, meta=configured_index_meta())
         ChunkDocument.migrate_reads()
         with mock.patch.object(ChunkDocument, "init", wraps=ChunkDocument.init) as init:
-            call_command("search_init")
+            call_command("retrieval_init")
         init.assert_called_once_with(index=name)
         self.assertEqual(_write_alias(), name)
         self.assertEqual(_read_alias(), name)
@@ -203,7 +205,7 @@ class SearchInitCommandTests(LifecycleTestCase):
         name = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
         ChunkDocument.migrate_reads()
         with self.assertRaises(CommandError):
-            call_command("search_init")
+            call_command("retrieval_init")
         self.assertEqual(_write_alias(), name)
         self.assertEqual(_read_alias(), name)
 
@@ -212,25 +214,40 @@ class SearchInitCommandTests(LifecycleTestCase):
         ChunkDocument.migrate_reads()
 
         with self.assertRaises(CommandError) as caught:
-            call_command("search_init")
+            call_command("retrieval_init")
 
-        self.assertIn("search_init --update-query-recipe", str(caught.exception))
+        self.assertIn("retrieval_init --update-query-recipe", str(caught.exception))
 
     def test_query_recipe_update_rewrites_only_the_query_section(self):
         name = create_write_generation(timestamp=TS1, meta=_meta(query_task="PRIOR_QUERY"))
         ChunkDocument.migrate_reads()
         before = read_index_meta(name)
-        call_command("search_init", "--update-query-recipe")
+        call_command("retrieval_init", "--update-query-recipe")
         after = read_index_meta(name)
         self.assertEqual(after["embedding"], before["embedding"])
         self.assertEqual(after["mapping"], before["mapping"])
         self.assertEqual(after["query"], configured_index_meta()["query"])
 
+    def test_the_floor_preflight_reports_the_active_profile_status(self):
+        name = create_write_generation(timestamp=TS1, meta=_meta(query_task="PRIOR_QUERY"))
+        ChunkDocument.migrate_reads()
+
+        out = StringIO()
+        with override_settings(RETRIEVAL_KNN_SIMILARITY_FLOORS={}):
+            call_command("retrieval_init", "--update-query-recipe", stdout=out)
+        self.assertIn("No similarity floor is configured", out.getvalue())
+
+        _, fingerprint = similarity_profile_fingerprint(read_index_meta(name))
+        out = StringIO()
+        with override_settings(RETRIEVAL_KNN_SIMILARITY_FLOORS={fingerprint: 0.7}):
+            call_command("retrieval_init", stdout=out)
+        self.assertIn("Similarity floor configured", out.getvalue())
+
     def test_query_recipe_update_refuses_a_non_query_change(self):
         name = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
         ChunkDocument.migrate_reads()
         with self.assertRaises(CommandError):
-            call_command("search_init", "--update-query-recipe")
+            call_command("retrieval_init", "--update-query-recipe")
         self.assertEqual(read_index_meta(name)["embedding"]["model"], "prior-model")
 
     def test_query_recipe_update_refuses_during_a_rebuild(self):
@@ -239,7 +256,7 @@ class SearchInitCommandTests(LifecycleTestCase):
         write_index = create_write_generation(timestamp=TS2, meta=_meta(query_task="PRIOR_QUERY"))
 
         with self.assertRaises(CommandError):
-            call_command("search_init", "--update-query-recipe")
+            call_command("retrieval_init", "--update-query-recipe")
 
         self.assertEqual(read_index_meta(read_index)["query"]["query_task"], "PRIOR_QUERY")
         self.assertEqual(read_index_meta(write_index)["query"]["query_task"], "PRIOR_QUERY")
@@ -251,7 +268,7 @@ class SearchInitCommandTests(LifecycleTestCase):
         )
         for options in combinations:
             with self.subTest(options=options), self.assertRaises(CommandError):
-                call_command("search_init", *options)
+                call_command("retrieval_init", *options)
             self.assertIsNone(_write_alias())
             self.assertIsNone(_read_alias())
 
@@ -264,7 +281,7 @@ class AuthorizedRebuildTests(LifecycleTestCase):
         ChunkDocument.migrate_reads()
 
         with self.assertRaises(CommandError):
-            call_command("search_init", "--start-rebuild")
+            call_command("retrieval_init", "--start-rebuild")
 
         self.assertEqual(_write_alias(), name)
         self.assertEqual(_read_alias(), name)
@@ -275,7 +292,7 @@ class AuthorizedRebuildTests(LifecycleTestCase):
         out = StringIO()
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
-            call_command("search_init", "--start-rebuild", stdout=out)
+            call_command("retrieval_init", "--start-rebuild", stdout=out)
 
         second = _write_alias()
         self.assertNotEqual(second, first)
@@ -293,7 +310,7 @@ class AuthorizedRebuildTests(LifecycleTestCase):
         write_index_meta(first, _meta(schema_version=OTHER_SCHEMA_VERSION))
         out = StringIO()
 
-        call_command("search_init", "--start-rebuild", stdout=out)
+        call_command("retrieval_init", "--start-rebuild", stdout=out)
 
         second = _write_alias()
         self.assertNotEqual(second, first)
@@ -307,7 +324,7 @@ class AuthorizedRebuildTests(LifecycleTestCase):
         second = create_write_generation(timestamp=TS2, meta=_meta(model="prior-model"))
 
         with self.assertRaises(CommandError) as caught:
-            call_command("search_init", "--start-rebuild")
+            call_command("retrieval_init", "--start-rebuild")
 
         self.assertIn(second, str(caught.exception))
         self.assertIn("sync_chunks --backfill", str(caught.exception))
@@ -318,7 +335,7 @@ class AuthorizedRebuildTests(LifecycleTestCase):
         first = create_write_generation(timestamp=TS1, meta=_meta(model="prior-model"))
 
         with self.assertRaises(CommandError):
-            call_command("search_init", "--start-rebuild")
+            call_command("retrieval_init", "--start-rebuild")
 
         self.assertEqual(_write_alias(), first)
         self.assertIsNone(_read_alias())
@@ -330,7 +347,7 @@ class LifecycleSerializationTests(LifecycleTestCase):
         ChunkDocument.migrate_reads()
 
         with lifecycle_lock(), self.assertRaises(CommandError):
-            call_command("search_init", "--start-rebuild")
+            call_command("retrieval_init", "--start-rebuild")
 
     def test_alias_state_is_rechecked_under_the_lease(self):
         # A racing operator wins between this command's first look and its lease.
@@ -347,10 +364,10 @@ class LifecycleSerializationTests(LifecycleTestCase):
                 yield lease
 
         with (
-            mock.patch(f"{SEARCH_INIT}.lifecycle_lock", race_then_lock),
+            mock.patch(f"{RETRIEVAL_INIT}.lifecycle_lock", race_then_lock),
             self.assertRaises(CommandError),
         ):
-            call_command("search_init", "--start-rebuild")
+            call_command("retrieval_init", "--start-rebuild")
 
         # the loser must not have created a third generation
         self.assertEqual(_write_alias(), winner)
@@ -366,11 +383,11 @@ class LifecycleSerializationTests(LifecycleTestCase):
             yield lease
 
         with (
-            mock.patch(f"{SEARCH_INIT}.lifecycle_lock", lost_lease),
-            mock.patch(f"{SEARCH_INIT}.gate_index", return_value=mock.Mock(is_clean=True)),
+            mock.patch(f"{RETRIEVAL_INIT}.lifecycle_lock", lost_lease),
+            mock.patch(f"{RETRIEVAL_INIT}.gate_index", return_value=mock.Mock(is_clean=True)),
             self.assertRaises(CommandError),
         ):
-            call_command("search_init", "--migrate-reads")
+            call_command("retrieval_init", "--migrate-reads")
 
         self.assertEqual(_write_alias(), first)
         self.assertIsNone(_read_alias())
@@ -385,19 +402,19 @@ class GatedReadMigrationTests(LifecycleTestCase):
     def test_a_dirty_gate_refuses_the_swap(self):
         # The document is eligible but was never indexed, so the new generation is incomplete.
         with self.assertRaises(CommandError):
-            call_command("search_init", "--migrate-reads")
+            call_command("retrieval_init", "--migrate-reads")
 
         self.assertIsNone(_read_alias())
 
     def test_an_unparseable_index_is_an_operator_error(self):
         with (
             mock.patch(
-                f"{SEARCH_INIT}.gate_index",
+                f"{RETRIEVAL_INIT}.gate_index",
                 side_effect=InvalidDocumentState("indexed document has an unknown kind"),
             ),
             self.assertRaises(CommandError) as caught,
         ):
-            call_command("search_init", "--migrate-reads")
+            call_command("retrieval_init", "--migrate-reads")
 
         self.assertIn("index state is invalid", str(caught.exception).lower())
         self.assertIsNone(_read_alias())
@@ -405,7 +422,7 @@ class GatedReadMigrationTests(LifecycleTestCase):
     def test_a_clean_gate_attaches_reads_on_first_run(self):
         sync_document_chunks(self.document.id)
 
-        call_command("search_init", "--migrate-reads")
+        call_command("retrieval_init", "--migrate-reads")
 
         self.assertEqual(_read_alias(), self.first)
 
@@ -416,7 +433,7 @@ class GatedReadMigrationTests(LifecycleTestCase):
         sync_document_chunks(self.document.id, target_index=second)
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
-            call_command("search_init", "--migrate-reads")
+            call_command("retrieval_init", "--migrate-reads")
 
         self.assertEqual(_read_alias(), second)
         event = _event(logs, "retrieval.rebuild.read_migrated")
@@ -431,7 +448,7 @@ class GatedReadMigrationTests(LifecycleTestCase):
         create_write_generation(timestamp=TS2, meta=configured_index_meta())
 
         with self.assertRaises(CommandError):
-            call_command("search_init", "--migrate-reads")
+            call_command("retrieval_init", "--migrate-reads")
 
         self.assertEqual(_read_alias(), self.first)
 
@@ -440,7 +457,7 @@ class GatedReadMigrationTests(LifecycleTestCase):
         write_index_meta(self.first, _meta(query_task="PRIOR_QUERY"))
 
         with self.assertRaises(CommandError) as caught:
-            call_command("search_init", "--migrate-reads")
+            call_command("retrieval_init", "--migrate-reads")
 
         self.assertIn(IndexMetaAction.QUERY_META_UPDATE.value, str(caught.exception))
         self.assertIsNone(_read_alias())
@@ -454,7 +471,7 @@ class ChunkerGenerationRolloutTests(LifecycleTestCase):
         ChunkDocument.migrate_reads()
 
         with mock.patch("kitsune.retrieval.chunking.CHUNKING_GENERATION", CHUNKING_GENERATION + 1):
-            call_command("search_init")
+            call_command("retrieval_init")
 
         self.assertEqual(_write_alias(), name)
         self.assertEqual(_read_alias(), name)

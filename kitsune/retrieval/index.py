@@ -27,6 +27,7 @@ from kitsune.retrieval.fingerprints import (
     scope_envelope,
     write_index_meta,
 )
+from kitsune.retrieval.validation import is_int, is_nonnegative_int, is_positive_int
 from kitsune.search.base import SumoDocument
 from kitsune.search.es_utils import es_client
 from kitsune.search.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
@@ -79,7 +80,7 @@ def _require_identity_component(value, name: str) -> None:
 
 
 def _require_int(value, name: str, *, minimum: int) -> None:
-    if not isinstance(value, int) or isinstance(value, bool) or value < minimum:
+    if not is_int(value) or value < minimum:
         raise InvalidDocumentState(f"{name} must be an integer >= {minimum}")
 
 
@@ -414,12 +415,10 @@ def _chunk_metadata(
 ) -> dict:
     """Every per-chunk field a metadata-only update owns.
 
-    Shared by the full write and the metadata-only update so the two cannot drift into
-    disagreeing about what a chunk's recovery state should look like. Deliberately excluded:
-    ``kind``, ``content_type``, ``object_id``, ``locale`` and ``position`` (they identify the
-    document, and changing one means a different chunk), ``content_text``/``content_vector``
-    (only a re-embed may rewrite those), and ``indexed_on``, which keeps meaning "when this
-    chunk's text and vector were written" rather than "last touched".
+    Shared by the full write and the metadata-only update so the two cannot drift. Identity
+    fields, text/vector, and ``indexed_on`` are deliberately excluded: only a re-embed may
+    rewrite text and vectors, and ``indexed_on`` keeps meaning "when this chunk's text and
+    vector were written" rather than "last touched".
     """
     locale = source.locale
     return {
@@ -547,12 +546,9 @@ def update_chunks_metadata_for(
 
     The cheapest correct path when only scope or source metadata changed: it preserves each
     chunk's stored text and vector and makes no embedding call. This never creates a missing
-    position, because a chunk without text and a vector would be incomplete.
-
-    While ingestion is public-only, an access change never reaches here: it flips the
-    document's eligibility, so the sync core evicts it or indexes it afresh instead. Once
-    restricted ingestion is enabled, a change to `visibility`/`access_group_ids` becomes an
-    ordinary metadata change and this is the path it takes (ADR 0006).
+    position, because a chunk without text and a vector would be incomplete. Access changes
+    reach here only once restricted ingestion lands; until then they flip eligibility and
+    sync evicts or reindexes instead (ADR 0006).
     """
     _require_concrete_index(index)
     _verify_expected_state(chunks, source, expected_state)
@@ -673,15 +669,13 @@ def read_index_summaries(
 
 def _chunk_summary(source: Mapping) -> StoredChunkSummary:
     position = source.get("position")
-    if not isinstance(position, int) or isinstance(position, bool) or position < 0:
+    if not is_nonnegative_int(position):
         position = None
     visibility = source.get("visibility")
     if not isinstance(visibility, str):
         visibility = None
     groups = source.get("access_group_ids")
-    if not isinstance(groups, list) or any(
-        not isinstance(group, int) or isinstance(group, bool) or group < 1 for group in groups
-    ):
+    if not isinstance(groups, list) or any(not is_positive_int(group) for group in groups):
         groups = None
     else:
         groups = tuple(groups)
@@ -703,6 +697,10 @@ def _sorted_chunk_summaries(summaries) -> tuple[StoredChunkSummary, ...]:
 def delete_chunks_for(*, index: str, identity: ChunkIdentity) -> None:
     """Remove a document's chunks and manifest from one concrete index."""
     _require_concrete_index(index)
+    # Chunks written within the refresh interval are invisible to delete_by_query and a full
+    # miss passes verification (total == deleted == 0); evictions are rare, so pay for a
+    # refresh rather than leave withdrawn content searchable until reconciliation.
+    es_client().indices.refresh(index=index)
     _verified_delete_by_query(index, {"bool": {"filter": _identity_filters(identity)}})
 
 
@@ -712,6 +710,8 @@ def delete_chunks_for_object(*, index: str, content_type: str, object_id: str) -
     _require_concrete_index(index)
     _require_identity_component(content_type, "content_type")
     _require_identity_component(object_id, "object_id")
+    # Same freshness rule as delete_chunks_for: an eviction must see recent writes.
+    es_client().indices.refresh(index=index)
     _verified_delete_by_query(
         index,
         {
@@ -757,10 +757,7 @@ def _verified_delete_by_query(index: str, query: dict) -> None:
     total = response.get("total")
     deleted = response.get("deleted")
     version_conflicts = response.get("version_conflicts")
-    valid_counts = all(
-        isinstance(value, int) and not isinstance(value, bool) and value >= 0
-        for value in (total, deleted, version_conflicts)
-    )
+    valid_counts = all(is_nonnegative_int(value) for value in (total, deleted, version_conflicts))
     if (
         response.get("timed_out") is not False
         or response.get("failures") != []
@@ -816,15 +813,8 @@ def resolve_write_target() -> str | None:
     return ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias)
 
 
-def recipe_for_index(index: str) -> EmbeddingRecipe:
-    """The embedding recipe stamped on one concrete index.
-
-    Reconstructed from `_meta` rather than from current settings, so a worker writing to an
-    older generation embeds into the vector space that generation actually holds. An
-    un-stamped or tampered `_meta` raises through ``read_index_meta``.
-    """
-    _require_concrete_index(index)
-    meta = read_index_meta(index)
+def recipe_for_meta(meta: dict) -> EmbeddingRecipe:
+    """The embedding recipe stamped in one validated index ``_meta``."""
     embedding = meta["embedding"]
     return recipe_from_payload(
         {
@@ -838,12 +828,32 @@ def recipe_for_index(index: str) -> EmbeddingRecipe:
     )
 
 
-def resolve_read_target_and_recipe() -> tuple[str, EmbeddingRecipe]:
-    """Bind a query to one concrete read index and the recipe stamped on it.
+def recipe_for_index(index: str) -> EmbeddingRecipe:
+    """The embedding recipe stamped on one concrete index.
 
-    Fails closed: a missing read alias raises rather than silently querying the write alias.
+    Reconstructed from `_meta` rather than from current settings, so a worker writing to an
+    older generation embeds into the vector space that generation actually holds. An
+    un-stamped or tampered `_meta` raises through ``read_index_meta``.
+    """
+    _require_concrete_index(index)
+    return recipe_for_meta(read_index_meta(index))
+
+
+def resolve_read_state() -> tuple[str, EmbeddingRecipe, dict]:
+    """Bind a query to one concrete read index, its stamped recipe, and its validated `_meta`.
+
+    One mapping read serves recipe and similarity-floor resolution, so the two cannot come
+    from different generations. Fails closed: a missing read alias raises rather than
+    silently querying the write alias.
     """
     read_index = ChunkDocument.alias_points_at(ChunkDocument.Index.read_alias)
     if not read_index:
         raise RetrievalIndexUnavailable("the retrieval read alias points at no index")
-    return read_index, recipe_for_index(read_index)
+    meta = read_index_meta(read_index)
+    return read_index, recipe_for_meta(meta), meta
+
+
+def resolve_read_target_and_recipe() -> tuple[str, EmbeddingRecipe]:
+    """Bind a query to one concrete read index and the recipe stamped on it."""
+    index, recipe, _ = resolve_read_state()
+    return index, recipe

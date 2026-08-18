@@ -160,6 +160,11 @@ PERIODIC_TASKS_ALL = {
         "task": "kitsune.wiki.tasks.run_rebuild_kb",
         "schedule": crontab(hour="0", minute="0"),
     },
+    # Daily at 02:00, after rebuild_kb, whose .update() writes bypass the retrieval signals.
+    "reconcile_retrieval_index": {
+        "task": "kitsune.retrieval.tasks.reconcile_write_index",
+        "schedule": crontab(hour="2", minute="0"),
+    },
     # Every Sunday at 01:00.
     "cleanup_old_anchor_records": {
         "task": "kitsune.wiki.tasks.cleanup_old_anchor_records",

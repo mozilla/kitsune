@@ -21,6 +21,7 @@ from kitsune.retrieval.query import (
     _retrieve_unvalidated,
     parse_positive_integer_id,
 )
+from kitsune.retrieval.validation import is_nonnegative_int, is_positive_int
 from kitsune.wiki.models import Document
 
 PRIMARY_DATABASE = "default"
@@ -37,8 +38,7 @@ class ViewerAccess:
         if self.privileged and self.group_ids:
             raise ValueError("privileged access cannot carry group IDs")
         if self.group_ids != tuple(sorted(set(self.group_ids))) or any(
-            not isinstance(group_id, int) or isinstance(group_id, bool) or group_id <= 0
-            for group_id in self.group_ids
+            not is_positive_int(group_id) for group_id in self.group_ids
         ):
             raise ValueError("group_ids must be sorted, unique positive integers")
 
@@ -102,17 +102,13 @@ def retrieve(
     strict: bool = False,
 ) -> RetrievalResult[AuthorizedCandidate]:
     """Retrieve candidates and authorize every selected KB source against the primary DB."""
-    if (
-        not isinstance(authorization_overfetch, int)
-        or isinstance(authorization_overfetch, bool)
-        or authorization_overfetch < 0
-    ):
+    if not is_nonnegative_int(authorization_overfetch):
         raise ValueError("authorization_overfetch must be a non-negative integer")
-    if not isinstance(page_size, int) or isinstance(page_size, bool) or page_size <= 0:
+    if not is_positive_int(page_size):
         raise ValueError("page_size must be a positive integer")
-    if not isinstance(offset, int) or isinstance(offset, bool) or offset < 0:
+    if not is_nonnegative_int(offset):
         raise ValueError("offset must be a non-negative integer")
-    if not isinstance(max_offset, int) or isinstance(max_offset, bool) or max_offset < 0:
+    if not is_nonnegative_int(max_offset):
         raise ValueError("max_offset must be a non-negative integer")
     if offset > max_offset:
         raise ValueError("offset exceeds max_offset")

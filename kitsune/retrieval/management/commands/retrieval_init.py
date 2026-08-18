@@ -17,6 +17,7 @@ from kitsune.retrieval.fingerprints import (
     IndexMetaAction,
     classify_meta_mismatch,
     read_index_meta,
+    similarity_profile_fingerprint,
     write_index_meta,
 )
 from kitsune.retrieval.gate import gate_index
@@ -31,6 +32,7 @@ from kitsune.retrieval.locks import (
     DocumentLockUnavailable,
     lifecycle_lock,
 )
+from kitsune.retrieval.query import SimilarityFloorUnavailable, similarity_floor_for_meta
 
 
 class Command(BaseCommand):
@@ -89,6 +91,22 @@ class Command(BaseCommand):
             ChunkDocument.alias_points_at(ChunkDocument.Index.write_alias),
         )
 
+    def _report_floor_status(self, meta):
+        """Preflight for semantic serving: say whether the active profile has a floor."""
+        try:
+            similarity_floor_for_meta(meta)
+        except SimilarityFloorUnavailable:
+            _, fingerprint = similarity_profile_fingerprint(meta)
+            self.stdout.write(
+                self.style.WARNING(
+                    f"No similarity floor is configured for profile {fingerprint}; semantic "
+                    "retrieval degrades to lexical until RETRIEVAL_KNN_SIMILARITY_FLOORS "
+                    "gains a calibrated entry."
+                )
+            )
+        else:
+            self.stdout.write("Similarity floor configured for the active profile.")
+
     def _classify_or_initialize(self, meta):
         read_index, write_index = self._aliases()
         if not write_index:
@@ -97,7 +115,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"First run: created {name}. It is intentionally not yet a read target — "
                 f"backfill it with 'sync_chunks --backfill --index {name}', then promote it "
-                "with 'search_init --migrate-reads'."
+                "with 'retrieval_init --migrate-reads'."
             )
             return
 
@@ -106,37 +124,41 @@ class Command(BaseCommand):
                 self.stdout.write(
                     f"First-run population is in flight on {write_index}. Backfill it with "
                     f"'sync_chunks --backfill --index {write_index}', then promote it with "
-                    "'search_init --migrate-reads'."
+                    "'retrieval_init --migrate-reads'."
                 )
                 return
             self.stdout.write(
                 f"A migration is in flight: reads on {read_index}, writes on {write_index}. "
                 f"Finish it with 'sync_chunks --backfill --index {write_index}', then "
-                "'search_init --migrate-reads'."
+                "'retrieval_init --migrate-reads'."
             )
             return
 
-        action = classify_meta_mismatch(read_index_meta(write_index), meta)
+        current = read_index_meta(write_index)
+        action = classify_meta_mismatch(current, meta)
         if action is IndexMetaAction.NONE:
             self.stdout.write(
                 f"Configuration matches; updating mapping in place on {write_index}."
             )
             ChunkDocument.init(index=write_index)
+            self._report_floor_status(current)
             return
         if action is IndexMetaAction.QUERY_META_UPDATE:
             raise CommandError(
                 f"{write_index} requires a query-recipe metadata update. Run "
-                "'search_init --update-query-recipe'; no corpus rebuild is required."
+                "'retrieval_init --update-query-recipe'; no corpus rebuild is required."
             )
         raise CommandError(
             f"{write_index} requires a paid full rebuild before it matches the configured "
-            "recipe/mapping. Run 'search_init --start-rebuild' to authorize it."
+            "recipe/mapping. Run 'retrieval_init --start-rebuild' to authorize it."
         )
 
     def _start_rebuild(self, meta):
         read_index, write_index = self._aliases()
         if not write_index:
-            raise CommandError("There is no generation to migrate from. Run 'search_init' first.")
+            raise CommandError(
+                "There is no generation to migrate from. Run 'retrieval_init' first."
+            )
         if read_index != write_index:
             if not read_index:
                 raise CommandError(
@@ -165,14 +187,17 @@ class Command(BaseCommand):
         self.stdout.write(
             f"Created {name} and moved writes to it. Reads stay on {read_index} "
             f"until the gate passes. Populate it with 'sync_chunks --backfill --index {name}', "
-            "then promote it with 'search_init --migrate-reads'."
+            "then promote it with 'retrieval_init --migrate-reads'."
         )
 
     def _migrate_reads(self, desired_meta, lease):
         read_index, write_index = self._aliases()
         if not write_index:
-            raise CommandError("There is no write generation to promote. Run 'search_init' first.")
-        mismatch = classify_meta_mismatch(read_index_meta(write_index), desired_meta)
+            raise CommandError(
+                "There is no write generation to promote. Run 'retrieval_init' first."
+            )
+        current = read_index_meta(write_index)
+        mismatch = classify_meta_mismatch(current, desired_meta)
         if mismatch is not IndexMetaAction.NONE:
             raise CommandError(
                 f"The write generation {write_index} no longer matches the configured "
@@ -180,6 +205,7 @@ class Command(BaseCommand):
             )
         if read_index == write_index:
             self.stdout.write(f"Reads already serve {write_index}; nothing to promote.")
+            self._report_floor_status(current)
             return
 
         report = gate_index(write_index)
@@ -202,6 +228,7 @@ class Command(BaseCommand):
             f"Reads now serve {write_index}. {read_index or 'No previous generation'} is "
             "retained for rollback and will not be deleted automatically."
         )
+        self._report_floor_status(current)
 
     def _update_query_recipe(self, meta):
         read_index, write_index = self._aliases()
@@ -225,5 +252,7 @@ class Command(BaseCommand):
                 "refusing to rewrite _meta."
             )
 
-        write_index_meta(write_index, {**current, "query": dict(meta["query"])})
+        updated = {**current, "query": dict(meta["query"])}
+        write_index_meta(write_index, updated)
         self.stdout.write(f"{write_index}: updated query-recipe _meta.")
+        self._report_floor_status(updated)

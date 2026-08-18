@@ -9,8 +9,6 @@ from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.retrieval.eligibility import (
     access_group_ids_for,
     eligible_documents,
-    family_document_ids,
-    family_documents,
     family_id_for,
     is_publicly_accessible,
     is_retrieval_content_eligible,
@@ -247,14 +245,6 @@ class FamilyHelperTests(TestCase):
         translation = _translation(parent)
         self.assertEqual(family_id_for(parent), parent.pk)
         self.assertEqual(family_id_for(translation), parent.pk)
-
-    def test_family_documents_and_ids_span_the_whole_family(self):
-        parent = _approved()
-        t1 = _translation(parent, "de")
-        t2 = _translation(parent, "fr")
-        expected = {parent.pk, t1.pk, t2.pk}
-        self.assertEqual(set(family_document_ids(t1)), expected)
-        self.assertEqual({doc.pk for doc in family_documents(t2)}, expected)
 
 
 class AccessMetadataTests(TestCase):

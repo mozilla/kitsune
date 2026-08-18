@@ -7,8 +7,7 @@ from django.test import SimpleTestCase, override_settings
 from google.genai.errors import ServerError
 from redis.exceptions import ConnectionError as RedisConnectionError
 
-import kitsune.retrieval
-import kitsune.search.hybrid
+import kitsune
 from kitsune.retrieval.embeddings import get_embeddings
 from kitsune.retrieval.events import EVENT_CATALOG, UnknownEvent, emit
 from kitsune.retrieval.gate import gate_index
@@ -30,7 +29,7 @@ from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
-_EMIT_CALL = re.compile(r"\bemit\(\s*\"([a-z0-9_.]+)\"", re.S)
+_EMIT_CALL = re.compile(r"\bemit\(\s*\"(retrieval\.[a-z0-9_.]+)\"", re.S)
 
 # Field names that would defeat the point of the whole surface. Checked against every record
 # every seam emits, not just against the helper's own validation.
@@ -60,11 +59,10 @@ _FORBIDDEN_FIELDS = frozenset(
 
 
 def _emitted_event_names():
-    """Every event name the package can emit, read from the source rather than from imports."""
-    package = Path(kitsune.retrieval.__file__).parent
-    paths = [*package.rglob("*.py"), Path(kitsune.search.hybrid.__file__)]
+    """Every retrieval event name in Kitsune, read from source rather than imports."""
+    package = Path(kitsune.__file__).parent
     names = set()
-    for path in paths:
+    for path in package.rglob("*.py"):
         if "tests" in path.parts:
             continue
         names.update(_EMIT_CALL.findall(path.read_text()))

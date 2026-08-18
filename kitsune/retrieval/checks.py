@@ -5,17 +5,10 @@ outlive one:
 
     provider request deadline < task soft limit < task hard limit < lease ttl
 
-Each step earns its place. A request that can outlast the soft limit means the wind-down never
-runs. A soft limit at or past the hard limit leaves no room to wind down at all. A hard limit at
-or past the lease ttl is the failure this exists to prevent: the lease lapses while the worker
-is still writing, and a second worker can pick the document up.
-
-The same function backs a Django system check and ``RetrievalConfig.ready()``, because
-``manage.py check`` runs on deploy but a Celery worker start-up does not necessarily run system
-checks — and the worker is where it matters.
+Backs both the Django system check and ``RetrievalConfig.ready()``, because a Celery worker
+start-up does not necessarily run system checks — and the worker is where it matters.
 """
 
-import math
 import re
 from itertools import pairwise
 
@@ -25,6 +18,7 @@ from django.core.checks import Error, register
 from kitsune.retrieval.embeddings import MIN_EMBEDDING_TIMEOUT_SECONDS
 from kitsune.retrieval.fingerprints import is_valid_similarity_floor
 from kitsune.retrieval.index import SIMILARITY
+from kitsune.retrieval.validation import is_finite_number, is_nonnegative_int, is_positive_int
 
 _SHA256_HEX = re.compile(r"[0-9a-f]{64}\Z")
 _RATE = re.compile(r"(?:0|[1-9][0-9]*)/(?:[1-9][0-9]*)?[smhd]\Z")
@@ -51,9 +45,7 @@ def task_timing_problems() -> list[str]:
     for name, value in ordered:
         is_embedding_timeout = name == "RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS"
         if (
-            isinstance(value, bool)
-            or not isinstance(value, int | float)
-            or not math.isfinite(value)
+            not is_finite_number(value)
             or value <= 0
             or (is_embedding_timeout and value < MIN_EMBEDDING_TIMEOUT_SECONDS)
         ):
@@ -74,19 +66,14 @@ def query_configuration_problems() -> list[str]:
     """Describe invalid interactive-query settings and bounded retrieval work."""
     problems: list[str] = []
     timeout = settings.RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS
-    if (
-        isinstance(timeout, bool)
-        or not isinstance(timeout, int | float)
-        or not math.isfinite(timeout)
-        or timeout < MIN_EMBEDDING_TIMEOUT_SECONDS
-    ):
+    if not is_finite_number(timeout) or timeout < MIN_EMBEDDING_TIMEOUT_SECONDS:
         problems.append(
             "RETRIEVAL_QUERY_EMBEDDING_TIMEOUT_SECONDS must be a finite number of seconds "
             f"of at least {MIN_EMBEDDING_TIMEOUT_SECONDS}"
         )
 
     ttl = settings.RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS
-    if not isinstance(ttl, int) or isinstance(ttl, bool) or ttl <= 0:
+    if not is_positive_int(ttl):
         problems.append("RETRIEVAL_QUERY_VECTOR_CACHE_TTL_SECONDS must be a positive integer")
 
     bounds = (
@@ -96,7 +83,7 @@ def query_configuration_problems() -> list[str]:
     )
     valid_bounds = set()
     for name, value in bounds:
-        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+        if not is_positive_int(value):
             problems.append(f"{name} must be a positive integer")
         else:
             valid_bounds.add(name)
@@ -108,17 +95,15 @@ def query_configuration_problems() -> list[str]:
         problems.append("RETRIEVAL_KNN_NUM_CANDIDATES must be at least RETRIEVAL_SEMANTIC_K")
 
     overfetch = settings.RETRIEVAL_AUTHORIZATION_OVERFETCH
-    if not isinstance(overfetch, int) or isinstance(overfetch, bool) or overfetch < 0:
+    if not is_nonnegative_int(overfetch):
         problems.append("RETRIEVAL_AUTHORIZATION_OVERFETCH must be a non-negative integer")
 
     max_offset = settings.RETRIEVAL_MAX_PAGE_OFFSET
-    if not isinstance(max_offset, int) or isinstance(max_offset, bool) or max_offset < 0:
+    if not is_nonnegative_int(max_offset):
         problems.append("RETRIEVAL_MAX_PAGE_OFFSET must be a non-negative integer")
     elif (
         "RETRIEVAL_RRF_RANK_WINDOW_SIZE" in valid_bounds
-        and isinstance(overfetch, int)
-        and not isinstance(overfetch, bool)
-        and overfetch >= 0
+        and is_nonnegative_int(overfetch)
         and max_offset + settings.SEARCH_RESULTS_PER_PAGE + overfetch + 1
         > settings.RETRIEVAL_RRF_RANK_WINDOW_SIZE
     ):

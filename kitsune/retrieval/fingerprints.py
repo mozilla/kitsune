@@ -8,7 +8,6 @@ or only a query-recipe `_meta` update.
 
 import hashlib
 import json
-import math
 import re
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
@@ -21,6 +20,7 @@ from kitsune.retrieval.embeddings import (
     InvalidEmbeddingRecipe,
     recipe_from_payload,
 )
+from kitsune.retrieval.validation import is_finite_number, is_int, is_positive_int
 from kitsune.search.es_utils import es_client
 
 SCOPE_ENVELOPE_VERSION = 1
@@ -201,13 +201,7 @@ def similarity_profile_fingerprint(meta: dict) -> tuple[dict, str]:
 
 def is_valid_similarity_floor(value: object, similarity: str) -> TypeGuard[int | float]:
     """Return whether a raw floor is valid for a supported similarity function."""
-    return (
-        similarity == "cosine"
-        and not isinstance(value, bool)
-        and isinstance(value, int | float)
-        and math.isfinite(value)
-        and -1 <= value <= 1
-    )
+    return similarity == "cosine" and is_finite_number(value) and -1 <= value <= 1
 
 
 def build_index_meta(
@@ -300,7 +294,7 @@ def _validate_index_meta(meta: dict) -> None:
         for name, expected_type in field_types.items():
             value = block[name]
             if expected_type is int:
-                valid_type = isinstance(value, int) and not isinstance(value, bool)
+                valid_type = is_int(value)
             else:
                 valid_type = isinstance(value, expected_type)
             if not valid_type:
@@ -342,7 +336,7 @@ def _validate_index_meta(meta: dict) -> None:
     for name, expected_type in _INDEX_OPTION_FIELDS.items():
         value = index_options[name]
         if expected_type is int:
-            valid_type = isinstance(value, int) and not isinstance(value, bool) and value > 0
+            valid_type = is_positive_int(value)
         else:
             valid_type = isinstance(value, expected_type) and bool(value)
         if not valid_type:

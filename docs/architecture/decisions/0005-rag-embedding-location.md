@@ -1,7 +1,7 @@
 # 5 - Embedding location for the RAG retrieval layer
 
 Date: 2026-07-21
-Updated: 2026-08-07
+Updated: 2026-08-14
 
 ## Status
 
@@ -85,8 +85,9 @@ actually exists.
 - Embedding vectors are computed in Python and stored in
   `ChunkDocument.content_vector`; Elasticsearch is a vector store + kNN engine.
   `semantic_text` is not used.
-- Local and CI tests run fully offline on Basic Elasticsearch with a deterministic
-  fake-embedder fixture; no license dependency, parity preserved.
+- Embedding tests run fully offline with a deterministic fake-embedder fixture and carry no
+  license dependency. (Native-RRF query tests separately require the trial/Enterprise license
+  described in the search docs — a property of RRF, not of this decision.)
 - We own the embedding pipeline (model call, task types, batching, retries), bounded
   by the scope guardrail above.
 - Our vectors are an independent embedding space from any Elastic-managed or
