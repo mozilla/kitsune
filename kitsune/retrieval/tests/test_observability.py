@@ -113,6 +113,50 @@ class ProviderEventTests(SimpleTestCase):
         for field in _FORBIDDEN_FIELDS:
             self.assertNotIn(field, record.__dict__)
 
+    @override_settings(RETRIEVAL_EMBEDDING_BATCH_SIZE=1)
+    def test_a_completed_request_reports_the_estimate_beside_the_provider_count(self):
+        client, _ = _mock_vertex_client()
+        with (
+            mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
+            self.assertLogs("k.retrieval", level="INFO") as logs,
+        ):
+            get_embeddings(["hello", "world!"], task="document", recipe=VERTEX)
+
+        record = _event(logs, "retrieval.embeddings.completed")
+        # Comparing the two is what keeps count_tokens honest and its packing margin justified.
+        self.assertEqual(record.estimated_token_count, 4)
+        self.assertEqual(record.provider_token_count, 14)  # the stub reports 7 tokens per text
+
+    @override_settings(RETRIEVAL_EMBEDDING_BATCH_SIZE=1)
+    def test_an_unreported_provider_count_is_unknown_rather_than_a_false_zero(self):
+        client, request = _mock_vertex_client()
+        request.side_effect = lambda **kwargs: _vertex_response(
+            kwargs["contents"], token_count=None
+        )
+        with (
+            mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
+            self.assertLogs("k.retrieval", level="INFO") as logs,
+        ):
+            get_embeddings(["hello", "world!"], task="document", recipe=VERTEX)
+
+        record = _event(logs, "retrieval.embeddings.completed")
+        self.assertEqual(record.estimated_token_count, 4)
+        self.assertIsNone(record.provider_token_count)
+
+    def test_a_failure_reports_the_estimate_that_was_sent(self):
+        client, request = _mock_vertex_client()
+        request.side_effect = RuntimeError("boom")
+        with (
+            mock.patch("kitsune.retrieval.embeddings._vertex_client", return_value=client),
+            self.assertLogs("k.retrieval", level="ERROR") as logs,
+            self.assertRaises(RuntimeError),
+        ):
+            get_embeddings(["hello", "world!"], task="document", recipe=VERTEX)
+
+        # A refused request is the failure the packing margin exists to prevent, so its size
+        # has to be visible without the text.
+        self.assertEqual(_event(logs, "retrieval.embeddings.failed").estimated_token_count, 4)
+
     def test_a_retry_reports_the_error_type_and_not_its_message(self):
         client, request = _mock_vertex_client()
         request.side_effect = [
