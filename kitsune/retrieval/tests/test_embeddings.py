@@ -13,6 +13,8 @@ from httpx import ReadTimeout as HttpxReadTimeout
 
 from kitsune.retrieval.embeddings import (
     _MAX_ATTEMPTS,
+    _REQUEST_TOKEN_TARGET,
+    _VERTEX_MAX_REQUEST_TOKENS,
     FAKE_BACKEND,
     VERTEX_BACKEND,
     EmbeddingRecipe,
@@ -22,6 +24,7 @@ from kitsune.retrieval.embeddings import (
     _vertex_client,
     configured_embedding_recipe,
     get_embeddings,
+    provider_request_batch_lengths,
     recipe_from_payload,
     recipe_to_payload,
     validate_embeddings,
@@ -51,13 +54,13 @@ def _marker_vectors(batch, **kwargs):
     return [[float(ord(text[0])), *([0.0] * 7)] for text in batch]
 
 
-def _vertex_response(batch, *, truncated=False):
+def _vertex_response(batch, *, truncated=False, token_count=7.0):
     vectors = _marker_vectors(batch)
     return SimpleNamespace(
         embeddings=[
             SimpleNamespace(
                 values=vector,
-                statistics=SimpleNamespace(truncated=truncated),
+                statistics=SimpleNamespace(truncated=truncated, token_count=token_count),
             )
             for vector in vectors
         ]
@@ -151,8 +154,19 @@ class VertexBackendTests(SimpleTestCase):
 
         self.assertEqual(
             [len(call.kwargs["contents"]) for call in request.call_args_list],
-            [10, 1],
+            [8, 3],
         )
+
+    def test_packing_leaves_the_provider_ceiling_room_for_an_underestimate(self):
+        # count_tokens is an estimate, so a request filled to the provider's own limit could
+        # exceed it in real tokens, and Vertex refuses such a request rather than truncating.
+        self.assertLess(_REQUEST_TOKEN_TARGET, _VERTEX_MAX_REQUEST_TOKENS)
+
+        per_text = 1_000
+        lengths = provider_request_batch_lengths([per_text] * 60)
+
+        self.assertTrue(all(length * per_text <= _REQUEST_TOKEN_TARGET for length in lengths))
+        self.assertEqual(sum(lengths), 60)
 
     @override_settings(RETRIEVAL_EMBEDDING_TIMEOUT_SECONDS=12)
     def test_every_request_carries_an_explicit_deadline(self):

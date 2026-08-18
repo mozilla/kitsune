@@ -38,6 +38,8 @@ _NORMALIZATIONS = frozenset({"none", "l2"})
 _VERTEX_MAX_BATCH_SIZE = 250
 _VERTEX_MAX_INPUT_TOKENS = 2_048
 _VERTEX_MAX_REQUEST_TOKENS = 20_000
+# Pack requests to a fraction of the provider's own per-request ceiling.
+_REQUEST_TOKEN_TARGET = int(_VERTEX_MAX_REQUEST_TOKENS * 0.8)
 _RECIPE_FIELDS = frozenset(
     {
         "provider",
@@ -81,8 +83,10 @@ class EmbeddingRecipe:
 
 
 @dataclass
-class _ProviderStats:
+class ProviderStats:
     request_count: int = 0
+    estimated_token_count: int = 0
+    provider_token_count: int | None = 0
 
 
 def configured_embedding_recipe() -> EmbeddingRecipe:
@@ -154,8 +158,12 @@ def get_embeddings(
     *,
     task: Literal["document", "query"],
     recipe: EmbeddingRecipe,
+    stats: ProviderStats | None = None,
 ) -> list[list[float]]:
-    """Return validated embeddings in the same order as the input texts."""
+    """Return validated embeddings in the same order as the input texts.
+
+    Pass a stats object to read back the request and token counts this call reported.
+    """
     _validate_recipe(recipe)
     if task == "document":
         task_type = recipe.document_task
@@ -174,7 +182,7 @@ def get_embeddings(
 
     started = time.monotonic()
     character_count = sum(len(text) for text in inputs)
-    stats = _ProviderStats()
+    stats = ProviderStats() if stats is None else stats
     try:
         vectors = _EMBED_BACKENDS[recipe.provider](
             inputs,
@@ -200,6 +208,7 @@ def get_embeddings(
             text_count=len(inputs),
             character_count=character_count,
             request_count=stats.request_count,
+            estimated_token_count=stats.estimated_token_count,
             error_type=type(failure).__name__,
             duration_ms=_elapsed_ms(started),
         )
@@ -216,6 +225,8 @@ def get_embeddings(
         # A bounded measure of input size without recording the input itself.
         character_count=character_count,
         request_count=stats.request_count,
+        estimated_token_count=stats.estimated_token_count,
+        provider_token_count=stats.provider_token_count,
         duration_ms=_elapsed_ms(started),
     )
     return vectors
@@ -254,7 +265,7 @@ def _fake_embed(
     *,
     task_type: str,
     recipe: EmbeddingRecipe,
-    stats: _ProviderStats,
+    stats: ProviderStats,
 ) -> list[list[float]]:
     byte_count = recipe.dimensions * 4  # 4 bytes per float
     vectors = []
@@ -284,9 +295,10 @@ def _vertex_embed(
     *,
     task_type: str,
     recipe: EmbeddingRecipe,
-    stats: _ProviderStats,
+    stats: ProviderStats,
 ) -> list[list[float]]:
     input_tokens = [count_tokens(text) for text in texts]
+    stats.estimated_token_count = sum(input_tokens)
     if any(tokens > max_input_tokens() for tokens in input_tokens):
         raise InvalidEmbeddingResponse(
             "embedding input exceeds Vertex's estimated per-input token limit"
@@ -342,7 +354,7 @@ def provider_request_batch_lengths(input_tokens: Sequence[int]) -> tuple[int, ..
     batch_tokens = 0
     for tokens in input_tokens:
         if batch_inputs and (
-            batch_inputs >= max_inputs or batch_tokens + tokens > _VERTEX_MAX_REQUEST_TOKENS
+            batch_inputs >= max_inputs or batch_tokens + tokens > _REQUEST_TOKEN_TARGET
         ):
             batch_lengths.append(batch_inputs)
             batch_inputs = 0
@@ -369,7 +381,7 @@ def _embed_batch_with_retry(
     dimensions: int,
     timeout_ms: int,
     task: Literal["document", "query"],
-    stats: _ProviderStats,
+    stats: ProviderStats,
 ) -> list[list[float]]:
     # google-genai's transport is httpx: connection resets and timeouts both arrive as
     # HttpxTransportError subclasses and are as transient as a retryable status code.
@@ -379,7 +391,12 @@ def _embed_batch_with_retry(
         try:
             stats.request_count += 1
             return _request_vertex_embeddings(
-                client, batch, task_type=task_type, dimensions=dimensions, timeout_ms=timeout_ms
+                client,
+                batch,
+                task_type=task_type,
+                dimensions=dimensions,
+                timeout_ms=timeout_ms,
+                stats=stats,
             )
         except provider_errors as exc:
             # APIError.code can be None when the payload carries no status; treat that as
@@ -404,7 +421,13 @@ def _embed_batch_with_retry(
 
 
 def _request_vertex_embeddings(
-    client, batch: list[str], *, task_type: str, dimensions: int, timeout_ms: int
+    client,
+    batch: list[str],
+    *,
+    task_type: str,
+    dimensions: int,
+    timeout_ms: int,
+    stats: ProviderStats,
 ) -> list[list[float]]:
     """Call Google Gen AI directly so truncation cannot be hidden by the LangChain wrapper."""
     response = client.client.models.embed_content(
@@ -427,6 +450,10 @@ def _request_vertex_embeddings(
             )
         if embedding.values is None:
             raise InvalidEmbeddingResponse("Vertex embedding response has no vector values")
+        if statistics.token_count is None:
+            stats.provider_token_count = None
+        elif stats.provider_token_count is not None:
+            stats.provider_token_count += int(statistics.token_count)
         vectors.append(list(embedding.values))
     return vectors
 
