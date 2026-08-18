@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied
 from django.core.files.storage import default_storage
+from django.db.models import Value
+from django.db.models.functions import Coalesce, Lower, NullIf
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
@@ -19,6 +21,9 @@ from kitsune.sumo.utils import get_next_url, paginate
 from kitsune.upload.utils import create_image_thumbnail
 
 TICKET_STATUS_FILTERS = {"active", "all", "solved"}
+
+# Mirrors Profile.display_name, which treats a blank name as unset.
+DISPLAY_NAME_ORDER = Lower(Coalesce(NullIf("profile__name", Value("")), "username"))
 
 
 def _remove_group_member(profile, user, request, remove_from_group=True):
@@ -80,8 +85,8 @@ def list(request):
 
 def profile(request, group_slug, member_form=None, leader_form=None):
     prof = _get_group_profile_or_404(request.user, group_slug)
-    leaders = prof.leaders.all().select_related("profile")
-    members_qs = prof.group.user_set.all().select_related("profile")
+    leaders = prof.leaders.all().select_related("profile").order_by(DISPLAY_NAME_ORDER)
+    members_qs = prof.group.user_set.all().select_related("profile").order_by(DISPLAY_NAME_ORDER)
 
     if not prof.can_view_inactive_members(request.user):
         leaders = leaders.filter(is_active=True)
