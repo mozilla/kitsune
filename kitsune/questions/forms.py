@@ -187,6 +187,24 @@ class EditQuestionForm(forms.ModelForm):
             raise forms.ValidationError(_("Question content cannot be empty."))
         return content
 
+    def clean_troubleshooting(self):
+        troubleshooting = self.cleaned_data.get("troubleshooting", "")
+        if not troubleshooting:
+            return troubleshooting
+
+        try:
+            parsed = json.loads(troubleshooting)
+        except ValueError:
+            parsed = None
+
+        if not isinstance(parsed, dict):
+            # L10n: An error shown when troubleshooting information isn't a JSON object.
+            raise forms.ValidationError(
+                _("Troubleshooting information must be a valid JSON object.")
+            )
+
+        return troubleshooting
+
     @property
     def metadata_field_keys(self):
         """Returns the keys of the metadata fields for the current
@@ -215,7 +233,7 @@ class EditQuestionForm(forms.ModelForm):
             except ValueError:
                 parsed = None
 
-            if parsed:
+            if isinstance(parsed, dict):
                 # Clean out unwanted garbage preferences.
                 if "modifiedPreferences" in parsed and isinstance(
                     parsed["modifiedPreferences"], dict
