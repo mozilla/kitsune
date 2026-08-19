@@ -194,23 +194,24 @@
   <div class="question-entry--meta">
     <div class="question-entry--meta-primary">
       {% if question.product and _product_url %}
-      {% set _product_title = pgettext('DB: products.Product.title', question.product.title) %}
-      <span class="question-entry--meta-item">
-        <a class="question-entry--meta-item"
-           href="{{ _product_url }}"
-           title="{{ _('{product} questions')|f(product=_product_title) }}">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-               aria-hidden="true">
-            <rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/>
-            <rect x="2" y="14" width="7" height="7"/><rect x="15" y="14" width="7" height="7"/>
-          </svg>
-          {{ _product_title }}
-        </a>
-        {% if question.channel != "direct_support" and user_is_contributor and question.product_version %}
-         {{ question.product_version }}
-        {% endif %}
-      </span>
+        {% set _product_title = pgettext('DB: products.Product.title', question.product.title) %}
+        <span class="question-entry--meta-item">
+          <a class="question-entry--meta-item"
+             href="{{ _product_url }}"
+             {# L10n: A tooltip for the product title link on question cards, which will filter questions by the given product. Question cards are displayed when viewing a question list, e.g., on a support forum: https://support.mozilla.org/questions/firefox #}
+             title="{{ _('{product} questions')|f(product=_product_title) }}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+              <rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/>
+              <rect x="2" y="14" width="7" height="7"/><rect x="15" y="14" width="7" height="7"/>
+            </svg>
+            {{ _product_title }}
+          </a>
+          {% if question.channel != "direct_support" and user_is_contributor and question.product_version %}
+           {{ question.product_version }}
+          {% endif %}
+        </span>
       {% endif %}
       {% if question.topic and _topic_url %}
         {% set _topic_title = pgettext('DB: products.Topic.title', question.topic.title) %}
@@ -224,6 +225,7 @@
            hx-swap="outerHTML"
            hx-push-url="true"
            {%- endif %}
+           {# L10n: A tooltip for the topic title link on question cards, which will filter questions by the given topic. Question cards are displayed when viewing a question list, e.g., on a support forum: https://support.mozilla.org/questions/firefox #}
            title="{{ _('{topic} questions')|f(topic=_topic_title) }}">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -239,27 +241,38 @@
              aria-hidden="true">
           <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
         </svg>
-        {% if user_is_contributor and not profile_username %}
-          {{ _('asked by') }} <a class="question-entry--meta-asked-by"
-             href="{{ url('users.profile', question.creator.id) }}"
-             title="{{ display_name(question.creator) }}">{{ display_name(question.creator)|truncate(20) }}</a>
-          <time datetime="{{ question.created.isoformat() }}">{{ question.created|timesince }}</time>
-        {% else %}
-          <time datetime="{{ question.created.isoformat() }}">{{ _('asked {when}')|f(when=question.created|timesince) }}</time>
-        {% endif %}
+        <span class="question-entry--meta-item-text">
+          {% if user_is_contributor and not profile_username %}
+            {# L10n: This is a label displayed on question cards for contributors. `name` is the display name of the question author, `when` is how long ago the question was posted, and the other variables are HTML markup. Question cards are displayed when viewing a question list, e.g., on a support forum: https://support.mozilla.org/questions/firefox #}
+            {% trans name=display_name(question.creator)|truncate(20),
+                     b_open='<a class="question-entry--meta-bold" href="'|safe + url('users.profile', question.creator.id) + '" title="'|safe + display_name(question.creator) + '">'|safe, b_close='</a>'|safe,
+                     when=question.created|timesince %}
+              asked by {{ b_open }}{{ name }}{{ b_close }} {{ when }}
+            {% endtrans %}
+          {% else %}
+            {# L10n: This is a label displayed on question cards. `when` is how long ago the question was posted. Question cards are displayed when viewing a question list, e.g., on a support forum: https://support.mozilla.org/questions/firefox #}
+            <time datetime="{{ question.created.isoformat() }}">{{ _('asked {when}')|f(when=question.created|timesince) }}</time>
+          {% endif %}
+        </span>
       </span>
     </div>
     {% if question.channel != "direct_support" and question.last_answer %}
-      <span class="question-entry--last-reply"
+      <span class="question-entry--meta-item"
             title="{{ _('Last reply by {user}')|f(user=display_name(question.last_answer.creator)) }}">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
              aria-hidden="true">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
-        <span class="question-entry--last-reply-name">{{ display_name(question.last_answer.creator)|truncate(20) }}</span>
-        <span class="question-entry--last-reply-verb">{{ _('replied') }}</span>
-        <a class="question-entry--last-reply-time" href="{{ question.last_answer.get_absolute_url() }}" rel="nofollow">{{ question.last_answer.created|timesince }}</a>
+        <span class="question-entry--meta-item-text">
+          {# L10n: This is a label displayed on question cards and at the top of question pages, providing info about the latest reply in the thread (if present). `name` is the display name of the reply author, `when` is how long ago the reply was posted, and the other variables are HTML markup. Question cards are displayed when viewing a question list, e.g., on a support forum: https://support.mozilla.org/questions/firefox #}
+          {% trans name=display_name(question.last_answer.creator)|truncate(20),
+                   b_open='<span class="question-entry--meta-bold">'|safe, b_close='</span>'|safe,
+                   when=question.last_answer.created|timesince,
+                   a_open='<a href="'|safe + question.last_answer.get_absolute_url() + '" rel="nofollow">'|safe, a_close='</a>'|safe %}
+            {{ b_open }}{{ name }}{{ b_close }} replied {{ a_open }}{{ when }}{{ a_close }}
+          {% endtrans %}
+        </span>
       </span>
     {% endif %}
   </div>
