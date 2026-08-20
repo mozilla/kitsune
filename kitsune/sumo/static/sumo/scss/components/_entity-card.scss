@@ -1,0 +1,112 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+// Entity card
+//
+// A sidebar summary card for a person or group: avatar, name, an optional
+// meta line, an optional primary action, and an optional .stat-list of
+// stat-item rows.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/entity-card.njk
+//
+// Weight: 6
+//
+// Style guide: entity-card
+
+// Base card look (padding, radius, shadow) comes from the shared .card and
+// .elevation-01 classes applied alongside this one in markup — only the
+// bits specific to this component live here.
+.entity-card {
+  margin-bottom: p.$spacing-lg;
+  background: white;
+  text-align: center;
+
+  &--avatar {
+    display: block;
+    width: 96px;
+    height: 96px;
+    margin: 0 auto p.$spacing-sm;
+    border-radius: 50%;
+    border: 3px solid var(--color-marketing-gray-03);
+    object-fit: cover;
+  }
+
+  &--name {
+    @include c.sumo-callout-heading('no-fam');
+    margin: 0 0 2px;
+    // A long display name or username (often one unbroken word) has no
+    // natural wrap point, and as a flex item this card won't shrink below
+    // that text's width by default — it forces the sidebar column wider
+    // than its assigned width instead of wrapping.
+    overflow-wrap: anywhere;
+  }
+
+  &--location {
+    @include c.text-body-sm;
+    color: var(--color-marketing-gray-06);
+    margin: 0;
+    font-weight: normal;
+    overflow-wrap: anywhere;
+  }
+
+  &--action {
+    margin-top: p.$spacing-md;
+
+    .sumo-button {
+      width: 100%;
+    }
+  }
+
+  &--secondary-link {
+    display: block;
+    margin-top: p.$spacing-xs;
+    @include c.text-body-xs;
+    color: var(--color-marketing-gray-06);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-link);
+    }
+  }
+
+  .stat-list {
+    margin-top: p.$spacing-md;
+    padding-top: p.$spacing-md;
+    border-top: 1px solid var(--color-marketing-gray-03);
+    text-align: left;
+
+    // The slot's documented content. Until now .stat-item was only styled
+    // under .group-stats in components/_groups.scss, so stat rows dropped into
+    // an entity card rendered as bare text. Same row treatment here, so a
+    // group card and a person card read alike.
+    // users/profile.html fills this slot with its own section.contributions
+    // markup rather than .stat-item rows; that keeps its styling in
+    // layout/_profile.scss and is unaffected by these rules.
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: p.$spacing-sm p.$spacing-md;
+      border-left: 3px solid var(--color-link);
+      border-radius: p.$border-radius-sm;
+      background: var(--color-marketing-gray-01);
+
+      + .stat-item {
+        margin-top: p.$spacing-sm;
+      }
+    }
+
+    .stat-value {
+      @include c.text-display-sm;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--color-link);
+    }
+
+    .stat-label {
+      @include c.text-body-sm;
+      font-weight: 600;
+      color: var(--color-marketing-gray-07);
+    }
+  }
+}

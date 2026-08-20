@@ -924,6 +924,20 @@
 </div>
 {% endmacro %}
 
+{% macro entity_card(avatar_url, name, username=None, location=None, primary_action=None) %}
+<div class="entity-card card elevation-01">
+  <img class="entity-card--avatar" src="{{ avatar_url }}" alt="">
+  <h2 class="entity-card--name">{{ name }}{% if username %} <span class="username">({{ username }})</span>{% endif %}</h2>
+  {% if location and location.strip() %}<h2 class="entity-card--location">{{ location.strip() }}</h2>{% endif %}
+  {% if primary_action and primary_action.strip() %}<div class="entity-card--action">{{ primary_action }}</div>{% endif %}
+  {% if caller %}
+  <div class="stat-list">
+    {{ caller() }}
+  </div>
+  {% endif %}
+</div>
+{% endmacro %}
+
 {% macro featured_articles(articles, new_tab=False) %}
 <div class="sumo-card-grid is-four-wide">
   <div class="scroll-wrap">
