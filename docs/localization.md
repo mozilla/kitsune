@@ -399,7 +399,7 @@ Enter [Dennis](https://github.com/willkg/dennis/).
 
 Run:
 
-    $ ./scripts/test_locales.sh
+    ./scripts/test_locales.sh
 
 It'll extract all the strings, create a `.pot` file, then create a
 Pirate translation of all strings. The Pirate strings are available in
@@ -430,15 +430,15 @@ available on -dev, -stage, or -prod.
 
 You can lint localized strings for warnings and errors:
 
-    $ dennis-cmd lint locale/
+    dennis-cmd lint locale/
 
 Or just errors:
 
-    $ dennis-cmd lint --errorsonly locale/
+    dennis-cmd lint --errorsonly locale/
 
 You can see help text:
 
-    $ dennis-cmd
+    dennis-cmd
 
 # Getting the Localizations {#getting-localizations}
 
@@ -450,8 +450,8 @@ Git repo:
 You don't need the localization files for general development. However,
 if you need them for something, they're pretty easy to get:
 
-    $ cd kitsune
-    $ git clone https://github.com/mozilla-l10n/sumo-l10n locale
+    cd kitsune
+    git clone https://github.com/mozilla-l10n/sumo-l10n locale
 
 # Updating the Localizations
 
@@ -459,22 +459,22 @@ When strings are added or updated, we need to update the templates and
 PO files for localizers. Updating strings is pretty easy. Check out the
 localizations as above, then:
 
-    $ python manage.py extract
-    $ python manage.py merge
+    python manage.py extract
+    python manage.py merge
 
 Congratulations! You've now updated the POT and PO files.
 
 Sometimes this can leave a bunch of garbage files with `.po~`
 extensions. You should delete these, never commit them:
 
-    $ find . -name "*.po~" -delete
+    find . -name "*.po~" -delete
 
 ## Adding a New Locale
 
 Say you wanted to add `fa-IR`:
 
-    $ mkdir -p locale/fa-IR/LC_MESSAGES
-    $ python manage.py merge
+    mkdir -p locale/fa-IR/LC_MESSAGES
+    python manage.py merge
 
 Then add 'fa-IR' to SUMO_LANGUAGES in settings.py and make sure there
 is an entry in lib/languages.json (if not, add it).
@@ -498,7 +498,7 @@ don't forcibly add them to the repository.
 
 There is a shell script to compile the MO files for you:
 
-    $ ./locale/compile-mo.sh locale
+    ./locale/compile-mo.sh locale
 
 Done!
 
