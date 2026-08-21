@@ -459,6 +459,9 @@ class ZendeskConfig(ModelBase):
         blank=True,
         help_text="Zendesk brand ID to associate tickets with for this product",
     )
+    enable_urgency_field = models.BooleanField(
+        default=False, help_text="Show the urgency selector in the support form"
+    )
     enable_os_field = models.BooleanField(
         default=False, help_text="Show operating system selector in the support form"
     )

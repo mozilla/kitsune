@@ -46,6 +46,30 @@ POLICY_DISTRIBUTION_CHOICES = [
     ("not_sure", "Not sure / Need help selecting"),
 ]
 
+URGENCY_CHOICES = [
+    ("", _lazy("Select urgency")),
+    (
+        "normal",
+        _lazy(
+            "Normal - Non-critical Firefox issue, minor defect, or integration/deployment question"
+        ),
+    ),
+    (
+        "high",
+        _lazy(
+            "High - Key functionality is degraded for multiple users or teams, "
+            "but a workaround exists"
+        ),
+    ),
+    (
+        "critical",
+        _lazy(
+            "Critical - Production outage, critical blockage, or material security risk "
+            "with no workaround"
+        ),
+    ),
+]
+
 OS_TAGS = {
     "win64": "seg-platform-win64",
     "win_arm64": "seg-platform-win-arm64",
@@ -77,6 +101,12 @@ POLICY_DISTRIBUTION_TAGS = {
     "not_sure": "seg-policy-dist-other",
 }
 
+URGENCY_TAGS = {
+    "normal": "seg-pri-normal",
+    "high": "seg-pri-high",
+    "critical": "seg-pri-critical",
+}
+
 ZENDESK_PRODUCT_SLUGS = {v: k for k, v in PRODUCT_SLUG_ALIASES.items()}
 
 
@@ -90,6 +120,12 @@ class ZendeskForm(forms.Form):
     )
     category = forms.ChoiceField(
         label=_lazy("What do you need help with?"), required=True, choices=[]
+    )
+    urgency = forms.ChoiceField(
+        label=_lazy("What is the impact to your org?"),
+        choices=URGENCY_CHOICES,
+        widget=forms.HiddenInput,
+        required=False,
     )
     os = forms.ChoiceField(
         label=_lazy("What operating system does your device use?"),
@@ -161,6 +197,11 @@ class ZendeskForm(forms.Form):
                 self.fields["policy_distribution"].choices = POLICY_DISTRIBUTION_CHOICES
                 self.fields["policy_distribution"].required = True
 
+            if zendesk_config.enable_urgency_field:
+                self.fields["urgency"].widget = forms.Select()
+                self.fields["urgency"].choices = URGENCY_CHOICES
+                self.fields["urgency"].required = True
+
         self.label_suffix = ""
 
     def clean_email(self):
@@ -225,6 +266,10 @@ class ZendeskForm(forms.Form):
             if tag := POLICY_DISTRIBUTION_TAGS.get(policy_distribution):
                 zendesk_tags.append(tag)
 
+        if urgency := self.cleaned_data.get("urgency"):
+            if tag := URGENCY_TAGS.get(urgency):
+                zendesk_tags.append(tag)
+
         if settings.STAGE:
             zendesk_tags.append("stage")
 
@@ -241,6 +286,7 @@ class ZendeskForm(forms.Form):
             country=self.cleaned_data.get("country", ""),
             update_channel=self.cleaned_data.get("update_channel", ""),
             policy_distribution=self.cleaned_data.get("policy_distribution", ""),
+            urgency=self.cleaned_data.get("urgency", ""),
             product=product,
             user=user if (user and user.is_authenticated) else None,
             org_group=resolve_org_group(user, product),
