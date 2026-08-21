@@ -262,8 +262,9 @@ article {
 }
 
 
-/* Document Translation page */
-#localize-document {
+/* Draft-related messages */
+#localize-document,
+#edit-document {
   .buttons-and-preview {
 
     /* Taken from Bootstrap V3 */
