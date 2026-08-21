@@ -5,6 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 from kitsune.customercare.forms import (
     POLICY_DISTRIBUTION_TAGS,
     UPDATE_CHANNEL_TAGS,
+    URGENCY_TAGS,
     ZendeskForm,
 )
 from kitsune.customercare.models import SupportTicket
@@ -631,4 +632,91 @@ class ZendeskFormTests(TestCase):
         for tag in UPDATE_CHANNEL_TAGS.values():
             self.assertNotIn(tag, submission.zendesk_tags)
         for tag in POLICY_DISTRIBUTION_TAGS.values():
+            self.assertNotIn(tag, submission.zendesk_tags)
+
+    def test_urgency_field_hidden_by_default(self):
+        """Test that the urgency field is hidden when not enabled."""
+        form = ZendeskForm(product=self.vpn_product, user=self.user)
+
+        self.assertEqual(form.fields["urgency"].widget.__class__.__name__, "HiddenInput")
+        self.assertFalse(form.fields["urgency"].required)
+
+    def test_urgency_field_shown_when_enabled(self):
+        """Test that the urgency field is shown, required, and has choices when enabled."""
+        self.vpn_zendesk.enable_urgency_field = True
+        self.vpn_zendesk.save()
+
+        form = ZendeskForm(product=self.vpn_product, user=self.user)
+
+        self.assertEqual(form.fields["urgency"].widget.__class__.__name__, "Select")
+        self.assertTrue(form.fields["urgency"].required)
+
+        urgency_values = [v for v, _ in form.fields["urgency"].widget.choices if v]
+        self.assertEqual(urgency_values, ["normal", "high", "critical"])
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_send_stores_urgency(self, mock_task):
+        """Test that the urgency value is stored in SupportTicket."""
+        self.vpn_zendesk.enable_urgency_field = True
+        self.vpn_zendesk.save()
+
+        form = ZendeskForm(
+            data={
+                "email": "test@example.com",
+                "category": "vpn-connection-issues",
+                "subject": "Test subject",
+                "description": "Test description",
+                "urgency": "critical",
+            },
+            product=self.vpn_product,
+            user=self.user,
+        )
+
+        self.assertTrue(form.is_valid())
+        submission = form.send(self.user, self.vpn_product)
+
+        self.assertEqual(submission.urgency, "critical")
+        mock_task.assert_called_once_with(submission.id)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_send_appends_urgency_segmentation_tag(self, mock_task):
+        """Test that the urgency value is mapped to its segmentation tag."""
+        self.vpn_zendesk.enable_urgency_field = True
+        self.vpn_zendesk.save()
+
+        for urgency, expected_tag in URGENCY_TAGS.items():
+            with self.subTest(urgency=urgency):
+                form = ZendeskForm(
+                    data={
+                        "email": "test@example.com",
+                        "category": "vpn-connection-issues",
+                        "subject": "Test subject",
+                        "description": "Test description",
+                        "urgency": urgency,
+                    },
+                    product=self.vpn_product,
+                    user=self.user,
+                )
+                self.assertTrue(form.is_valid())
+                submission = form.send(self.user, self.vpn_product)
+                self.assertIn(expected_tag, submission.zendesk_tags)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_send_no_urgency_tag_when_field_empty(self, mock_task):
+        """Test that no urgency segmentation tag is added when the field is empty."""
+        form = ZendeskForm(
+            data={
+                "email": "test@example.com",
+                "category": "vpn-connection-issues",
+                "subject": "Test subject",
+                "description": "Test description",
+            },
+            product=self.vpn_product,
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid())
+        submission = form.send(self.user, self.vpn_product)
+
+        self.assertEqual(submission.urgency, "")
+        for tag in URGENCY_TAGS.values():
             self.assertNotIn(tag, submission.zendesk_tags)

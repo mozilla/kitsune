@@ -202,6 +202,7 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
         "country": submission.country,
         "update_channel": submission.update_channel,
         "policy_distribution": submission.policy_distribution,
+        "urgency": submission.urgency,
         "product": zendesk_product,
         "product_title": submission.product.title,
         "zendesk_tags": submission.zendesk_tags,

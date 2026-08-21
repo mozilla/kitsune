@@ -264,6 +264,80 @@ class ZendeskClientTests(TestCase):
     @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
     @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
     @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
+    @patch("django.conf.settings.ZENDESK_URGENCY_FIELD_ID", 129)
+    def test_create_ticket_includes_urgency(self, mock_zenpy):
+        """Test that create_ticket includes urgency when provided."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        mock_client.tickets.create.return_value = Mock(id=789)
+        self.user.profile.zendesk_id = "123"
+
+        client = ZendeskClient()
+        client.update_user = Mock(return_value=Mock(id=456))
+
+        ticket_fields = {
+            "product": "firefox",
+            "product_title": "Firefox",
+            "subject": "Test subject",
+            "description": "Test description",
+            "category": "technical",
+            "os": "win64",
+            "country": "US",
+            "ticket_form_id": 456,
+            "urgency": "critical",
+        }
+
+        client.create_ticket(self.user, ticket_fields)
+
+        mock_client.tickets.create.assert_called_once()
+        call_args = mock_client.tickets.create.call_args[0][0]
+
+        field_dict = {field["id"]: field["value"] for field in call_args.custom_fields}
+
+        self.assertEqual(field_dict[129], "critical")
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_PRODUCT_FIELD_ID", 123)
+    @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
+    @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
+    @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
+    @patch("django.conf.settings.ZENDESK_URGENCY_FIELD_ID", 129)
+    def test_create_ticket_omits_empty_urgency(self, mock_zenpy):
+        """Test that create_ticket omits urgency when not provided."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        mock_client.tickets.create.return_value = Mock(id=789)
+        self.user.profile.zendesk_id = "123"
+
+        client = ZendeskClient()
+        client.update_user = Mock(return_value=Mock(id=456))
+
+        ticket_fields = {
+            "product": "firefox",
+            "product_title": "Firefox",
+            "subject": "Test subject",
+            "description": "Test description",
+            "category": "technical",
+            "os": "win64",
+            "country": "US",
+            "ticket_form_id": 456,
+            "urgency": "",
+        }
+
+        client.create_ticket(self.user, ticket_fields)
+
+        mock_client.tickets.create.assert_called_once()
+        call_args = mock_client.tickets.create.call_args[0][0]
+
+        field_ids = [field["id"] for field in call_args.custom_fields]
+
+        self.assertNotIn(129, field_ids)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_PRODUCT_FIELD_ID", 123)
+    @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
+    @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
+    @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
     @patch("django.conf.settings.ZENDESK_UPDATE_CHANNEL_FIELD_ID", 127)
     @patch("django.conf.settings.ZENDESK_POLICY_DISTRIBUTION_FIELD_ID", 128)
     def test_create_ticket_omits_empty_deployment_fields(self, mock_zenpy):

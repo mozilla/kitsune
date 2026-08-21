@@ -134,6 +134,14 @@ class ZendeskClient:
                     "value": ticket_fields.get("policy_distribution"),
                 }
             )
+        if ticket_fields.get("urgency"):
+            custom_fields.append(
+                {
+                    "id": settings.ZENDESK_URGENCY_FIELD_ID,
+                    "value": ticket_fields.get("urgency"),
+                }
+            )
+
         ticket_kwargs = {
             "subject": ticket_fields.get("subject")
             or f"{ticket_fields.get('product_title', 'Product')} support",

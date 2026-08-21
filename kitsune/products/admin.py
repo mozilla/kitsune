@@ -214,13 +214,25 @@ class ZendeskConfigAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "ticket_form_id",
+        "enable_urgency_field",
         "enable_os_field",
+        "enable_deployment_fields",
         "skip_spam_moderation",
         "topic_count",
     )
     list_display_links = ("name",)
-    list_editable = ("enable_os_field", "skip_spam_moderation")
-    list_filter = ("enable_os_field", "skip_spam_moderation")
+    list_editable = (
+        "enable_urgency_field",
+        "enable_os_field",
+        "enable_deployment_fields",
+        "skip_spam_moderation",
+    )
+    list_filter = (
+        "enable_urgency_field",
+        "enable_os_field",
+        "enable_deployment_fields",
+        "skip_spam_moderation",
+    )
     search_fields = ("name",)
     inlines = [ZendeskTopicConfigurationInline]
 
