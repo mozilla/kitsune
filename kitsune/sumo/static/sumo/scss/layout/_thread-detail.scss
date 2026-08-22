@@ -16,6 +16,7 @@
   @include c.text-display-xs;
   margin: 0 0 p.$spacing-md;
   width: 100%;
+  word-wrap: break-word;
 }
 
 .thread-detail--meta {
@@ -31,6 +32,7 @@
 // Single post component (question body / ticket description / comments)
 .thread-post {
   padding: p.$spacing-xl 0;
+  word-wrap: break-word;
 
   &:first-child {
     padding-top: 0;
@@ -86,7 +88,6 @@
 .thread-post--body {
   @include c.text-body-lg;
   color: var(--color-text);
-  word-break: break-word;
 
   @include c.ulol;
 
@@ -229,6 +230,10 @@
   display: flex;
   flex-direction: column;
   gap: p.$spacing-xs;
+}
+
+thread-replies {
+  word-wrap: break-word;
 }
 
 // Replies section heading row
