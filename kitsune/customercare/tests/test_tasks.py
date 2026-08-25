@@ -115,9 +115,11 @@ class ZendeskSubmissionClassifierTests(TestCase):
         result = classify_zendesk_submission(submission)
 
         mock_classify_spam.assert_not_called()
+        mock_reassignment.assert_not_called()
         mock_classify_topic.assert_called_once()
         self.assertEqual(result["action"], ModerationAction.NOT_SPAM)
         self.assertEqual(result["spam_result"], {})
+        self.assertEqual(result["product_result"], {})
         self.assertIn("topic_result", result)
 
     @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
