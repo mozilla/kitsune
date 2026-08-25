@@ -535,7 +535,9 @@ def test_locale_redirect_from_article_without_en_us_parent(page: Page, create_us
 
     with allure.step("Creating a new kb article directly inside the RO locale"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True, locale="ro", article_category="ro-translation-category"
+            approve_first_revision=True, locale="ro",
+            article_category="ro-translation-category",
+            article_topic=utilities.kb_article_test_data["translated_parent_topic"]
         )
         sumo_pages.kb_article_page.click_on_a_particular_breadcrumb(
             article_details['article_title']

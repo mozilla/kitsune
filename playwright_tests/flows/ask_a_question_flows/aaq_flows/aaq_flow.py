@@ -1,9 +1,9 @@
 from playwright.sync_api import Page
 from playwright_tests.core.utilities import Utilities
+from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
 from playwright_tests.pages.ask_a_question.posted_question_pages.questions_page import QuestionPage
 from playwright_tests.pages.auth_page import AuthPage
-from playwright_tests.pages.top_navbar import TopNavbar
 
 
 class AAQFlow:
@@ -12,7 +12,6 @@ class AAQFlow:
         self.aaq_form_page = AAQFormPage(page)
         self.utilities = Utilities(page)
         self.question_page = QuestionPage(page)
-        self.top_navbar = TopNavbar(page)
         self.auth_page = AuthPage(page)
 
     def submit_an_aaq_question(self, subject: str, body: str, topic_name='', attach_image=False,
@@ -102,8 +101,8 @@ class AAQFlow:
             email (str): The email to be added to the form.
         """
         if is_loginless:
-            if self.top_navbar.signin_signup_button.is_visible():
-                self.top_navbar.click_on_signin_signup_button()
+            if not self.aaq_form_page.loginless_contact_email_input_field.is_visible():
+                self.utilities.navigate_to_link(FxAPageMessages.AUTH_PAGE_URL)
                 self.auth_page.click_on_cant_sign_in_to_my_mozilla_account_link()
             self.aaq_form_page.fill_contact_email_field(email)
         # We are currently choosing one random topic & os for each product ticket submission.
@@ -188,7 +187,7 @@ class AAQFlow:
 
     def post_question_reply_flow(self, repliant_username: str, reply='', submit_reply=True,
                                  quoted_reply=False, quoted_question=False, reply_for_id='',
-                                 fetch_id=True) -> str:
+                                 fetch_id=True, expect_spam_flag=False) -> str:
         """
         Flow for posting a question reply.
         Args:
@@ -198,6 +197,9 @@ class AAQFlow:
             submit_reply: If we should submit the question or not.
             quoted_reply: If we should quote a reply or not.
             reply_for_id: If we should quote a reply we need the id of the targeted reply.
+            expect_spam_flag: If the reply is expected to be auto-flagged as spam. Such replies
+            are hidden from the repliant, so there is nothing to wait for and the caller is
+            left to assert on the moderation banner itself.
         """
 
         if quoted_reply:
@@ -213,7 +215,8 @@ class AAQFlow:
             self.question_page.add_text_to_post_a_reply_textarea(reply)
 
         if submit_reply:
-            return self.question_page.click_on_post_reply_button(repliant_username, fetch_id)
+            return self.question_page.click_on_post_reply_button(
+                repliant_username, fetch_id, expect_spam_flag)
 
     def report_question_abuse(self, answer_id="", text='', report_reason="spam"):
         """

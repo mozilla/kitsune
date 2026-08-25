@@ -80,7 +80,8 @@ def test_spam_content_is_auto_flagged(page: Page, create_user_factory):
 
         with allure.step(f"Leaving a comment with {content} spam content"):
             sumo_pages.aaq_flow.post_question_reply_flow(
-                repliant_username=test_user_two["username"], reply=content, fetch_id=False
+                repliant_username=test_user_two["username"], reply=content, fetch_id=False,
+                expect_spam_flag=True
             )
 
         with check, allure.step("Verifying that the spam banner is successfully displayed"):
