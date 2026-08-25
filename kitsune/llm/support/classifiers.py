@@ -116,6 +116,7 @@ def classify_question(question: Question) -> dict[str, Any]:
 def classify_zendesk_submission(submission: SupportTicket) -> dict[str, Any]:
     """
     Analyze a support ticket for spam, product classification, and topic classification.
+    Products configured to skip spam moderation also skip the product check.
     Returns a dict with keys: action, spam_result, product_result, topic_result.
     """
     product = submission.product
@@ -169,15 +170,8 @@ def classify_zendesk_submission(submission: SupportTicket) -> dict[str, Any]:
             "topic_result": {},
         }
 
-    # Skip spam moderation if configured
+    # Skipping spam moderation also skips the product check: trust the product the user picked.
     if skip_spam:
-        # Check for product reassignment
-        if result := _handle_product_reassignment(
-            payload, product, False, zendesk_on_reassignment
-        ):
-            return {**base_result, **result}
-
-        # No reassignment - classify topic normally
         topic_result_dict = classify_topic(payload)
         return {
             **base_result,
