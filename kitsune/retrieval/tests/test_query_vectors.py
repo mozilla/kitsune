@@ -106,8 +106,8 @@ class QueryConfigurationTests(SimpleTestCase):
 
     def test_invalid_serving_policy_is_reported(self):
         for setting, value in (
-            ("RETRIEVAL_AUTHORIZATION_OVERFETCH", -1),
-            ("RETRIEVAL_MAX_PAGE_OFFSET", -1),
+            ("RETRIEVAL_SEARCH_SEGMENT_SIZE", 0),
+            ("RETRIEVAL_SEARCH_SESSION_TTL_SECONDS", 0),
             ("RETRIEVAL_LEXICAL_DEFAULT_OPERATOR", "XOR"),
             ("RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH", ""),
             ("RETRIEVAL_LOCALE_COMPOSITION", "weighted"),
@@ -118,8 +118,7 @@ class QueryConfigurationTests(SimpleTestCase):
 
         with override_settings(
             RETRIEVAL_RRF_RANK_WINDOW_SIZE=20,
-            RETRIEVAL_MAX_PAGE_OFFSET=10,
-            RETRIEVAL_AUTHORIZATION_OVERFETCH=5,
+            RETRIEVAL_SEARCH_SEGMENT_SIZE=20,
         ):
             self.assertTrue(query_configuration_problems())
 

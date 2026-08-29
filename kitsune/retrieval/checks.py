@@ -18,7 +18,7 @@ from django.core.checks import Error, register
 from kitsune.retrieval.embeddings import MIN_EMBEDDING_TIMEOUT_SECONDS
 from kitsune.retrieval.fingerprints import is_valid_similarity_floor
 from kitsune.retrieval.index import SIMILARITY
-from kitsune.retrieval.validation import is_finite_number, is_nonnegative_int, is_positive_int
+from kitsune.retrieval.validation import is_finite_number, is_positive_int
 
 _SHA256_HEX = re.compile(r"[0-9a-f]{64}\Z")
 _RATE = re.compile(r"(?:0|[1-9][0-9]*)/(?:[1-9][0-9]*)?[smhd]\Z")
@@ -94,23 +94,21 @@ def query_configuration_problems() -> list[str]:
     ):
         problems.append("RETRIEVAL_KNN_NUM_CANDIDATES must be at least RETRIEVAL_SEMANTIC_K")
 
-    overfetch = settings.RETRIEVAL_AUTHORIZATION_OVERFETCH
-    if not is_nonnegative_int(overfetch):
-        problems.append("RETRIEVAL_AUTHORIZATION_OVERFETCH must be a non-negative integer")
-
-    max_offset = settings.RETRIEVAL_MAX_PAGE_OFFSET
-    if not is_nonnegative_int(max_offset):
-        problems.append("RETRIEVAL_MAX_PAGE_OFFSET must be a non-negative integer")
+    segment_size = settings.RETRIEVAL_SEARCH_SEGMENT_SIZE
+    if not is_positive_int(segment_size):
+        problems.append("RETRIEVAL_SEARCH_SEGMENT_SIZE must be a positive integer")
     elif (
         "RETRIEVAL_RRF_RANK_WINDOW_SIZE" in valid_bounds
-        and is_nonnegative_int(overfetch)
-        and max_offset + settings.SEARCH_RESULTS_PER_PAGE + overfetch + 1
-        > settings.RETRIEVAL_RRF_RANK_WINDOW_SIZE
+        and segment_size + 1 > settings.RETRIEVAL_RRF_RANK_WINDOW_SIZE
     ):
         problems.append(
-            "RETRIEVAL_MAX_PAGE_OFFSET plus the result page, authorization over-fetch, "
-            "and has-more probe must fit within RETRIEVAL_RRF_RANK_WINDOW_SIZE"
+            "RETRIEVAL_SEARCH_SEGMENT_SIZE and the has-more probe must fit within "
+            "RETRIEVAL_RRF_RANK_WINDOW_SIZE"
         )
+
+    session_ttl = settings.RETRIEVAL_SEARCH_SESSION_TTL_SECONDS
+    if not is_positive_int(session_ttl):
+        problems.append("RETRIEVAL_SEARCH_SESSION_TTL_SECONDS must be a positive integer")
 
     if settings.RETRIEVAL_LEXICAL_DEFAULT_OPERATOR not in ("AND", "OR"):
         problems.append("RETRIEVAL_LEXICAL_DEFAULT_OPERATOR must be AND or OR")

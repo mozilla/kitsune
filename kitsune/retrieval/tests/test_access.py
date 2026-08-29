@@ -9,6 +9,7 @@ from kitsune.products.tests import ProductFactory
 from kitsune.retrieval.access import (
     AuthorizedPassage,
     ViewerAccess,
+    reauthorize_cached_candidates,
     retrieve,
     viewer_access_for,
 )
@@ -88,7 +89,6 @@ def _retrieve(
     locale="en-US",
     product_id=None,
     page_size=10,
-    offset=0,
 ):
     sources = (
         {"aaq"}
@@ -112,9 +112,6 @@ def _retrieve(
             rank_window_size=50,
             locale_composition="combined",
             page_size=page_size,
-            authorization_overfetch=5,
-            offset=offset,
-            max_offset=20,
         )
     return authorized, search
 
@@ -142,6 +139,22 @@ class ViewerAccessTests(TestCase):
 
 
 class CandidateAuthorizationTests(TestCase):
+    def test_cached_candidates_are_reauthorized_before_reuse(self):
+        document = _approved(locale="en-US")
+        cached, _ = _retrieve(_result(_passage(document)))
+        document.delete()
+
+        with self.assertNumQueries(1):
+            refreshed = reauthorize_cached_candidates(
+                cached,
+                viewer_access=ViewerAccess(),
+                locale="en-US",
+                product_id=None,
+            )
+
+        self.assertEqual(refreshed.candidates, ())
+        self.assertEqual(refreshed.authorization_rejection_count, 1)
+
     def test_one_query_authorizes_sources_and_prefers_requested_display_locale(self):
         product = ProductFactory()
         original = _approved(locale="en-US", products=[product])
@@ -167,7 +180,7 @@ class CandidateAuthorizationTests(TestCase):
 
         self.assertEqual(len(result.candidates), 1)
         self.assertTrue(result.has_more)
-        self.assertEqual(search.call_args.kwargs["page_size"], 6)
+        self.assertEqual(search.call_args.kwargs["page_size"], 1)
         evidence = result.candidates[0].evidence
         self.assertIsInstance(evidence, AuthorizedPassage)
         self.assertEqual(evidence.display.document_id, translation.id)
@@ -199,32 +212,7 @@ class CandidateAuthorizationTests(TestCase):
         self.assertEqual(result.invalid_hit_count, 2)
         self.assertEqual(result.authorization_rejection_count, 4)
 
-    def test_authorizes_a_prefix_before_selecting_a_later_page(self):
-        wrong_product = _approved(locale="en-US")
-        product = ProductFactory()
-        first = _approved(locale="en-US", products=[product])
-        second = _approved(locale="en-US", products=[product])
-        third = _approved(locale="en-US", products=[product])
-
-        with self.assertNumQueries(1):
-            result, search = _retrieve(
-                _result(
-                    _passage(wrong_product),
-                    _passage(first),
-                    _passage(second),
-                    _passage(third),
-                ),
-                product_id=product.id,
-                page_size=1,
-                offset=1,
-            )
-
-        self.assertEqual(result.candidates[0].family_id, f"kb:{second.id}")
-        self.assertTrue(result.has_more)
-        self.assertEqual(search.call_args.kwargs["offset"], 0)
-        self.assertEqual(search.call_args.kwargs["page_size"], 7)
-
-    def test_raw_next_page_is_not_hidden_by_authorization_overfetch(self):
+    def test_raw_next_segment_is_not_hidden_by_authorization(self):
         first = _approved(locale="en-US")
         second = _approved(locale="en-US")
         indexed = replace(_result(_passage(first), _passage(second)), has_more=True)

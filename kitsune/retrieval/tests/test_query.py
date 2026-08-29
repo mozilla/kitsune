@@ -395,12 +395,10 @@ class BoundedRetrievalTests(SimpleTestCase):
                 rank_window_size=20,
                 locale_composition="combined",
                 page_size=2,
-                offset=4,
-                max_offset=10,
                 family_distribution_size=10,
             )
 
-        self.assertEqual([candidate.rank for candidate in result.candidates], [5, 6])
+        self.assertEqual([candidate.rank for candidate in result.candidates], [1, 2])
         self.assertEqual(result.approximate_total, 3)
         self.assertEqual(result.family_counts, (("kb:41", 4), ("aaq:9", 1)))
         self.assertTrue(result.has_more)
@@ -427,17 +425,18 @@ class BoundedRetrievalTests(SimpleTestCase):
         self.assertEqual(request["size"], 3)
 
         response["hits"]["hits"][0]["_source"]["scope"]["version"] = 2
-        degraded = _decode_response(response, page_size=2, offset=0, mode="hybrid")
+        degraded = _decode_response(response, page_size=2, mode="hybrid")
         self.assertEqual([candidate.family_id for candidate in degraded.candidates], ["aaq:9"])
+        self.assertEqual(degraded.encountered_family_ids, ("kb:41", "aaq:9"))
         self.assertTrue(degraded.degraded)
         self.assertEqual(degraded.invalid_hit_count, 1)
 
         response["hits"]["hits"][0]["_source"]["scope"]["version"] = 1
         response["_shards"]["successful"] = 0
         with self.assertRaisesRegex(InvalidRetrievalResponse, "no Elasticsearch shard"):
-            _decode_response(response, page_size=2, offset=0, mode="hybrid")
+            _decode_response(response, page_size=2, mode="hybrid")
 
-    def test_rejects_pages_outside_either_bound(self):
+    def test_rejects_a_segment_that_cannot_fit_the_rank_window(self):
         common = {
             "query": "firefox",
             "kb_index": "retrieval-42",
@@ -452,10 +451,8 @@ class BoundedRetrievalTests(SimpleTestCase):
             "locale_composition": "combined",
             "page_size": 2,
         }
-        with self.assertRaisesRegex(ValueError, "max_offset"):
-            _retrieve_unvalidated(**common, rank_window_size=20, offset=11, max_offset=10)
         with self.assertRaisesRegex(ValueError, "has_more"):
-            _retrieve_unvalidated(**common, rank_window_size=10, offset=8, max_offset=10)
+            _retrieve_unvalidated(**common, rank_window_size=2)
 
 
 class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
@@ -627,8 +624,6 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
             rank_window_size=20,
             locale_composition="combined",
             page_size=2,
-            offset=0,
-            max_offset=10,
             strict=True,
         )
         self.assertEqual(len(result.candidates), 2)
@@ -640,6 +635,31 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
                 candidate.family_id in {"kb:1", "kb:2", "aaq:3"} for candidate in result.candidates
             )
         )
+        continuation = _retrieve_unvalidated(
+            "firefox startup crash",
+            kb_index=ChunkDocument.Index.read_alias,
+            locale="en-US",
+            sources={"kb", "aaq"},
+            viewer_group_ids=(),
+            product_id=3,
+            query_vector=exact,
+            similarity_floor=0.99,
+            semantic_k=12,
+            num_candidates=20,
+            rank_window_size=20,
+            locale_composition="combined",
+            page_size=2,
+            strict=True,
+            excluded_family_ids=result.encountered_family_ids,
+        )
+        first_families = {candidate.family_id for candidate in result.candidates}
+        continuation_families = {
+            candidate.family_id for candidate in continuation.candidates
+        }
+        self.assertEqual(first_families | continuation_families, {"kb:1", "kb:2", "aaq:3"})
+        self.assertTrue(first_families.isdisjoint(continuation_families))
+        self.assertEqual(continuation.approximate_total, 1)
+        self.assertFalse(continuation.has_more)
         passages = [
             candidate.evidence
             for candidate in result.candidates
@@ -661,8 +681,6 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
             rank_window_size=2,
             locale_composition="combined",
             page_size=1,
-            offset=0,
-            max_offset=0,
             strict=True,
         )
         [aaq_candidate] = aaq_result.candidates

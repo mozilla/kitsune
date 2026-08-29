@@ -132,6 +132,7 @@ class RetrievalResult[Candidate]:
     degraded: bool
     failed_shards: int
     took_ms: int
+    encountered_family_ids: tuple[str, ...] = ()
     family_counts: tuple[tuple[str, int], ...] = ()
     invalid_hit_count: int = 0
     authorization_rejection_count: int = 0
@@ -510,8 +511,6 @@ def _retrieve_unvalidated(
     rank_window_size: int,
     locale_composition: LocaleComposition,
     page_size: int,
-    offset: int,
-    max_offset: int,
     privileged: bool = False,
     default_operator: DefaultOperator = "AND",
     minimum_should_match: str | None = None,
@@ -523,14 +522,8 @@ def _retrieve_unvalidated(
     """Execute one bounded search and return evidence that still requires authorization."""
     if not is_positive_int(page_size):
         raise ValueError("page_size must be a positive integer")
-    if not is_nonnegative_int(offset):
-        raise ValueError("offset must be a non-negative integer")
-    if not is_nonnegative_int(max_offset):
-        raise ValueError("max_offset must be a non-negative integer")
-    if offset > max_offset:
-        raise ValueError("offset exceeds max_offset")
-    if offset + page_size + 1 > rank_window_size:
-        raise ValueError("the page and has_more probe must fit within rank_window_size")
+    if page_size + 1 > rank_window_size:
+        raise ValueError("the segment and has_more probe must fit within rank_window_size")
     if family_distribution_size is not None and (
         not isinstance(family_distribution_size, int)
         or isinstance(family_distribution_size, bool)
@@ -590,7 +583,6 @@ def _retrieve_unvalidated(
     response = es_client().search(
         index=indices,
         retriever=retriever,
-        from_=offset,
         size=page_size + 1,
         collapse={"field": "family_id"},
         aggregations=aggregations,
@@ -631,7 +623,6 @@ def _retrieve_unvalidated(
     return _decode_response(
         raw,
         page_size=page_size,
-        offset=offset,
         mode=mode,
         include_family_distribution=family_distribution_size is not None,
     )
@@ -641,7 +632,6 @@ def _decode_response(
     response: Mapping,
     *,
     page_size: int,
-    offset: int,
     mode: RetrievalMode,
     include_family_distribution: bool = False,
 ) -> RetrievalResult[UnvalidatedCandidate]:
@@ -705,10 +695,14 @@ def _decode_response(
         family_counts = tuple(parsed_counts)
 
     candidates = []
+    encountered_family_ids = []
     rejected = 0
     for rank, hit in enumerate(hits[:page_size], start=1):
+        family_id = _raw_family_id(hit)
+        if family_id is not None and family_id not in encountered_family_ids:
+            encountered_family_ids.append(family_id)
         try:
-            candidates.append(_decode_hit(hit, rank=offset + rank))
+            candidates.append(_decode_hit(hit, rank=rank))
         except InvalidRetrievalResponse:
             rejected += 1
     return RetrievalResult(
@@ -719,9 +713,22 @@ def _decode_response(
         degraded=failed > 0 or timed_out or rejected > 0,
         failed_shards=failed,
         took_ms=took,
+        encountered_family_ids=tuple(encountered_family_ids),
         family_counts=family_counts,
         invalid_hit_count=rejected,
     )
+
+
+def _raw_family_id(hit: object) -> str | None:
+    """Return a safe exclusion key even when the rest of a hit cannot be decoded."""
+    if not isinstance(hit, Mapping) or not isinstance(hit.get("_source"), Mapping):
+        return None
+    family_id = hit["_source"].get("family_id")
+    if not isinstance(family_id, str) or not family_id.startswith(
+        (f"{KB_SOURCE}:", f"{AAQ_SOURCE}:")
+    ):
+        return None
+    return family_id
 
 
 def _decode_hit(hit: object, *, rank: int) -> UnvalidatedCandidate:

@@ -21,7 +21,7 @@ from kitsune.retrieval.query import (
     _retrieve_unvalidated,
     parse_positive_integer_id,
 )
-from kitsune.retrieval.validation import is_nonnegative_int, is_positive_int
+from kitsune.retrieval.validation import is_positive_int
 from kitsune.wiki.models import Document
 
 PRIMARY_DATABASE = "default"
@@ -94,30 +94,16 @@ def retrieve(
     rank_window_size: int,
     locale_composition: LocaleComposition,
     page_size: int,
-    authorization_overfetch: int,
-    offset: int,
-    max_offset: int,
     default_operator: DefaultOperator = "AND",
     minimum_should_match: str | None = None,
     strict: bool = False,
+    excluded_family_ids: Collection[str] = (),
 ) -> RetrievalResult[AuthorizedCandidate]:
     """Retrieve candidates and authorize every selected KB source against the primary DB."""
-    if not is_nonnegative_int(authorization_overfetch):
-        raise ValueError("authorization_overfetch must be a non-negative integer")
     if not is_positive_int(page_size):
         raise ValueError("page_size must be a positive integer")
-    if not is_nonnegative_int(offset):
-        raise ValueError("offset must be a non-negative integer")
-    if not is_nonnegative_int(max_offset):
-        raise ValueError("max_offset must be a non-negative integer")
-    if offset > max_offset:
-        raise ValueError("offset exceeds max_offset")
 
     source_set = frozenset(sources)
-    authorize_prefix = "kb" in source_set
-    candidate_count = (
-        offset + page_size + authorization_overfetch if authorize_prefix else page_size
-    )
     result = _retrieve_unvalidated(
         query,
         kb_index=kb_index,
@@ -131,13 +117,12 @@ def retrieve(
         num_candidates=num_candidates,
         rank_window_size=rank_window_size,
         locale_composition=locale_composition,
-        page_size=candidate_count,
-        offset=0 if authorize_prefix else offset,
-        max_offset=max_offset,
+        page_size=page_size,
         privileged=viewer_access.privileged,
         default_operator=default_operator,
         minimum_should_match=minimum_should_match,
         strict=strict,
+        excluded_family_ids=excluded_family_ids,
     )
     return authorize_candidates(
         result,
@@ -145,7 +130,6 @@ def retrieve(
         locale=locale,
         product_id=product_id,
         page_size=page_size,
-        page_offset=offset if authorize_prefix else 0,
     )
 
 
@@ -156,7 +140,6 @@ def authorize_candidates(
     locale: str,
     product_id: int | None,
     page_size: int,
-    page_offset: int,
 ) -> RetrievalResult[AuthorizedCandidate]:
     """Apply the primary-database authorization boundary to indexed candidates."""
     started = perf_counter()
@@ -259,19 +242,69 @@ def authorize_candidates(
                 )
             )
 
-    page_end = page_offset + page_size
     return RetrievalResult(
-        candidates=tuple(authorized[page_offset:page_end]),
+        candidates=tuple(authorized[:page_size]),
         approximate_total=result.approximate_total,
-        has_more=len(authorized) > page_end or result.has_more,
+        has_more=len(authorized) > page_size or result.has_more,
         mode=result.mode,
         degraded=result.degraded,
         failed_shards=result.failed_shards,
         took_ms=result.took_ms,
+        encountered_family_ids=(
+            result.encountered_family_ids
+            or tuple(candidate.family_id for candidate in result.candidates)
+        ),
         family_counts=result.family_counts,
         invalid_hit_count=result.invalid_hit_count,
         authorization_rejection_count=(
             result.authorization_rejection_count + len(result.candidates) - len(authorized)
         ),
         db_ms=round((perf_counter() - started) * 1000) if passages else 0,
+    )
+
+
+def reauthorize_cached_candidates(
+    result: RetrievalResult[AuthorizedCandidate],
+    *,
+    viewer_access: ViewerAccess,
+    locale: str,
+    product_id: int | None,
+) -> RetrievalResult[AuthorizedCandidate]:
+    """Recheck cached KB evidence against the primary database before presentation."""
+    unvalidated = []
+    for candidate in result.candidates:
+        evidence = (
+            candidate.evidence.passage
+            if isinstance(candidate.evidence, AuthorizedPassage)
+            else candidate.evidence
+        )
+        unvalidated.append(
+            UnvalidatedCandidate(
+                candidate.rank,
+                candidate.score,
+                candidate.family_id,
+                evidence,
+            )
+        )
+
+    unvalidated_result = RetrievalResult(
+        candidates=tuple(unvalidated),
+        approximate_total=result.approximate_total,
+        has_more=result.has_more,
+        mode=result.mode,
+        degraded=result.degraded,
+        failed_shards=result.failed_shards,
+        took_ms=result.took_ms,
+        encountered_family_ids=result.encountered_family_ids,
+        family_counts=result.family_counts,
+        invalid_hit_count=result.invalid_hit_count,
+        authorization_rejection_count=result.authorization_rejection_count,
+        db_ms=result.db_ms,
+    )
+    return authorize_candidates(
+        unvalidated_result,
+        viewer_access=viewer_access,
+        locale=locale,
+        product_id=product_id,
+        page_size=len(unvalidated),
     )

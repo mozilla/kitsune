@@ -16,13 +16,18 @@ from kitsune.products.managers import ProductSupportConfigManager
 from kitsune.products.models import Product, ProductSupportConfig
 from kitsune.search.base import SumoSearchPaginator
 from kitsune.search.forms import SimpleSearchForm
-from kitsune.search.hybrid import run_hybrid_search, sources_for_where
+from kitsune.search.hybrid import (
+    SEARCH_SESSION_PARAMETER,
+    HybridSearchSessionUnavailable,
+    run_hybrid_search,
+    sources_for_where,
+)
 from kitsune.search.search import CompoundSearch, QuestionSearch, WikiSearch
 from kitsune.search.utils import locale_or_default
 from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.sumo.templatetags.jinja_helpers import Paginator as PaginatorRenderer
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import build_paged_url, get_aaq_context, get_aaq_url, paginate
+from kitsune.sumo.utils import get_aaq_context, get_aaq_url, paginate
 from kitsune.wiki.facets import documents_for
 
 log = logging.getLogger("k.search")
@@ -111,23 +116,30 @@ def simple_search(request):
             page_number = int(request.GET.get("page", 1))
         except ValueError:
             page_number = 1
-        max_page = settings.RETRIEVAL_MAX_PAGE_OFFSET // settings.SEARCH_RESULTS_PER_PAGE + 1
-        page_number = min(max(page_number, 1), max_page)
-        hybrid = run_hybrid_search(
-            request,
-            query=cleaned["q"],
-            locale=language,
-            sources=sources_for_where(cleaned["w"]),
-            product_id=product.id if product else None,
-            page=page_number,
-        )
+        page_number = max(page_number, 1)
+        try:
+            hybrid = run_hybrid_search(
+                request,
+                query=cleaned["q"],
+                locale=language,
+                sources=sources_for_where(cleaned["w"]),
+                product_id=product.id if product else None,
+                page=page_number,
+                session_token=request.GET.get(SEARCH_SESSION_PARAMETER),
+            )
+        except HybridSearchSessionUnavailable:
+            redirect_params = request.GET.copy()
+            redirect_params.pop("page", None)
+            redirect_params.pop(SEARCH_SESSION_PARAMETER, None)
+            return HttpResponseRedirect(f"{request.path}?{redirect_params.urlencode()}")
         page = None
         results = list(hybrid.results)
-        if page_number > 1 and not results:
+        if hybrid.page > 1 and not results and not hybrid.has_next:
             redirect_params = request.GET.copy()
             redirect_params["page"] = 1
+            redirect_params.pop(SEARCH_SESSION_PARAMETER, None)
             return HttpResponseRedirect(f"{request.path}?{redirect_params.urlencode()}")
-        total = hybrid.approximate_total if results else 0
+        total = hybrid.approximate_total if results or hybrid.has_next else 0
     else:
         search = CompoundSearch()
         if cleaned["w"] & constants.WHERE_WIKI:
@@ -147,7 +159,7 @@ def simple_search(request):
     hybrid_pagination = (
         {
             "number": hybrid.page,
-            "has_next": hybrid.has_next and bool(results) and hybrid.page < max_page,
+            "has_next": hybrid.has_next,
             "has_previous": hybrid.has_previous,
         }
         if hybrid
@@ -170,7 +182,8 @@ def simple_search(request):
         "products": Product.active.filter(visible=True),
         "total_is_approximate": hybrid is not None,
         "pagination": hybrid_pagination,
-        "pagination_url": build_paged_url(request) if hybrid else None,
+        "pagination_url": _hybrid_pagination_url(request, hybrid.session_token) if hybrid else None,
+        "search_session": hybrid.session_token if hybrid else None,
     }
 
     if not is_json:
@@ -232,3 +245,13 @@ def _make_pagination(page):
         "dotted_upper": jinja_paginator.pager.dotted_upper,
         "dotted_lower": jinja_paginator.pager.dotted_lower,
     }
+
+
+def _hybrid_pagination_url(request, session_token):
+    params = request.GET.copy()
+    params.pop("page", None)
+    if session_token:
+        params[SEARCH_SESSION_PARAMETER] = session_token
+    else:
+        params.pop(SEARCH_SESSION_PARAMETER, None)
+    return f"{request.build_absolute_uri(request.path)}?{params.urlencode()}"

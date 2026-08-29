@@ -165,21 +165,27 @@ For a request involving KB content:
    query text and query recipe, not user identity or retrieved content.
 3. On a miss, apply the embedding rate limit and call the provider with the short interactive
    timeout. Provider or rate-limiter unavailability degrades to lexical retrieval.
-4. Run one Elasticsearch request over the selected indices. KB contributes lexical and, when a
-   query vector is available, semantic candidates; AAQ contributes lexical candidates.
+4. Run one bounded Elasticsearch segment over the selected indices. KB contributes lexical and,
+   when a query vector is available, semantic candidates; AAQ contributes lexical candidates.
 5. Fuse multiple children with native RRF and collapse results by `family_id`.
-6. Treat decoded KB hits as unvalidated candidates. Recheck current eligibility, product, locale,
-   and viewer access in one bounded primary-database query before returning them.
-7. Convert authorized evidence into the existing search result shape and templates.
+6. When more than one page is reachable, pin the authorized segment and the family IDs encountered
+   by Elasticsearch in a short-lived server-side search session. Pagination URLs carry only its
+   opaque token.
+7. When a user reaches the end of the pinned results, retrieve the next bounded segment while
+   excluding every family already encountered, then append it to the session's stable sequence.
+8. Recheck current eligibility, product, locale, and viewer access in the primary database before
+   presenting every KB page, including pages read from the session.
+9. Convert authorized evidence into the existing search result shape and templates.
 
 The database check is the authorization boundary. Elasticsearch access filters reduce exposure
 and preserve useful recall, but asynchronous index metadata is not authoritative. Code outside
 `retrieval.access` must not return `_retrieve_unvalidated()` results to a user or place their text
 in a prompt.
 
-### Ranking and pagination limits
+### Ranking and pagination
 
-The first version intentionally uses bounded retrieval rather than an adaptive refill loop:
+Each Elasticsearch request remains bounded, while the user-visible sequence can continue beyond
+one RRF window:
 
 - lexical candidates are collapsed per family before fusion so one long KB article cannot
   monopolize the lexical ranks;
@@ -187,12 +193,19 @@ The first version intentionally uses bounded retrieval rather than an adaptive r
 - a similarity-profile-specific floor lets semantic retrieval return no candidates rather than
   always returning the nearest unrelated chunks;
 - RRF scores are used for ordering, not as a portable relevance threshold;
-- authorization over-fetch absorbs some stale or inaccessible KB candidates, but a page may still
-  be short;
-- Elasticsearch's extra-result probe keeps Next available when more raw candidates exist; a later
-  page that authorizes nothing redirects to page one rather than hiding reachable candidates; and
-- pagination is Previous/Next within a fixed RRF window. Counts are approximate family
-  cardinality, not an exact number of reachable pages.
+- Elasticsearch's extra-result probe keeps Next available when more raw candidates exist;
+- a continuation query excludes every family in earlier segments, so repeated or newly
+  unauthorized families cannot block access to lower-ranked results;
+- segment-local RRF scores are not compared across boundaries. The server assigns one append-only
+  global rank and immutable page boundaries when each segment is pinned. A short page caused by
+  current database authorization therefore cannot hide candidates from the next segment;
+- arbitrary deep page numbers can extend at most one segment per request. Normal Previous/Next
+  navigation progressively makes every matching, decodable family reachable without allowing one
+  request to force corpus-sized work;
+- an expired, missing, or mismatched token restarts at page one instead of silently constructing a
+  different ranking for a later page; and
+- counts remain approximate family cardinality. If the shared cache cannot store a continuation,
+  the response reports only the current authorized page and does not render broken pagination.
 
 These bounds and relevance settings must be calibrated with environment-appropriate evaluation
 data before enabling the feature. Do not derive production thresholds from an old or different
@@ -226,8 +239,8 @@ Important query controls include:
   calibrated cosine floor;
 - `RETRIEVAL_SEMANTIC_K`, `RETRIEVAL_KNN_NUM_CANDIDATES`, and
   `RETRIEVAL_RRF_RANK_WINDOW_SIZE`: semantic and fusion work bounds; and
-- `RETRIEVAL_AUTHORIZATION_OVERFETCH` and `RETRIEVAL_MAX_PAGE_OFFSET`: bounded authorization and
-  pagination behavior.
+- `RETRIEVAL_SEARCH_SEGMENT_SIZE`: families pinned per bounded continuation query; and
+- `RETRIEVAL_SEARCH_SESSION_TTL_SECONDS`: lifetime of the server-side ranked sequence.
 
 Ingestion and worker-safety controls include:
 
@@ -490,12 +503,14 @@ exercise native RRF still require an active Elasticsearch trial or Enterprise li
 - Reject malformed Elasticsearch hits individually, mark the response degraded, and emit a
   bounded event without indexed payloads. Invalid response-level structure still fails the
   request.
+- Never present cached KB evidence without repeating the primary-database authorization check.
+  Search-session tokens are opaque, short-lived cache locators rather than authorization grants.
 - Do not log query text, chunk text, vectors, group identifiers, credentials, or provider error
   messages. Retrieval events use bounded identifiers, counts, timings, and error types.
 
 ## Deliberately deferred
 
 The first release does not include AAQ vectors, a cross-encoder reranker, chatbot generation,
-adaptive result refill, deep/cursor pagination, strict fragment-level revocation, or ingestion of
+random-access corpus-sized materialization, strict fragment-level revocation, or ingestion of
 restricted KB documents. These are follow-up product and evaluation decisions, not missing hooks
 that should be filled opportunistically while changing the current path.

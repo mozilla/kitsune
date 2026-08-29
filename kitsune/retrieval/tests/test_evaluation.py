@@ -199,7 +199,6 @@ class EvaluationRunTests(TestCase):
             locale="en-US",
             product_id=None,
             page_size=10,
-            page_offset=0,
         )
 
     def test_runs_fixed_modes_and_excludes_the_source_question(self):

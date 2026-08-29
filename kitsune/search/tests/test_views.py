@@ -12,7 +12,7 @@ from kitsune.products.tests import (
     ZendeskConfigFactory,
 )
 from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
-from kitsune.search.hybrid import HybridSearchResults
+from kitsune.search.hybrid import HybridSearchResults, HybridSearchSessionUnavailable
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -43,6 +43,7 @@ HYBRID_RESULT = HybridSearchResults(
     query_vector_cache_lookup="miss",
     query_vector_cache_write="stored",
     fallback_reason=None,
+    session_token="test-search-session-token",
 )
 
 
@@ -233,6 +234,10 @@ class TestHybridSearchSwitch(TestCase):
         self.assertEqual(doc(".pagination a").length, 2)
         self.assertIn("page=1", doc(".pagination .prev a").attr("href"))
         self.assertIn("page=3", doc(".pagination .next a").attr("href"))
+        self.assertIn(
+            "search_session=test-search-session-token",
+            doc(".pagination .next a").attr("href"),
+        )
         self.assertEqual(doc(".topic-article--text p strong").text(), "Matched")
 
         event = json.loads(doc(".topic-article a.title").attr("data-event-parameters"))
@@ -240,9 +245,8 @@ class TestHybridSearchSwitch(TestCase):
         self.assertEqual(event["search_result_rank"], 11)
         self.assertNotIn("score", event)
 
-    @override_settings(RETRIEVAL_MAX_PAGE_OFFSET=20)
     @override_switch("retrieval-hybrid-search", active=True)
-    def test_json_clamps_page_and_does_not_invent_page_totals(self):
+    def test_json_uses_resolved_page_and_exposes_the_search_session(self):
         result = replace(
             HYBRID_RESULT,
             approximate_total=23,
@@ -255,16 +259,36 @@ class TestHybridSearchSwitch(TestCase):
             response = self.client.get(f"{url}?format=json&q=firefox&page=99")
 
         data = json.loads(response.content)
-        self.assertEqual(hybrid.call_args.kwargs["page"], 3)
+        self.assertEqual(hybrid.call_args.kwargs["page"], 99)
+        self.assertIsNone(hybrid.call_args.kwargs["session_token"])
         self.assertTrue(data["total_is_approximate"])
+        self.assertEqual(data["search_session"], "test-search-session-token")
         self.assertEqual(
             data["pagination"],
-            {"number": 3, "has_next": False, "has_previous": True},
+            {"number": 3, "has_next": True, "has_previous": True},
         )
 
     @override_switch("retrieval-hybrid-search", active=True)
+    def test_expired_search_session_restarts_without_the_stale_page_or_token(self):
+        url = reverse("search", locale="en-US")
+        with mock.patch(
+            "kitsune.search.views.run_hybrid_search",
+            side_effect=HybridSearchSessionUnavailable,
+        ):
+            response = self.client.get(
+                f"{url}?format=json&q=firefox&w=1&page=8&search_session=expired"
+            )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("format=json", response.url)
+        self.assertIn("q=firefox", response.url)
+        self.assertIn("w=1", response.url)
+        self.assertNotIn("page=", response.url)
+        self.assertNotIn("search_session=", response.url)
+
+    @override_switch("retrieval-hybrid-search", active=True)
     def test_empty_first_page_does_not_show_a_positive_approximation(self):
-        result = replace(HYBRID_RESULT, results=(), approximate_total=23, has_next=True)
+        result = replace(HYBRID_RESULT, results=(), approximate_total=23, has_next=False)
         url = reverse("search", locale="en-US")
         with (
             mock.patch("kitsune.search.views.run_hybrid_search", return_value=result),

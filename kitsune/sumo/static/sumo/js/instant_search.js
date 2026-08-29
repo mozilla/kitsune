@@ -14,6 +14,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 var searchTimeout;
 var locale = document.documentElement.lang;
 const searchTitle = "Search | Mozilla Support";
+const searchSessionParam = "search_session";
 
 var search = new Search("/" + locale + "/search/");
 
@@ -131,6 +132,19 @@ function render(data) {
     return;
   }
   renderedQuery = query;
+
+  if (context.search_session) {
+    search.setParam(searchSessionParam, context.search_session);
+  } else {
+    search.unsetParam(searchSessionParam);
+  }
+  if (context.total_is_approximate && context.pagination) {
+    if (context.pagination.number > 1) {
+      search.setParam("page", String(context.pagination.number));
+    } else {
+      search.unsetParam("page");
+    }
+  }
 
   let historyState = {
     query,
@@ -275,6 +289,7 @@ document.addEventListener('input', function (ev) {
 
     searchTimeout = setTimeout(function () {
       search.unsetParam("page");
+      search.unsetParam(searchSessionParam);
       search.setParams(params);
       let query = input.value.trim();
       queries.push(query);

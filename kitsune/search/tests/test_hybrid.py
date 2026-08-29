@@ -1,5 +1,6 @@
 import logging
 from contextlib import contextmanager
+from dataclasses import replace
 from datetime import UTC, datetime
 from unittest import mock
 
@@ -23,6 +24,7 @@ from kitsune.retrieval.query import (
 )
 from kitsune.search import SNIPPET_LENGTH
 from kitsune.search.hybrid import (
+    HybridSearchSessionUnavailable,
     result_from_candidate,
     run_hybrid_search,
     sources_for_where,
@@ -52,6 +54,28 @@ def _request():
     request = RequestFactory().get("/search?q=firefox")
     request.user = AnonymousUser()
     return request
+
+
+def _question_candidate(rank):
+    family_id = f"aaq:{rank}"
+    return AuthorizedCandidate(
+        rank,
+        1 / rank,
+        family_id,
+        LegacyQuestion(
+            question_id=str(rank),
+            family_id=family_id,
+            locale="en-US",
+            title=f"Question {rank}",
+            content="Question content",
+            updated=datetime.now(UTC),
+            is_solved=True,
+            num_answers=1,
+            num_votes=2,
+            provenance=frozenset({"lexical"}),
+            highlight=None,
+        ),
+    )
 
 
 @contextmanager
@@ -105,11 +129,319 @@ class HybridOrchestrationTests(SimpleTestCase):
             sources_for_where(4)
 
     @override_settings(
+        SEARCH_RESULTS_PER_PAGE=2,
+        RETRIEVAL_SEARCH_SEGMENT_SIZE=2,
+        RETRIEVAL_RRF_RANK_WINDOW_SIZE=3,
+    )
+    def test_continuation_extends_the_pinned_ranking_without_reembedding(self):
+        first_segment = replace(
+            _result(_question_candidate(1), _question_candidate(2)),
+            approximate_total=4,
+            has_more=True,
+            encountered_family_ids=("aaq:1", "aaq:2"),
+        )
+        second_segment = replace(
+            _result(_question_candidate(3), _question_candidate(4)),
+            approximate_total=2,
+            encountered_family_ids=("aaq:3", "aaq:4"),
+        )
+        with _run(retrieve=first_segment) as (_, cached, _, embed, _, retrieve):
+            retrieve.side_effect = (first_segment, second_segment)
+            first = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"kb", "aaq"},
+                product_id=None,
+                page=1,
+            )
+            second = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"kb", "aaq"},
+                product_id=None,
+                page=2,
+                session_token=first.session_token,
+            )
+
+        self.assertIsNotNone(first.session_token)
+        self.assertTrue(first.has_next)
+        self.assertEqual([item["rank"] for item in first.results], [1, 2])
+        self.assertEqual([item["rank"] for item in second.results], [3, 4])
+        self.assertFalse(second.has_next)
+        self.assertEqual(retrieve.call_count, 2)
+        self.assertEqual(
+            retrieve.call_args_list[1].kwargs["excluded_family_ids"],
+            ("aaq:1", "aaq:2"),
+        )
+        cached.assert_called_once()
+        embed.assert_not_called()
+
+    @override_settings(
+        SEARCH_RESULTS_PER_PAGE=3,
+        RETRIEVAL_SEARCH_SEGMENT_SIZE=7,
+        RETRIEVAL_RRF_RANK_WINDOW_SIZE=8,
+    )
+    def test_sequential_navigation_reaches_every_authorized_family_once(self):
+        raw_candidates = tuple(_question_candidate(rank) for rank in range(1, 24))
+
+        def retrieve_segment(*args, **kwargs):
+            excluded = set(kwargs["excluded_family_ids"])
+            remaining = tuple(
+                candidate for candidate in raw_candidates if candidate.family_id not in excluded
+            )
+            raw_segment = remaining[:7]
+            authorized = tuple(
+                candidate
+                for candidate in raw_segment
+                if int(candidate.evidence.question_id) % 4
+            )
+            return replace(
+                _result(*authorized),
+                approximate_total=len(remaining),
+                has_more=len(remaining) > len(raw_segment),
+                encountered_family_ids=tuple(
+                    candidate.family_id for candidate in raw_segment
+                ),
+            )
+
+        with _run(retrieve=_result()) as (_, _, _, _, _, retrieve):
+            retrieve.side_effect = retrieve_segment
+            page = 1
+            token = None
+            presented = []
+            while True:
+                result = run_hybrid_search(
+                    _request(),
+                    query="firefox",
+                    locale="en-US",
+                    sources={"aaq"},
+                    product_id=None,
+                    page=page,
+                    session_token=token,
+                )
+                token = result.session_token
+                presented.extend(result.results)
+                if not result.has_next:
+                    break
+                page += 1
+
+            retrieval_calls = retrieve.call_count
+            first_page_again = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"aaq"},
+                product_id=None,
+                page=1,
+                session_token=token,
+            )
+
+        expected_ids = [rank for rank in range(1, 24) if rank % 4]
+        self.assertEqual(
+            [int(item["url"].rstrip("/").split("/")[-1]) for item in presented],
+            expected_ids,
+        )
+        self.assertEqual([item["rank"] for item in presented], list(range(1, 19)))
+        self.assertEqual([item["rank"] for item in first_page_again.results], [1, 2, 3])
+        self.assertEqual(retrieval_calls, 4)
+        self.assertEqual(retrieve.call_count, retrieval_calls)
+
+    @override_settings(
+        SEARCH_RESULTS_PER_PAGE=2,
+        RETRIEVAL_SEARCH_SEGMENT_SIZE=3,
+        RETRIEVAL_RRF_RANK_WINDOW_SIZE=4,
+    )
+    def test_reading_a_pinned_page_refreshes_without_replacing_the_session(self):
+        segment = _result(*(_question_candidate(rank) for rank in range(1, 4)))
+        with _run(retrieve=segment) as (_, _, _, _, _, retrieve):
+            first = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"aaq"},
+                product_id=None,
+                page=1,
+            )
+            with (
+                mock.patch("kitsune.search.hybrid.cache.set") as store,
+                mock.patch("kitsune.search.hybrid.cache.touch", return_value=True) as touch,
+            ):
+                repeated = run_hybrid_search(
+                    _request(),
+                    query="firefox",
+                    locale="en-US",
+                    sources={"aaq"},
+                    product_id=None,
+                    page=1,
+                    session_token=first.session_token,
+                )
+
+        self.assertEqual(repeated.results, first.results)
+        self.assertEqual(retrieve.call_count, 1)
+        store.assert_not_called()
+        touch.assert_called_once()
+
+    @override_settings(
+        SEARCH_RESULTS_PER_PAGE=2,
+        RETRIEVAL_SEARCH_SEGMENT_SIZE=3,
+        RETRIEVAL_RRF_RANK_WINDOW_SIZE=4,
+    )
+    def test_short_segment_page_does_not_hide_later_candidates(self):
+        first_segment = replace(
+            _result(*(_question_candidate(rank) for rank in range(1, 4))),
+            approximate_total=5,
+            has_more=True,
+            encountered_family_ids=("aaq:1", "aaq:2", "aaq:3"),
+        )
+        second_segment = replace(
+            _result(_question_candidate(4), _question_candidate(5)),
+            approximate_total=2,
+            encountered_family_ids=("aaq:4", "aaq:5"),
+        )
+        with _run(retrieve=first_segment) as (_, _, _, _, _, retrieve):
+            retrieve.side_effect = (first_segment, second_segment)
+            first = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"aaq"},
+                product_id=None,
+                page=1,
+            )
+            second = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"aaq"},
+                product_id=None,
+                page=2,
+                session_token=first.session_token,
+            )
+            third = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"aaq"},
+                product_id=None,
+                page=3,
+                session_token=first.session_token,
+            )
+
+        self.assertEqual([item["rank"] for item in first.results], [1, 2])
+        self.assertEqual([item["rank"] for item in second.results], [3])
+        self.assertEqual([item["rank"] for item in third.results], [4, 5])
+        self.assertFalse(third.has_next)
+        self.assertEqual(retrieve.call_count, 2)
+
+    def test_missing_continuation_never_restarts_as_a_different_ranking(self):
+        with (
+            _run(retrieve=_result()) as (_, _, _, _, _, retrieve),
+            self.assertNoLogs("k.retrieval", level="ERROR"),
+            self.assertRaises(HybridSearchSessionUnavailable),
+        ):
+            run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"kb"},
+                product_id=None,
+                page=2,
+                session_token="missing-search-session-token",
+            )
+
+        retrieve.assert_not_called()
+
+    @override_settings(
+        SEARCH_RESULTS_PER_PAGE=2,
+        RETRIEVAL_SEARCH_SEGMENT_SIZE=3,
+        RETRIEVAL_RRF_RANK_WINDOW_SIZE=4,
+    )
+    def test_search_session_cannot_cross_viewer_access_boundaries(self):
+        segment = _result(*(_question_candidate(rank) for rank in range(1, 4)))
+        with _run(retrieve=segment):
+            first = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"aaq"},
+                product_id=None,
+                page=1,
+            )
+
+        with (
+            _run(retrieve=segment, viewer_access_for=ViewerAccess((7,))) as (
+                _,
+                _,
+                _,
+                _,
+                _,
+                retrieve,
+            ),
+            self.assertRaises(HybridSearchSessionUnavailable),
+        ):
+            run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"aaq"},
+                product_id=None,
+                page=2,
+                session_token=first.session_token,
+            )
+
+        self.assertIsNotNone(first.session_token)
+        retrieve.assert_not_called()
+
+    def test_cache_write_failure_does_not_render_broken_pagination(self):
+        segment = replace(
+            _result(*(_question_candidate(rank) for rank in range(1, 12))),
+            approximate_total=20,
+            has_more=True,
+        )
+        with (
+            _run(retrieve=segment),
+            mock.patch("kitsune.search.hybrid.cache.set", return_value=False),
+        ):
+            result = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"aaq"},
+                product_id=None,
+                page=2,
+            )
+
+        self.assertIsNone(result.session_token)
+        self.assertFalse(result.has_previous)
+        self.assertFalse(result.has_next)
+        self.assertEqual(result.approximate_total, 1)
+
+    def test_single_page_does_not_create_an_unused_search_session(self):
+        with (
+            _run(retrieve=_result(_question_candidate(1))),
+            mock.patch("kitsune.search.hybrid.cache.set") as store,
+        ):
+            result = run_hybrid_search(
+                _request(),
+                query="firefox",
+                locale="en-US",
+                sources={"aaq"},
+                product_id=None,
+                page=1,
+            )
+
+        self.assertIsNone(result.session_token)
+        self.assertFalse(result.has_previous)
+        self.assertFalse(result.has_next)
+        store.assert_not_called()
+
+    @override_settings(
         RETRIEVAL_SEMANTIC_K=11,
         RETRIEVAL_KNN_NUM_CANDIDATES=23,
         RETRIEVAL_RRF_RANK_WINDOW_SIZE=40,
-        RETRIEVAL_AUTHORIZATION_OVERFETCH=4,
-        RETRIEVAL_MAX_PAGE_OFFSET=25,
+        RETRIEVAL_SEARCH_SEGMENT_SIZE=25,
         RETRIEVAL_LOCALE_COMPOSITION="separate",
         RETRIEVAL_LEXICAL_DEFAULT_OPERATOR="OR",
         RETRIEVAL_LEXICAL_MINIMUM_SHOULD_MATCH="2<-1",
@@ -137,8 +469,6 @@ class HybridOrchestrationTests(SimpleTestCase):
             "semantic_k": 11,
             "num_candidates": 23,
             "rank_window_size": 40,
-            "authorization_overfetch": 4,
-            "max_offset": 25,
             "locale_composition": "separate",
             "default_operator": "OR",
             "minimum_should_match": "2<-1",
@@ -147,8 +477,8 @@ class HybridOrchestrationTests(SimpleTestCase):
             {name: retrieve.call_args.kwargs[name] for name in retrieval_settings},
             retrieval_settings,
         )
-        self.assertEqual(retrieve.call_args.kwargs["query_vector"], [1.0, 0.0])
-        self.assertEqual(retrieve.call_args.kwargs["offset"], 10)
+        self.assertEqual(retrieve.call_args.kwargs["query_vector"], (1.0, 0.0))
+        self.assertEqual(retrieve.call_args.kwargs["page_size"], 25)
         self.assertEqual(result.query_vector_cache_lookup, "hit")
         self.assertIsNone(result.query_vector_cache_write)
         self.assertTrue(result.degraded)
@@ -236,7 +566,10 @@ class HybridOrchestrationTests(SimpleTestCase):
                 embed.assert_not_called()
             # The floor is resolved for every KB request before any vector work.
             floor.assert_called_once_with(META)
-            self.assertEqual(retrieve.call_args.kwargs["query_vector"], vector)
+            self.assertEqual(
+                retrieve.call_args.kwargs["query_vector"],
+                tuple(vector) if vector is not None else None,
+            )
             self.assertEqual(result.fallback_reason, fallback)
             self.assertEqual(result.query_vector_cache_lookup, "miss")
             self.assertEqual(

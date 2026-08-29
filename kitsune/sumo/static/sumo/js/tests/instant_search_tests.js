@@ -97,13 +97,14 @@ describe('instant search', () => {
       fireInput(searchInput);
 
       clock.tick(600);
-      cxhrMock.firstCall.args[1].success({
+      const hybridResponse = {
         num_results: 23,
         total_is_approximate: true,
         q: 'firefox',
         product_titles: 'All Products',
         products: [],
         w: 3,
+        search_session: 'opaque-search-session',
         results: [{
           type: 'document',
           url: '/kb/article',
@@ -119,12 +120,38 @@ describe('instant search', () => {
           has_previous: true,
           has_next: true,
         },
-      });
+      };
+      cxhrMock.firstCall.args[1].success(hybridResponse);
 
       expect(document.querySelector('.search-results-heading').textContent)
         .to.include('About 23');
       expect(document.querySelector('.topic-article--text strong').textContent).to.equal('Matched');
       expect(document.querySelectorAll('.pagination a')).to.have.length(2);
+
+      document.querySelector('.pagination .next a').dispatchEvent(
+        new window.Event('click', {bubbles: true})
+      );
+      expect(cxhrMock.secondCall.args[1].data.page).to.equal('3');
+      expect(cxhrMock.secondCall.args[1].data.search_session)
+        .to.equal('opaque-search-session');
+
+      cxhrMock.secondCall.args[1].success({
+        ...hybridResponse,
+        search_session: 'replacement-search-session',
+        pagination: {
+          number: 1,
+          has_previous: false,
+          has_next: true,
+        },
+      });
+      expect(history.state.params).not.to.have.property('page');
+      expect(history.state.params.search_session).to.equal('replacement-search-session');
+
+      searchInput.value = 'thunderbird';
+      fireInput(searchInput);
+      clock.tick(600);
+      expect(cxhrMock.thirdCall.args[1].data).not.to.have.property('page');
+      expect(cxhrMock.thirdCall.args[1].data).not.to.have.property('search_session');
 
       const event = JSON.parse(
         document.querySelector('.topic-article a.title').dataset.eventParameters

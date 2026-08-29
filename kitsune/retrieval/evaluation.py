@@ -520,8 +520,6 @@ def _run_retrieval(
         rank_window_size=config.rank_window_size,
         locale_composition=config.locale_composition,
         page_size=_NDCG_CUTOFF,
-        offset=0,
-        max_offset=0,
         default_operator=config.default_operator,
         minimum_should_match=config.minimum_should_match,
         strict=True,
@@ -535,7 +533,6 @@ def _run_retrieval(
         locale=query.locale,
         product_id=query.product_id,
         page_size=_NDCG_CUTOFF,
-        page_offset=0,
     )
 
 
