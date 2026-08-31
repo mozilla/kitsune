@@ -103,7 +103,6 @@
   display: inline-flex;
   align-items: center;
   gap: p.$spacing-xs;
-  color: inherit;
   text-decoration: none;
 
   svg {
@@ -118,15 +117,20 @@
   }
 }
 
-  a.question-entry--meta-item,
-  .question-entry--meta-item a {
-    text-decoration: none;
+.question-entry--meta-item-text {
+    display: inline-block;
+}
 
-    &:hover {
-      color: var(--color-link);
-      text-decoration: underline;
-    }
+a.question-entry--meta-item,
+.question-entry--meta-item a {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-link);
+    text-decoration: underline;
   }
+}
 
 .question-entry--reply-count,
 .question-entry--vote-count {
@@ -152,39 +156,11 @@
   }
 }
 
-.question-entry--meta-asked-by {
+.question-entry--meta-bold,
+// also override rules for <a> from above
+a.question-entry--meta-bold {
   color: var(--color-heading);
   font-weight: 600;
-}
-
-.question-entry--last-reply {
-  display: inline-flex;
-  align-items: center;
-  gap: p.$spacing-xs;
-  white-space: nowrap;
-
-  svg {
-    width: p.$spacing-md;
-    height: p.$spacing-md;
-    flex-shrink: 0;
-  }
-}
-
-.question-entry--last-reply-name {
-  color: var(--color-heading);
-  font-weight: 600;
-}
-
-.question-entry--last-reply-time {
-  position: relative;
-  z-index: 1;
-  color: var(--color-text-light);
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-    color: var(--color-link);
-  }
 }
 
 .question-entry--extras {
