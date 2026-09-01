@@ -32,9 +32,12 @@ class GroupProfile(TreeModelBase):
     """Profile model for groups with hierarchy support."""
 
     class Visibility(models.TextChoices):
-        PRIVATE = "private", "Private - members only"
-        PUBLIC = "public", "Public - visible to all"
-        MODERATED = "moderated", "Moderated - visible to specific groups"
+        # L10n: This is a group visibility label, displayed in group profiles (such as https://support.mozilla.org/groups/forum-contributors/) and when viewing group tickets.
+        PRIVATE = "private", _lazy("Private – members only")
+        # L10n: This is a group visibility label, displayed in group profiles (such as https://support.mozilla.org/groups/forum-contributors/) and when viewing group tickets.
+        PUBLIC = "public", _lazy("Public – visible to all")
+        # L10n: This is a group visibility label, displayed in group profiles (such as https://support.mozilla.org/groups/forum-contributors/) and when viewing group tickets.
+        MODERATED = "moderated", _lazy("Moderated – visible to specific groups")
 
     slug = models.SlugField(unique=True, editable=False, blank=False, null=False, max_length=80)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="profile")
