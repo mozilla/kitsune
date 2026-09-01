@@ -250,7 +250,10 @@ def test_flagged_content_can_be_viewed_via_take_action(page: Page, flagged_conte
     with allure.step("Signing in with the Forum Moderator and navigating to the freshly flagged "
                      "ticket"):
         utilities.start_existing_session(cookies=forum_moderator)
-        _go_to_flagged_ticket(utilities, sumo_pages, filter_reason, filter_type)
+        assert _go_to_flagged_ticket(
+            utilities, sumo_pages, filter_reason,
+            _flagged_ticket(sumo_pages, flagged_content, flagged_identifier), filter_type
+        ), f"The '{flagged_identifier}' ticket was not found in the flagged queue"
 
     with allure.step("Clicking on the 'View' button of the flagged content's 'Take Action' "
                      "section"):
@@ -304,7 +307,11 @@ def test_flagged_content_can_be_edited_via_take_action(page: Page, flagged_conte
     with allure.step("Signing in with an admin account and navigating to the freshly flagged "
                      "ticket"):
         utilities.start_existing_session(session_file_name=staff_user)
-        _go_to_flagged_ticket(utilities, sumo_pages, "spam", filter_type)
+        assert _go_to_flagged_ticket(
+            utilities, sumo_pages, "spam",
+            sumo_pages.moderate_forum_content_page.flagged_question(flagged_identifier),
+            filter_type
+        ), f"The '{flagged_identifier}' ticket was not found in the flagged queue"
 
     with check, allure.step("Clicking the 'Edit' button and verifying that the post edit form is "
                             "displayed"):
@@ -380,7 +387,11 @@ def test_flagged_content_can_be_deleted_via_take_action(page: Page, flagged_cont
     with allure.step("Signing in with an admin account and navigating to the freshly flagged "
                      "ticket"):
         utilities.start_existing_session(session_file_name=staff_user)
-        _go_to_flagged_ticket(utilities, sumo_pages, "spam", filter_type)
+        assert _go_to_flagged_ticket(
+            utilities, sumo_pages, "spam",
+            sumo_pages.moderate_forum_content_page.flagged_question(flagged_identifier),
+            filter_type
+        ), f"The '{flagged_identifier}' ticket was not found in the flagged queue"
 
     with check, allure.step("Clicking the 'Delete' button and verifying that the delete "
                             "confirmation page of the correct flagged item is displayed"):
@@ -401,25 +412,43 @@ def test_flagged_content_can_be_deleted_via_take_action(page: Page, flagged_cont
         sumo_pages.question_page.click_delete_this_question_button()
 
     with check, allure.step("Filtering the flagged queue by reason and verifying that the flag "
-                            "was automatically removed"):
-        _go_to_flagged_ticket(utilities, sumo_pages, "spam")
-        expect(sumo_pages.moderate_forum_content_page.flagged_question(
-            flagged_identifier)).to_be_hidden()
+                            "was automatically removed from every page of the queue"):
+        assert not _go_to_flagged_ticket(
+            utilities, sumo_pages, "spam",
+            sumo_pages.moderate_forum_content_page.flagged_question(flagged_identifier)
+        ), f"The '{flagged_identifier}' ticket is still listed in the flagged queue"
 
 
-def _go_to_last_page_of_filtered_queue(utilities, sumo_pages):
+def _flagged_ticket(sumo_pages, flagged_content, flagged_identifier):
+    """Returns the flagged queue locator of the given ticket. Profile tickets render their
+    identifier in a heading, every other content type renders it in a paragraph."""
+    mfc = sumo_pages.moderate_forum_content_page
+    if flagged_content == "profile":
+        return mfc.profile_flagged_ticket(flagged_identifier)
+    return mfc.flagged_question(flagged_identifier)
+
+
+def _reload_filtered_queue(utilities):
+    """Reloads the current filtered queue URL. The filter dropdowns swap the queue in
+    asynchronously via fetch, so a reload is needed to get a settled, server-rendered page."""
     utilities.navigate_to_link(utilities.get_page_url())
-    if sumo_pages.moderate_forum_content_page.is_paginator_visible():
-        sumo_pages.moderate_forum_content_page.click_on_last_pagination_element()
 
 
-def _go_to_flagged_ticket(utilities, sumo_pages, reason_value, content_type_label=None):
+def _go_to_flagged_ticket(utilities, sumo_pages, reason_value, flagged_item,
+                          content_type_label=None) -> bool:
+    """Applies the flagged queue filters and walks every page of the filtered queue looking for
+    the given ticket, leaving the browser on the page which contains it.
+
+    Returns:
+        Whether the ticket is present in the filtered queue.
+    """
     mfc = sumo_pages.moderate_forum_content_page
     utilities.navigate_to_link(ModerateForumContentPageMessages.PAGE_URL)
     if content_type_label:
         mfc.filter_flagged_content_by_type(content_type_label)
     mfc.filter_flagged_content_by_reason(reason_value)
-    _go_to_last_page_of_filtered_queue(utilities, sumo_pages)
+    _reload_filtered_queue(utilities)
+    return mfc.go_to_page_containing(flagged_item)
 
 
 # C2749371
@@ -453,24 +482,28 @@ def test_flagged_page_filter_by_reason(page: Page, create_user_factory):
         utilities.start_existing_session(session_file_name=staff_user)
         utilities.navigate_to_link(ModerateForumContentPageMessages.PAGE_URL)
 
+    mfc = sumo_pages.moderate_forum_content_page
     for index, (label, value) in enumerate(reasons):
         other_value = reasons[(index + 1) % len(reasons)][1]
         with check, allure.step(f"Filtering by the '{label}' reason and verifying the results"):
-            sumo_pages.moderate_forum_content_page.filter_flagged_content_by_reason(value)
+            mfc.filter_flagged_content_by_reason(value)
             expect(page).to_have_url(re.compile(rf".*[?&]reason={value}"))
-            _go_to_last_page_of_filtered_queue(utilities, sumo_pages)
-            expect(sumo_pages.moderate_forum_content_page.profile_flagged_ticket(
-                flagged_usernames[value])).to_be_visible()
-            expect(sumo_pages.moderate_forum_content_page.profile_flagged_ticket(
-                flagged_usernames[other_value])).to_be_hidden()
+            _reload_filtered_queue(utilities)
+            assert mfc.go_to_page_containing(mfc.profile_flagged_ticket(
+                flagged_usernames[value])), (
+                f"The '{label}' flag is missing from the '{label}'-filtered queue")
+            assert not mfc.go_to_page_containing(mfc.profile_flagged_ticket(
+                flagged_usernames[other_value])), (
+                f"A flag of a different reason is listed in the '{label}'-filtered queue")
 
     with check, allure.step("Selecting 'All reasons' and verifying that a flag is shown "
                             "regardless of its reason"):
-        sumo_pages.moderate_forum_content_page.filter_flagged_content_by_reason("")
+        mfc.filter_flagged_content_by_reason("")
         expect(page).not_to_have_url(re.compile(r".*[?&]reason="))
-        _go_to_last_page_of_filtered_queue(utilities, sumo_pages)
-        expect(sumo_pages.moderate_forum_content_page.profile_flagged_ticket(
-            flagged_usernames["other"])).to_be_visible()
+        _reload_filtered_queue(utilities)
+        assert mfc.go_to_page_containing(mfc.profile_flagged_ticket(
+            flagged_usernames["other"])), (
+            "The flag is missing from the unfiltered queue")
 
 
 # C2749371
@@ -520,16 +553,19 @@ def test_flagged_page_filter_by_type(page: Page, create_user_factory):
         with check, allure.step(f"Filtering by the '{type_label}' type and verifying the results"):
             mfc.filter_flagged_content_by_type(type_label)
             expect(page).to_have_url(re.compile(r".*[?&]content_type=\d+"))
-            _go_to_last_page_of_filtered_queue(utilities, sumo_pages)
-            expect(matching_item).to_be_visible()
-            expect(non_matching_item).to_be_hidden()
+            _reload_filtered_queue(utilities)
+            assert mfc.go_to_page_containing(matching_item), (
+                f"The flagged {type_label} is missing from the '{type_label}'-filtered queue")
+            assert not mfc.go_to_page_containing(non_matching_item), (
+                f"A flag of a different type is listed in the '{type_label}'-filtered queue")
 
     with check, allure.step("Selecting 'All types' and verifying that a flag is shown regardless "
                             "of its type"):
         mfc.filter_flagged_content_by_type("All types")
         expect(page).not_to_have_url(re.compile(r".*[?&]content_type="))
-        _go_to_last_page_of_filtered_queue(utilities, sumo_pages)
-        expect(mfc.profile_flagged_ticket(flagged_profile["username"])).to_be_visible()
+        _reload_filtered_queue(utilities)
+        assert mfc.go_to_page_containing(mfc.profile_flagged_ticket(
+            flagged_profile["username"])), "The flag is missing from the unfiltered queue"
 
 
 # C945383
@@ -555,7 +591,9 @@ def test_flagged_ticket_usernames_link_to_the_correct_profiles(page: Page, creat
     with allure.step("Signing in with the Forum Moderator and navigating to the freshly flagged "
                      "ticket"):
         utilities.start_existing_session(cookies=forum_moderator)
-        _go_to_flagged_ticket(utilities, sumo_pages, "spam", "question")
+        assert _go_to_flagged_ticket(
+            utilities, sumo_pages, "spam", mfc.flagged_question(question_subject), "question"
+        ), f"The '{question_subject}' ticket was not found in the flagged queue"
 
     with check, allure.step("Verifying that the 'Created:' and 'Flagged:' usernames are correct"):
         expect(mfc.created_by_link_text(question_subject)).to_have_text(
@@ -568,7 +606,9 @@ def test_flagged_ticket_usernames_link_to_the_correct_profiles(page: Page, creat
             question_author["username"]))
 
     with allure.step("Navigating back to the freshly flagged ticket"):
-        _go_to_flagged_ticket(utilities, sumo_pages, "spam", "question")
+        assert _go_to_flagged_ticket(
+            utilities, sumo_pages, "spam", mfc.flagged_question(question_subject), "question"
+        ), f"The '{question_subject}' ticket was not found in the flagged queue"
 
     with check, allure.step("Verifying that the 'Flagged:' username links to the reporter "
                             "profile"):
@@ -644,7 +684,10 @@ def test_rejecting_a_flag_preserves_content_and_removes_ticket(page: Page, flagg
     with allure.step("Signing in with an admin account and navigating to the freshly flagged "
                      "ticket"):
         utilities.start_existing_session(session_file_name=staff_user)
-        _go_to_flagged_ticket(utilities, sumo_pages, reason_value, content_type_label)
+        assert _go_to_flagged_ticket(
+            utilities, sumo_pages, reason_value,
+            _flagged_ticket(sumo_pages, flagged_content, flagged_identifier), content_type_label
+        ), f"The '{flagged_identifier}' ticket was not found in the flagged queue"
 
     with allure.step("Selecting the second ('Rejected') option from the update-status dropdown "
                      "and clicking the 'Update' button"):
@@ -658,12 +701,11 @@ def test_rejecting_a_flag_preserves_content_and_removes_ticket(page: Page, flagg
             mfc.click_on_the_update_button(flagged_identifier)
 
     with check, allure.step("Filtering the flagged queue by reason and verifying that the ticket "
-                            "was removed"):
-        _go_to_flagged_ticket(utilities, sumo_pages, reason_value)
-        if flagged_content == "profile":
-            expect(mfc.profile_flagged_ticket(flagged_identifier)).to_be_hidden()
-        else:
-            expect(mfc.flagged_question(flagged_identifier)).to_be_hidden()
+                            "was removed from every page of the queue"):
+        assert not _go_to_flagged_ticket(
+            utilities, sumo_pages, reason_value,
+            _flagged_ticket(sumo_pages, flagged_content, flagged_identifier)
+        ), f"The '{flagged_identifier}' ticket is still listed in the flagged queue"
 
     with check, allure.step("Verifying that the content owner was not deactivated"):
         utilities.navigate_to_link(ModerateForumContentPageMessages.DEACTIVATED_USERS_PAGE_URL)
@@ -741,7 +783,10 @@ def test_accepting_a_flag_preserves_content_and_removes_ticket(page: Page, flagg
     with allure.step("Signing in with an admin account and navigating to the freshly flagged "
                      "ticket"):
         utilities.start_existing_session(session_file_name=staff_user)
-        _go_to_flagged_ticket(utilities, sumo_pages, reason_value, content_type_label)
+        assert _go_to_flagged_ticket(
+            utilities, sumo_pages, reason_value,
+            _flagged_ticket(sumo_pages, flagged_content, flagged_identifier), content_type_label
+        ), f"The '{flagged_identifier}' ticket was not found in the flagged queue"
 
     with allure.step("Selecting the first ('Accepted and Fixed') option from the update-status "
                      "dropdown and clicking the 'Update' button"):
@@ -755,12 +800,11 @@ def test_accepting_a_flag_preserves_content_and_removes_ticket(page: Page, flagg
             mfc.click_on_the_update_button(flagged_identifier)
 
     with check, allure.step("Filtering the flagged queue by reason and verifying that the ticket "
-                            "was removed"):
-        _go_to_flagged_ticket(utilities, sumo_pages, reason_value)
-        if flagged_content == "profile":
-            expect(mfc.profile_flagged_ticket(flagged_identifier)).to_be_hidden()
-        else:
-            expect(mfc.flagged_question(flagged_identifier)).to_be_hidden()
+                            "was removed from every page of the queue"):
+        assert not _go_to_flagged_ticket(
+            utilities, sumo_pages, reason_value,
+            _flagged_ticket(sumo_pages, flagged_content, flagged_identifier)
+        ), f"The '{flagged_identifier}' ticket is still listed in the flagged queue"
 
     with check, allure.step("Verifying that the content owner was not deactivated"):
         utilities.navigate_to_link(ModerateForumContentPageMessages.DEACTIVATED_USERS_PAGE_URL)

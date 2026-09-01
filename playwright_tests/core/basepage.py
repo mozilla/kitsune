@@ -131,6 +131,8 @@ class BasePage:
                     print(f"Expected URL {expected_url} not found. Retrying...")
                 if attempt < retries - 1:
                     self.page.wait_for_timeout(delay)
+                else:
+                    raise
 
     def _recover_if_on_error_page(self, retries: int = 3) -> None:
         """If the last main-frame navigation response was a 502, reload the page until it
@@ -175,6 +177,7 @@ class BasePage:
 
     def _select_option_by_label(self, locator: Locator, label_name: str, expected_locator=None):
         """Selects a select-box option by its visible label."""
+        self.wait_for_dom_to_load()
         locator.select_option(label=label_name)
         if expected_locator:
             self._wait_for_locator(expected_locator)

@@ -1,4 +1,4 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page
 from playwright_tests.core.basepage import BasePage
 
 
@@ -41,8 +41,6 @@ class ModerateForumContent(BasePage):
         self.update_status_button = lambda question_info: page.locator(
             f"//p[normalize-space(text())='{question_info}']/ancestor::div"
             f"[@class='flagged-item-content']//following-sibling::form/input[@value='Update']")
-        # Profile tickets render the flagged username inside an <h2> (rather than a <p>), so the
-        # profile update-status controls are anchored on that heading instead.
         self.update_profile_status_option = lambda username: page.locator(
             f"//h2[@class='sumo-page-subheading' and text()='{username}']/ancestor::div"
             f"[@class='flagged-item-content']//following-sibling::form/select")
@@ -50,7 +48,11 @@ class ModerateForumContent(BasePage):
             f"//h2[@class='sumo-page-subheading' and text()='{username}']/ancestor::div"
             f"[@class='flagged-item-content']//following-sibling::form/input[@value='Update']")
         self.paginator_section = page.locator("//ol[@class='pagination cf']")
-        self.last_paginator_option = page.locator("//ol[@class='pagination cf']/li/a").last
+        self.paginator_page_options = page.locator(
+            "//ol[@class='pagination cf']/li[not(@class='prev') and not(@class='next')]/a")
+        self.last_paginator_option = self.paginator_page_options.last
+        self.previous_paginator_option = page.locator(
+            "//ol[@class='pagination cf']/li[@class='prev']/a")
 
         """Locators belonging to the 'Filter by reason' and 'Filter by type' dropdowns."""
         self.filter_by_reason_dropdown = page.locator("select#flagit-reason-filter")
@@ -112,3 +114,19 @@ class ModerateForumContent(BasePage):
 
     def click_on_last_pagination_element(self):
         self._click(self.last_paginator_option)
+
+    def go_to_last_page(self):
+        if self.is_paginator_visible():
+            self.click_on_last_pagination_element()
+
+    def go_to_page_containing(self, locator: Locator, max_pages: int = 25) -> bool:
+        self.go_to_last_page()
+        for _ in range(max_pages):
+            if self._is_element_visible(locator.first):
+                return True
+            if not self._is_element_visible(self.previous_paginator_option):
+                return False
+            self._click(self.previous_paginator_option)
+        raise AssertionError(
+            f"Walked {max_pages} pages of the flagged queue without reaching its first page, so "
+            f"the presence of {locator} could not be determined.")

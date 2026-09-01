@@ -8,7 +8,7 @@ class ContactSupportMessages:
         "Firefox": "Web browser for Windows, Mac and Linux",
         "Firefox for Android": "Web browser for Android smartphones and tablets",
         "Firefox for iOS": "Firefox for iPhone, iPad and iPod touch devices",
-        "Firefox for Enterprise": "Firefox Quantum for businesses",
+        "Firefox for Enterprise": "Enterprise-grade protection, powered by Firefox",
         "MDN Plus": "MDN Plus provides a custom user experience for MDN supporters.",
         "Mozilla VPN": "VPN for Windows 10, Mac, Linux, Android, and iOS devices",
         "Firefox Relay": "Service that lets you create email masks to hide your real email "

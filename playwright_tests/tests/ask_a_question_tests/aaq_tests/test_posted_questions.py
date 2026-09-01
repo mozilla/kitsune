@@ -1550,15 +1550,12 @@ def test_report_abuse(page: Page, flagged_content, user_type, create_user_factor
     with allure.step("Navigating to 'Moderate forum content page' and verifying that the "
                      "question exists inside the moderate forum content page"):
         sumo_pages.top_navbar.click_on_moderate_forum_content_option()
-        if sumo_pages.moderate_forum_content_page.is_paginator_visible():
-            sumo_pages.moderate_forum_content_page.click_on_last_pagination_element()
-
-        if flagged_content == "question_content":
-            expect(sumo_pages.moderate_forum_content_page.flagged_question(
-                posted_question['question_details']['aaq_subject'])).to_be_visible()
-        else:
-            expect(sumo_pages.moderate_forum_content_page.flagged_question(reply_content)
-                   ).to_be_visible()
+        flagged_identifier = (posted_question['question_details']['aaq_subject']
+                              if flagged_content == "question_content" else reply_content)
+        flagged_ticket = sumo_pages.moderate_forum_content_page.flagged_question(
+            flagged_identifier)
+        assert sumo_pages.moderate_forum_content_page.go_to_page_containing(flagged_ticket), (
+            f"The '{flagged_identifier}' ticket was not found in the flagged queue")
 
     with allure.step("Selecting an option from the update status and clicking on the update "
                      "button"):
@@ -1579,14 +1576,11 @@ def test_report_abuse(page: Page, flagged_content, user_type, create_user_factor
         else:
             sumo_pages.moderate_forum_content_page.click_on_the_update_button(reply_content)
 
-    with allure.step("Verifying that the question no longer exists inside the moderate forum "
-                     "content page"):
-        if flagged_content == "question_content":
-            expect(sumo_pages.moderate_forum_content_page.flagged_question(
-                posted_question['question_details']['aaq_subject'])).to_be_hidden()
-        else:
-            expect(sumo_pages.moderate_forum_content_page.flagged_question(reply_content)
-                   ).to_be_hidden()
+    with allure.step("Verifying that the question no longer exists on any page of the moderate "
+                     "forum content page"):
+        assert not sumo_pages.moderate_forum_content_page.go_to_page_containing(
+            flagged_ticket), (
+            f"The '{flagged_identifier}' ticket is still listed in the flagged queue")
 
 
 # T5696777

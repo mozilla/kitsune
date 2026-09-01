@@ -401,14 +401,20 @@ class QuestionPage(BasePage):
     def click_posted_reply_said_link(self, reply_id: str):
         self._click(self.posted_reply_said_link(reply_id))
 
-    def click_on_post_reply_button(self, repliant_username, fetch_id: bool) -> str:
+    def click_on_post_reply_button(self, repliant_username, fetch_id: bool,
+                                   expect_spam_flag=False) -> str:
         """Post the question reply.
         Args:
             repliant_username (str): The username of the repliant. Acts as a wait.
             fetch_id (bool): If we should return the question reply id or not.
+            expect_spam_flag (bool): Skip the wait for the posted reply. Auto-flagged replies
+            are filtered out of the page for everyone without the flagit.can_moderate
+            permission, the repliant included, so the repliant username never shows up for
+            them and the caller has to supply its own wait.
         """
         self._click(self.post_reply_button,
-                    expected_locator=self.repliant_username(repliant_username))
+                    expected_locator=None if expect_spam_flag
+                    else self.repliant_username(repliant_username))
         if fetch_id:
             return self._get_element_attribute_value(self.answer_by_username(repliant_username), "id")
 

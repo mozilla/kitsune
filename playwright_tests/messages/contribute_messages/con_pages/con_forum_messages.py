@@ -7,7 +7,7 @@ class ContributeForumMessages:
     HERO_SECOND_TITLE = "Where all the action happens"
     HERO_TEXT = (
         'From hardcore web developers to "how do I install Firefox" '
-        "first time users, everybody needs your "
+        "first-time users, everybody needs your "
         "help in the forum! Share your knowledge by pointing people "
         "to the right help articles and providing "
         "troubleshooting steps for their individual questions."
