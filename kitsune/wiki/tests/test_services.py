@@ -16,7 +16,12 @@ from kitsune.wiki.services import (
     TranslationQueryBuilder,
 )
 from kitsune.wiki.strategies import TranslationMethod, TranslationStrategyFactory
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    DeferredRevisionFactory,
+    DocumentFactory,
+    RevisionFactory,
+)
 
 APPROVED_MSG = "Automatically approved because it was not reviewed within 72 hours."
 REJECTED_MSG = "No longer relevant."
@@ -238,7 +243,7 @@ class HybridTranslationServiceTests(TestCase):
         )
 
     @override_settings(
-        HYBRID_REVIEW_GRACE_PERIOD=72,
+        REVIEW_GRACE_PERIOD=72,
         HYBRID_ENABLED_LOCALES=["el", "ro", "es", "it", "de", "ja"],
     )
     def test_reject_obsolete_translations_with_default_doc1(self):
@@ -307,7 +312,7 @@ class HybridTranslationServiceTests(TestCase):
         self.assertTrue(self.rev1_it_2.reviewed < datetime_prior_to_test)
 
     @override_settings(
-        HYBRID_REVIEW_GRACE_PERIOD=72,
+        REVIEW_GRACE_PERIOD=72,
         HYBRID_ENABLED_LOCALES=["el", "ro", "es", "it", "de", "ja"],
     )
     def test_reject_obsolete_translations_with_default_doc2(self):
@@ -376,7 +381,7 @@ class HybridTranslationServiceTests(TestCase):
         self.assertTrue(self.rev1_it.reviewed < datetime_prior_to_test)
 
     @override_settings(
-        HYBRID_REVIEW_GRACE_PERIOD=72,
+        REVIEW_GRACE_PERIOD=72,
         HYBRID_ENABLED_LOCALES=["el", "ro", "es", "it", "de", "ja"],
     )
     def test_reject_obsolete_translations_with_doc1_el(self):
@@ -421,7 +426,7 @@ class HybridTranslationServiceTests(TestCase):
                 self.assertIsNone(rev.reviewed)
 
     @override_settings(
-        HYBRID_REVIEW_GRACE_PERIOD=72,
+        REVIEW_GRACE_PERIOD=72,
         HYBRID_ENABLED_LOCALES=["el", "ro", "es", "it", "de", "ja"],
     )
     def test_publish_pending_translations(self):
@@ -646,7 +651,7 @@ class TranslationQueryBuilderTests(TestCase):
 
     @override_settings(
         HYBRID_ENABLED_LOCALES=["es", "ro"],
-        HYBRID_REVIEW_GRACE_PERIOD=72,
+        REVIEW_GRACE_PERIOD=72,
     )
     def test_get_pending_translations(self):
         """Test finding pending translations that exceeded grace period."""
@@ -680,6 +685,162 @@ class TranslationQueryBuilderTests(TestCase):
         # Should only find the old one
         self.assertEqual(results.count(), 1)
         self.assertEqual(results.first().id, rev_old.id)
+
+
+@override_settings(
+    HYBRID_ENABLED_LOCALES=["es"],
+    AI_ENABLED_LOCALES=[],
+    STALE_TRANSLATION_THRESHOLD_DAYS=30,
+    REVIEW_GRACE_PERIOD=72,
+)
+class StaleTranslationPendingRevisionTests(TestCase):
+    """Tests for when a revision already awaiting review blocks a new machine translation."""
+
+    def setUp(self):
+        super().setUp()
+        self.query_builder = TranslationQueryBuilder()
+        self.sumo_bot = Profile.get_sumo_bot()
+
+        long_ago = timezone.now() - timedelta(days=400)
+        self.doc_en = DocumentFactory(is_localizable=True, is_archived=False)
+        self.old_rev_en = ApprovedRevisionFactory(
+            document=self.doc_en,
+            created=long_ago,
+            reviewed=long_ago,
+            significance=MAJOR_SIGNIFICANCE,
+            is_ready_for_localization=True,
+        )
+
+        # A Spanish translation of that English revision, last updated 35 days ago.
+        translated_on = timezone.now() - timedelta(days=35)
+        self.doc_es = DocumentFactory(parent=self.doc_en, locale="es")
+        ApprovedRevisionFactory(
+            document=self.doc_es,
+            based_on=self.old_rev_en,
+            created=translated_on,
+            reviewed=translated_on,
+        )
+
+        # English has moved on since then, so the Spanish translation is now stale.
+        updated_on = timezone.now() - timedelta(days=1)
+        self.latest_rev_en = ApprovedRevisionFactory(
+            document=self.doc_en,
+            created=updated_on,
+            reviewed=updated_on,
+            significance=MAJOR_SIGNIFICANCE,
+            is_ready_for_localization=True,
+        )
+
+    def assert_queued(self):
+        """The Spanish document is offered up for machine translation."""
+        results = self.query_builder.get_stale_docs_hybrid(limit=10)
+        self.assertEqual([doc.id for _, doc, _ in results], [self.doc_es.id])
+
+    def assert_skipped(self):
+        """The Spanish document is left alone."""
+        self.assertEqual(self.query_builder.get_stale_docs_hybrid(limit=10), [])
+
+    def newer_english_revision(self):
+        """Approve English content newer than anything yet marked ready for translation."""
+        approved_on = timezone.now() - timedelta(hours=2)
+        return ApprovedRevisionFactory(
+            document=self.doc_en,
+            created=approved_on,
+            reviewed=approved_on,
+            significance=MAJOR_SIGNIFICANCE,
+            is_ready_for_localization=False,
+        )
+
+    def test_nothing_awaiting_review(self):
+        """With no revision awaiting review, the stale translation is queued."""
+        self.assert_queued()
+
+    def test_our_translation_of_the_latest_english_revision(self):
+        """We don't translate again while our own machine translation awaits review."""
+        RevisionFactory(
+            document=self.doc_es,
+            based_on=self.latest_rev_en,
+            creator=self.sumo_bot,
+            created=timezone.now() - timedelta(days=30),
+            reviewed=None,
+        )
+        self.assert_skipped()
+
+    def test_our_translation_of_a_newer_english_revision(self):
+        """Our own machine translation still counts if it covers even newer English text."""
+        RevisionFactory(
+            document=self.doc_es,
+            based_on=self.newer_english_revision(),
+            creator=self.sumo_bot,
+            created=timezone.now() - timedelta(days=30),
+            reviewed=None,
+        )
+        self.assert_skipped()
+
+    def test_our_translation_of_an_older_english_revision(self):
+        """Our own machine translation doesn't count once English has moved past it."""
+        RevisionFactory(
+            document=self.doc_es,
+            based_on=self.old_rev_en,
+            creator=self.sumo_bot,
+            created=timezone.now() - timedelta(days=30),
+            reviewed=None,
+        )
+        self.assert_queued()
+
+    def test_someone_elses_translation_within_the_grace_period(self):
+        """We leave a person's recent translation alone until the grace period runs out."""
+        RevisionFactory(
+            document=self.doc_es,
+            based_on=self.latest_rev_en,
+            creator=UserFactory(),
+            created=timezone.now() - timedelta(hours=1),
+            reviewed=None,
+        )
+        self.assert_skipped()
+
+    def test_someone_elses_translation_past_the_grace_period(self):
+        """Once the grace period is over, a person's unreviewed translation stops blocking us."""
+        RevisionFactory(
+            document=self.doc_es,
+            based_on=self.latest_rev_en,
+            creator=UserFactory(),
+            created=timezone.now() - timedelta(hours=100),
+            reviewed=None,
+        )
+        self.assert_queued()
+
+    def test_someone_elses_translation_of_a_newer_english_revision(self):
+        """A person's recent translation still counts if it covers even newer English text."""
+        RevisionFactory(
+            document=self.doc_es,
+            based_on=self.newer_english_revision(),
+            creator=UserFactory(),
+            created=timezone.now() - timedelta(hours=1),
+            reviewed=None,
+        )
+        self.assert_skipped()
+
+    def test_someone_elses_translation_of_an_older_english_revision(self):
+        """A person's recent translation doesn't count once English has moved past it."""
+        RevisionFactory(
+            document=self.doc_es,
+            based_on=self.old_rev_en,
+            creator=UserFactory(),
+            created=timezone.now() - timedelta(hours=1),
+            reviewed=None,
+        )
+        self.assert_queued()
+
+    def test_someone_elses_translation_that_has_been_reviewed(self):
+        """A recent translation that's already been reviewed and turned down doesn't block us."""
+        DeferredRevisionFactory(
+            document=self.doc_es,
+            based_on=self.latest_rev_en,
+            creator=UserFactory(),
+            created=timezone.now() - timedelta(hours=1),
+        )
+        self.assert_queued()
 
 
 class TranslationStrategyFactoryTests(TestCase):
@@ -721,8 +882,12 @@ class TranslationStrategyFactoryTests(TestCase):
         archived_doc = DocumentFactory(is_archived=True)
         active_doc = DocumentFactory(is_archived=False)
 
-        self.assertEqual(self.factory.get_method_for_document(archived_doc, "de"), TranslationMethod.AI)
-        self.assertEqual(self.factory.get_method_for_document(active_doc, "de"), TranslationMethod.AI)
+        self.assertEqual(
+            self.factory.get_method_for_document(archived_doc, "de"), TranslationMethod.AI
+        )
+        self.assertEqual(
+            self.factory.get_method_for_document(active_doc, "de"), TranslationMethod.AI
+        )
 
     @override_settings(
         HYBRID_ENABLED_LOCALES=["es", "ro"],
