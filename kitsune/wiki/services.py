@@ -29,21 +29,21 @@ class TranslationQueryBuilder:
         """Build subquery for pending revisions that make a new translation unnecessary.
 
         A revision qualifies when it's awaiting review, covers the latest localizable
-        English revision, and either we created it or someone else created it recently
-        enough that they may still be reviewed within the grace period.
+        English revision or newer, and either we created it or someone else created it
+        recently enough that it may still be reviewed within the grace period.
 
         Returns:
             Subquery that checks for unreviewed revisions
         """
         created_within_grace_period = Q(
-            created__gte=Now() - timedelta(hours=settings.HYBRID_REVIEW_GRACE_PERIOD)
+            created__gte=Now() - timedelta(hours=settings.REVIEW_GRACE_PERIOD)
         )
 
         return Revision.objects.filter(
             document=OuterRef("pk"),
             is_approved=False,
             reviewed__isnull=True,
-            based_on_id=OuterRef("parent__latest_localizable_revision_id"),
+            based_on_id__gte=OuterRef("parent__latest_localizable_revision_id"),
         ).filter(Q(creator=self.sumo_bot) | created_within_grace_period)
 
     def _base_english_docs(self) -> models.QuerySet[Document]:
@@ -268,7 +268,7 @@ class TranslationQueryBuilder:
 
         return unreviewed_translations.filter(
             based_on_id__gte=F("document__parent__latest_localizable_revision_id"),
-            created__lt=Now() - timedelta(hours=settings.HYBRID_REVIEW_GRACE_PERIOD),
+            created__lt=Now() - timedelta(hours=settings.REVIEW_GRACE_PERIOD),
         ).exclude(another_already_approved | translations_discontinued)
 
     def get_obsolete_translations(
@@ -446,10 +446,10 @@ class HybridTranslationService:
 
     def publish_pending_translations(self, log: logging.Logger | None = None) -> None:
         """Publish fresh machine translations that have not been reviewed within the grace period."""
-        if not (settings.HYBRID_REVIEW_GRACE_PERIOD and settings.HYBRID_ENABLED_LOCALES):
+        if not (settings.REVIEW_GRACE_PERIOD and settings.HYBRID_ENABLED_LOCALES):
             return
 
-        grace_period = settings.HYBRID_REVIEW_GRACE_PERIOD
+        grace_period = settings.REVIEW_GRACE_PERIOD
         if grace_period <= 72:
             grace_period_string = f"{grace_period} hour{'s' if grace_period > 1 else ''}"
         else:

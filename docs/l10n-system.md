@@ -75,6 +75,7 @@ Different content managers handle the publishing workflow:
   - `get_stale_docs_ai()`: Finds all stale translations for AI flow (all AI docs + archived HYBRID docs)
   - `get_missing_docs_hybrid()`: Finds non-archived documents without translations in HYBRID locales
   - `get_missing_docs_ai()`: Finds documents without translations for AI flow
+  - `get_pending_revisions()`: Finds unreviewed revisions that make a new machine translation unnecessary
   - `get_pending_translations()`: Finds unreviewed translations exceeding grace period
   - `get_obsolete_translations()`: Finds translations that are no longer useful
 
@@ -88,6 +89,9 @@ Different content managers handle the publishing workflow:
 - Processes batch updates using appropriate strategies
 - Configurable via `STALE_TRANSLATION_THRESHOLD_DAYS` and `STALE_TRANSLATION_BATCH_SIZE`
 - Method: `process_stale(limit, strategy)` - optionally filters by AI or HYBRID strategy
+- Skips a document when a revision covering the latest localizable English revision (or newer) is
+  already awaiting review - either a machine translation of ours, or anyone else's revision created
+  within `REVIEW_GRACE_PERIOD`
 
 **MissingTranslationService**
 - Creates initial translations for documents without existing translations
@@ -96,7 +100,7 @@ Different content managers handle the publishing workflow:
 
 **HybridTranslationService**
 - Manages hybrid workflow automation
-- Auto-approves translations after grace period (`HYBRID_REVIEW_GRACE_PERIOD`)
+- Auto-approves translations after grace period (`REVIEW_GRACE_PERIOD`)
 - Rejects obsolete machine translations
 
 ### Translation Triggers
@@ -141,8 +145,8 @@ HYBRID_ENABLED_LOCALES = ['it', 'pt-BR']  # Example
 STALE_TRANSLATION_THRESHOLD_DAYS = 30
 STALE_TRANSLATION_BATCH_SIZE = 50
 
-# Hybrid workflow settings
-HYBRID_REVIEW_GRACE_PERIOD = 72  # hours
+# Translation workflow settings
+REVIEW_GRACE_PERIOD = 72  # hours
 ```
 
 ### Protected Terms (`kitsune/llm/l10n/config.py`)
