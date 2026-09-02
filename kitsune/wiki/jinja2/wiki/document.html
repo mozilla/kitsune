@@ -9,7 +9,7 @@
                                                     related_documents,
                                                     document_metadata with context %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
-{% from "includes/common_macros.html" import download_firefox, sumo_banner %}
+{% from "includes/common_macros.html" import download_firefox %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 {% set announcement_product = product|default(None) %}
 {% set classes = 'document' %}
@@ -49,14 +49,6 @@
 {% endif %}
 
 {% block breadcrumbs %}
-  {% if document.slug == "built-in-vpn" or document.slug == "mobile-android-vpn" %}
-    {{ sumo_banner(
-        id="built-in-vpn-banner",
-        text=_("Now through August 31, get unlimited bandwidth with more locations in built-in VPN. Head to Connect for more details."),
-        button_text=_('Details'),
-        button_link="https://connect.mozilla.org/t5/discussions/more-bandwidth-and-more-vpn-locations-in-firefox-this-summer/td-p/127583",
-    ) }}
-  {% endif %}
   {{ breadcrumbs(breadcrumb_items, id='main-breadcrumbs') }}
 {% endblock %}
 
