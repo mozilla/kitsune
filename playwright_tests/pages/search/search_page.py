@@ -1,7 +1,11 @@
-from playwright.sync_api import Locator, Page, ElementHandle
+from playwright.sync_api import Locator, Page, ElementHandle, expect
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from playwright_tests.core.basepage import BasePage
+
+# The deepest the search paginator goes, matching the backend cap of
+# RETRIEVAL_MAX_PAGE_OFFSET // SEARCH_RESULTS_PER_PAGE + 1.
+SEARCH_RESULT_PAGES = 5
 
 
 class SearchPage(BasePage):
@@ -57,12 +61,93 @@ class SearchPage(BasePage):
         self.search_results_side_nav_element = lambda product_name: page.locator(
             "ul#product-filter").get_by_role("link", name=product_name, exact=True)
 
+        """Locators belonging to the results paginator."""
+        # Instant search and the server-rendered results page use different markup for the
+        # next link - only the server one carries btn-page-next - so both are matched on the
+        # list item instead.
+        self.next_results_page_button = page.locator("ol.pagination li.next a")
+        self.previous_results_page_button = page.locator("ol.pagination li.prev a")
+
         """General page locators."""
         self.page_header = page.locator("h1[class='sumo-page-heading-xl']")
 
 
     def _wait_for_visibility_of_search_results_section(self):
         self._wait_for_locator(self.search_results_section)
+
+    """Actions against the results paginator."""
+    def _turn_results_page(self, page_link: Locator):
+        """Click a paginator link and wait for the new results to render.
+
+        Instant search swaps the results in place without a navigation, so there is no load
+        event to wait on. The first result title changing is the signal which works both
+        there and on the server-rendered results page.
+
+        Args:
+            page_link (Locator): The paginator link to click.
+        """
+        previous_first_title = self._get_text_of_element(self.search_results_titles.first)
+        self._click(page_link)
+        expect(self.search_results_titles.first).not_to_have_text(
+            previous_first_title, timeout=6000)
+
+    def _reset_to_first_results_page(self):
+        """Page back to the start of the results.
+
+        Without this a lookup would begin wherever the previous one stopped and could miss a
+        result sitting on an earlier page. A no-op when already on the first page.
+        """
+        for _ in range(SEARCH_RESULT_PAGES):
+            if not self.previous_results_page_button.count():
+                return
+            self._turn_results_page(self.previous_results_page_button)
+
+    def _scan_results_pages(self, target: Locator) -> bool:
+        """Walk the paginator until the target is on the page, or the pages run out.
+
+        Semantic search does not guarantee that a given result lands on the first page, so
+        missing from page one is not the same as not returned at all. Ends on the page the
+        target was found on, or on the last page visited.
+
+        Args:
+            target (Locator): The locator to look for on each results page.
+
+        Returns:
+            bool: Whether the target was found on any of the visited pages.
+        """
+        self._reset_to_first_results_page()
+        for _ in range(SEARCH_RESULT_PAGES):
+            self._wait_for_visibility_of_search_results_section()
+            if target.count():
+                return True
+            if not self.next_results_page_button.count():
+                return False
+            self._turn_results_page(self.next_results_page_button)
+        return False
+
+    def locate_article_across_pages(self, article_title: str) -> Locator:
+        """Locator for a named article, having paged to the results page it is on.
+
+        If the article isn't returned on any page the locator resolves to nothing, so a
+        negative assertion against it still reads naturally - and by then every page has
+        been checked.
+
+        Args:
+            article_title (str): The title of the article.
+        """
+        article = self.article(article_title)
+        self._scan_results_pages(article)
+        return article
+
+    def locate_result_title_across_pages(self, text: str) -> Locator:
+        """Locator for a result title containing the given text, having paged to its page.
+
+        Args:
+            text (str): The text the result title should contain.
+        """
+        title = self.search_results_titles.filter(has_text=text)
+        self._scan_results_pages(title)
+        return title
 
     """Actions against the search results."""
     def click_on_a_particular_popular_search(self, popular_search_option: str):

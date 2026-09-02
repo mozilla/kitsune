@@ -654,11 +654,8 @@ def test_kb_article_keywords_and_summary(page: Page, user_type, create_user_fact
     with allure.step("Typing the article keyword inside the search field and verifying that "
                      "the article is displayed inside the search results"):
         sumo_pages.search_page.fill_into_searchbar(article_details['keyword'])
-        expect(
-            sumo_pages.search_page.get_locator_of_a_particular_article(
-                article_details['article_title']
-            )
-        ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
@@ -670,11 +667,8 @@ def test_kb_article_keywords_and_summary(page: Page, user_type, create_user_fact
                      "results"):
         sumo_pages.search_page.clear_the_searchbar()
         sumo_pages.search_page.fill_into_searchbar(article_details['search_results_summary'])
-        expect(
-            sumo_pages.search_page.get_locator_of_a_particular_article(
-                article_details['article_title']
-            )
-        ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
@@ -775,11 +769,8 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
         )
 
     with allure.step("Verifying that the article is displayed inside the search results"):
-        expect(
-            sumo_pages.search_page.get_locator_of_a_particular_article(
-                article_details['article_title']
-            )
-        ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
@@ -795,11 +786,8 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
         )
 
     with allure.step("Verifying that the article is displayed inside the search results"):
-        expect(
-            sumo_pages.search_page.get_locator_of_a_particular_article(
-                article_details['article_title']
-            )
-        ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):

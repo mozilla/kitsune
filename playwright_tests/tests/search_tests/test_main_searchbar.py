@@ -29,7 +29,8 @@ def test_searchbar_functionality_product_solutions_page(page: Page, create_user_
         sumo_pages.search_page.fill_into_searchbar(text=test_article_name, is_aaq=True)
 
     with allure.step("Verifying that the article is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text([test_article_name])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article_name)).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -39,8 +40,8 @@ def test_searchbar_functionality_product_solutions_page(page: Page, create_user_
         sumo_pages.search_page.fill_into_searchbar(text=question["aaq_subject"], is_aaq=True)
 
     with allure.step("Verifying that the question is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [question["aaq_subject"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question["aaq_subject"])).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -61,8 +62,8 @@ def test_searchbar_functionality_product_support_page(page: Page, create_user_fa
         sumo_pages.search_page.fill_into_searchbar(test_article_name)
 
     with allure.step("Verifying that the article is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [test_article_name])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article_name)).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -72,8 +73,8 @@ def test_searchbar_functionality_product_support_page(page: Page, create_user_fa
         sumo_pages.search_page.fill_into_searchbar(question["aaq_subject"])
 
     with allure.step("Verifying that the question is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [question["aaq_subject"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question["aaq_subject"])).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -95,7 +96,8 @@ def test_searchbar_functionality_explore_by_topic_page(page: Page, create_user_f
         sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
 
     with allure.step("Verifying that the article is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text([test_article_name])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article_name)).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -106,8 +108,8 @@ def test_searchbar_functionality_explore_by_topic_page(page: Page, create_user_f
         sumo_pages.search_page.fill_into_searchbar(question['aaq_subject'], is_sidebar=True)
 
     with allure.step("Verifying that the question is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [question['aaq_subject']])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question['aaq_subject'])).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -130,7 +132,8 @@ def test_searchbar_functionality_product_community_forum_page(page: Page, create
         sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
 
     with allure.step("Verifying that the article is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text([test_article_name])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article_name)).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -141,8 +144,8 @@ def test_searchbar_functionality_product_community_forum_page(page: Page, create
         sumo_pages.search_page.fill_into_searchbar(question['aaq_subject'], is_sidebar=True)
 
     with allure.step("Verifying that the question is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [question['aaq_subject']])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question['aaq_subject'])).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -164,7 +167,8 @@ def test_searchbar_functionality_browse_all_forum_threads_by_topic_page(page: Pa
         sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
 
     with allure.step("Verifying that the article is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text([test_article_name])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article_name)).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -175,8 +179,8 @@ def test_searchbar_functionality_browse_all_forum_threads_by_topic_page(page: Pa
         sumo_pages.search_page.fill_into_searchbar(question['aaq_subject'], is_sidebar=True)
 
     with allure.step("Verifying that the question is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [question['aaq_subject']])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question['aaq_subject'])).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -200,7 +204,8 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
 
 
     with check, allure.step("Verifying that the test article is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text([test_article_name])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article_name)).to_be_visible()
 
     with check, allure.step("Verifying that the filter by product is applied to the correct "
                             "product"):
@@ -228,7 +233,8 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
                 expected_found_search_results_message(search_results_count=str(result_count),
                                                       search_string=test_article_name,
                                                       product_filter_option=product_filter))
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text([test_article_name])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article_name)).to_be_visible()
 
     with check, allure.step("Clicking on the 'Community Discussions Only' and verifying that:"
                             "1. The correct search results message is displayed."
@@ -240,8 +246,8 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
         assert (sumo_pages.search_page.get_search_results_header() in search_page_messages.
                 expected_no_results_search_results_message(search_string=test_article_name,
                                                            product_filter_option=product_filter))
-        expect(sumo_pages.search_page.search_results_titles).not_to_contain_text(
-            [test_article_name])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article_name)).to_be_hidden()
 
     with allure.step("Using the searchbar to search for a particular question"):
         sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
@@ -253,8 +259,8 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
                             "1. The question is successfully returned inside the search results."
                             "2. The correct doctype filter is applied."
                             "3. The correct search results message is returned."):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [question["aaq_subject"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question["aaq_subject"])).to_be_visible()
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
             "All Products")
         expect(sumo_pages.search_page.selected_filter_locator).to_have_text(
@@ -269,8 +275,8 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
                             "2. The correct doctype filter is applied."
                             "3. The correct search results message is returned."):
         sumo_pages.search_page.click_on_help_articles_only_doctype_filter()
-        expect(sumo_pages.search_page.search_results_titles).not_to_contain_text(
-            [question["aaq_subject"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question["aaq_subject"])).to_be_hidden()
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
             "All Products")
         expect(sumo_pages.search_page.selected_filter_locator).to_have_text("Help Articles Only")
@@ -283,8 +289,8 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
                             "2. The correct doctype filter is applied."
                             "3. The correct search results message is returned."):
         sumo_pages.search_page.click_on_view_all_doctype_filter()
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [question["aaq_subject"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question["aaq_subject"])).to_be_visible()
         result_count = utilities.number_extraction_from_string(
             sumo_pages.search_page.get_search_results_header())
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -314,7 +320,8 @@ def test_searchbar_functionality_on_article_page(page: Page, create_user_factory
         sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
 
     with allure.step("Verifying that the article is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text([test_article_name])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article_name)).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -325,8 +332,8 @@ def test_searchbar_functionality_on_article_page(page: Page, create_user_factory
         sumo_pages.search_page.fill_into_searchbar(question['aaq_subject'], is_sidebar=True)
 
     with allure.step("Verifying that the question is successfully returned"):
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [question['aaq_subject']])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question['aaq_subject'])).to_be_visible()
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
@@ -740,8 +747,8 @@ def test_keywords_field_and_content_operator(page: Page, create_user_factory):
 
         with allure.step("Verifying that the article is successfully returned after searching for"
                          " its keyword"):
-            expect(sumo_pages.search_page.article(article_details['article_title'])
-                   ).to_be_visible()
+            expect(sumo_pages.search_page.locate_article_across_pages(
+                article_details['article_title'])).to_be_visible()
 
     with allure.step("Searching for an article using the keywords field operator and the NOT "
                      "operator"):
@@ -749,20 +756,21 @@ def test_keywords_field_and_content_operator(page: Page, create_user_factory):
 
         with allure.step("Verifying that the test article is not returned when a keyword is placed"
                          " after the 'NOT' operator"):
-            expect(sumo_pages.search_page.article(article_details['article_title'])).to_be_hidden()
+            expect(sumo_pages.search_page.locate_article_across_pages(
+                article_details['article_title'])).to_be_hidden()
 
         sumo_pages.search_page.fill_into_searchbar(third_search_term_keyword)
 
         with allure.step("Verifying that the test article is returned when a non-keyword term is"
                          " used after the NOT operator"):
-            expect(sumo_pages.search_page.article(article_details['article_title'])
-                   ).to_be_visible()
+            expect(sumo_pages.search_page.locate_article_across_pages(
+                article_details['article_title'])).to_be_visible()
 
     with allure.step("Searching for an article using the content field operator"):
         sumo_pages.search_page.fill_into_searchbar(search_term_content)
         with allure.step("Verifying that the test article is successfully displayed"):
-            expect(sumo_pages.search_page.article(article_details['article_title'])
-                   ).to_be_visible()
+            expect(sumo_pages.search_page.locate_article_across_pages(
+                article_details['article_title'])).to_be_visible()
         with allure.step("Verifying that the search term is successfully highlighted in search"
                          " results"):
             for title in sumo_pages.search_page.get_all_search_results_article_titles():
@@ -837,16 +845,16 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
             "field:title.ro:" + ro_article_info['translation_title'])
 
     with allure.step("Verifying that the ro article is successfully returned"):
-        expect(sumo_pages.search_page.article(ro_article_info['translation_title'])
-               ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            ro_article_info['translation_title'])).to_be_visible()
 
     with allure.step("Searching for the ro article using the content field operator"):
         sumo_pages.search_page.fill_into_searchbar(
             "field:content.ro:" + ro_article_info['translation_body'])
 
     with allure.step("Verifying that the ro article is successfully displayed"):
-        expect(sumo_pages.search_page.article(ro_article_info['translation_title'])
-               ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            ro_article_info['translation_title'])).to_be_visible()
 
     with allure.step("Searching for the ro article using the summary field operator"):
         sumo_pages.search_page.fill_into_searchbar(
@@ -854,8 +862,8 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
         )
 
     with allure.step("Verifying that the ro article is successfully displayed"):
-        expect(sumo_pages.search_page.article(ro_article_info['translation_title'])
-               ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            ro_article_info['translation_title'])).to_be_visible()
 
     with allure.step("Searching for the ro article using the slug field operator"):
         sumo_pages.search_page.fill_into_searchbar(
@@ -863,8 +871,8 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
         )
 
     with allure.step("Verifying that the ro article is successfully displayed"):
-        expect(sumo_pages.search_page.article(ro_article_info['translation_title'])
-               ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            ro_article_info['translation_title'])).to_be_visible()
 
     with allure.step("Switching the locale to ja"):
         sumo_pages.footer_section.switch_to_a_locale('ja')
@@ -875,16 +883,16 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
             "field:title.ja:" + ja_article_info['translation_title'])
 
     with allure.step("Verifying that the ja article is successfully returned"):
-        expect(sumo_pages.search_page.article(ja_article_info['translation_title'])
-               ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            ja_article_info['translation_title'])).to_be_visible()
 
     with allure.step("Searching for the ro article using the content field operator"):
         sumo_pages.search_page.fill_into_searchbar(
             "field:content.ja:" + ja_article_info['translation_body'])
 
     with allure.step("Verifying that the ro article is successfully displayed"):
-        expect(sumo_pages.search_page.article(ja_article_info['translation_title'])
-               ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            ja_article_info['translation_title'])).to_be_visible()
 
     with allure.step("Searching for the ja article using the summary field operator"):
         sumo_pages.search_page.fill_into_searchbar(
@@ -892,8 +900,8 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
         )
 
     with allure.step("Verifying that the ja article is successfully displayed"):
-        expect(sumo_pages.search_page.article(ja_article_info['translation_title'])
-               ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            ja_article_info['translation_title'])).to_be_visible()
 
     with allure.step("Searching for the ro article using the slug field operator"):
         sumo_pages.search_page.fill_into_searchbar(
@@ -901,8 +909,8 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
         )
 
     with allure.step("Verifying that the ro article is successfully displayed"):
-        expect(sumo_pages.search_page.article(ja_article_info['translation_title'])
-               ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            ja_article_info['translation_title'])).to_be_visible()
 
 
 # C1358447
@@ -931,7 +939,8 @@ def test_doc_id_field_operator(page: Page):
         sumo_pages.search_page.fill_into_searchbar(f"field:doc_id.en-US:{document_id}")
 
     with allure.step("Verifying that the correct article is returned"):
-        expect(sumo_pages.search_page.article(kb_result_dict['kb_title'])).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            kb_result_dict['kb_title'])).to_be_visible()
 
 
 # C1329240
@@ -951,8 +960,8 @@ def test_obsolete_marked_documents_visibility(page: Page, create_user_factory):
     with allure.step("Verifying that the article is successfully returned"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         sumo_pages.search_page.fill_into_searchbar(test_article["article_title"])
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [test_article["article_title"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article["article_title"])).to_be_visible()
 
     with allure.step("Marking the article as obsolete"):
         utilities.navigate_to_link(test_article["article_url"])
@@ -963,8 +972,8 @@ def test_obsolete_marked_documents_visibility(page: Page, create_user_factory):
     with allure.step("Verifying that the article is no longer returned"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         sumo_pages.search_page.fill_into_searchbar(test_article["article_title"])
-        expect(sumo_pages.search_page.search_results_titles).not_to_contain_text(
-            [test_article["article_title"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article["article_title"])).to_be_hidden()
 
     with allure.step("Unmarking the article as obsolete"):
         utilities.navigate_to_link(test_article["article_url"])
@@ -974,8 +983,8 @@ def test_obsolete_marked_documents_visibility(page: Page, create_user_factory):
     with allure.step("Verifying that the article is returned"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         sumo_pages.search_page.fill_into_searchbar(test_article["article_title"])
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [test_article["article_title"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article["article_title"])).to_be_visible()
 
 
 #  C1329226
@@ -1000,22 +1009,22 @@ def test_article_product_metadata_update_and_search_filter_by_product(page: Page
         sumo_pages.search_page.fill_into_searchbar(test_article["article_title"])
         expect(sumo_pages.search_page.search_results_side_nav_selected_item).to_have_text(
             "All Products")
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [test_article["article_title"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article["article_title"])).to_be_visible()
 
     with check, allure.step("Clicking on the 'Firefox' filter and verifying that the article"
                             "is displayed inside the search results"):
         sumo_pages.search_page.click_on_a_particular_side_nav_item("Firefox")
         utilities.wait_for_given_timeout(2000)
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [test_article["article_title"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article["article_title"])).to_be_visible()
 
     with check, allure.step("Clicking on the 'Firefox for Android' filter and verifying that the"
                             "article is not displayed inside the search results"):
         sumo_pages.search_page.click_on_a_particular_side_nav_item("Firefox for Android")
         utilities.wait_for_given_timeout(2000)
-        expect(sumo_pages.search_page.search_results_titles).not_to_contain_text(
-            [test_article["article_title"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article["article_title"])).to_be_hidden()
 
     with allure.step("Editing the article by adding 'Firefox for Android' as a product"):
         utilities.navigate_to_link(test_article["article_url"])
@@ -1027,25 +1036,25 @@ def test_article_product_metadata_update_and_search_filter_by_product(page: Page
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         sumo_pages.search_page.fill_into_searchbar(test_article["article_title"])
         utilities.wait_for_given_timeout(2000)
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [test_article["article_title"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article["article_title"])).to_be_visible()
 
         sumo_pages.search_page.click_on_a_particular_side_nav_item("Firefox")
         utilities.wait_for_given_timeout(2000)
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [test_article["article_title"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article["article_title"])).to_be_visible()
 
         sumo_pages.search_page.click_on_a_particular_side_nav_item("Firefox for Android")
         utilities.wait_for_given_timeout(2000)
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [test_article["article_title"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article["article_title"])).to_be_visible()
 
     with allure.step("Searching for the article by filtering against a different product and "
                      "verifying that the article is not displayed"):
         sumo_pages.search_page.click_on_a_particular_side_nav_item("Thunderbird")
         utilities.wait_for_given_timeout(2000)
-        expect(sumo_pages.search_page.search_results_titles).not_to_contain_text(
-            [test_article["article_title"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            test_article["article_title"])).to_be_hidden()
 
 
 # C2873849
@@ -1067,16 +1076,16 @@ def test_archived_questions_are_returned_in_advanced_search_results_only(page: P
     with allure.step("Searching for the question inside the searchbar"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         sumo_pages.search_page.fill_into_searchbar(question["aaq_subject"])
-        expect(sumo_pages.search_page.search_results_titles).not_to_contain_text(
-            [question["aaq_subject"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question["aaq_subject"])).to_be_hidden()
 
     with allure.step("Searching for the question inside the searchbar using advanced search"
                      "syntax"):
         sumo_pages.search_page.clear_the_searchbar()
         sumo_pages.search_page.fill_into_searchbar(
             f"field:question_title.en-US:{question['aaq_subject']}")
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [question["aaq_subject"]])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question["aaq_subject"])).to_be_visible()
 
         sumo_pages.search_page.clear_the_searchbar()
         sumo_pages.search_page.fill_into_searchbar(
@@ -1091,8 +1100,8 @@ def test_archived_questions_are_returned_in_advanced_search_results_only(page: P
 
             sumo_pages.common_web_elements.click_on_next_pagination_item()
             utilities.wait_for_given_timeout(2000)
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [question['aaq_subject']])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question['aaq_subject'])).to_be_visible()
 
 
 #  C2874873, C2873851, C1358450
@@ -1145,24 +1154,24 @@ def test_aaq_question_id_and_is_archived_fields_search(page:Page, create_user_fa
         utilities.wait_for_given_timeout(4000)
         sumo_pages.common_web_elements.click_on_last_pagination_item()
         utilities.wait_for_given_timeout(2000)
-        expect(sumo_pages.search_page.search_results_titles).not_to_contain_text(
-            [question['aaq_subject']])
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text(
-            [second_question['aaq_subject']])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question['aaq_subject'])).to_be_hidden()
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            second_question['aaq_subject'])).to_be_visible()
 
     with check, allure.step("Navigating back, searching for the question_id and verifying that "
                             "the correct archived question is returned"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         sumo_pages.search_page.fill_into_searchbar(f"field:question_id:{question_id}")
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text([
-            question['aaq_subject']])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            question['aaq_subject'])).to_be_visible()
 
     with check, allure.step("Navigating back, searching for the question_id and verifying that "
                             "the correct non-archived question is returned"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         sumo_pages.search_page.fill_into_searchbar(f"field:question_id:{second_question_id}")
-        expect(sumo_pages.search_page.search_results_titles).to_contain_text([
-            second_question['aaq_subject']])
+        expect(sumo_pages.search_page.locate_result_title_across_pages(
+            second_question['aaq_subject'])).to_be_visible()
 
 
 # C2874062
