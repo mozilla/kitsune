@@ -1,6 +1,11 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
+.product-list + .sumo-button-wrap {
+  position: relative;
+  z-index: 2;
+}
+
 .forum {
   &--sidebar-sort {
     margin-bottom: 40px;
