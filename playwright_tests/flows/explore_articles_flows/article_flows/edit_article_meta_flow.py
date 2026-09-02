@@ -29,7 +29,8 @@ class EditArticleMetaFlow:
     def edit_article_metadata(self, title=None, slug=None, category=None, product=None,
                               topics=None, obsolete=False, discussions=True, needs_change=False,
                               needs_change_comment=False, restricted_to_groups: list[str] = None,
-                              related_documents: list[str] = None, single_group=""):
+                              related_documents: list[str] = None, single_group="",
+                              clear_selected_products_and_topics=False):
 
         if KBArticleRevision.KB_EDIT_METADATA not in self.utilities.get_page_url():
             self.kb_article_page.click_on_edit_article_metadata()
@@ -50,6 +51,12 @@ class EditArticleMetaFlow:
 
         if category:
             self.kb_article_edit_metadata_page.select_category(category)
+
+        # The form disables every product/topic which isn't compatible with the current
+        # selection, so a new product/topic can only be picked after clearing the old one.
+        if clear_selected_products_and_topics:
+            self.kb_article_edit_metadata_page.clear_selected_products()
+            self.kb_article_edit_metadata_page.clear_selected_topics()
 
         if product:
             self.kb_article_edit_metadata_page.check_product_checkbox(product)

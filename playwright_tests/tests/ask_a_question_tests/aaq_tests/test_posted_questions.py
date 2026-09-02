@@ -1,4 +1,5 @@
 import os
+import random
 import re
 import time
 from typing import Union
@@ -1235,7 +1236,7 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
         with check, allure.step("Verifying that the question details is displayed inside the "
                                 "quote"):
             expect(sumo_pages.question_page.blockquote_reply(quote_id)).to_have_text(
-                utilities.aaq_question_test_data['valid_firefox_question'])
+                utilities.aaq_question_test_data['valid_firefox_question']['body_updated'])
 
     with check, allure.step("Verifying that the new reply text is also displayed"):
         expect(sumo_pages.question_page.posted_reply_text(quote_id)).to_contain_text(
@@ -1261,18 +1262,17 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
     if quote_on == "reply":
         with allure.step("Posting a quoted reply for question reply"):
             quote_id = sumo_pages.aaq_flow.post_question_reply_flow(
-                repliant_username=test_user_two["username"],
+                repliant_username=test_user_three["username"],
                 reply=utilities.aaq_question_test_data['valid_firefox_question']['updated_reply'],
                 quoted_reply=True,
                 reply_for_id=reply_id
             )
     else:
-        with allure.step("Posting a quoted reply for question reply"):
+        with allure.step("Posting a quoted reply for the question"):
             quote_id = sumo_pages.aaq_flow.post_question_reply_flow(
-                repliant_username=test_user_two["username"],
+                repliant_username=test_user_three["username"],
                 reply=utilities.aaq_question_test_data['valid_firefox_question']['updated_reply'],
-                quoted_reply=True,
-                reply_for_id=question_id
+                quoted_question=True
             )
 
     with check, allure.step("Verifying that the original repliant is displayed inside the "
@@ -1595,58 +1595,38 @@ def test_common_responses(page: Page, create_user_factory):
                      "question"):
         post_firefox_product_question_flow(page, test_user)
 
-    with allure.step("Signing in with a different account, clicking on the 'Common "
-                     "Responses' option and selecting one from the list"):
+    with allure.step("Signing in with a different account and clicking on the 'Common "
+                     "Responses' option"):
         utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.question_page.click_on_common_responses_option()
-        sumo_pages.question_page.click_on_a_particular_category_option(
-            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_category"]
-        )
-        sumo_pages.question_page.type_into_common_responses_search_field(
-            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
-        )
+
+    with allure.step("Selecting a random category and searching for a random response which "
+                     "belongs to it"):
+        category, common_response = select_random_common_response(sumo_pages)
+        sumo_pages.question_page.type_into_common_responses_search_field(common_response)
         utilities.wait_for_given_timeout(3000)
 
-    with check, allure.step("Verifying that the only item in the category field is the searched "
-                            "option"):
-        expect(sumo_pages.question_page.common_responses_responses_options).to_have_count(1)
-        expect(sumo_pages.question_page.common_responses_responses_options.first).to_have_text(
-            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
-        )
+    with check, allure.step("Verifying that the search results contain the searched response "
+                            "and nothing which does not match it"):
+        verify_common_responses_search_results(sumo_pages, common_response)
 
     with allure.step("Clicking on the response option and on the 'Cancel' panel button"):
-        sumo_pages.question_page.click_on_a_particular_response_option(
-            utilities.aaq_question_test_data["valid_firefox_question"]
-            ["common_responses_response"]
-        )
+        sumo_pages.question_page.click_on_a_particular_response_option(common_response)
         sumo_pages.question_page.click_on_common_responses_cancel_button()
 
     with check, allure.step("Verifying that the form textarea does not contain the common "
                             "response"):
         expect(sumo_pages.question_page.post_a_reply_textarea).to_have_value("")
 
-    with allure.step("Clicking on the 'Common Responses' option and selecting a response "
-                     "from the list"):
+    with allure.step("Clicking on the 'Common Responses' option and searching for the same "
+                     "response"):
         sumo_pages.question_page.click_on_common_responses_option()
-        sumo_pages.question_page.click_on_a_particular_category_option(
-            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_category"]
-        )
-        sumo_pages.question_page.type_into_common_responses_search_field(
-            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
-        )
+        sumo_pages.question_page.click_on_a_particular_category_option(category)
+        sumo_pages.question_page.type_into_common_responses_search_field(common_response)
         utilities.wait_for_given_timeout(3000)
 
-    with check, allure.step("Verifying that the only item in the category field is the searched "
-                            "option"):
-        expect(sumo_pages.question_page.common_responses_responses_options).to_have_count(1)
-        expect(sumo_pages.question_page.common_responses_responses_options.first).to_have_text(
-            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
-        )
-
     with allure.step("Clicking on the response option"):
-        sumo_pages.question_page.click_on_a_particular_response_option(
-            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
-        )
+        sumo_pages.question_page.click_on_a_particular_response_option(common_response)
         expect(sumo_pages.question_page.common_responses_textarea_field).to_have_value(
             re.compile(r".+"))
         sumo_pages.question_page.click_on_switch_to_mode()
@@ -1663,6 +1643,38 @@ def test_common_responses(page: Page, create_user_factory):
                 test_user_two["username"], fetch_id=True)
         expect(sumo_pages.question_page.reply_context(reply_id)).to_contain_text(response)
 
+
+def select_random_common_response(sumo_pages: SumoPages) -> tuple[str, str]:
+    """Selects a random common responses category and returns it together with a random response
+    which belongs to it.
+
+    Categories which contain no responses are skipped since the responses a user is allowed to
+    use depend on their permissions.
+    """
+    categories = sumo_pages.question_page.common_responses_categories_options
+    expect(categories).not_to_have_count(0)
+
+    category_names = categories.all_inner_texts()
+    random.shuffle(category_names)
+    for category in category_names:
+        sumo_pages.question_page.click_on_a_particular_category_option(category)
+        responses = sumo_pages.question_page.common_responses_responses_options.all_inner_texts()
+        if responses:
+            return category, random.choice(responses)
+    pytest.fail("No responses are available inside the common responses panel")
+
+
+def verify_common_responses_search_results(sumo_pages: SumoPages, searched_response: str):
+    """Verifies that the common responses search results contain the searched response and no
+    response which does not match it.
+    """
+    search_results = sumo_pages.question_page.common_responses_responses_options.all_inner_texts()
+    assert searched_response in search_results, (
+        f"The '{searched_response}' response is not listed inside the search results. Search "
+        f"results: {search_results}")
+    assert all(searched_response.lower() in result.lower() for result in search_results), (
+        f"Responses which do not match the '{searched_response}' search term are listed. Search "
+        f"results: {search_results}")
 
 
 def post_firefox_product_question_flow(page: Page, user: Union[dict, str]):
