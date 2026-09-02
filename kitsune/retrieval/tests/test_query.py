@@ -7,6 +7,7 @@ from elasticsearch.helpers import bulk
 from kitsune.retrieval.fingerprints import similarity_profile_fingerprint
 from kitsune.retrieval.index import VECTOR_DIMS, ChunkDocument, configured_index_meta
 from kitsune.retrieval.query import (
+    KB_TITLE_PHRASE_BOOST,
     RRF_RANK_CONSTANT,
     InvalidRetrievalResponse,
     LegacyQuestion,
@@ -68,6 +69,19 @@ class LexicalClauseTests(SimpleTestCase):
         self.assertTrue(_contains(kb, {"prefix": {"family_id": "kb:"}}))
         self.assertTrue(_contains(kb, {"terms": {"access_group_ids": [7, 9]}}))
         self.assertTrue(_contains(kb, {"term": {"product_ids": "3"}}))
+        self.assertTrue(
+            _contains(
+                kb,
+                {
+                    "match_phrase": {
+                        "title.de": {
+                            "query": "firefox startup",
+                            "boost": KB_TITLE_PHRASE_BOOST,
+                        }
+                    }
+                },
+            )
+        )
 
         self.assertEqual(
             _simple_query(clauses.kb_english)["fields"],
@@ -484,7 +498,7 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
                         "product_ids": ["3"],
                         "topic_ids": ["7"],
                         "category": "10",
-                        "title": {"en-US": "firefox startup crash"},
+                        "title": {"en-US": "firefox crash after startup"},
                         "summary": {"en-US": "fix a firefox startup crash"},
                         "content_text": {"en-US": f"firefox startup crash passage {position}"},
                         "content_vector": distant,
@@ -589,8 +603,8 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
             allow_partial_search_results=False,
         )
         self.assertEqual(
-            {hit["_source"]["family_id"] for hit in lexical_hits["hits"]["hits"]},
-            {"kb:1", "kb:2"},
+            [hit["_source"]["family_id"] for hit in lexical_hits["hits"]["hits"]],
+            ["kb:2", "kb:1"],
         )
 
         aaq_hits = client.search(
