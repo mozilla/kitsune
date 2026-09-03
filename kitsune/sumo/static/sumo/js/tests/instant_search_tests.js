@@ -122,7 +122,9 @@ describe('instant search', () => {
       });
 
       expect(document.querySelector('.search-results-heading').textContent)
-        .to.include('About 23');
+        .to.include('Showing the most relevant results');
+      expect(document.querySelector('.search-results-heading').textContent)
+        .to.include('about 23 potential matches');
       expect(document.querySelector('.topic-article--text strong').textContent).to.equal('Matched');
       expect(document.querySelectorAll('.pagination a')).to.have.length(2);
 

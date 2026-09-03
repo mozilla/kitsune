@@ -1,15 +1,16 @@
 {% from 'macros.njk' import search_result %}
 
 <h2 class="sumo-card-heading search-results-heading mb-0">
-  {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
   {% if num_results > 0 %}
     {% if total_is_approximate %}
-      {{ ngettext('About %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
-                  'About %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
+      {# L10n: Hybrid search shows a bounded ranking; {n} approximates all potential matches, not pageable results. #}
+      {{ ngettext('Showing the most relevant result for ‘<span>%(q)s</span>’ in ‘<span>%(product)s</span>’ from about %(n)s potential match',
+                  'Showing the most relevant results for ‘<span>%(q)s</span>’ in ‘<span>%(product)s</span>’ from about %(n)s potential matches',
                   num_results)
           | f({n: num_results, q: q, product: product_titles}, true)
           | safe }}
     {% else %}
+      {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
       {{ ngettext('Found %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
                   'Found %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
                   num_results)

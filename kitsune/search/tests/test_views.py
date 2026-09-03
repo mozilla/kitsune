@@ -229,7 +229,11 @@ class TestHybridSearchSwitch(TestCase):
             response = self.client.get(f"{url}?q=firefox&page=2")
 
         doc = pq(response.content)
-        self.assertIn("About 23 results", doc(".sumo-page-intro").text())
+        self.assertIn(
+            "Showing the most relevant results for firefox in All Products "
+            "from about 23 potential matches",
+            doc(".sumo-page-intro").text(),
+        )
         self.assertEqual(doc(".pagination a").length, 2)
         self.assertIn("page=1", doc(".pagination .prev a").attr("href"))
         self.assertIn("page=3", doc(".pagination .next a").attr("href"))
