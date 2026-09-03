@@ -227,7 +227,8 @@ Important query controls include:
 - `RETRIEVAL_SEMANTIC_K`, `RETRIEVAL_KNN_NUM_CANDIDATES`, and
   `RETRIEVAL_RRF_RANK_WINDOW_SIZE`: semantic and fusion work bounds; and
 - `RETRIEVAL_AUTHORIZATION_OVERFETCH` and `RETRIEVAL_MAX_PAGE_OFFSET`: bounded authorization and
-  pagination behavior.
+  pagination behavior. The initial offset of `80` exposes nine ten-result pages while keeping the
+  page, authorization over-fetch, and next-page probe inside the fixed RRF window of `100`.
 
 Ingestion and worker-safety controls include:
 
@@ -310,9 +311,11 @@ print(index, similarity_profile_fingerprint(read_index_meta(index))[1])
 ```
 
 The setting is a JSON object, for example
-`{"<similarity-profile-fingerprint>": 0.72}`. The number is illustrative only: use the reviewed
-value measured for that deployment's model and corpus. Enable the Waffle switch through the
-Django admin only after the read alias, floor, rate limit, and serving checks are ready.
+`{"<similarity-profile-fingerprint>": 0.70}`. Use `0.70` as the initial operational baseline,
+then validate it against that environment's model and current corpus. Keep the setting empty
+until the active fingerprint is known; a universal fallback could silently survive an incompatible
+model change. Enable the Waffle switch through the Django admin only after the read alias, floor,
+rate limit, and serving checks are ready.
 
 ## One-off relevance evaluation
 
