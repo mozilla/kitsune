@@ -9,7 +9,8 @@
   {% endfor %}
   {% endif %}
   <input spellcheck="true" type="search" autocomplete="off" name="q" aria-required="true"
-    placeholder="{{ placeholder }}" class="searchbox" id="search-q" />
+    maxlength="{{ settings.SEARCH_QUERY_MAX_LENGTH }}" placeholder="{{ placeholder }}"
+    class="searchbox" id="search-q" />
   <button type="submit" title="{{ _('Search') }}" class="search-button">{{ _('Search') }}</button>
 </form>
 {% endmacro %}

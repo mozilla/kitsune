@@ -40,6 +40,11 @@
   display: none;
 }
 
+#search-results .sumo-page-intro,
+.search-results-heading {
+  overflow-wrap: anywhere;
+}
+
 .home-search-section {
   text-align: center;
 

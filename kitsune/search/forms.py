@@ -6,12 +6,11 @@ from kitsune import search as constants
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product
 
-MAX_QUERY_LENGTH = 200
 SEARCH_LANGUAGES = [(k, LOCALES[k].native) for k in settings.SUMO_LANGUAGES]
 
 
 class BaseSearchForm(forms.Form):
-    q = forms.CharField(required=True, max_length=MAX_QUERY_LENGTH)
+    q = forms.CharField(required=True, max_length=settings.SEARCH_QUERY_MAX_LENGTH)
 
     w = forms.TypedChoiceField(
         required=False,

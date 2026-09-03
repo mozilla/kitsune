@@ -8,7 +8,8 @@
           <input type="hidden" name="{{ name }}" value="{{ value }}" />
         {% endfor %}
       {% endfor %}
-      <input type="text" class="searchbox" value="{{ q }}" name="q">
+      <input type="text" class="searchbox" value="{{ q }}" name="q"
+        maxlength="{{ settings.SEARCH_QUERY_MAX_LENGTH }}">
       <button type="submit" class="search-button">{{ _('Search Mozilla Support') }}</button>
     </form>
   </div>

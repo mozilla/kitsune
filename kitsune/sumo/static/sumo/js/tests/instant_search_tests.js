@@ -55,6 +55,40 @@ describe('instant search', () => {
       expect(mainContent.style.display).to.not.equal('none');
     });
 
+    it('restores the main content and preserves the query when the latest search fails', () => {
+      const searchInput = document.getElementById('search-q');
+      const mainContent = document.getElementById('main-content');
+
+      searchInput.value = 'test';
+      fireInput(searchInput);
+      clock.tick(600);
+      cxhrMock.firstCall.args[1].error(new Error('request failed'));
+
+      expect(mainContent.style.display).to.not.equal('none');
+      expect(searchInput.value).to.equal('test');
+    });
+
+    it('does not recover the content when an earlier request for the same query fails', () => {
+      const searchInput = document.getElementById('search-q');
+      const mainContent = document.getElementById('main-content');
+
+      searchInput.value = 'repeated query';
+      fireInput(searchInput);
+      clock.tick(600);
+
+      searchInput.value = 'intermediate query';
+      fireInput(searchInput);
+      clock.tick(600);
+
+      searchInput.value = 'repeated query';
+      fireInput(searchInput);
+      clock.tick(600);
+      cxhrMock.firstCall.args[1].error(new Error('request failed'));
+
+      expect(mainContent.style.display).to.equal('none');
+      expect(searchInput.value).to.equal('repeated query');
+    });
+
     it('shows the search query at the top of the page', () => {
       const query = 'search query';
 

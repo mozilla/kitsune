@@ -26,8 +26,9 @@ describe("search_utils Search", () => {
     const requestStub = sinon.stub(CachedXHR.prototype, "request");
     const search = new Search("/api/1/kb/", { w: 1 });
     const callback = () => {};
+    const errorCallback = () => {};
 
-    search.query("firefox", callback);
+    search.query("firefox", callback, errorCallback);
 
     expect(requestStub.calledOnce).to.equal(true);
     const [url, options] = requestStub.firstCall.args;
@@ -35,6 +36,7 @@ describe("search_utils Search", () => {
     expect(options.data).to.deep.equal({ w: 1, q: "firefox" });
     expect(options.dataType).to.equal("json");
     expect(options.success).to.equal(callback);
+    expect(options.error).to.equal(errorCallback);
     expect(search.lastQuery).to.equal("firefox");
   });
 });

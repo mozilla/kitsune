@@ -2,6 +2,7 @@ import json
 from dataclasses import replace
 from unittest import mock
 
+from django.conf import settings
 from django.test.utils import override_settings
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
@@ -59,6 +60,12 @@ class TestSearchSEO(ElasticTestCase):
         self.assertTrue("text/html" in response["content-type"])
         doc = pq(response.content)
         self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+        query_fields = doc('input[name="q"]')
+        self.assertGreater(query_fields.length, 0)
+        self.assertEqual(
+            {field.attr("maxlength") for field in query_fields.items()},
+            {str(settings.SEARCH_QUERY_MAX_LENGTH)},
+        )
 
     def test_simple_search_json(self):
         """
