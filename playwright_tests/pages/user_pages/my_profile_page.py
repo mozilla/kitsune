@@ -13,12 +13,13 @@ class MyProfilePage(BasePage):
         """Locators available for admin & other users."""
         self.edit_user_profile_option = page.locator("div#admin-actions").get_by_role(
             "link").filter(has_text="Edit user profile")
-        self.report_abuse_profile_option = page.locator("article#profile").get_by_role(
+        self.report_abuse_profile_option = page.locator("aside#aside").get_by_role(
             "link").filter(has_text="Report Abuse")
         self.this_user_was_deactivated_message = page.locator("//div[@id='deactivated-msg']")
-        self.deactivate_this_user_button = page.locator("input[value='Deactivate this user']")
-        self.deactivate_this_user_and_mark_all_content_as_spam = page.locator(
-            "input[value='Deactivate this user and mark all content as spam']")
+        self.deactivate_this_user_button = page.get_by_role(
+            "button", name="Deactivate this user", exact=True)
+        self.deactivate_this_user_and_mark_all_content_as_spam = page.get_by_role(
+            "button", name="Deactivate this user and mark all content as spam", exact=True)
         self.private_message_button = page.locator("p.pm").get_by_role("link")
 
         """Locators belonging to the 'Report Abuse' section."""
@@ -54,9 +55,9 @@ class MyProfilePage(BasePage):
         self.email_address = page.locator("p strong")
         self.displayed_email_address = page.locator(
             "li[class='avatar-group--details-item'] span[class='email'] a")
-        self.sign_out_button = page.locator("article#profile").get_by_role("link").filter(
+        self.sign_out_button = page.locator("aside#aside").get_by_role("link").filter(
             has_text="Sign Out")
-        self.display_name_header = page.locator("//h2[@class='sumo-callout-heading user']")
+        self.display_name_header = page.locator("h2.entity-card--name")
         self.display_name_by_username = lambda username: page.get_by_role(
             "heading", name=username, exact=True)
         self.username_info = page.locator("span[class='username']")
