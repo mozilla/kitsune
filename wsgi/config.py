@@ -11,8 +11,12 @@ errorlog = "-"
 loglevel = getenv("WSGI_LOG_LEVEL", "info")
 worker_class = getenv("GUNICORN_WORKER_CLASS", "sync")
 reload = getenv("DEV", False)
-# improve fairness
-reuse_port = getenv("WSGI_REUSE_PORT", True)
+# Leave this off (gunicorn's default is off too). This comment explains why.
+# From gunicorn 24 on, SO_REUSEPORT gives every worker its own listening socket
+# and its own queue of waiting connections. When a worker exits -- usually after
+# WSGI_MAX_REQUESTS requests -- its queue is thrown away and everything still
+# waiting in it gets cut off, which nginx reports as a 502.
+reuse_port = False
 keepalive = int(getenv("WSGI_KEEP_ALIVE", 60))
 timeout = int(getenv("WSGI_TIMEOUT", 30))
 graceful_timeout = int(getenv("WSGI_GRACEFUL_TIMEOUT", 10))
