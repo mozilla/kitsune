@@ -60,7 +60,7 @@ Search.prototype.serializeParams = function(extra) {
   return paramStrings.join('&');
 };
 
-Search.prototype.query = function(string, callback) {
+Search.prototype.query = function(string, success, error) {
   string ||= this.lastQuery;
   var data = Object.assign({}, this.params, {q: string});
 
@@ -71,7 +71,8 @@ Search.prototype.query = function(string, callback) {
     cacheKey: this.lastParams,
     data: data,
     dataType: 'json',
-    success: callback
+    success,
+    error
   });
 
   return this;

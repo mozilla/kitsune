@@ -21,6 +21,7 @@ var aaq_explore_step = document.getElementById("question-search-masthead") !== n
 
 const queries = [];
 let renderedQuery;
+let latestQueryRequestId = 0;
 
 // Show/hide via the CSSOM display setter, matching jQuery's .hide()/.show().
 // (Inline display set through the CSSOM is not governed by CSP style-src.)
@@ -88,6 +89,7 @@ function hideContent() {
 }
 
 function showContent() {
+  latestQueryRequestId++;
   document.body.classList.remove("search-results-visible");
   document.querySelectorAll(".home-search-section").forEach(function (el) {
     el.classList.add("extra-pad-bottom");
@@ -115,6 +117,15 @@ function showContent() {
     el.classList.add("narrow");
   });
   hide(".hidden-search-masthead");
+}
+
+function recoverLatestQuery(query, requestId) {
+  if (requestId === latestQueryRequestId) {
+    InstantSearchSettings.showContent();
+    document.querySelectorAll('[data-instant-search="form"] input[name="q"]').forEach(function (el) {
+      el.value = query;
+    });
+  }
 }
 
 function render(data) {
@@ -247,6 +258,7 @@ document.addEventListener('input', function (ev) {
       history.pushState({}, searchTitle, location.href.replace("#search", ""));
     }
   } else if (input.value !== search.lastQuery) {
+    const requestId = ++latestQueryRequestId;
     if (searchTimeout) {
       window.clearTimeout(searchTimeout);
     }
@@ -278,7 +290,11 @@ document.addEventListener('input', function (ev) {
       search.setParams(params);
       let query = input.value.trim();
       queries.push(query);
-      search.query(query, InstantSearchSettings.render);
+      search.query(
+        query,
+        InstantSearchSettings.render,
+        function () { recoverLatestQuery(query, requestId); }
+      );
       trackEvent("search", {
         "search_term": query,
         "search_product_filter": getSearchProductFilter(),
@@ -388,7 +404,12 @@ function loadFromHistory(e) {
     });
     search.params = state.params;
     queries.push(state.query);
-    search.query(state.query, InstantSearchSettings.render);
+    const requestId = ++latestQueryRequestId;
+    search.query(
+      state.query,
+      InstantSearchSettings.render,
+      function () { recoverLatestQuery(state.query, requestId); }
+    );
   } else {
     InstantSearchSettings.showContent();
   }
