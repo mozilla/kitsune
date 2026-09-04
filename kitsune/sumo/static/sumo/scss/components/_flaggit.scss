@@ -24,6 +24,7 @@
 /* Flagged Item Content */
 .flagged-item-content {
     padding: p.$spacing-md;
+    word-wrap: break-word;
 
     .flagged-item-header {
         display: flex;
