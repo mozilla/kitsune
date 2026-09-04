@@ -23,12 +23,13 @@
   <div id="search-results" class="sumo-page-section--inner">
       {% if num_results > 0 %}
         <p class="sumo-page-intro">
-          {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
           {% if total_is_approximate %}
-            {{ ngettext('About <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
-                        'About <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
+            {# L10n: Hybrid search shows a bounded ranking; {n} approximates all potential matches, not pageable results. #}
+            {{ ngettext('Showing the most relevant result for <strong>{q}</strong> in <strong>{product}</strong> from about <strong>{n}</strong> potential match',
+                        'Showing the most relevant results for <strong>{q}</strong> in <strong>{product}</strong> from about <strong>{n}</strong> potential matches',
                         num_results)|fe(n=num_results, q=q, product=product_titles) }}
           {% else %}
+            {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
             {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
                         'Found <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
                         num_results)|fe(n=num_results, q=q, product=product_titles) }}
