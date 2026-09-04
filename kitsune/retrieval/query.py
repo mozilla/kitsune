@@ -50,6 +50,7 @@ RetrievalMode = Literal["lexical", "hybrid"]
 RetrievalProvenance = Literal["lexical", "semantic"]
 _SOURCES = frozenset({KB_SOURCE, AAQ_SOURCE})
 RRF_RANK_CONSTANT = 60
+KB_TITLE_PHRASE_BOOST = 6
 
 
 class SimilarityFloorUnavailable(ImproperlyConfigured):
@@ -157,6 +158,7 @@ def _render(
 
 
 def _kb_clause(
+    query: str,
     parsed: BaseToken,
     *,
     locale: str,
@@ -188,7 +190,21 @@ def _kb_clause(
         viewer_group_ids=viewer_group_ids,
         privileged=privileged,
     )
-    return DSLQ("bool", _name=f"lexical:{KB_SOURCE}:{locale}", filter=filters, must=lexical_query)
+    return DSLQ(
+        "bool",
+        _name=f"lexical:{KB_SOURCE}:{locale}",
+        filter=filters,
+        must=lexical_query,
+        should=DSLQ(
+            "match_phrase",
+            **{
+                f"title.{locale}": {
+                    "query": query,
+                    "boost": KB_TITLE_PHRASE_BOOST,
+                }
+            },
+        ),
+    )
 
 
 def _kb_filters(
@@ -295,6 +311,7 @@ def build_lexical_clauses(
     kb_requested = kb_english = aaq_requested = None
     if KB_SOURCE in source_set:
         kb_requested = _kb_clause(
+            query,
             parsed,
             locale=locale,
             product_id=product_id,
@@ -305,6 +322,7 @@ def build_lexical_clauses(
         )
         if locale != ENGLISH_LOCALE:
             kb_english = _kb_clause(
+                query,
                 parsed,
                 locale=ENGLISH_LOCALE,
                 product_id=product_id,
