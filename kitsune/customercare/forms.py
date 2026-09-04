@@ -122,7 +122,7 @@ class ZendeskForm(forms.Form):
         label=_lazy("What do you need help with?"), required=True, choices=[]
     )
     urgency = forms.ChoiceField(
-        label=_lazy("What is the impact to your org?"),
+        label="What is the impact to your org?",
         choices=URGENCY_CHOICES,
         widget=forms.HiddenInput,
         required=False,
