@@ -689,10 +689,10 @@
   </a>
 </li>
 <li>
-  <a href="{{ url('wiki.locale_discussions') }}" {% if active == "article-discussions" %} class="selected" {% endif %}
+  <a href="{{ url('forums.threads', 'knowledge-base-articles') }}" {% if active == "knowledge-base-articles" %} class="selected" {% endif %}
     data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.article-discussions' }}"}'>
-    {{ _('Article discussions') }}
+    data-event-parameters='{"link_name": "{{ context + '.kb-discussions' }}"}'>
+    {{ _('Knowledge base discussions') }}
   </a>
 </li>
 <li>
@@ -722,10 +722,10 @@
 {% endif %}
 {% if context == "sidebar-menu" %}
   <li>
-    <a href="{{ url('forums.threads', 'knowledge-base-articles') }}" {% if active == "knowledge-base-articles" %} class="selected" {% endif %}
+    <a href="{{ url('wiki.locale_discussions') }}" {% if active == "article-discussions" %} class="selected" {% endif %}
       data-event-name="link_click"
-      data-event-parameters='{"link_name": "{{ context + '.kb-discussions' }}"}'>
-      {{ _('Knowledge base discussions') }}
+      data-event-parameters='{"link_name": "{{ context + '.article-discussions' }}"}'>
+      {{ _('Article discussions') }}
     </a>
   </li>
   <li>
