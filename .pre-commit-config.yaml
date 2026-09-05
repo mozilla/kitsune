@@ -10,7 +10,7 @@ repos:
       - id: check-merge-conflict
       - id: debug-statements
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.4
+    rev: v0.16.5
     hooks:
       - id: ruff-check
         files: "^kitsune/"
@@ -41,7 +41,7 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          - boto3-stubs==1.43.80
+          - boto3-stubs==1.43.86
           - types-redis==4.6.0.20241004
           - types-requests==2.33.0.20260712
           - types-python-dateutil==2.9.0.20260807
