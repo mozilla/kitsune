@@ -230,10 +230,18 @@ class AnswersTemplateTestCase(TestCase):
 
     def common_answer_vote(self):
         """Helper method for answer vote tests."""
-        # Check that there are no votes and vote form renders
+        helpful_button_sel = '#answer-{} button[name="helpful"]'.format(self.answer.id)
+        helpful_vote_sel = helpful_button_sel + " .answer-vote--count"
+        unhelpful_button_sel = '#answer-{} button[name="not-helpful"]'.format(self.answer.id)
+        unhelpful_vote_sel = unhelpful_button_sel + " .answer-vote--count"
+
+        # Check that the vote buttons render and there are no votes
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        self.assertEqual(1, len(doc('form.helpful button[name="helpful"]')))
+        self.assertEqual(1, len(doc(helpful_button_sel)))
+        self.assertEqual("0", doc(helpful_vote_sel).text())
+        self.assertEqual(1, len(doc(unhelpful_button_sel)))
+        self.assertEqual("0", doc(unhelpful_vote_sel).text())
 
         # Vote
         ua = "Mozilla/5.0 (DjangoTestClient)"
@@ -243,12 +251,18 @@ class AnswersTemplateTestCase(TestCase):
             HTTP_USER_AGENT=ua,
         )
 
-        # Check that there is 1 vote and vote form doesn't render
+        # Check that the vote buttons are disabled and there is 1 helpful vote
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
+        helpful_button = doc(helpful_button_sel)
+        self.assertEqual(1, len(helpful_button))
+        self.assertTrue(helpful_button.is_("[disabled]"))
+        unhelpful_button = doc(unhelpful_button_sel)
+        self.assertEqual(1, len(unhelpful_button))
+        self.assertTrue(unhelpful_button.is_("[disabled]"))
+        self.assertEqual("1", doc(helpful_vote_sel).text())
+        self.assertEqual("0", doc(unhelpful_vote_sel).text())
 
-        self.assertEqual(1, len(doc("#answer-{} span.is-helpful".format(self.answer.id))))
-        self.assertEqual(0, len(doc('form.helpful input[name="helpful"]')))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
         self.assertEqual("ua", vote_meta.key)
