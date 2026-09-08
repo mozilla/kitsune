@@ -16,7 +16,8 @@ from django.db.models.functions import Coalesce
 from django.urls import reverse as django_reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.utils.translation import pgettext
+from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import pgettext_lazy
 from requests.exceptions import HTTPError
 from sentry_sdk import capture_exception
 
@@ -559,7 +560,7 @@ def send_weekly_ready_for_review_digest() -> None:
                 if product_docs:
                     docs_list.append(
                         {
-                            "product": pgettext("DB: products.Product.title", product.title),
+                            "product": pgettext_lazy("DB: products.Product.title", product.title),
                             "docs": product_docs,
                         }
                     )
@@ -567,7 +568,7 @@ def send_weekly_ready_for_review_digest() -> None:
             product_docs = docs.filter(Q(parent=None, products=None) | Q(parent__products=None))
 
             if product_docs:
-                docs_list.append({"product": _("Other products"), "docs": product_docs})
+                docs_list.append({"product": _lazy("Other products"), "docs": product_docs})
 
             messages.append(
                 _make_digest_mail(
