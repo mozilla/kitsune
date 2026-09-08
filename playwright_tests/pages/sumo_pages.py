@@ -3,6 +3,7 @@ from functools import cached_property
 from playwright.sync_api import Page
 
 from playwright_tests.flows.admin_flows.announcement_banners.banner_flows import BannerFlows
+from playwright_tests.flows.admin_flows.groups.groups_flows import AdminGroupsFlows
 from playwright_tests.flows.admin_flows.users.users_flows import AdminUsersFlows
 from playwright_tests.flows.ask_a_question_flows.aaq_flows.aaq_flow import AAQFlow
 from playwright_tests.flows.auth_flows.auth_flow import AuthFlowPage
@@ -35,6 +36,7 @@ from playwright_tests.flows.user_profile_flows.edit_profile_data_flow import Edi
 from playwright_tests.flows.user_profile_flows.user_profile_flow import UserProfileFlow
 from playwright_tests.pages.admin_pages.announcement_banners.announcement_banner_page import \
     AnnouncementBannerAdminPage
+from playwright_tests.pages.admin_pages.groups.admin_groups_page import AdminGroupsPage
 from playwright_tests.pages.admin_pages.users.admin_users_page import AdminUserPage
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
 from playwright_tests.pages.ask_a_question.contact_support_pages.contact_support_page import (
@@ -165,6 +167,10 @@ class SumoPages:
     def admin_users_page(self):
         return AdminUserPage(self._page)
 
+    @cached_property
+    def admin_groups_page(self):
+        return AdminGroupsPage(self._page)
+
     # Admin Flows.
     @cached_property
     def admin_banner_flows(self):
@@ -173,6 +179,10 @@ class SumoPages:
     @cached_property
     def admin_users_flows(self):
         return AdminUsersFlows(self._page)
+
+    @cached_property
+    def admin_groups_flows(self):
+        return AdminGroupsFlows(self._page)
 
     # Auth Page.
     @cached_property
