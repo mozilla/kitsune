@@ -106,6 +106,12 @@
     </span>
     {{ zd_status_badge(obj) }}
   {% else %}
+    {% if obj.is_spam %}
+      <span class="status-label status-label--spam"
+            title="{{ _('This question has been marked as spam') }}">
+        {{ _("Spam") }}
+      </span>
+    {% endif %}
     {% if obj.solution_id %}
       <span class="status-label status-label--solved"
             title="{{ _('This question has a verified solution') }}">
@@ -174,10 +180,6 @@
       {{ reply_count(question) }}
       {{ vote_count(question) }}
       {{ view_count(question) }}
-      {% if question.is_spam %}
-        <span class="status-label status-label--pending"
-              title="{{ _('This question has been marked as spam') }}">{{ _("Spam") }}</span>
-      {% endif %}
     {% endif %}
   </div>
   {% if question.channel == "direct_support" and question.zendesk_ticket_id %}
