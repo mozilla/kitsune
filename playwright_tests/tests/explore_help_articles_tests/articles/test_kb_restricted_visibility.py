@@ -1,3 +1,6 @@
+import random
+import string
+from types import SimpleNamespace
 from typing import Any
 import allure
 import pytest
@@ -6,6 +9,9 @@ from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
     KBArticlePageMessages,
+)
+from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import (
+    KBArticleRevision,
 )
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -294,13 +300,21 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
     whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
+    media_title = utilities.generate_unique_title()
+    media_description = "Automation test description" + utilities.generate_random_number(1, 1000)
 
-    with allure.step("Creating a new kb article with restricted visibility"):
+    with allure.step("Signing in with an admin account and uploading a new image to the media "
+                     "gallery"):
         utilities.start_existing_session(cookies=test_user)
+        sumo_pages.top_navbar.click_on_media_gallery_option()
+        sumo_pages.add_kb_media_flow.add_new_media_file_to_gallery(
+            title=media_title, description=media_description)
 
+    with allure.step("Creating a new kb article with restricted visibility which contains the "
+                     "newly uploaded image"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True, single_group=whitelisted_groups[0],
-            article_content_image=utilities.kb_article_test_data['article_image'],
+            article_content_image=media_title,
             is_template=is_template
         )
 
@@ -309,13 +323,9 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
 
     with check, allure.step("Searching for the added image and verifying that the article is "
                             "displayed for admin users inside the 'Articles' image list"):
-        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(
-            utilities.kb_article_test_data['article_image']
-        )
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(media_title)
         sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
-        sumo_pages.media_gallery.select_media_file_from_list(
-            utilities.kb_article_test_data['article_image']
-        )
+        sumo_pages.media_gallery.select_media_file_from_list(media_title)
         expect(sumo_pages.media_gallery.image_in_documents_list).to_contain_text(
             [article_details['article_title']])
 
@@ -355,13 +365,9 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
 
     with check, allure.step("Searching for the added image and verifying that the article is "
                             "displayed for admin users inside the 'Articles' image list"):
-        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(
-            utilities.kb_article_test_data['article_image']
-        )
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(media_title)
         sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
-        sumo_pages.media_gallery.select_media_file_from_list(
-            utilities.kb_article_test_data['article_image']
-        )
+        sumo_pages.media_gallery.select_media_file_from_list(media_title)
 
     with check, allure.step("Verifying that the article is displayed for users belonging to the "
                             "second whitelisted group"):
@@ -379,16 +385,16 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
                             "article is displayed for signed out users"):
         sumo_pages.top_navbar.click_on_media_gallery_option()
         utilities.delete_cookies()
-        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(
-            utilities.kb_article_test_data['article_image']
-        )
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(media_title)
         sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
-        sumo_pages.media_gallery.select_media_file_from_list(
-            utilities.kb_article_test_data['article_image']
-        )
+        sumo_pages.media_gallery.select_media_file_from_list(media_title)
         utilities.delete_cookies()
         expect(sumo_pages.media_gallery.image_in_documents_list).to_contain_text(
             [article_details['article_title']])
+
+    with allure.step("Deleting the uploaded test image"):
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.add_kb_media_flow.delete_media_file(media_file_title=None)
 
 
 # C2466531
@@ -752,16 +758,22 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
     test_user_three = create_user_factory(groups=["Contributors"])
     whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
 
-    with allure.step("Creating a new kb article with restricted visibility"):
+    with allure.step("Creating the kb article which the restricted article will link to"):
         utilities.start_existing_session(cookies=test_user)
+        linked_article = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True)
 
+    with allure.step("Creating a new kb article with restricted visibility which links to the "
+                     "previously created article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True, ready_for_localization=True,
-            single_group=whitelisted_groups[0], is_template=is_template
+            single_group=whitelisted_groups[0], is_template=is_template,
+            article_content=f"Article content which links to "
+                            f"[[{linked_article['article_title']}]]"
         )
 
-    with allure.step("Navigating to the test article linked to the document"):
-        utilities.navigate_to_link(utilities.general_test_data['test_article_link'])
+    with allure.step("Navigating to the linked kb article"):
+        utilities.navigate_to_link(linked_article['article_url'])
 
     with check, allure.step("Navigating to the 'What Links Here' page and verifying that the "
                             "restricted article is displayed for admin accounts"):
@@ -795,8 +807,8 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
         )
 
     utilities.start_existing_session(cookies=test_user_three)
-    with allure.step("Navigating to the test article linked to the document"):
-        utilities.navigate_to_link(utilities.general_test_data['test_article_link'])
+    with allure.step("Navigating to the linked kb article"):
+        utilities.navigate_to_link(linked_article['article_url'])
 
     with check, allure.step("Navigating to the 'What Links Here' page and verifying that the "
                             "linked article is displayed to the newly added group members"):
@@ -811,8 +823,8 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
             whitelisted_groups
         )
 
-    with allure.step("Navigating to the test article linked to the document"):
-        utilities.navigate_to_link(utilities.general_test_data['test_article_link'])
+    with allure.step("Navigating to the linked kb article"):
+        utilities.navigate_to_link(linked_article['article_url'])
 
     with check, allure.step("Navigating to the 'What Links Here' page and verifying that the "
                             "article is displayed for signed out users"):

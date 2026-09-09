@@ -189,6 +189,8 @@ def test_ask_a_question_top_navbar_redirect(page: Page):
                     current_option, 'desktop').rstrip()
             elif current_option == "Monitor":
                 current_option = f"Mozilla {current_option}"
+            elif current_option == "Firefox for Enterprise":
+                current_option = "Firefox Enterprise"
 
             if redirect_target:
                 expect(sumo_pages.product_solutions_page.product_title_heading).to_have_text(

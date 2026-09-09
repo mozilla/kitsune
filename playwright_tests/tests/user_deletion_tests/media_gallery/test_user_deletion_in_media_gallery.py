@@ -100,7 +100,8 @@ def test_media_gallery_image_is_preserved_after_editor_deletion(page: Page, crea
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["forum-contributors"])
-    test_user_two = create_user_factory(groups=["forum-contributors", "Moderators"])
+    test_user_two = create_user_factory(groups=["forum-contributors", "Moderators"],
+                                        permissions=["change_image"])
     media_title = utilities.generate_unique_title()
     media_description = "Automation test description" + utilities.generate_random_number(1, 1000)
     new_media_description = "Test 123"

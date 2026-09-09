@@ -89,6 +89,9 @@ def test_aaq_redirect(page: Page, restmail_test_account_creation):
                 if product_topic in utilities.general_test_data['freemium_products']:
                     expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
                         AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT)
+                elif product_topic == "Firefox for Enterprise":
+                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                        AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT)
                 else:
                     expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
                         AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT)

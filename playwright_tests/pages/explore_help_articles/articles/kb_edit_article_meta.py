@@ -35,12 +35,21 @@ class KBArticleEditMetadata(BasePage):
         self.save_changes_button = page.get_by_role("button", name="Save", exact=True)
         self.delete_group = lambda chosen_group: page.locator(
             f"//input[@id='id_restrict_to_groups-selectized']/../div[text()='{chosen_group}']/a")
-        self.restrict_group = lambda group_name: page.locator(
-            f"//div[@class='option active']/span[text()='{group_name}']")
         self.delete_a_group = lambda group_name: page.locator(
             f"//div[@class='item' and text()='{group_name}']/a")
+        self.restrict_visibility_dropdown = page.locator("div#id_restrict_to_groups-ts-dropdown")
+        self.restrict_visibility_dropdown_option = lambda group_name: page.locator(
+            "//div[@id='id_restrict_to_groups-ts-dropdown']"
+            f"//div[contains(@class,'option') and normalize-space(.)='{group_name}']")
+        self.selected_restricted_visibility_groups = page.locator(
+            "//input[@id='id_restrict_to_groups-ts-control']/../div[@class='item']")
+        self.selected_restricted_visibility_group = lambda group_name: page.locator(
+            "//input[@id='id_restrict_to_groups-ts-control']/../div[@class='item']"
+            f"[normalize-space(text())='{group_name}']")
         self.relevant_product_checkbox = lambda product_name: page.locator(
             f"//section[@id='relevant-products']//label[normalize-space(text())='{product_name}']")
+        self.clear_selected_products_link = page.locator("a#relevant-products-clear-selected")
+        self.clear_selected_topics_link = page.locator("a#relevant-topics-clear-selected")
 
     """Actions against the edit article metadata page locators."""
     def delete_a_chosen_restricted_visibility_group(self, chosen_group: str):
@@ -48,7 +57,18 @@ class KBArticleEditMetadata(BasePage):
 
     def add_and_select_restrict_visibility_group_metadata(self, group_name: str):
         self._fill(self.kb_article_restrict_visibility_field, group_name)
-        self._click(self.restrict_group(group_name))
+        self._click(self.restrict_visibility_dropdown_option(group_name))
+
+    def search_for_a_restricted_visibility_group(self, group_name: str):
+        """Type a group name into the restrict visibility field and wait for the widget
+        dropdown, so that assertions against its options are not made against a dropdown
+        which hasn't rendered yet.
+
+        Args:
+            group_name (str): The group name.
+        """
+        self._fill(self.kb_article_restrict_visibility_field, group_name)
+        self._wait_for_locator(self.restrict_visibility_dropdown)
 
     def delete_a_restricted_visibility_group_metadata(self, groups: [str, list[str]]):
         if isinstance(groups, str):
@@ -73,6 +93,22 @@ class KBArticleEditMetadata(BasePage):
 
     def check_product_checkbox(self, product_name: str):
         self._click(self.relevant_product_checkbox(product_name))
+
+    def clear_selected_products(self):
+        """Clear the currently selected products.
+
+        The 'Clear' link is rendered only while at least one product is selected.
+        """
+        if self._is_element_visible(self.clear_selected_products_link):
+            self._click(self.clear_selected_products_link)
+
+    def clear_selected_topics(self):
+        """Clear the currently selected topics.
+
+        The 'Clear' link is rendered only while at least one topic is selected.
+        """
+        if self._is_element_visible(self.clear_selected_topics_link):
+            self._click(self.clear_selected_topics_link)
 
     def is_obsolete_checkbox_checked(self) -> bool:
         return self._is_checkbox_checked(self.obsolete_checkbox)

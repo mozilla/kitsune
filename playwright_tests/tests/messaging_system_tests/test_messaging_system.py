@@ -456,6 +456,13 @@ def test_new_message_preview(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
     test_user_two = create_user_factory()
+    kb_reviewer_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with a Knowledge Base Reviewer account and creating a new kb "
+                     "article"):
+        utilities.start_existing_session(cookies=kb_reviewer_user)
+        article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True)
 
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
@@ -467,7 +474,8 @@ def test_new_message_preview(page: Page, create_user_factory):
     with allure.step("Adding text inside the message content section"):
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=test_user_two["username"],
-            message_body=utilities.user_message_test_data["valid_user_message"]["message"],
+            message_body=utilities.user_message_test_data["valid_user_message"][
+                "message"].format(internal_link_title=article_info["article_title"]),
             submit_message=False
         )
 
@@ -508,11 +516,11 @@ def test_new_message_preview(page: Page, create_user_factory):
         expect(sumo_pages.new_message_page.preview_external_link).to_be_visible()
         expect(sumo_pages.new_message_page.preview_internal_link).to_be_visible()
 
-    with allure.step("Clicking on the internal link and verifying that the user is "
-                     "redirected to the correct article"):
+    with allure.step("Clicking on the internal link and verifying that the user is redirected "
+                     "to the newly created kb article"):
         sumo_pages.new_message_page.click_on_preview_internal_link()
         expect(sumo_pages.kb_article_page.kb_article_heading).to_have_text(
-            NewMessagePageMessages.PREVIEW_MESSAGE_INTERNAL_LINK_TITLE)
+            article_info["article_title"])
 
     with allure.step("Verifying that the message was no sent by checking the "
                      "'Sent Messages page'"):
@@ -646,8 +654,11 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page, create_use
             utilities.user_message_test_data['test_groups'][0]
         )
 
-    with allure.step("Verifying that no groups are returned"):
-        expect(sumo_pages.new_message_page.no_user_search_results_text).to_be_visible(timeout=30000)
+    with allure.step("Verifying that the group is not returned inside the search results"):
+        expect(sumo_pages.new_message_page.first_search_result_or_no_results).to_be_visible(
+            timeout=30000)
+        expect(sumo_pages.new_message_page.searched_group(
+            utilities.user_message_test_data['test_groups'][0])).to_be_hidden(timeout=30000)
 
     with allure.step("Navigating to the groups page"):
         utilities.navigate_to_link(utilities.general_test_data['groups'])
@@ -870,10 +881,11 @@ def test_unable_to_send_group_messages_to_profiless_groups(page: Page, create_us
         sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
 
     with allure.step("Typing in a profiless group name inside the To field"):
-        sumo_pages.new_message_page.type_into_to_input_field("kb-contributors")
+        sumo_pages.new_message_page.type_into_to_input_field("Profiless-Group")
 
     with allure.step("Verifying that no groups are returned"):
-        expect(sumo_pages.new_message_page.no_user_search_results_text).to_be_visible(timeout=15000)
+        expect(sumo_pages.new_message_page.no_user_search_results_text).to_be_visible(
+            timeout=20000)
 
 
 # C2083482

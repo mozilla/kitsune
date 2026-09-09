@@ -10,9 +10,7 @@
     "question_reply": "Test reply to question",
     "updated_reply": "Reply updated",
     "custom_tag": "test",
-    "report_abuse_text": "Report Abuse test message",
-    "common_responses_category": "General",
-    "common_responses_response": "Zoom feature"
+    "report_abuse_text": "Report Abuse test message"
   },
   "premium_aaq_question": {
     "subject": "playwright test ticket",
@@ -28,7 +26,7 @@
     "Firefox": "https://support.allizom.org/en-US/questions/new/firefox/form",
     "Firefox for Android": "https://support.allizom.org/en-US/questions/new/mobile/form",
     "Firefox for iOS": "https://support.allizom.org/en-US/questions/new/ios/form",
-    "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise/form",
+    "Firefox Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise/form",
     "MDN Plus": "https://support.allizom.org/en-US/questions/new/mdn-plus/form",
     "Mozilla VPN": "https://support.allizom.org/en-US/questions/new/mozilla-vpn/form",
     "Mozilla Monitor": "https://support.allizom.org/en-US/questions/new/monitor/form",
@@ -85,7 +83,7 @@
       "Settings": "settings",
       "default_slug": "ios"
     },
-    "Firefox for Enterprise": {
+    "Firefox Enterprise": {
       "Accounts": "accounts",
       "Browse": "browse",
       "Installation and updates": "installation-and-updates",

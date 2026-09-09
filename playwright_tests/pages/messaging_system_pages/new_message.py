@@ -16,6 +16,10 @@ class NewMessagePage(BasePage):
         self.user_search_results_text = page.locator("div.name_search")
         self.added_to_user_text = page.locator("div.ts-control div.item")
         self.no_user_search_results_text = page.locator("#id_to-ts-dropdown div.no-results")
+        self.first_search_result_or_no_results = page.locator(
+            "#id_to-ts-dropdown div.no-results, #id_to-ts-dropdown div.name_search").first
+        self.searched_group = lambda group_name: page.locator(
+            "#id_to-ts-dropdown div.Group").filter(has_text=group_name)
         self.added_user_delete_button = page.locator("div.ts-control div.item a.remove")
         self.searched_user = lambda username: page.locator(
             f"//div[@class='name_search']/span[text()='{username}']")
@@ -54,7 +58,9 @@ class NewMessagePage(BasePage):
             Args:
                 username (str): The username to click on.
         """
-        self._click(self.searched_user(username))
+        searched_user = self.searched_user(username)
+        self._wait_for_locator(searched_user, timeout=30000, raise_exception=True)
+        self._click(searched_user)
 
     def type_into_to_input_field(self, text: str):
         """

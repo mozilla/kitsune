@@ -181,9 +181,10 @@ class QuestionPage(BasePage):
         self.common_responses_option = page.locator("a[title='Common responses']")
         self.common_responses_search_field = page.locator("input#filter-responses-field")
         self.common_responses_modal_close_button = page.locator("div#media-modal a")
-        self.common_responses_categories_options = page.locator("div#responses-area li")
+        self.common_responses_categories_options = page.locator(
+            "ul[class='category-list'] li.response-heading")
         self.common_responses_responses_options = page.locator(
-            "//ul[@class='sidebar-nav']/li[@class='response' and not(@style='display: none;')]")
+            "ul[class='sidebar-nav'] li.response:visible")
         self.common_responses_no_cat_selected = page.locator("h4[class='nocat-label']")
         self.common_responses_switch_to_mode = page.locator("div#response-content-area button")
         self.common_responses_response_preview = page.locator(
@@ -194,7 +195,7 @@ class QuestionPage(BasePage):
         self.category_option = lambda option: page.locator(
             "ul[class='category-list'] li").get_by_text(option, exact=True)
         self.response_option = lambda option: page.locator(
-            "ul[class='sidebar-nav'] li").get_by_text(option, exact=True)
+            "ul[class='sidebar-nav'] li.response:visible").get_by_text(option, exact=True).first
 
         """Locators belonging to the 'I have this problem too' section.'"""
         self.i_have_this_problem_too_button = page.locator("div[class='me-too'] button")

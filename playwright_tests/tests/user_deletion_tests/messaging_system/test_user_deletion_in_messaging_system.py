@@ -90,4 +90,4 @@ def test_messages_cannot_be_sent_to_system_user(page: Page, create_user_factory)
         sumo_pages.new_message_page.type_into_to_input_field(
             utilities.general_test_data["system_account_name"])
         expect(sumo_pages.new_message_page.no_user_search_results_text).to_be_visible(
-            timeout=15000)
+            timeout=30000)

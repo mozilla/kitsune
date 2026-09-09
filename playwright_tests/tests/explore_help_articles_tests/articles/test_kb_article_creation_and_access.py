@@ -654,11 +654,8 @@ def test_kb_article_keywords_and_summary(page: Page, user_type, create_user_fact
     with allure.step("Typing the article keyword inside the search field and verifying that "
                      "the article is displayed inside the search results"):
         sumo_pages.search_page.fill_into_searchbar(article_details['keyword'])
-        expect(
-            sumo_pages.search_page.get_locator_of_a_particular_article(
-                article_details['article_title']
-            )
-        ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
@@ -670,11 +667,8 @@ def test_kb_article_keywords_and_summary(page: Page, user_type, create_user_fact
                      "results"):
         sumo_pages.search_page.clear_the_searchbar()
         sumo_pages.search_page.fill_into_searchbar(article_details['search_results_summary'])
-        expect(
-            sumo_pages.search_page.get_locator_of_a_particular_article(
-                article_details['article_title']
-            )
-        ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
@@ -775,11 +769,8 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
         )
 
     with allure.step("Verifying that the article is displayed inside the search results"):
-        expect(
-            sumo_pages.search_page.get_locator_of_a_particular_article(
-                article_details['article_title']
-            )
-        ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
@@ -795,11 +786,8 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
         )
 
     with allure.step("Verifying that the article is displayed inside the search results"):
-        expect(
-            sumo_pages.search_page.get_locator_of_a_particular_article(
-                article_details['article_title']
-            )
-        ).to_be_visible()
+        expect(sumo_pages.search_page.locate_article_across_pages(
+            article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
@@ -879,13 +867,17 @@ def test_edit_article_metadata_slug(page: Page, create_user_factory):
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
 
+    with allure.step("Creating the kb article whose slug will already be taken"):
+        existing_article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True
         )
 
     with allure.step("Trying to update an article with an already existing slug"):
-        sumo_pages.edit_article_metadata_flow.edit_article_metadata(slug="donotdelete")
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            slug=existing_article_details['article_slug'])
 
     with check, allure.step("Verifying that the correct error message is displayed"):
         expect(sumo_pages.kb_article_edit_article_metadata_page.edit_article_metadata_error
@@ -1439,26 +1431,32 @@ def test_article_topic_and_product_change(page: Page, create_user_factory):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
 
-    with allure.step("Updating the article metadata to add the Thunderbird product and test "
-                     "topic"):
+    with allure.step("Moving the article to the Thunderbird product and test topic"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            product="Thunderbird",
+            product="Thunderbird", clear_selected_products_and_topics=True,
             topics=utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"])
 
-    with check, allure.step("Verifying that the article is displayed in both products and topic "
-                            "cards"):
-        for product in ["MDN Plus", "Thunderbird"]:
-            for link in ["product_support", "product_solutions"]:
-                utilities.navigate_to_link(utilities.general_test_data[link][product])
-                expect(sumo_pages.common_web_elements.frequent_topic_card_articles(
-                    utilities.general_test_data["test_topics"][product]["topic_name"])
-                ).to_contain_text([article_details["article_title"]])
+    with check, allure.step("Verifying that the article is displayed inside the Thunderbird "
+                            "product and topic cards"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(utilities.general_test_data[link]["Thunderbird"])
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"])
+            ).to_contain_text([article_details["article_title"]])
 
-    with check, allure.step("Removing the article from the Thunderbird product & topic"):
+    with check, allure.step("Verifying that the article is no longer displayed inside the MDN "
+                            "Plus product and topic cards"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(utilities.general_test_data[link]["MDN Plus"])
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"])
+            ).not_to_contain_text([article_details["article_title"]])
+
+    with check, allure.step("Moving the article back to the MDN Plus product & topic"):
         utilities.navigate_to_link(article_details["article_url"])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            product="Thunderbird",
-            topics=utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"])
+            product="MDN Plus", clear_selected_products_and_topics=True,
+            topics=utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"])
 
     with check, allure.step("Verifying that the article is not displayed in the Thunderbird "
                             "product &  topic"):

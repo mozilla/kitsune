@@ -35,18 +35,15 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
             sumo_pages.edit_my_profile_con_areas_page.are_all_cont_pref_checked()
         ), "Not all checkbox options are checked!"
 
-    with check, allure.step("Accessing the my profile page and verifying that the profile-less "
-                            "groups are not displayed"):
+    with check, allure.step("Accessing the my profile page and verifying that the groups are "
+                            "displayed"):
         sumo_pages.user_navbar.click_on_my_profile_option()
-        expect(sumo_pages.my_profile_page.groups_section).to_be_hidden()
+        expect(sumo_pages.my_profile_page.groups_section).to_be_visible()
 
     with allure.step(f"Signing in with {second_user['username']} user account and verifying that "
-                     f"the profile-less groups are not displayed"):
+                     f"the groups are displayed"):
         utilities.start_existing_session(cookies=second_user)
-
-    with check, allure.step("Navigating to the user page and verifying that the user groups "
-                            "are not displayed"):
-        expect(sumo_pages.my_profile_page.groups_section).to_be_hidden()
+        expect(sumo_pages.my_profile_page.groups_section).to_be_visible()
 
     with allure.step(f"Signing in back with {first_user['username']} user account"):
         utilities.start_existing_session(cookies=first_user)

@@ -3,7 +3,7 @@
     "Firefox",
     "Firefox for Android",
     "Firefox for iOS",
-    "Firefox for Enterprise",
+    "Firefox Enterprise",
     "Thunderbird",
     "Thunderbird for Android",
     "Firefox Focus",
@@ -31,13 +31,13 @@
     "Firefox": "https://support.allizom.org/en-US/products/firefox/browse",
     "Firefox for Android": "https://support.allizom.org/en-US/products/mobile/browse",
     "Firefox for iOS": "https://support.allizom.org/en-US/products/ios/browse",
-    "Firefox for Enterprise": "https://support.allizom.org/en-US/products/firefox-enterprise/installation-and-updates",
+    "Firefox Enterprise": "https://support.allizom.org/en-US/products/firefox-enterprise/installation-and-updates",
     "MDN Plus": "https://support.allizom.org/en-US/products/mdn-plus/getting-started",
     "Mozilla VPN": "https://support.allizom.org/en-US/products/mozilla-vpn/accounts",
     "Firefox Relay": "https://support.allizom.org/en-US/products/relay/technical",
     "Thunderbird": "https://support.allizom.org/en-US/products/thunderbird/settings",
     "Thunderbird for Android": "https://support.allizom.org/en-US/products/thunderbird-android/settings",
-    "Firefox Focus": "https://support.allizom.org/en-US/products/focus-firefox/Focus-ios",
+    "Firefox Focus": "https://support.allizom.org/en-US/products/focus-firefox/focus-ios",
     "Mozilla Account": "https://support.allizom.org/en-US/products/mozilla-account/passwords-recovery"
   },
   "test_topics": {
@@ -75,7 +75,7 @@
     "Firefox": "https://support.allizom.org/en-US/questions/new/firefox",
     "Firefox for Android": "https://support.allizom.org/en-US/questions/new/mobile",
     "Firefox for iOS": "https://support.allizom.org/en-US/questions/new/ios",
-    "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise",
+    "Firefox Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise",
     "MDN Plus": "https://support.allizom.org/en-US/questions/new/mdn-plus",
     "Mozilla VPN": "https://support.allizom.org/en-US/questions/new/mozilla-vpn",
     "Mozilla Monitor": "https://support.allizom.org/en-US/questions/new/monitor",
@@ -105,6 +105,5 @@
     "article_discussions": "https://support.allizom.org/en-US/kb/all/discussions"
   },
   "groups": "https://support.allizom.org/en-US/groups/",
-  "test_article_link": "https://support.allizom.org/en-US/kb/donotdelete",
   "system_account_name": "SuMo Bot"
 }

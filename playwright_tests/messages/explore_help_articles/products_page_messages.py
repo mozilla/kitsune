@@ -4,12 +4,12 @@ class ProductsPageMessages:
         "Firefox": "Web browser for Windows, Mac and Linux",
         "Firefox for Android": "Web browser for Android smartphones and tablets",
         "Firefox for iOS": "Firefox for iPhone, iPad and iPod touch devices",
-        "Mozilla VPN": "VPN for Windows 10, Mac, Linux, Android, and iOS devices",
+        "Mozilla VPN": "VPN for Windows, Mac, Linux, Android, and iOS devices",
         "Firefox Relay": "Service that lets you create email masks to hide your real email "
                          "address",
         "Mozilla Monitor": "Find out if your private information has been exposed in a known "
-                           "data breach.",
-        "MDN Plus": "MDN Plus provides a custom user experience for MDN supporters.",
+                           "data breach",
+        "MDN Plus": "MDN Plus provides a custom user experience for MDN supporters",
         "Firefox Focus": "Automatic privacy browser and content blocker",
         "Firefox for Enterprise": "Enterprise-grade protection, powered by Firefox",
         "Thunderbird": "Email software for Windows, Mac and Linux"
