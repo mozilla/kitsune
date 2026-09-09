@@ -8,4 +8,9 @@ urlpatterns = [
         views.update_topic,
         name="customercare.update_topic",
     ),
+    re_path(
+        r"^support-chat/jwt/(?P<product_slug>[^/]+)$",
+        views.chat_jwt,
+        name="customercare.chat_jwt",
+    ),
 ]

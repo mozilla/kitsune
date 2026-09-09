@@ -40,6 +40,14 @@ def resolve_user_org_group(user) -> GroupProfile | None:
     return _nearest_ancestor_org(user, list(GroupProfile.objects.org_roots()))
 
 
+def is_eligible_for_chat(user, product: Product) -> bool:
+    """Whether this user is allowed to start a live chat about this product.
+
+    Stub. The rules aren't settled yet, so for now everyone is eligible.
+    """
+    return True
+
+
 def fetch_zendesk_ticket_data(zendesk_ticket_id: str):
     """Fetch ticket and comments from Zendesk."""
     client = ZendeskClient()
