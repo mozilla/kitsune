@@ -57,6 +57,8 @@ class KBArticleEditMetadata(BasePage):
 
     def add_and_select_restrict_visibility_group_metadata(self, group_name: str):
         self._fill(self.kb_article_restrict_visibility_field, group_name)
+        self._wait_for_locator(self.restrict_visibility_dropdown_option(group_name),
+                               raise_exception=True)
         self._click(self.restrict_visibility_dropdown_option(group_name))
 
     def search_for_a_restricted_visibility_group(self, group_name: str):

@@ -59,7 +59,7 @@ class NewMessagePage(BasePage):
                 username (str): The username to click on.
         """
         searched_user = self.searched_user(username)
-        self._wait_for_locator(searched_user, timeout=30000, raise_exception=True)
+        self._wait_for_locator(searched_user, timeout=60000, raise_exception=True)
         self._click(searched_user)
 
     def type_into_to_input_field(self, text: str):

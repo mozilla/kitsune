@@ -48,7 +48,8 @@ class SubmitKBArticlePage(BasePage):
             "//input[@id='id_slug']//preceding-sibling::ul[@class='errorlist']/li")
         self.all_kb_errors = page.locator("ul[class='errorlist'] li")
         self.restrict_visibility_to_group = lambda group_name: page.locator(
-            f"//div[@class='option active']/span[text()='{group_name}']")
+            "//div[@id='id_restrict_to_groups-ts-dropdown']"
+            f"//div[contains(@class,'option') and normalize-space(.)='{group_name}']")
         self.delete_group_restriction = lambda group_name: page.locator(
             f"//div[@class='item' and text()='{group_name}']/a")
         self.relevant_to_product_checkbox = lambda product_name: page.locator(
@@ -69,6 +70,7 @@ class SubmitKBArticlePage(BasePage):
     """Actions against the new KB form locators."""
     def add_and_select_restrict_visibility_group(self, group_name: str):
         self._fill(self.kb_article_restrict_visibility_field, group_name)
+        self._wait_for_locator(self.restrict_visibility_to_group(group_name), raise_exception=True)
         self._click(self.restrict_visibility_to_group(group_name))
 
     def delete_a_restricted_visibility_group(self, group_name: str):
