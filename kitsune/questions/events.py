@@ -102,15 +102,13 @@ class QuestionReplyEvent(QuestionEvent):
 
             is_asker = asker_id == user.id
             if is_asker:
-                subject = _(
-                    '{} posted an answer to your question "{}"'.format(
-                        display_name(self.answer.creator), self.instance.title
-                    )
+                subject = _('{} posted an answer to your question "{}"').format(
+                    display_name(self.answer.creator), self.instance.title
                 )
                 text_template = "questions/email/new_answer_to_asker.ltxt"
                 html_template = "questions/email/new_answer_to_asker.html"
             else:
-                subject = _("Re: {}".format(self.instance.title))
+                subject = _("Re: {}").format(self.instance.title)
                 text_template = "questions/email/new_answer.ltxt"
                 html_template = "questions/email/new_answer.html"
 
