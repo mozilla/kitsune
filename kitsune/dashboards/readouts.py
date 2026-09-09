@@ -86,27 +86,43 @@ def get_visits_subquery(document=OuterRef("pk"), period=LAST_30_DAYS):
     )
 
 
-def visible_translation_exists(user, locale):
+def visible_translation(user, locale):
     """
-    Returns a combinable queryset expression for Document queries that only
-    includes documents that have a translation for the given locale that is
-    visible to the given user.
+    Returns a queryset for the translation into the given locale of the document of
+    the enclosing query, but only when that translation is visible to the given user.
+    Archived translations, and those whose revisions were all rejected, are skipped.
     """
-    return Exists(
-        Document.objects.visible(
-            user,
-            locale=locale,
-            parent=OuterRef("pk"),
+    return Document.objects.visible(
+        user,
+        locale=locale,
+        is_archived=False,
+        parent=OuterRef("pk"),
+    ).filter(
+        Exists(
+            Revision.objects.filter(document=OuterRef("pk")).filter(
+                Q(is_approved=True) | Q(reviewed__isnull=True)
+            )
         )
     )
 
 
-def no_translation_exists(locale):
+def translation_needs_review(locale):
     """
-    Returns a combinable queryset expression for Document queries that only
-    includes documents that do not have a translation for the given locale.
+    Returns a combinable queryset expression for Document queries that is true when
+    the document's translation for the given locale has a revision waiting to be
+    reviewed. Archived translations are skipped.
     """
-    return ~Q(translations__locale=locale)
+    return Exists(
+        Revision.objects.filter(
+            document__parent=OuterRef("pk"),
+            document__locale=locale,
+            document__is_archived=False,
+            reviewed__isnull=True,
+        ).filter(
+            Q(id__gt=F("document__current_revision__id"))
+            | Q(document__current_revision__isnull=True)
+        )
+    )
 
 
 def row_to_dict_with_out_of_dateness(
@@ -801,21 +817,14 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             HOW_TO_CONTRIBUTE_CATEGORY,
         ]
 
-        qs = (
-            Document.objects.visible(
-                self.user,
-                locale=settings.WIKI_DEFAULT_LANGUAGE,
-                is_archived=False,
-                is_localizable=True,
-                parent__isnull=True,
-                latest_localizable_revision__isnull=False,
-            )
-            .exclude(html__startswith=REDIRECT_HTML)
-            .filter(
-                no_translation_exists(self.locale)
-                | visible_translation_exists(self.user, self.locale)
-            )
-        )
+        qs = Document.objects.visible(
+            self.user,
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_archived=False,
+            is_localizable=True,
+            parent__isnull=True,
+            latest_localizable_revision__isnull=False,
+        ).exclude(html__startswith=REDIRECT_HTML)
 
         if self.product:
             qs = qs.filter(products=self.product)
@@ -823,16 +832,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                 # The product does not have a forum for this locale.
                 ignore_categories.append(CANNED_RESPONSES_CATEGORY)
 
-        transdoc_subquery = Document.objects.filter(
-            locale=self.locale,
-            parent=OuterRef("pk"),
-        ).filter(
-            Exists(
-                Revision.objects.filter(document=OuterRef("pk")).filter(
-                    Q(is_approved=True) | Q(reviewed__isnull=True)
-                )
-            )
-        )
+        transdoc_subquery = visible_translation(self.user, self.locale)
 
         qs = (
             qs.exclude(category__in=ignore_categories)
@@ -842,16 +842,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                 transdoc_current_revision_based_on_id=Subquery(
                     transdoc_subquery.values("current_revision__based_on__id")
                 ),
-                needs_review=Exists(
-                    Revision.objects.filter(
-                        document__parent=OuterRef("pk"),
-                        document__locale=self.locale,
-                        reviewed__isnull=True,
-                    ).filter(
-                        Q(id__gt=F("document__current_revision__id"))
-                        | Q(document__current_revision__isnull=True),
-                    )
-                ),
+                needs_review=translation_needs_review(self.locale),
             )
             .annotate(most_significant_change=MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY)
             .annotate(num_visits=get_visits_subquery(period=period))
@@ -915,30 +906,20 @@ class TemplateTranslationsReadout(Readout):
     default_mode = None
 
     def get_queryset(self, max=None):
-        qs = (
-            Document.objects.visible(
-                self.user,
-                locale=settings.WIKI_DEFAULT_LANGUAGE,
-                is_template=True,
-                is_archived=False,
-                is_localizable=True,
-                parent__isnull=True,
-                latest_localizable_revision__isnull=False,
-            )
-            .exclude(html__startswith=REDIRECT_HTML)
-            .filter(
-                no_translation_exists(self.locale)
-                | visible_translation_exists(self.user, self.locale)
-            )
-        )
+        qs = Document.objects.visible(
+            self.user,
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_template=True,
+            is_archived=False,
+            is_localizable=True,
+            parent__isnull=True,
+            latest_localizable_revision__isnull=False,
+        ).exclude(html__startswith=REDIRECT_HTML)
 
         if self.product:
             qs = qs.filter(products=self.product)
 
-        transdoc_subquery = Document.objects.filter(
-            locale=self.locale,
-            parent=OuterRef("pk"),
-        )
+        transdoc_subquery = visible_translation(self.user, self.locale)
 
         qs = qs.annotate(
             transdoc_slug=Subquery(transdoc_subquery.values("slug")),
@@ -946,16 +927,7 @@ class TemplateTranslationsReadout(Readout):
             transdoc_current_revision_based_on_id=Subquery(
                 transdoc_subquery.values("current_revision__based_on__id")
             ),
-            needs_review=Exists(
-                Revision.objects.filter(
-                    document__parent=OuterRef("pk"),
-                    document__locale=self.locale,
-                    reviewed__isnull=True,
-                ).filter(
-                    Q(id__gt=F("document__current_revision__id"))
-                    | Q(document__current_revision__isnull=True),
-                )
-            ),
+            needs_review=translation_needs_review(self.locale),
         ).annotate(most_significant_change=MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY)
 
         return qs.values_list(
@@ -1289,28 +1261,18 @@ class CannedResponsesReadout(Readout):
         return request.LANGUAGE_CODE in ProductSupportConfig.objects.locales_list()
 
     def get_queryset(self, max=None):
-        qs = (
-            Document.objects.visible(
-                self.user,
-                locale=settings.WIKI_DEFAULT_LANGUAGE,
-                is_archived=False,
-                parent__isnull=True,
-                category=CANNED_RESPONSES_CATEGORY,
-            )
-            .exclude(html__startswith=REDIRECT_HTML)
-            .filter(
-                no_translation_exists(self.locale)
-                | visible_translation_exists(self.user, self.locale)
-            )
-        )
+        qs = Document.objects.visible(
+            self.user,
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_archived=False,
+            parent__isnull=True,
+            category=CANNED_RESPONSES_CATEGORY,
+        ).exclude(html__startswith=REDIRECT_HTML)
 
         if self.product:
             qs = qs.filter(products=self.product)
 
-        transdoc_subquery = Document.objects.filter(
-            locale=self.locale,
-            parent=OuterRef("pk"),
-        )
+        transdoc_subquery = visible_translation(self.user, self.locale)
 
         qs = (
             qs.annotate(
@@ -1319,16 +1281,7 @@ class CannedResponsesReadout(Readout):
                 transdoc_current_revision_based_on_id=Subquery(
                     transdoc_subquery.values("current_revision__based_on__id")
                 ),
-                needs_review=Exists(
-                    Revision.objects.filter(
-                        document__parent=OuterRef("pk"),
-                        document__locale=self.locale,
-                        reviewed__isnull=True,
-                    ).filter(
-                        Q(id__gt=F("document__current_revision__id"))
-                        | Q(document__current_revision__isnull=True),
-                    )
-                ),
+                needs_review=translation_needs_review(self.locale),
                 num_visits=get_visits_subquery(),
             )
             .annotate(most_significant_change=MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY)

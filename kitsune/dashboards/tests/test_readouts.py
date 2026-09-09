@@ -476,6 +476,32 @@ class L10NOverviewTests(TestCase):
         self.assertEqual(1, overview["all"]["denominator"])
         self.assertEqual(1, overview["all"]["numerator"])
 
+    def test_counted_articles_are_shown_in_most_visited(self):
+        """
+        Every article counted in the "all" denominator should have a row in the
+        Most Visited readout, so that the two numbers can be compared.
+        """
+        locale = "de"
+
+        # An article whose only translation has yet to be approved.
+        rev = ApprovedRevisionFactory(is_ready_for_localization=True)
+        de_doc = DocumentFactory(parent=rev.document, locale=locale)
+        RevisionFactory(document=de_doc, based_on=rev, is_approved=False, reviewed=None)
+
+        # An article whose only translation is archived. Document.save() would force
+        # is_archived back to the parent's value, so bypass it.
+        translation = TranslatedRevisionFactory(document__locale=locale, is_approved=True)
+        translation.document.is_archived = True
+        ModelBase.save(translation.document)
+
+        overview = l10n_overview_rows(locale)
+        self.assertEqual(2, overview["all"]["denominator"])
+        self.assertEqual(0, overview["all"]["numerator"])
+
+        rows = MostVisitedTranslationsReadout(MockRequest()).rows()
+        self.assertEqual(2, len(rows))
+        self.assertEqual({"untranslated"}, {row["status_class"] for row in rows})
+
 
 class UnreviewedChangesTests(ReadoutTestCase):
     """Tests for the Unreviewed Changes readout
@@ -743,11 +769,13 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
             document__locale="de", reviewed=None, is_approved=False
         )
 
-        # A document will be excluded for anonymous users, if its
-        # only translation doesn't have an approved revision.
-        self.assertEqual(len(self.rows()), 0)
+        # Anonymous users can't see a translation without an approved revision, so
+        # they're shown the English article as still needing translation.
+        row = self.row()
+        self.assertEqual(row["title"], unreviewed.document.parent.title)
+        self.assertEqual(row["status_class"], "untranslated")
 
-        # However, reviewers can.
+        # Reviewers can see it, so for them it needs review.
         reviewer = UserFactory()
         add_permission(reviewer, Revision, "review_revision")
         row = self.row(user=reviewer)
@@ -805,14 +833,26 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
             document__locale="de", is_approved=False, reviewed=timezone.now()
         )
 
-        # A document will be excluded for anonymous users, if its
-        # only translation doesn't have an approved revision.
-        self.assertEqual(len(self.rows()), 0)
+        # A rejected revision can't stand in as a translation, for anyone.
+        self.assertEqual("untranslated", self.row()["status_class"])
 
-        # However, reviewers can.
         reviewer = UserFactory()
         add_permission(reviewer, Revision, "review_revision")
         self.assertEqual("untranslated", self.row(user=reviewer)["status_class"])
+
+    def test_archived_translation(self):
+        """An archived translation can't stand in as a translation."""
+        translation = TranslatedRevisionFactory(document__locale="de", is_approved=True)
+        self.assertEqual("ok", self.row()["status_class"])
+
+        # Document.save() would force this back to the parent's value, which is how
+        # these rows drift apart in the first place, so bypass it.
+        translation.document.is_archived = True
+        ModelBase.save(translation.document)
+
+        row = self.row()
+        self.assertEqual(row["title"], translation.document.parent.title)
+        self.assertEqual(row["status_class"], "untranslated")
 
     def test_spam(self):
         """Don't offer unapproved (often spam) articles for translation."""
@@ -1038,9 +1078,9 @@ class CannedResponsesTests(ReadoutTestCase):
             document=de_doc, based_on=eng_rev, is_approved=False, reviewed=None
         )
 
-        # A document will be excluded for anonymous users, if its
-        # only translation doesn't have an approved revision.
-        self.assertEqual(len(self.rows()), 0)
+        # Anonymous users can't see a translation without an approved revision, so
+        # they're shown the English article as still needing translation.
+        self.assertEqual("untranslated", self.row()["status_class"])
 
         # However, reviewers can.
         reviewer = UserFactory()
