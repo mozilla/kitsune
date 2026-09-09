@@ -1424,8 +1424,6 @@ TRUSTED_GROUPS = [
     "SUMO Locale Leaders",
     "Knowledge Base Reviewers",
     "Reviewers",
-    # Temporary workaround to exempt individual users if needed
-    "Escape Spam Filtering",
     "trusted contributors",
     "kb-contributors",
     "l10n-contributors",
