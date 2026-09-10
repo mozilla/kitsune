@@ -96,7 +96,25 @@
   }
 }
 
+th.watch,
+td.watch {
+  text-align: center;
+}
+
 .watch-form {
+  display: inline-block;
+
+  a {
+    display: flex;
+    cursor: pointer;
+    border-radius: p.$border-radius-sm;
+    transition: background-color 150ms ease;
+  }
+
+  &:hover a {
+    background-color: var(--color-link-active-bg);
+  }
+
   svg {
     width: p.$spacing-lg;
     height: p.$spacing-lg;
