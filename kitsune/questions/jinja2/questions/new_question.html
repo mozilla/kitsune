@@ -3,6 +3,7 @@
 {% from "questions/includes/aaq_macros.html" import select_product %}
 {% from "questions/includes/aaq_macros.html" import support_type_switcher with context %}
 {% set announcement_product = current_product|default(None) %}
+{% set show_chat = chat_is_available(request, [current_product] if current_product else []) %}
 {% set title = _('Get Support') %}
 {% set no_headline = True %}
 {% set hide_locale_switcher = True %}
