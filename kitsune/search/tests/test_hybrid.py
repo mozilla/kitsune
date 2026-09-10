@@ -104,6 +104,33 @@ class HybridOrchestrationTests(SimpleTestCase):
         with self.assertRaises(ValueError):
             sources_for_where(4)
 
+    def test_advanced_syntax_serves_lexically_without_vector_work(self):
+        queries = ("field:question_is_locked:false", "field:title:firefox", '"firefox sync"')
+        for query in queries:
+            for sources in ({"kb"}, {"kb", "aaq"}):
+                with (
+                    self.subTest(query=query, sources=sources),
+                    _run() as (target, cached, limited, embed, floor, retrieve),
+                ):
+                    result = run_hybrid_search(
+                        _request(),
+                        query=query,
+                        locale="en-US",
+                        sources=sources,
+                        product_id=None,
+                        page=1,
+                    )
+
+                    target.assert_called_once_with()
+                    floor.assert_not_called()
+                    cached.assert_not_called()
+                    limited.assert_not_called()
+                    embed.assert_not_called()
+                    self.assertEqual(retrieve.call_args.args, (query,))
+                    self.assertIsNone(retrieve.call_args.kwargs["query_vector"])
+                    self.assertIsNone(retrieve.call_args.kwargs["similarity_floor"])
+                    self.assertIsNone(result.fallback_reason)
+
     @override_settings(
         RETRIEVAL_SEMANTIC_K=11,
         RETRIEVAL_KNN_NUM_CANDIDATES=23,

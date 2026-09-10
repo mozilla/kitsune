@@ -28,6 +28,11 @@ class TermToken(BaseToken):
     def __repr__(self):
         return rf"t{self.term!r}"
 
+    @property
+    def is_quoted(self) -> bool:
+        """True when the term is a double-quoted phrase rather than a bare token."""
+        return len(self.term) > 1 and self.term.startswith('"') and self.term.endswith('"')
+
     def elastic_query(self, context):
         params = {
             "query": self.term,

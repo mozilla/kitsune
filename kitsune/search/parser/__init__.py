@@ -14,7 +14,7 @@ from pyparsing import (
 )
 
 from .operators import AndOperator, FieldOperator, NotOperator, OrOperator, SpaceOperator
-from .tokens import ExactToken, RangeToken, TermToken
+from .tokens import BaseToken, ExactToken, RangeToken, TermToken
 
 _MAX_NESTING_DEPTH = 10
 
@@ -102,3 +102,27 @@ class Parser:
         context.setdefault("fields", {})
         context.setdefault("settings", {})
         return self.parsed.elastic_query(context)
+
+
+def _is_plain_text(token: BaseToken) -> bool:
+    if isinstance(token, TermToken):
+        return not token.is_quoted
+    if isinstance(token, SpaceOperator):
+        return all(_is_plain_text(arg) for arg in token.arguments)
+    return False
+
+
+def is_plain_text_query(query: str) -> bool:
+    """True when a raw query provably contains only unquoted terms.
+
+    Operators and quoted phrases promise exact lexical behavior, so consumers such
+    as semantic retrieval must not broaden them. A query that fails to parse is not
+    provably plain text and is treated as ineligible rather than broadened.
+    """
+    if not query or not query.strip():
+        return True
+    try:
+        parsed = Parser(query).parsed
+    except ParseException:
+        return False
+    return _is_plain_text(parsed)

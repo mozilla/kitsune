@@ -38,6 +38,7 @@ from kitsune.retrieval.query_vectors import (
     get_cached_query_vector,
 )
 from kitsune.search import SNIPPET_LENGTH
+from kitsune.search.parser import is_plain_text_query
 from kitsune.search.search import strip_html
 from kitsune.sumo.urlresolvers import reverse
 
@@ -108,47 +109,57 @@ def run_hybrid_search(
         if KB_SOURCE in source_set:
             phase = "index_resolution"
             kb_index, recipe, meta = resolve_read_state()
-            phase = "similarity_floor"
-            try:
-                similarity_floor = similarity_floor_for_meta(meta)
-            except SimilarityFloorUnavailable:
-                # No floor for the active profile means no bounded kNN; search stays available.
-                fallback_reason = "similarity_floor_unavailable"
-                emit("retrieval.query.degraded", level=logging.WARNING, reason=fallback_reason)
-            else:
-                phase = "cache"
-                query_vector, cache_lookup = get_cached_query_vector(query, recipe)
-                if query_vector is None:
-                    phase = "rate_limit"
-                    rate = settings.RETRIEVAL_QUERY_EMBEDDING_RATE
-                    if not is_valid_query_embedding_rate(rate):
-                        raise ImproperlyConfigured("RETRIEVAL_QUERY_EMBEDDING_RATE is invalid")
+            # Advanced syntax (operators or quoted phrases) is an explicit lexical
+            # contract; semantic retrieval would broaden results past it, so those
+            # queries never acquire a query vector (mozilla/sumo#3307).
+            if is_plain_text_query(query):
+                phase = "similarity_floor"
+                try:
+                    similarity_floor = similarity_floor_for_meta(meta)
+                except SimilarityFloorUnavailable:
+                    # No floor for the active profile means no bounded kNN; stay lexical.
+                    fallback_reason = "similarity_floor_unavailable"
+                    emit(
+                        "retrieval.query.degraded",
+                        level=logging.WARNING,
+                        reason=fallback_reason,
+                    )
+                else:
+                    phase = "cache"
+                    query_vector, cache_lookup = get_cached_query_vector(query, recipe)
+                    if query_vector is None:
+                        phase = "rate_limit"
+                        rate = settings.RETRIEVAL_QUERY_EMBEDDING_RATE
+                        if not is_valid_query_embedding_rate(rate):
+                            raise ImproperlyConfigured("RETRIEVAL_QUERY_EMBEDDING_RATE is invalid")
 
-                    limited = rate.startswith("0/")
-                    if not limited:
-                        try:
-                            limited = is_ratelimited(
-                                request,
-                                group="retrieval-query-embedding",
-                                key="user_or_ip",
-                                rate=rate,
-                                increment=True,
-                            )
-                        except Exception:
-                            limited = True
-                            fallback_reason = "rate_limit_unavailable"
+                        limited = rate.startswith("0/")
+                        if not limited:
+                            try:
+                                limited = is_ratelimited(
+                                    request,
+                                    group="retrieval-query-embedding",
+                                    key="user_or_ip",
+                                    rate=rate,
+                                    increment=True,
+                                )
+                            except Exception:
+                                limited = True
+                                fallback_reason = "rate_limit_unavailable"
 
-                    if limited:
-                        fallback_reason = fallback_reason or "rate_limited"
-                    else:
-                        phase = "embedding"
-                        embedding_started = perf_counter()
-                        try:
-                            query_vector, cache_write = embed_and_cache_query_vector(query, recipe)
-                        except EmbeddingUnavailable:
-                            fallback_reason = "embedding_unavailable"
-                        finally:
-                            embedding_ms = round((perf_counter() - embedding_started) * 1000)
+                        if limited:
+                            fallback_reason = fallback_reason or "rate_limited"
+                        else:
+                            phase = "embedding"
+                            embedding_started = perf_counter()
+                            try:
+                                query_vector, cache_write = embed_and_cache_query_vector(
+                                    query, recipe
+                                )
+                            except EmbeddingUnavailable:
+                                fallback_reason = "embedding_unavailable"
+                            finally:
+                                embedding_ms = round((perf_counter() - embedding_started) * 1000)
 
         phase = "retrieval"
         result = retrieve(

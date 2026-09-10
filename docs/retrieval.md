@@ -172,6 +172,12 @@ For a request involving KB content:
    and viewer access in one bounded primary-database query before returning them.
 7. Convert authorized evidence into the existing search result shape and templates.
 
+Queries using the documented advanced search syntax — `field:`, `exact:`, `range:`, boolean
+operators, or quoted phrases — are an explicit lexical contract. They run only through the
+source-specific lexical mappings: hybrid search never embeds them, never reads or writes the
+query-vector cache, and never charges the embedding rate limit
+([mozilla/sumo#3307](https://github.com/mozilla/sumo/issues/3307)).
+
 The database check is the authorization boundary. Elasticsearch access filters reduce exposure
 and preserve useful recall, but asynchronous index metadata is not authoritative. Code outside
 `retrieval.access` must not return `_retrieve_unvalidated()` results to a user or place their text
