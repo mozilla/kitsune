@@ -7,29 +7,26 @@ from datetime import timedelta
 
 import jwt
 import requests
+import waffle
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied, SuspiciousOperation
 from django.db import transaction
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext as _
 from django.utils.translation import pgettext
 from django.views import View
-from django.views.decorators.cache import cache_control
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods, require_POST
 from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyException
 
 from kitsune.customercare.forms import SupportTicketReplyForm
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import process_zendesk_update
-from kitsune.customercare.utils import (
-    generate_classification_tags,
-    is_eligible_for_chat,
-    sync_ticket_from_zendesk,
-)
+from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.groups.templatetags.jinja_helpers import group_breadcrumbs
 from kitsune.journal.models import Record
@@ -76,7 +73,7 @@ def chat_jwt_is_ratelimited(request):
 
 
 @require_POST
-@cache_control(no_store=True)
+@never_cache
 def chat_jwt(request, product_slug):
     """Sign a short-lived token that identifies the requesting user to Zendesk.
 
@@ -85,50 +82,46 @@ def chat_jwt(request, product_slug):
     GET so Django's CSRF middleware runs, which checks both the CSRF token and
     the Origin header.
     """
+    if not waffle.switch_is_active("zendesk-chat"):
+        raise Http404
+
+    if not (settings.ZENDESK_CHAT_SIGNING_SECRET and settings.ZENDESK_CHAT_SIGNING_KEY_ID):
+        raise ImproperlyConfigured("Support chat requires a signing key and secret.")
+
+    user = request.user
+
+    if not user.is_authenticated:
+        return HttpResponse(status=401)
+
     if chat_jwt_is_ratelimited(request):
         return HttpResponse(status=429)
 
-    if not request.user.is_authenticated:
-        return HttpResponse(status=401)
-
-    # Reverse one-to-one, so getattr covers a user with no profile row.
-    profile = getattr(request.user, "profile", None)
-    external_id = profile.fxa_uid if profile else None
-
-    if not external_id:
-        Record.objects.error(
-            CHAT_JOURNAL_SRC,
-            "user {username} has no fxa_uid",
-            username=request.user.username,
-        )
-        return HttpResponse(status=401)
+    user_info = f"user {user.username} (#{user.id})"
 
     # Slug is user-supplied, so keep it short enough for the journal message.
     product = Product.active.filter(slug=product_slug).first()
     if product is None:
         Record.objects.info(
             CHAT_JOURNAL_SRC,
-            "user {username} asked for chat on unknown product {slug}",
-            username=request.user.username,
-            slug=product_slug[:50],
+            f"{user_info} asked for chat with unknown product {product_slug[:80]}",
         )
         return HttpResponse(status=404)
 
-    if not is_eligible_for_chat(request.user, product):
+    # TODO: Replace with eligibility check.
+    is_eligible_for_chat = True
+
+    if not is_eligible_for_chat:
         Record.objects.info(
-            CHAT_JOURNAL_SRC,
-            "user {username} is not eligible for chat on {slug}",
-            username=request.user.username,
-            slug=product.slug,
+            CHAT_JOURNAL_SRC, f"{user_info} is not eligible for chat for {product_slug}"
         )
         return HttpResponse(status=403)
 
     token = jwt.encode(
         {
             "scope": "user",
-            "external_id": external_id,
-            "name": profile.display_name,
-            "email": request.user.email,
+            "external_id": user.profile.fxa_uid,
+            "name": user.profile.display_name,
+            "email": user.email,
             "email_verified": True,
             "exp": timezone.now() + timedelta(seconds=settings.ZENDESK_CHAT_JWT_LIFETIME),
         },
@@ -136,6 +129,12 @@ def chat_jwt(request, product_slug):
         algorithm="HS256",
         headers={"kid": settings.ZENDESK_CHAT_SIGNING_KEY_ID},
     )
+
+    if waffle.switch_is_active("record-chat-token-issuance"):
+        Record.objects.info(
+            CHAT_JOURNAL_SRC, f"{user_info} was issued a chat token for {product_slug}"
+        )
+
     return HttpResponse(token, content_type="text/plain")
 
 
