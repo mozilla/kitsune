@@ -2,7 +2,10 @@ from unittest import mock
 
 from django.contrib.sites.models import Site
 from django.core import mail
+from pyquery import PyQuery as pq
 
+from kitsune.messages.models import InboxMessage
+from kitsune.messages.tasks import email_private_message
 from kitsune.sumo.tests import TestCase, attrs_eq, post, starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
@@ -50,6 +53,21 @@ class NotificationsTests(TestCase):
         starts_with(
             mail.outbox[0].body, PRIVATE_MESSAGE_EMAIL.format(sender=self.sender.profile.name)
         )
+
+    @mock.patch.object(Site.objects, "get_current")
+    def test_private_message_email_excludes_images(self, get_current):
+        get_current.return_value.domain = "testserver"
+        inbox_message = InboxMessage.objects.create(
+            sender=self.sender,
+            to=self.to,
+            message=('<strong>Keep this formatting</strong><img src="https://picsum.photos/200">'),
+        )
+        email_private_message(inbox_message.id)
+
+        html = pq(mail.outbox[0].alternatives[0][0])
+        message = html(".quote")
+        assert message("strong").text() == "Keep this formatting"
+        assert not message("img")
 
     @mock.patch.object(Site.objects, "get_current")
     def test_private_message_not_sends_email(self, get_current):
