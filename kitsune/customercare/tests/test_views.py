@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.models import SupportTicket
@@ -786,6 +787,7 @@ CHAT_JWT_LIFETIME = 900
 CHAT_RATELIMITS = ["10/m", "60/h", "300/d"]
 
 
+@override_switch("zendesk-chat", active=True)
 @override_settings(
     ZENDESK_CHAT_SIGNING_SECRET=CHAT_SIGNING_SECRET,
     ZENDESK_CHAT_SIGNING_KEY_ID=CHAT_SIGNING_KEY_ID,
@@ -806,6 +808,24 @@ class ChatJWTViewTests(TestCase):
 
     def _claims(self, response):
         return jwt.decode(response.content, CHAT_SIGNING_SECRET, algorithms=["HS256"])
+
+    def test_url_is_not_locale_prefixed(self):
+        """The widget asks for a token, not a page, so it sits outside i18n_patterns."""
+        self.assertEqual("/support-chat/jwt/firefox", self._url())
+
+    @override_switch("zendesk-chat", active=False)
+    def test_switch_off_gets_404(self):
+        self.client.force_login(self.user)
+        self.assertEqual(404, self.client.post(self._url()).status_code)
+
+    @override_switch("zendesk-chat", active=False)
+    def test_switch_off_is_checked_before_anything_else(self):
+        """A disabled feature shouldn't spend rate limit budget or write records."""
+        with patch("kitsune.customercare.views.is_ratelimited") as mock_ratelimited:
+            self.client.post(self._url())
+
+        mock_ratelimited.assert_not_called()
+        self.assertEqual(0, Record.objects.count())
 
     def test_anonymous_gets_401(self):
         self.assertEqual(401, self.client.post(self._url()).status_code)
@@ -852,6 +872,16 @@ class ChatJWTViewTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.post(self._url())
 
+        cache_control = response.headers["Cache-Control"]
+        self.assertIn("no-store", cache_control)
+        # The token is per-user, so shared caches must not hold it either.
+        self.assertIn("private", cache_control)
+
+    def test_error_responses_are_not_cacheable(self):
+        """CacheHeadersMiddleware skips anything >= 400, so the view has to cover it."""
+        response = self.client.post(self._url())
+
+        self.assertEqual(401, response.status_code)
         self.assertIn("no-store", response.headers["Cache-Control"])
 
     def test_user_without_fxa_uid_gets_401(self):
@@ -864,13 +894,6 @@ class ChatJWTViewTests(TestCase):
     def test_unknown_product_gets_404(self):
         self.client.force_login(self.user)
         self.assertEqual(404, self.client.post(self._url(slug="no-such-product")).status_code)
-
-    def test_ineligible_user_gets_403(self):
-        self.client.force_login(self.user)
-        with patch("kitsune.customercare.views.is_eligible_for_chat", return_value=False):
-            response = self.client.post(self._url())
-
-        self.assertEqual(403, response.status_code)
 
     def test_rate_limited_request_gets_429(self):
         self.client.force_login(self.user)
@@ -891,11 +914,23 @@ class ChatJWTViewTests(TestCase):
             CHAT_RATELIMITS, [call.args[2] for call in mock_ratelimited.call_args_list]
         )
 
-    def test_successful_request_is_not_journaled(self):
+    def test_issuance_is_not_recorded_by_default(self):
         self.client.force_login(self.user)
         self.client.post(self._url())
 
         self.assertEqual(0, Record.objects.count())
+
+    @override_switch("record-chat-token-issuance", active=True)
+    def test_issuance_is_recorded_when_switched_on(self):
+        self.client.force_login(self.user)
+        response = self.client.post(self._url())
+
+        self.assertEqual(200, response.status_code)
+        record = Record.objects.get()
+        self.assertEqual(RECORD_INFO, record.level)
+        self.assertEqual("customercare.chat", record.src)
+        self.assertIn(self.user.username, record.msg)
+        self.assertIn(self.product.slug, record.msg)
 
     def test_missing_fxa_uid_is_journaled(self):
         self.user.profile.fxa_uid = None
@@ -915,15 +950,6 @@ class ChatJWTViewTests(TestCase):
         record = Record.objects.get()
         self.assertEqual(RECORD_INFO, record.level)
         self.assertIn("no-such-product", record.msg)
-
-    def test_ineligible_user_is_journaled(self):
-        self.client.force_login(self.user)
-        with patch("kitsune.customercare.views.is_eligible_for_chat", return_value=False):
-            self.client.post(self._url())
-
-        record = Record.objects.get()
-        self.assertEqual(RECORD_INFO, record.level)
-        self.assertIn(self.product.slug, record.msg)
 
     def test_429_when_only_the_daily_window_is_exceeded(self):
         self.client.force_login(self.user)
