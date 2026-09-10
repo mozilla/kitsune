@@ -5,18 +5,21 @@ import json
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+import jwt
 import requests
 from django.contrib.auth.models import Group
-from django.test import override_settings
+from django.test import Client, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import GroupProfile
+from kitsune.journal.models import RECORD_ERROR, RECORD_INFO, Record
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
@@ -776,3 +779,181 @@ class TicketDetailBreadcrumbsTests(TestCase):
         subject: no personal trail (not theirs) and no group trail (no org)."""
         staff = UserFactory(is_staff=True)
         self.assertSubjectOnlyTrail(self._get(staff))
+
+
+CHAT_SIGNING_SECRET = "test-chat-signing-secret"
+CHAT_SIGNING_KEY_ID = "test-chat-key-id"
+CHAT_JWT_LIFETIME = 900
+CHAT_RATELIMITS = ["10/m", "60/h", "300/d"]
+
+
+@override_switch("zendesk-chat", active=True)
+@override_settings(
+    ZENDESK_CHAT_SIGNING_SECRET=CHAT_SIGNING_SECRET,
+    ZENDESK_CHAT_SIGNING_KEY_ID=CHAT_SIGNING_KEY_ID,
+    ZENDESK_CHAT_JWT_LIFETIME=CHAT_JWT_LIFETIME,
+    ZENDESK_CHAT_RATELIMITS=CHAT_RATELIMITS,
+)
+class ChatJWTViewTests(TestCase):
+    """Tests for the identity token the Zendesk messaging widget posts for."""
+
+    def setUp(self):
+        self.product = ProductFactory(slug="firefox")
+        self.user = UserFactory()
+        self.user.profile.fxa_uid = "fxa-uid-123"
+        self.user.profile.save(update_fields=["fxa_uid"])
+
+    def _url(self, slug=None):
+        return reverse("customercare.chat_jwt", args=[slug or self.product.slug])
+
+    def _claims(self, response):
+        return jwt.decode(response.content, CHAT_SIGNING_SECRET, algorithms=["HS256"])
+
+    def test_url_is_not_locale_prefixed(self):
+        """The widget asks for a token, not a page, so it sits outside i18n_patterns."""
+        self.assertEqual("/support-chat/jwt/firefox", self._url())
+
+    @override_switch("zendesk-chat", active=False)
+    def test_switch_off_gets_404(self):
+        self.client.force_login(self.user)
+        self.assertEqual(404, self.client.post(self._url()).status_code)
+
+    @override_switch("zendesk-chat", active=False)
+    def test_switch_off_is_checked_before_anything_else(self):
+        """A disabled feature shouldn't spend rate limit budget or write records."""
+        with patch("kitsune.customercare.views.is_ratelimited") as mock_ratelimited:
+            self.client.post(self._url())
+
+        mock_ratelimited.assert_not_called()
+        self.assertEqual(0, Record.objects.count())
+
+    def test_anonymous_gets_401(self):
+        self.assertEqual(401, self.client.post(self._url()).status_code)
+
+    def test_get_is_not_allowed(self):
+        self.client.force_login(self.user)
+        self.assertEqual(405, self.client.get(self._url()).status_code)
+
+    def test_csrf_token_is_required(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.user)
+        self.assertEqual(403, client.post(self._url()).status_code)
+
+    def test_signed_in_user_gets_a_token(self):
+        self.client.force_login(self.user)
+        response = self.client.post(self._url())
+
+        self.assertEqual(200, response.status_code)
+        claims = self._claims(response)
+        self.assertEqual("user", claims["scope"])
+        self.assertEqual("fxa-uid-123", claims["external_id"])
+        self.assertEqual(self.user.email, claims["email"])
+        self.assertEqual(self.user.profile.display_name, claims["name"])
+        self.assertTrue(claims["email_verified"])
+
+    def test_token_header_carries_the_key_id(self):
+        self.client.force_login(self.user)
+        response = self.client.post(self._url())
+
+        header = jwt.get_unverified_header(response.content)
+        self.assertEqual("HS256", header["alg"])
+        self.assertEqual(CHAT_SIGNING_KEY_ID, header["kid"])
+
+    def test_token_expires_within_the_configured_lifetime(self):
+        self.client.force_login(self.user)
+        before = int(timezone.now().timestamp())
+        response = self.client.post(self._url())
+
+        exp = self._claims(response)["exp"]
+        self.assertGreater(exp, before)
+        self.assertLessEqual(exp, before + CHAT_JWT_LIFETIME + 5)
+
+    def test_response_is_not_cacheable(self):
+        self.client.force_login(self.user)
+        response = self.client.post(self._url())
+
+        cache_control = response.headers["Cache-Control"]
+        self.assertIn("no-store", cache_control)
+        # The token is per-user, so shared caches must not hold it either.
+        self.assertIn("private", cache_control)
+
+    def test_error_responses_are_not_cacheable(self):
+        """CacheHeadersMiddleware skips anything >= 400, so the view has to cover it."""
+        response = self.client.post(self._url())
+
+        self.assertEqual(401, response.status_code)
+        self.assertIn("no-store", response.headers["Cache-Control"])
+
+    def test_user_without_fxa_uid_gets_401(self):
+        self.user.profile.fxa_uid = None
+        self.user.profile.save(update_fields=["fxa_uid"])
+        self.client.force_login(self.user)
+
+        self.assertEqual(401, self.client.post(self._url()).status_code)
+
+    def test_unknown_product_gets_404(self):
+        self.client.force_login(self.user)
+        self.assertEqual(404, self.client.post(self._url(slug="no-such-product")).status_code)
+
+    def test_rate_limited_request_gets_429(self):
+        self.client.force_login(self.user)
+        with patch("kitsune.customercare.views.is_ratelimited", return_value=True):
+            response = self.client.post(self._url())
+
+        self.assertEqual(429, response.status_code)
+
+    def test_every_rate_limit_window_is_checked(self):
+        """All windows must increment, so a blocked burst still counts hourly and daily."""
+        self.client.force_login(self.user)
+        with patch(
+            "kitsune.customercare.views.is_ratelimited", return_value=False
+        ) as mock_ratelimited:
+            self.client.post(self._url())
+
+        self.assertEqual(
+            CHAT_RATELIMITS, [call.args[2] for call in mock_ratelimited.call_args_list]
+        )
+
+    def test_issuance_is_not_recorded_by_default(self):
+        self.client.force_login(self.user)
+        self.client.post(self._url())
+
+        self.assertEqual(0, Record.objects.count())
+
+    @override_switch("record-chat-token-issuance", active=True)
+    def test_issuance_is_recorded_when_switched_on(self):
+        self.client.force_login(self.user)
+        response = self.client.post(self._url())
+
+        self.assertEqual(200, response.status_code)
+        record = Record.objects.get()
+        self.assertEqual(RECORD_INFO, record.level)
+        self.assertEqual("customercare.chat", record.src)
+        self.assertIn(self.user.username, record.msg)
+        self.assertIn(self.product.slug, record.msg)
+
+    def test_missing_fxa_uid_is_journaled(self):
+        self.user.profile.fxa_uid = None
+        self.user.profile.save(update_fields=["fxa_uid"])
+        self.client.force_login(self.user)
+        self.client.post(self._url())
+
+        record = Record.objects.get()
+        self.assertEqual(RECORD_ERROR, record.level)
+        self.assertEqual("customercare.chat", record.src)
+        self.assertIn(self.user.username, record.msg)
+
+    def test_unknown_product_is_journaled(self):
+        self.client.force_login(self.user)
+        self.client.post(self._url(slug="no-such-product"))
+
+        record = Record.objects.get()
+        self.assertEqual(RECORD_INFO, record.level)
+        self.assertIn("no-such-product", record.msg)
+
+    def test_429_when_only_the_daily_window_is_exceeded(self):
+        self.client.force_login(self.user)
+        with patch("kitsune.customercare.views.is_ratelimited", side_effect=[False, False, True]):
+            response = self.client.post(self._url())
+
+        self.assertEqual(429, response.status_code)
