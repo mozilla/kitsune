@@ -6,7 +6,7 @@ from django.views.static import serve as servestatic
 from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
 
-from kitsune.customercare.views import ZendeskWebhookView
+from kitsune.customercare.views import ZendeskWebhookView, chat_jwt
 from kitsune.sumo import views as sumo_views
 from kitsune.sumo.i18n import i18n_patterns
 
@@ -80,6 +80,11 @@ urlpatterns += [
         r"^customercare/zendesk/updates/?$",
         csrf_exempt(ZendeskWebhookView.as_view()),
         name="customercare.zendesk_webhook",
+    ),
+    re_path(
+        r"^support-chat/jwt/(?P<product_slug>[^/]+)$",
+        chat_jwt,
+        name="customercare.chat_jwt",
     ),
 ]
 

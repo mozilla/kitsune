@@ -1340,9 +1340,48 @@ ZENDESK_COMMENTS_SYNC_THRESHOLD = config("ZENDESK_COMMENTS_SYNC_THRESHOLD", defa
 ZENDESK_SYNC_TIMEOUT = config(
     "ZENDESK_SYNC_TIMEOUT", default="5,10", cast=Csv(int, post_process=tuple)
 )
+# Signing key for the Zendesk messaging widget, from Admin Center under
+# Account > Security > End user authentication. The key id goes in the JWT header.
+ZENDESK_CHAT_SIGNING_KEY_ID = config("ZENDESK_CHAT_SIGNING_KEY_ID", default="")
+ZENDESK_CHAT_SIGNING_SECRET = config("ZENDESK_CHAT_SIGNING_SECRET", default="")
+# Seconds. Zendesk asks the widget for a new token once this one expires.
+ZENDESK_CHAT_JWT_LIFETIME = config("ZENDESK_CHAT_JWT_LIFETIME", default=900, cast=int)
+# Multi-window limits (see kitsune.customercare.views.chat_jwt_is_ratelimited). The
+# widget asks for a token on every page load, so these have to clear ordinary reading.
+ZENDESK_CHAT_RATELIMITS = config(
+    "ZENDESK_CHAT_RATELIMITS", default="60/m,600/h,2000/d", cast=Csv()
+)
+# Public key from the widget's installation snippet in Admin Center.
+ZENDESK_CHAT_WIDGET_KEY = config("ZENDESK_CHAT_WIDGET_KEY", default="")
+# Show the widget on pages about any of these products.
+ZENDESK_CHAT_PRODUCT_SLUGS = config(
+    "ZENDESK_CHAT_PRODUCT_SLUGS",
+    default="firefox,ios,mobile,firefox-enterprise",
+    cast=Csv(),
+)
+# The product every chat is checked against, whichever page it starts from.
+ZENDESK_CHAT_ELIGIBILITY_PRODUCT_SLUG = config(
+    "ZENDESK_CHAT_ELIGIBILITY_PRODUCT_SLUG", default="firefox-enterprise"
+)
+# SUMO locale -> Zendesk locale, for the pages that get the widget. Any other
+# locale doesn't show it. Spell the Zendesk side exactly as it appears in
+# https://support.zendesk.com/api/v2/locales/public.json - that list mixes cases
+# ("en-US" but "pt-br"), the codes don't always agree with ours (SUMO "ne-NP" is
+# Zendesk "ne"), and Zendesk silently ignores a code it doesn't recognise.
+ZENDESK_CHAT_LOCALES = {
+    "en-US": "en-US",
+    "de": "de",
+}
 
 # Products that allow un-authenticated users to submit support requests
 LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])
+
+# Zendesk messaging widget. Wildcards because the widget lazy-loads chunks, and
+# because the account subdomain differs per environment.
+ZENDESK_CHAT_CSP_HOSTS = [
+    "https://*.zdassets.com",
+    "https://*.zendesk.com",
+]
 
 # Django CSP configuration
 CONTENT_SECURITY_POLICY = {
@@ -1356,12 +1395,16 @@ CONTENT_SECURITY_POLICY = {
             # cdn.matomo.cloud is multi-tenant; a bare host source would defeat NONCE.
             f"https://{MATOMO_MZLA_CDN_HOST}/{MATOMO_MZLA_TRACKER_HOST}/matomo.js",
             "https://pontoon.mozilla.org",
+            *ZENDESK_CHAT_CSP_HOSTS,
             NONCE,
         ],
         "img-src": [
             SELF,
             "blob:",
             "data:",
+            *ZENDESK_CHAT_CSP_HOSTS,
+            # Attachments and avatars in chat conversations.
+            "https://*.zdusercontent.com",
             "https://*.mozaws.net",
             "https://*.webservices.mozgcp.net",
             "https://*.google-analytics.com",
@@ -1375,20 +1418,26 @@ CONTENT_SECURITY_POLICY = {
         "media-src": [
             SELF,
             "https://*.webservices.mozgcp.net",
+            *ZENDESK_CHAT_CSP_HOSTS,
         ],
         "frame-src": [
             SELF,
             "https://*.youtube.com",
+            *ZENDESK_CHAT_CSP_HOSTS,
         ],
         "font-src": [
             SELF,
             "https://*.webservices.mozgcp.net",
+            *ZENDESK_CHAT_CSP_HOSTS,
         ],
         "style-src": [
             SELF,
             "https://*.webservices.mozgcp.net",
-            NONCE,
+            # The chat widget styles itself inline. A nonce here would cancel this out.
+            UNSAFE_INLINE,
         ],
+        # Style attributes stay blocked, which is what a sanitizer bypass would use.
+        "style-src-attr": [NONE],
         "form-action": [
             SELF,
             "https://accounts.firefox.com",
@@ -1405,6 +1454,9 @@ CONTENT_SECURITY_POLICY = {
             "https://accounts.firefox.com/metrics-flow",
             "https://accounts.stage.mozaws.net/metrics-flow",
             "https://basket.mozilla.org",
+            *ZENDESK_CHAT_CSP_HOSTS,
+            # The widget holds a live connection for the conversation.
+            "wss://*.zendesk.com",
         ],
     },
 }

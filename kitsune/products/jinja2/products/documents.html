@@ -30,6 +30,7 @@
 
 {% set scripts = ('topics',) %}
 {% set ga_topics = "/" + topic.slug + "/" %}
+{% set show_chat = chat_is_available(request, [product] if product else []) %}
 
 {% block above_main %}
 {% endblock %}
