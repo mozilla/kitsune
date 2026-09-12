@@ -10,6 +10,7 @@ from kitsune.sumo import email_utils
 from kitsune.sumo.templatetags.jinja_helpers import add_utm, urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tidings.events import InstanceEvent
+from kitsune.users.models import Setting
 
 
 class QuestionEvent(InstanceEvent):
@@ -179,15 +180,27 @@ class QuestionSolvedEvent(QuestionEvent):
         # (bug 585029)
         question.solution = self.answer
         question.solution.question = question
+        answerer_id = question.solution.creator.id
 
         @email_utils.safe_translation
         def _make_mail(locale, user, context):
-            subject = _("Solution found to Firefox Help question")
+            is_answerer = answerer_id == user.id
+
+            if is_answerer:
+                subject = _('You have solved a question: "{question_title}"').format(
+                    question_title = question.title
+                )
+                text_template = "questions/email/solution_to_author.ltxt"
+                html_template = "questions/email/solution_to_author.html"
+            else:
+                subject = _("Solution found to Firefox Help question")
+                text_template = "questions/email/solution.ltxt"
+                html_template = "questions/email/solution.html"
 
             mail = email_utils.make_mail(
                 subject=subject,
-                text_template="questions/email/solution.ltxt",
-                html_template="questions/email/solution.html",
+                text_template=text_template,
+                html_template=html_template,
                 context_vars=context,
                 from_email=settings.TIDINGS_FROM_ADDRESS,
                 to_email=user.email,
@@ -196,6 +209,7 @@ class QuestionSolvedEvent(QuestionEvent):
             return mail
 
         solution_url = add_utm(question.solution.get_absolute_url(), "questions-solved")
+        question_url = add_utm(question.get_absolute_url(), "questions-solved")
 
         c = {
             "answerer": question.solution.creator,
@@ -203,7 +217,14 @@ class QuestionSolvedEvent(QuestionEvent):
             "question_title": question.title,
             "host": Site.objects.get_current().domain,
             "solution_url": solution_url,
+            "question_url":question_url,
         }
+
+        # Send the emails to users_and_watches and the solution creator.
+        # Since we only know that users_and_watches is an iterable,
+        # we can't check whether it already includes the solution creator.
+        # Thus we have to check that manually.
+        is_answerer_handled = False
 
         for u, w in users_and_watches:
             c["to_user"] = u  # '' if anonymous
@@ -218,6 +239,17 @@ class QuestionSolvedEvent(QuestionEvent):
                 locale = "en-US"
 
             yield _make_mail(locale, u, c)
+
+            if not is_answerer_handled and u.id == answerer_id:
+                is_answerer_handled = True
+
+        # If we haven't sent the email to the solution creator yet, send it now.
+        if not is_answerer_handled:
+            u = question.solution.creator
+            if Setting.get_for_user(u, "email_authored_solutions"):
+                c["to_user"] = u
+                locale = u.profile.locale
+                yield _make_mail(locale, u, c)
 
     @classmethod
     def description_of_watch(cls, watch):
