@@ -1,0 +1,32 @@
+{%- from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context -%}
+{%- autoescape false -%}
+{#- L10n: This is an email. Whitespace matters! -#}
+{%- if display_name(to_user) -%}
+    {{ _('Hi {username},')|f(username=display_name(to_user)) }}
+
+{% endif -%}
+
+{% trans question_title=question_title %}
+Great news! Your answer for the following question has just been marked as the solution: "{{ question_title }}"
+{% endtrans %}
+
+{{ _('You can view the solved question thread using the following link:') }}
+
+https://{{ host }}{{ question_url }}
+
+{% trans %}
+Thank you for taking the time to help another user in our forum.
+Your knowledge and willingness to contribute make Mozilla Support
+a welcoming and helpful community.
+{% endtrans %}
+
+{% trans %}
+If you have time to help a few more people, take a look at our unanswered questions. Your next solution could be just a click away!
+{% endtrans %}
+
+https://{{ host }}/questions?filter=new
+
+{% if watch -%}
+{{ unsubscribe_text(watch) }}
+{% endif %}
+{% endautoescape %}

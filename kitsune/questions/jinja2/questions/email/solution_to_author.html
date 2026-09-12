@@ -1,0 +1,31 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  {% if display_name(to_user) %}
+    <p>{{ _('Hi {username},')|f(username=display_name(to_user)) }}</p>
+  {% endif %}
+
+  <p>
+    {% trans question_title=question_title %}
+      Great news! Your answer for the following question has just been marked as the solution: "{{ question_title }}"
+    {% endtrans %}
+  </p>
+
+  <p><a href="https://{{ host }}{{ question_url }}">{{ _('View the solved thread') }}</a></p>
+
+  <p>
+    {% trans %}
+      Thank you for taking the time to help another user in our forum.
+      Your knowledge and willingness to contribute make Mozilla Support
+      a welcoming and helpful community.
+    {% endtrans %}
+  </p>
+
+  <p>
+    {% trans %}
+      If you have time to help a few more people, take a look at our
+      <a href="https://{{ host }}/questions?filter=new">unanswered questions</a>.
+      Your next solution could be just a click away!
+    {% endtrans %}
+  </p>
+{% endblock %}

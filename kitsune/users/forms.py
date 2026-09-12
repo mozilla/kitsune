@@ -57,6 +57,9 @@ class SettingsForm(forms.Form):
     questions_watch_after_reply = forms.BooleanField(
         required=False, label=_lazy("Watch Question threads I comment in")
     )
+    email_authored_solutions = forms.BooleanField(
+        required=False, label=_lazy("Send me an email when my reply is marked as a solution")
+    )
     email_private_messages = forms.BooleanField(
         required=False, label=_lazy("Send emails for private messages")
     )
