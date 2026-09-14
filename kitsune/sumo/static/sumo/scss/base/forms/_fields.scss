@@ -480,6 +480,11 @@ label.required::after {
   color: #d0d0d7;
 }
 
+.field.involved-from .form-error {
+  display: block;
+  margin-top: p.$spacing-xs;
+}
+
 #edit-document {
   #relevant-topics, #relevant-products {
     label {
