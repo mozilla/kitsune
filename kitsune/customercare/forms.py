@@ -50,15 +50,15 @@ URGENCY_CHOICES = [
     ("", "Select urgency"),
     (
         "normal",
-        "Normal - Non-critical Firefox issue, minor defect, or integration/deployment question",
+        "Normal – Non-critical Firefox issue, minor defect, or integration/deployment question",
     ),
     (
         "high",
-        "High - Key functionality is degraded for multiple users or teams, but a workaround exists",
+        "High – Key functionality is degraded for multiple users or teams, but a workaround exists",
     ),
     (
         "critical",
-        "Critical - Production outage, critical blockage, or material security risk with no workaround",
+        "Critical – Production outage, critical blockage, or material security risk with no workaround",
     ),
 ]
 
