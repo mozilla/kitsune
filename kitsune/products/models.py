@@ -333,6 +333,7 @@ class ProductSupportConfig(ModelBase):
         default=SUPPORT_TYPE_FORUM,
         help_text="Default support channel for users (used when only one channel or no group access)",
     )
+    # Retained until the next release for compatibility with older application instances.
     hybrid_support_groups = models.ManyToManyField(
         Group,
         blank=True,
@@ -352,7 +353,7 @@ class ProductSupportConfig(ModelBase):
         choices=SUPPORT_TYPE_CHOICES,
         null=True,
         blank=True,
-        help_text="Default support type for users in hybrid groups (if not set, uses default_support_type)",
+        help_text="Default support type for organization members (if not set, uses default_support_type)",
     )
     subscription_only = models.BooleanField(
         default=False,

@@ -7,6 +7,7 @@ from kitsune.groups.models import GroupProfile
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     ZendeskConfigFactory,
 )
 from kitsune.sumo.tests import TestCase
@@ -181,11 +182,11 @@ class AccessibleToTests(TestCase):
 
         c1_group = Group.objects.create(name="company1")
         self.c1 = self.root.add_child(group=c1_group, slug="company1")
-        self.support_config.hybrid_support_groups.add(c1_group)
+        SupportOrganizationFactory(config=self.support_config, group=c1_group)
 
         c2_group = Group.objects.create(name="company2")
         self.c2 = self.root.add_child(group=c2_group, slug="company2")
-        self.support_config.hybrid_support_groups.add(c2_group)
+        SupportOrganizationFactory(config=self.support_config, group=c2_group)
 
         c3_group = Group.objects.create(name="company3")
         self.c3 = self.root.add_child(group=c3_group, slug="company3")

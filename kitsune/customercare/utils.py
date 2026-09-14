@@ -30,9 +30,9 @@ def resolve_org_group(submitter, product: Product) -> GroupProfile | None:
     config = ProductSupportConfig.objects.filter(
         product=product, is_active=True, zendesk_config__isnull=False
     ).first()
-    if not (config and config.hybrid_support_groups.exists()):
+    if config is None:
         return None
-    candidates = list(GroupProfile.objects.filter(group__in=config.hybrid_support_groups.all()))
+    candidates = list(GroupProfile.objects.filter(group__support_organizations__config=config))
     return _nearest_ancestor_org(submitter, candidates)
 
 

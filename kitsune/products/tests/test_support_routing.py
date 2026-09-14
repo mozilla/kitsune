@@ -6,6 +6,7 @@ from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     ZendeskConfigFactory,
 )
 from kitsune.questions.tests import AAQConfigFactory
@@ -72,8 +73,8 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
         self.assertFalse(can_switch)
 
-    def test_hybrid_no_groups_default_forum(self):
-        """Hybrid product with no groups defaults to forum, allows switching."""
+    def test_hybrid_no_organizations_default_forum(self):
+        """Hybrid product with no organizations defaults to forum, allows switching."""
         aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(
@@ -94,8 +95,8 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
         self.assertTrue(can_switch)
 
-    def test_hybrid_no_groups_default_zendesk(self):
-        """Hybrid product with no groups defaults to Zendesk, allows switching."""
+    def test_hybrid_no_organizations_default_zendesk(self):
+        """Hybrid product with no organizations defaults to Zendesk, allows switching."""
         aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(
@@ -116,8 +117,8 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
         self.assertTrue(can_switch)
 
-    def test_hybrid_no_groups_honors_requested_type(self):
-        """Hybrid product with no groups honors requested_type query param."""
+    def test_hybrid_no_organizations_honors_requested_type(self):
+        """Hybrid product with no organizations honors requested_type query param."""
         aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(
@@ -138,8 +139,8 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
         self.assertTrue(can_switch)
 
-    def test_hybrid_with_groups_user_not_in_group(self):
-        """Hybrid with groups: user NOT in group is locked to default."""
+    def test_hybrid_with_organizations_nonmember(self):
+        """Hybrid with organizations: a nonmember is locked to default."""
         aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         group = GroupFactory(name="beta-testers")
@@ -150,7 +151,7 @@ class SupportRoutingTests(TestCase):
             default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
             is_active=True,
         )
-        config.hybrid_support_groups.add(group)
+        SupportOrganizationFactory(config=config, group=group)
 
         request = self.factory.get("/", {"support_type": "zendesk"})
         request.user = self.user  # User NOT in group
@@ -162,8 +163,8 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
         self.assertFalse(can_switch)
 
-    def test_hybrid_with_groups_user_in_group_can_switch(self):
-        """Hybrid with groups: user IN group can switch."""
+    def test_hybrid_with_organizations_member_can_switch(self):
+        """Hybrid with organizations: a member can switch."""
         aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         group = GroupFactory(name="beta-testers")
@@ -174,7 +175,7 @@ class SupportRoutingTests(TestCase):
             default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
             is_active=True,
         )
-        config.hybrid_support_groups.add(group)
+        SupportOrganizationFactory(config=config, group=group)
 
         # Add user to group
         self.user.groups.add(group)
@@ -189,8 +190,8 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
         self.assertTrue(can_switch)
 
-    def test_hybrid_group_default_override(self):
-        """Hybrid with groups: group_default_support_type overrides default."""
+    def test_hybrid_organization_member_default_override(self):
+        """Hybrid organization members use group_default_support_type over default."""
         aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         group = GroupFactory(name="beta-testers")
@@ -202,7 +203,7 @@ class SupportRoutingTests(TestCase):
             group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
             is_active=True,
         )
-        config.hybrid_support_groups.add(group)
+        SupportOrganizationFactory(config=config, group=group)
 
         # Add user to group
         self.user.groups.add(group)
@@ -241,8 +242,8 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
         self.assertTrue(can_switch)
 
-    def test_anonymous_user_hybrid_no_groups(self):
-        """Anonymous user on hybrid product with no groups can switch."""
+    def test_anonymous_user_hybrid_no_organizations(self):
+        """Anonymous user on hybrid product with no organizations can switch."""
         aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(
@@ -263,8 +264,8 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
         self.assertTrue(can_switch)
 
-    def test_anonymous_user_hybrid_with_groups(self):
-        """Anonymous user on hybrid with groups is locked to default."""
+    def test_anonymous_user_hybrid_with_organizations(self):
+        """Anonymous user on hybrid with organizations is locked to default."""
         aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         group = GroupFactory(name="beta-testers")
@@ -275,7 +276,7 @@ class SupportRoutingTests(TestCase):
             default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
             is_active=True,
         )
-        config.hybrid_support_groups.add(group)
+        SupportOrganizationFactory(config=config, group=group)
 
         request = self.factory.get("/")
         request.user = AnonymousUser()

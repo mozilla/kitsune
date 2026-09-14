@@ -2,7 +2,6 @@ from typing import Any
 
 from django import forms
 from django.contrib import admin
-from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.forms.models import BaseInlineFormSet
 from django.http import HttpRequest
@@ -243,51 +242,6 @@ class ZendeskConfigAdmin(admin.ModelAdmin):
         return obj.topic_configurations.count()
 
 
-class ProductSupportConfigForm(forms.ModelForm):
-    class Meta:
-        model = ProductSupportConfig
-        fields = "__all__"
-
-    def clean_hybrid_support_groups(self):
-        groups = self.cleaned_data["hybrid_support_groups"]
-        seen_profiles = []
-        for group in groups:
-            try:
-                gp = GroupProfile.objects.get(group=group)
-            except GroupProfile.DoesNotExist:
-                continue
-
-            if gp.is_root():
-                raise forms.ValidationError(
-                    f"'{group.name}' is a root group; root groups cannot pool ticket "
-                    f"history because that would leak tickets across sibling companies."
-                )
-
-            external_filter = Q(group__hybrid_support_configs__isnull=False)
-            if self.instance.pk:
-                external_filter &= ~Q(group__hybrid_support_configs=self.instance)
-            external = (
-                (gp.get_ancestors() | gp.get_descendants()).filter(external_filter).distinct()
-            )
-            if external.exists():
-                names = ", ".join(c.group.name for c in external)
-                raise forms.ValidationError(
-                    f"'{group.name}' overlaps with another product's hybrid_support_groups "
-                    f"({names}). A group cannot be added if any ancestor or descendant is "
-                    f"already an org root."
-                )
-
-            for other_gp in seen_profiles:
-                if gp.path.startswith(other_gp.path) or other_gp.path.startswith(gp.path):
-                    raise forms.ValidationError(
-                        f"'{group.name}' and '{other_gp.group.name}' are in the same "
-                        f"ancestor/descendant chain. Pick one as the org root, not both."
-                    )
-            seen_profiles.append(gp)
-
-        return groups
-
-
 class SupportOrganizationInlineFormSet(BaseInlineFormSet):
     """Reject nested groups submitted together for one configuration.
 
@@ -326,7 +280,6 @@ class SupportOrganizationInline(admin.TabularInline):
 
 
 class ProductSupportConfigAdmin(admin.ModelAdmin):
-    form = ProductSupportConfigForm
     inlines = (SupportOrganizationInline,)
     list_display = (
         "product",
@@ -341,7 +294,6 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
     list_editable = ("is_active",)
     list_filter = ("is_active", "default_support_type")
     search_fields = ("product__title", "product__slug")
-    filter_horizontal = ("hybrid_support_groups",)
     autocomplete_fields = (
         "product",
         "forum_config",
@@ -383,7 +335,7 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
             "Routing Configuration",
             {
                 "fields": ("default_support_type", "group_default_support_type"),
-                "description": "Set default support type for all users and optionally for hybrid group members.",
+                "description": "Set default support type for all users and optionally for organization members.",
             },
         ),
         (
@@ -395,14 +347,6 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
                     "can access support. Unsubscribed users are redirected to the specified product's AAQ, "
                     "or the entire AAQ flow returns 404 if no redirect product is set."
                 ),
-            },
-        ),
-        (
-            "Hybrid Support (Forums + Zendesk)",
-            {
-                "fields": ("hybrid_support_groups",),
-                "description": "Users in these groups can choose between forums and Zendesk when both are enabled. "
-                "Leave empty to allow all users to choose.",
             },
         ),
     )

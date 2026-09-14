@@ -173,10 +173,9 @@ class SupportTicket(ModelBase):
         related_name="support_tickets",
         db_index=True,
         help_text=(
-            "Organization that owns this ticket for visibility purposes. Set "
-            "automatically at submission to the nearest ancestor GroupProfile "
-            "whose Group is in this product's hybrid_support_groups. Null means "
-            "a personal ticket — visible only to the submitter."
+            "Organization that owns this ticket. Set automatically at submission to the "
+            "nearest ancestor group configured as a support organization for this product. "
+            "Null means a personal ticket, visible only to the submitter."
         ),
     )
     zendesk_tags = models.JSONField(default=list, blank=True)

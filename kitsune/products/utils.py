@@ -10,7 +10,7 @@ _ENTERPRISE_BANNER_CACHE_TIMEOUT = 3600  # 1 hour
 
 
 def is_enterprise_user(user) -> bool:
-    """Return True if the user is in a firefox-enterprise hybrid support group that routes to Zendesk."""
+    """Return True if the user is in a firefox-enterprise support organization that routes to Zendesk."""
     if not user.is_authenticated:
         return False
 
@@ -26,7 +26,7 @@ def is_enterprise_user(user) -> bool:
             ),
             product__slug="firefox-enterprise",
             is_active=True,
-            hybrid_support_groups__user=user,
+            support_organizations__group__user=user,
         ).exists()
         cache.set(cache_key, result, timeout=_ENTERPRISE_BANNER_CACHE_TIMEOUT)
 

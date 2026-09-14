@@ -2,14 +2,9 @@ from django.db import migrations
 
 
 def forward(apps, schema_editor):
-    """Give every hybrid_support_groups entry a SupportOrganization row.
+    """Copy all legacy assignments, preserving existing organization rows and options.
 
-    Guarantees M2M ⊆ SupportOrganization: rows that already exist keep their options, and
-    rows for groups outside the M2M are left alone. Every M2M entry is copied, including
-    ones the model's validation would reject (e.g. a group without a GroupProfile) —
-    dropping them here would silently lose support for those groups at cutover; instead
-    they surface as admin errors on the row. Exact equality is checked before readers
-    move to these rows.
+    Include groups rejected by current validation to avoid silently losing support.
     """
     ProductSupportConfig = apps.get_model("products", "ProductSupportConfig")
     SupportOrganization = apps.get_model("products", "SupportOrganization")

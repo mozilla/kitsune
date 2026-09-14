@@ -20,6 +20,7 @@ from kitsune.groups.models import GroupProfile
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     TopicFactory,
     ZendeskConfigFactory,
 )
@@ -40,7 +41,7 @@ def _sign_payload(body, timestamp="1234567890", secret=WEBHOOK_SIGNING_SECRET):
 
 
 def _make_viewable_by_teammate(owner, ticket):
-    """Wire up a hybrid org so a teammate in the same company subtree can VIEW
+    """Wire up a support organization so a teammate in the same company subtree can VIEW
     `ticket`. Per issue #3069 such a teammate still must not be able to reply."""
     config = ProductSupportConfigFactory(
         product=ticket.product, zendesk_config=ZendeskConfigFactory(name="zd")
@@ -48,7 +49,7 @@ def _make_viewable_by_teammate(owner, ticket):
     company_group = Group.objects.create(name="company1")
     root = GroupProfile.add_root(group=Group.objects.create(name="enterprise"), slug="enterprise")
     company = root.add_child(group=company_group, slug="company1")
-    config.hybrid_support_groups.add(company_group)
+    SupportOrganizationFactory(config=config, group=company_group)
     owner.groups.add(company_group)
     ticket.org_group = company
     ticket.save(update_fields=["org_group"])
@@ -225,7 +226,7 @@ class TicketDetailViewTests(TestCase):
         root_group = Group.objects.create(name="enterprise")
         root = GroupProfile.add_root(group=root_group, slug="enterprise")
         c1 = root.add_child(group=c1_group, slug="company1")
-        config.hybrid_support_groups.add(c1_group)
+        SupportOrganizationFactory(config=config, group=c1_group)
 
         self.owner.groups.add(c1_group)
         self.ticket.org_group = c1

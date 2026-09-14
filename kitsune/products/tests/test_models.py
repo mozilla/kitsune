@@ -4,7 +4,7 @@ from django.db import IntegrityError
 from django.forms.models import inlineformset_factory
 
 from kitsune.groups.models import GroupProfile
-from kitsune.products.admin import ProductSupportConfigForm, SupportOrganizationInlineFormSet
+from kitsune.products.admin import SupportOrganizationInlineFormSet
 from kitsune.products.models import ProductSupportConfig, SupportOrganization
 from kitsune.products.tests import (
     ProductFactory,
@@ -140,78 +140,6 @@ class ProductSupportConfigCleanTests(TestCase):
             )
 
 
-class HybridSupportGroupsValidationTests(TestCase):
-    def setUp(self):
-        self.Group = Group
-        self.GroupProfile = GroupProfile
-        self.Form = ProductSupportConfigForm
-
-        zd = ZendeskConfigFactory(name="zd")
-        self.config = ProductSupportConfigFactory(product=ProductFactory(), zendesk_config=zd)
-
-        self.root_group = Group.objects.create(name="firefox-enterprise")
-        self.root = GroupProfile.add_root(group=self.root_group, slug="firefox-enterprise")
-        self.c1_group = Group.objects.create(name="company1")
-        self.c1 = self.root.add_child(group=self.c1_group, slug="company1")
-        self.c2_group = Group.objects.create(name="company2")
-        self.c2 = self.root.add_child(group=self.c2_group, slug="company2")
-        self.it_group = Group.objects.create(name="company1.IT")
-        self.c1_it = self.c1.add_child(group=self.it_group, slug="company1-it")
-
-    def _build_form(self, *groups):
-        return self.Form(
-            data={
-                "product": str(self.config.product_id),
-                "is_active": "on",
-                "zendesk_config": str(self.config.zendesk_config_id),
-                "default_support_type": self.config.default_support_type,
-                "hybrid_support_groups": [str(g.pk) for g in groups],
-            },
-            instance=self.config,
-        )
-
-    def test_root_group_is_rejected(self):
-        form = self._build_form(self.root_group)
-        self.assertFalse(form.is_valid())
-        self.assertIn("hybrid_support_groups", form.errors)
-
-    def test_ancestor_in_another_config_is_rejected(self):
-        other_zd = ZendeskConfigFactory(name="other-zd")
-        other_config = ProductSupportConfigFactory(
-            product=ProductFactory(), zendesk_config=other_zd
-        )
-        other_config.hybrid_support_groups.add(self.c1_group)
-
-        form = self._build_form(self.it_group)
-        self.assertFalse(form.is_valid())
-        self.assertIn("hybrid_support_groups", form.errors)
-
-    def test_descendant_in_another_config_is_rejected(self):
-        other_zd = ZendeskConfigFactory(name="other-zd")
-        other_config = ProductSupportConfigFactory(
-            product=ProductFactory(), zendesk_config=other_zd
-        )
-        other_config.hybrid_support_groups.add(self.it_group)
-
-        form = self._build_form(self.c1_group)
-        self.assertFalse(form.is_valid())
-        self.assertIn("hybrid_support_groups", form.errors)
-
-    def test_two_groups_in_same_chain_in_one_submission_rejected(self):
-        form = self._build_form(self.c1_group, self.it_group)
-        self.assertFalse(form.is_valid())
-        self.assertIn("hybrid_support_groups", form.errors)
-
-    def test_independent_groups_accepted(self):
-        form = self._build_form(self.c1_group, self.c2_group)
-        self.assertTrue(form.is_valid(), msg=str(form.errors))
-
-    def test_group_without_groupprofile_skipped(self):
-        flat_group = self.Group.objects.create(name="flat-group")
-        form = self._build_form(flat_group)
-        self.assertTrue(form.is_valid(), msg=str(form.errors))
-
-
 class SupportOrganizationValidationTests(TestCase):
     def setUp(self):
         self.config = ProductSupportConfigFactory(
@@ -231,11 +159,6 @@ class SupportOrganizationValidationTests(TestCase):
         return ProductSupportConfigFactory(
             product=ProductFactory(), zendesk_config=ZendeskConfigFactory(name="other-zd")
         )
-
-    def test_subgroup_organizations_are_valid(self):
-        SupportOrganization(config=self.config, group=self.c1_group).full_clean()
-        SupportOrganizationFactory(config=self.config, group=self.c1_group)
-        SupportOrganization(config=self.config, group=self.c2_group).full_clean()
 
     def test_tree_root_rejected(self):
         with self.assertRaises(ValidationError) as cm:
@@ -269,15 +192,10 @@ class SupportOrganizationValidationTests(TestCase):
         [message] = cm.exception.message_dict["group"]
         self.assertIn(self.it_group.name, message)
 
-    def test_same_group_allowed_for_two_products(self):
-        SupportOrganizationFactory(config=self._other_config(), group=self.c1_group)
-        SupportOrganization(config=self.config, group=self.c1_group).full_clean()
-
     def test_live_chat_requires_zendesk_support(self):
         forum_only = ProductSupportConfigFactory(
             product=ProductFactory(), forum_config=AAQConfigFactory()
         )
-        SupportOrganization(config=forum_only, group=self.c1_group).full_clean()
         with self.assertRaises(ValidationError) as cm:
             SupportOrganization(
                 config=forum_only, group=self.c1_group, include_live_chat=True
@@ -379,4 +297,21 @@ class SupportOrganizationInlineFormSetTests(TestCase):
 
     def test_independent_rows_accepted(self):
         formset = self._formset(self.c1_group, self.c2_group)
+        self.assertTrue(formset.is_valid(), msg=str(formset.errors))
+
+    def test_same_group_allowed_for_two_products(self):
+        other_config = ProductSupportConfigFactory(zendesk_config=ZendeskConfigFactory())
+        SupportOrganizationFactory(config=other_config, group=self.c1_group)
+
+        formset = self._formset(self.c1_group)
+
+        self.assertTrue(formset.is_valid(), msg=str(formset.errors))
+
+    def test_forum_only_organization_allowed_without_live_chat(self):
+        self.config.forum_config = AAQConfigFactory()
+        self.config.zendesk_config = None
+        self.config.save()
+
+        formset = self._formset(self.c1_group)
+
         self.assertTrue(formset.is_valid(), msg=str(formset.errors))

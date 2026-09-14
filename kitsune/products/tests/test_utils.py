@@ -1,10 +1,10 @@
 from django.contrib.auth.models import AnonymousUser
-from django.core.cache import cache
 
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     TopicFactory,
     ZendeskConfigFactory,
 )
@@ -550,7 +550,7 @@ class IsEnterpriseUserTests(TestCase):
             zendesk_config=ZendeskConfigFactory(),
         )
         if add_group:
-            config.hybrid_support_groups.add(self.group)
+            SupportOrganizationFactory(config=config, group=self.group)
         return config
 
     def test_anonymous_user_false(self):
@@ -560,7 +560,7 @@ class IsEnterpriseUserTests(TestCase):
         )
         self.assertFalse(is_enterprise_user(AnonymousUser()))
 
-    def test_user_not_in_hybrid_group_false(self):
+    def test_user_not_in_support_organization_false(self):
         self._make_config(
             ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
             None,
@@ -638,34 +638,55 @@ class EnterpriseBannerCacheInvalidationTests(TestCase):
             group_default_support_type=None,
             zendesk_config=ZendeskConfigFactory(),
         )
-        self.config.hybrid_support_groups.add(self.group)
-        self.cache_key = f"enterprise_hybrid_banner:{self.user.pk}"
+        self.organization = SupportOrganizationFactory(config=self.config, group=self.group)
 
     def test_routing_change_invalidates_cache(self):
         self.assertTrue(is_enterprise_user(self.user))
-        self.assertIs(cache.get(self.cache_key), True)
 
         self.config.default_support_type = ProductSupportConfig.SUPPORT_TYPE_FORUM
         self.config.save()
 
-        self.assertIsNone(cache.get(self.cache_key))
         self.assertFalse(is_enterprise_user(self.user))
 
     def test_is_active_toggle_invalidates_cache(self):
         self.assertTrue(is_enterprise_user(self.user))
-        self.assertIs(cache.get(self.cache_key), True)
 
         self.config.is_active = False
         self.config.save()
 
-        self.assertIsNone(cache.get(self.cache_key))
         self.assertFalse(is_enterprise_user(self.user))
 
     def test_config_delete_invalidates_cache(self):
         self.assertTrue(is_enterprise_user(self.user))
-        self.assertIs(cache.get(self.cache_key), True)
 
         self.config.delete()
 
-        self.assertIsNone(cache.get(self.cache_key))
         self.assertFalse(is_enterprise_user(self.user))
+
+    def test_organization_creation_invalidates_cache(self):
+        group = GroupFactory()
+        user = UserFactory(groups=[group])
+        self.assertFalse(is_enterprise_user(user))
+
+        SupportOrganizationFactory(config=self.config, group=group)
+
+        self.assertTrue(is_enterprise_user(user))
+
+    def test_organization_delete_invalidates_cache(self):
+        self.assertTrue(is_enterprise_user(self.user))
+
+        self.organization.delete()
+
+        self.assertFalse(is_enterprise_user(self.user))
+
+    def test_organization_group_change_invalidates_old_and_new_members(self):
+        new_group = GroupFactory()
+        new_user = UserFactory(groups=[new_group])
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertFalse(is_enterprise_user(new_user))
+
+        self.organization.group = new_group
+        self.organization.save()
+
+        self.assertFalse(is_enterprise_user(self.user))
+        self.assertTrue(is_enterprise_user(new_user))
