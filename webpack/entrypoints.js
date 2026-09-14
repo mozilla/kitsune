@@ -108,6 +108,9 @@ const entrypoints = {
   "matomo-mzla": [
     "sumo/js/matomo-mzla.js",
   ],
+  "zendesk-chat": [
+    "sumo/js/zendesk-chat.js",
+  ],
   contribute: [
     "./svelte/contribute",
   ],
