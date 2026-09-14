@@ -439,6 +439,123 @@ class ProductSupportConfig(ModelBase):
         return bool(self.zendesk_config)
 
 
+class SupportOrganization(ModelBase):
+    """Support options for a group under a product's support configuration.
+
+    The group and all of its subgroups form one organization; the options apply to every
+    member. Each option here is an addition to the support the configuration already
+    provides.
+    """
+
+    config = models.ForeignKey(
+        ProductSupportConfig, on_delete=models.CASCADE, related_name="support_organizations"
+    )
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.CASCADE,
+        related_name="support_organizations",
+        help_text=(
+            "Includes all subgroups. Cannot be a top-level group or nested with another "
+            "configured group."
+        ),
+    )
+    include_live_chat = models.BooleanField(
+        default=False,
+        help_text="Members can start live chats with support agents. Requires Zendesk support.",
+    )
+
+    class Meta:
+        verbose_name = "Support organization"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["config", "group"], name="unique_support_organization_per_config"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.group.name} ({self.config.product})"
+
+    def clean(self):
+        super().clean()
+        # Local import: products.models -> groups.models -> wiki.parser -> wiki.models
+        # -> products.models.
+        from kitsune.groups.models import GroupProfile
+
+        # Inline admin rows validate against a parent config that may not be saved yet,
+        # so work from the related object rather than from config_id.
+        try:
+            config = self.config
+        except ProductSupportConfig.DoesNotExist:
+            return
+        if self.group_id is None:
+            return
+
+        if self.include_live_chat and config.zendesk_config_id is None:
+            raise ValidationError(
+                {
+                    "include_live_chat": (
+                        "Live chat requires Zendesk support on the product configuration."
+                    )
+                }
+            )
+
+        try:
+            profile = GroupProfile.objects.get(group_id=self.group_id)
+        except GroupProfile.DoesNotExist:
+            raise ValidationError({"group": f"'{self.group.name}' has no group profile."})
+
+        if profile.is_root():
+            raise ValidationError(
+                {
+                    "group": (
+                        f"'{self.group.name}' is a top-level group. Configure one of its "
+                        f"subgroups instead."
+                    )
+                }
+            )
+
+        chain_group_ids = (profile.get_ancestors() | profile.get_descendants()).values_list(
+            "group_id", flat=True
+        )
+
+        same_config = SupportOrganization.objects.filter(
+            config_id=config.pk, group_id__in=chain_group_ids
+        ).exclude(pk=self.pk)
+        if same_config.exists():
+            names = ", ".join(sorted(org.group.name for org in same_config))
+            raise ValidationError(
+                {
+                    "group": (
+                        f"'{self.group.name}' is nested with {names}, which is already "
+                        f"configured. Configure one of them, not both."
+                    )
+                }
+            )
+
+        # Until the hybrid_support_groups M2M is removed, other products' groups are
+        # recorded in both places; check both.
+        other_configs = ProductSupportConfig.objects.exclude(pk=config.pk)
+        external_names = sorted(
+            set(
+                Group.objects.filter(pk__in=chain_group_ids)
+                .filter(
+                    models.Q(hybrid_support_configs__in=other_configs)
+                    | models.Q(support_organizations__config__in=other_configs)
+                )
+                .values_list("name", flat=True)
+            )
+        )
+        if external_names:
+            raise ValidationError(
+                {
+                    "group": (
+                        f"'{self.group.name}' is nested with {', '.join(external_names)}, "
+                        f"which is already configured for another product."
+                    )
+                }
+            )
+
+
 class ZendeskConfig(ModelBase):
     """Configuration for Zendesk support integration.
 

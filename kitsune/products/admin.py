@@ -4,6 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.forms.models import BaseInlineFormSet
 from django.http import HttpRequest
 
 from kitsune.groups.models import GroupProfile
@@ -12,6 +13,7 @@ from kitsune.products.models import (
     Product,
     ProductSupportConfig,
     ProductTopic,
+    SupportOrganization,
     Topic,
     TopicSlugHistory,
     Version,
@@ -286,8 +288,46 @@ class ProductSupportConfigForm(forms.ModelForm):
         return groups
 
 
+class SupportOrganizationInlineFormSet(BaseInlineFormSet):
+    """Reject nested groups submitted together for one configuration.
+
+    The model's ``clean()`` checks each row against saved rows; this catches the same
+    conflict between rows in the same submission.
+    """
+
+    def clean(self):
+        super().clean()
+        seen = []
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data") or form.cleaned_data.get("DELETE"):
+                continue
+            group = form.cleaned_data.get("group")
+            if group is None:
+                continue
+            profile = GroupProfile.objects.filter(group=group).first()
+            if profile is None:
+                continue
+            for other_group, other_profile in seen:
+                if profile.path.startswith(other_profile.path) or other_profile.path.startswith(
+                    profile.path
+                ):
+                    raise forms.ValidationError(
+                        f"'{group.name}' and '{other_group.name}' are nested. Configure one "
+                        f"of them, not both."
+                    )
+            seen.append((group, profile))
+
+
+class SupportOrganizationInline(admin.TabularInline):
+    model = SupportOrganization
+    formset = SupportOrganizationInlineFormSet
+    extra = 0
+    autocomplete_fields = ("group",)
+
+
 class ProductSupportConfigAdmin(admin.ModelAdmin):
     form = ProductSupportConfigForm
+    inlines = (SupportOrganizationInline,)
     list_display = (
         "product",
         "is_active",

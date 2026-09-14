@@ -7,6 +7,7 @@ from kitsune.products.models import (
     Platform,
     Product,
     ProductSupportConfig,
+    SupportOrganization,
     Topic,
     Version,
     ZendeskConfig,
@@ -118,3 +119,11 @@ class ProductSupportConfigFactory(factory.django.DjangoModelFactory):
     is_active = True
     default_support_type = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
     group_default_support_type = None
+
+
+class SupportOrganizationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SupportOrganization
+
+    config = factory.SubFactory(ProductSupportConfigFactory)
+    include_live_chat = False
