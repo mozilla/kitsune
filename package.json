@@ -89,7 +89,7 @@
     "postcss-loader": "^8.2.1",
     "sass": "^1.98.0",
     "sass-loader": "^16.0.7",
-    "sharp": "^0.35.2",
+    "sharp": "^0.35.4",
     "sinon": "^22.1.0",
     "sinon-chai": "^4.0.1",
     "source-map-support": "^0.5.21",
