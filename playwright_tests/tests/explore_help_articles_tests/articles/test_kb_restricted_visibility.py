@@ -178,7 +178,7 @@ def test_restricted_visibility_in_search_results(page: Page, create_user_factory
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True, single_group=whitelisted_group[0]
+            approve_first_revision=True, single_group=whitelisted_group
         )
         utilities.reindex_document("WikiDocument", article_details["article_id"])
 
@@ -911,6 +911,170 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
         utilities.delete_cookies()
         expect(sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
                ).to_be_visible()
+
+
+@pytest.fixture
+def create_group_factory(page: Page):
+    """Create user groups through the groups admin page."""
+    utilities = Utilities(page)
+    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
+    created_groups = []
+
+    def _admin_context() -> tuple[Page, SumoPages]:
+        """Open an isolated context already signed in with the admin account."""
+        admin_page = utilities.create_new_context_page()
+        admin_utilities = Utilities(admin_page)
+        admin_utilities.navigate_to_homepage()
+        admin_utilities.start_existing_session(session_file_name=staff_user)
+        return admin_page, SumoPages(admin_page)
+
+    admin_page, admin_sumo_pages = _admin_context()
+
+    def _create_group(group_name: str | None = None) -> str:
+        if group_name is None:
+            group_name = "test-group-" + ''.join(
+                random.choice(string.ascii_lowercase + string.digits) for _ in range(10))
+        admin_sumo_pages.admin_groups_flows.create_group(group_name)
+        created_groups.append(group_name)
+        return group_name
+
+    def _delete_group(group_name: str):
+        """Delete a group in the same admin context it was created in, leaving the test's own
+        session untouched.
+
+        Args:
+            group_name (str): The name of the group to delete.
+        """
+        admin_sumo_pages.admin_groups_flows.delete_group(group_name)
+        if group_name in created_groups:
+            created_groups.remove(group_name)
+
+    yield SimpleNamespace(create=_create_group, delete=_delete_group)
+
+    if created_groups:
+        if admin_page.is_closed():
+            admin_page, admin_sumo_pages = _admin_context()
+        for group_name in created_groups:
+            admin_sumo_pages.admin_groups_flows.delete_group(group_name, ignore_missing=True)
+
+    admin_page.context.close()
+
+
+# C4262690
+@pytest.mark.kbRestrictedVisibility
+def test_kb_restricted_visibility_group_deletion(page: Page, create_user_factory,
+                                                 create_group_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
+
+    with allure.step("Creating two new user groups"):
+        first_group = create_group_factory.create()
+        second_group = create_group_factory.create()
+
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff"])
+    first_group_user = create_user_factory(groups=[first_group])
+    second_group_user = create_user_factory(groups=[second_group])
+
+    with allure.step("Creating a new kb article restricted to both of the new groups"):
+        utilities.start_existing_session(cookies=test_user)
+        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True, restricted_to_groups=[first_group, second_group]
+        )
+
+    with check, allure.step("Verifying that a member of each group can view the restricted "
+                            "article"):
+        for user in (first_group_user, second_group_user):
+            utilities.start_existing_session(cookies=user)
+            with page.expect_navigation() as navigation_info:
+                utilities.navigate_to_link(article_details['article_url'])
+            response = navigation_info.value
+            assert response.status != 404
+
+            expect(sumo_pages.kb_article_page.kb_article_restricted_banner).to_contain_text(
+                [KBArticlePageMessages.KB_ARTICLE_RESTRICTED_BANNER])
+
+    with allure.step("Deleting the first group"):
+        create_group_factory.delete(first_group)
+
+    with allure.step("Navigating to the Edit Article Metadata page"):
+        utilities.start_existing_session(session_file_name=staff_user)
+        utilities.navigate_to_link(
+            article_details['article_url'] + KBArticleRevision.KB_EDIT_METADATA)
+
+    with check, allure.step("Verifying that the deleted group is no longer displayed inside the "
+                            "Edit Article Metadata section"):
+        expect(sumo_pages.kb_article_edit_article_metadata_page
+               .selected_restricted_visibility_groups).to_have_count(1)
+        expect(sumo_pages.kb_article_edit_article_metadata_page
+               .selected_restricted_visibility_group(first_group)).to_be_hidden()
+
+    with check, allure.step("Verifying that the group which was not deleted is still displayed "
+                            "inside the Edit Article Metadata section"):
+        expect(sumo_pages.kb_article_edit_article_metadata_page
+               .selected_restricted_visibility_group(second_group)).to_be_visible()
+
+    with check, allure.step("Verifying that the member of the deleted group can no longer view "
+                            "the article"):
+        utilities.start_existing_session(cookies=first_group_user)
+        with page.expect_navigation() as navigation_info:
+            utilities.navigate_to_link(article_details['article_url'])
+        response = navigation_info.value
+        assert response.status == 404
+
+    with check, allure.step("Verifying that the member of the remaining group can still view the "
+                            "article"):
+        utilities.start_existing_session(cookies=second_group_user)
+        with page.expect_navigation() as navigation_info:
+            utilities.navigate_to_link(article_details['article_url'])
+        response = navigation_info.value
+        assert response.status != 404
+
+        expect(sumo_pages.kb_article_page.kb_article_restricted_banner).to_contain_text(
+            [KBArticlePageMessages.KB_ARTICLE_RESTRICTED_BANNER])
+
+    with allure.step("Deleting the remaining group"):
+        create_group_factory.delete(second_group)
+
+    with check, allure.step("Navigating to the Edit Article Metadata page and verifying that the "
+                            "article is no longer restricted to any group"):
+        utilities.start_existing_session(session_file_name=staff_user)
+        utilities.navigate_to_link(
+            article_details['article_url'] + KBArticleRevision.KB_EDIT_METADATA)
+        expect(sumo_pages.kb_article_edit_article_metadata_page
+               .selected_restricted_visibility_groups).to_have_count(0)
+
+    with allure.step("Reindexing the article"):
+        utilities.reindex_document("WikiDocument", article_details['article_id'])
+
+    with check, allure.step("Verifying that the members of both deleted groups can view the "
+                            "unrestricted article"):
+        for user in (first_group_user, second_group_user):
+            utilities.start_existing_session(cookies=user)
+            with page.expect_navigation() as navigation_info:
+                utilities.navigate_to_link(article_details['article_url'])
+            response = navigation_info.value
+            assert response.status != 404
+
+            expect(sumo_pages.kb_article_page.kb_article_restricted_banner).to_be_hidden()
+
+    with allure.step("Signing out from SUMO"):
+        utilities.delete_cookies()
+
+    with check, allure.step("Verifying that signed out users can view the unrestricted article"):
+        with page.expect_navigation() as navigation_info:
+            utilities.navigate_to_link(article_details['article_url'])
+        response = navigation_info.value
+        assert response.status != 404
+
+        expect(sumo_pages.kb_article_page.kb_article_restricted_banner).to_be_hidden()
+
+    with check, allure.step("Verifying that the article is returned inside the search results "
+                            "for signed out users"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar(article_details['article_title'])
+        expect(sumo_pages.search_page.get_locator_of_a_particular_article(
+            article_details['article_title'])).to_be_visible()
 
 
 def _create_discussion_thread(page: Page) -> dict[str, Any]:

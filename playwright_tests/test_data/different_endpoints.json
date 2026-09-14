@@ -13,5 +13,6 @@
   "admin": "https://support.allizom.org/admin/",
   "admin_announcement_page": "https://support.allizom.org/admin/announcements/announcement/",
   "admin_users_page": "https://support.allizom.org/admin/auth/user/",
+  "admin_groups_page": "https://support.allizom.org/admin/auth/group/",
   "media_gallery": "https://support.allizom.org/en-US/gallery/images"
 }

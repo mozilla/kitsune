@@ -18,8 +18,8 @@ class BannerFlows:
         field_map: Dict[str, Callable[[Any], None]] = {
             "start_display_date": self.banner_admin_page.set_start_displaying_date,
             "start_display_time": self.banner_admin_page.set_start_displaying_time,
-            "stop_display_date": self.banner_admin_page.stop_displaying_date,
-            "stop_display_time": self.banner_admin_page.stop_displaying_time,
+            "stop_display_date": self.banner_admin_page.set_stop_displaying_date,
+            "stop_display_time": self.banner_admin_page.set_stop_displaying_time,
             "target_groups": self.banner_admin_page.set_banner_target_groups,
             "target_locale": self.banner_admin_page.set_banner_target_locale,
             "target_platforms": self.banner_admin_page.set_banner_target_platforms,

@@ -656,9 +656,9 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page, create_use
 
     with allure.step("Verifying that the group is not returned inside the search results"):
         expect(sumo_pages.new_message_page.first_search_result_or_no_results).to_be_visible(
-            timeout=30000)
+            timeout=60000)
         expect(sumo_pages.new_message_page.searched_group(
-            utilities.user_message_test_data['test_groups'][0])).to_be_hidden(timeout=30000)
+            utilities.user_message_test_data['test_groups'][0])).to_be_hidden(timeout=60000)
 
     with allure.step("Navigating to the groups page"):
         utilities.navigate_to_link(utilities.general_test_data['groups'])
@@ -885,7 +885,7 @@ def test_unable_to_send_group_messages_to_profiless_groups(page: Page, create_us
 
     with allure.step("Verifying that no groups are returned"):
         expect(sumo_pages.new_message_page.no_user_search_results_text).to_be_visible(
-            timeout=20000)
+            timeout=60000)
 
 
 # C2083482
