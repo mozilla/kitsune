@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory, TestCase
 
+from kitsune.groups.models import GroupProfile
 from kitsune.products.managers import ProductSupportConfigManager
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import (
@@ -301,6 +302,61 @@ class SupportRoutingTests(TestCase):
             )
 
         self.assertIn("at_least_one_support_channel", str(context.exception))
+
+
+class SubtreeSupportRoutingTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = UserFactory()
+        self.product = ProductFactory()
+        config = ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=AAQConfigFactory(),
+            zendesk_config=ZendeskConfigFactory(),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+            group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
+            is_active=True,
+        )
+        self.root = GroupProfile.add_root(group=GroupFactory(), slug="firefox-enterprise")
+        self.parent = self.root.add_child(group=GroupFactory(), slug="division")
+        self.company = self.parent.add_child(group=GroupFactory(), slug="company")
+        team = self.company.add_child(group=GroupFactory(), slug="team")
+        self.descendant = team.add_child(group=GroupFactory(), slug="subteam")
+        SupportOrganizationFactory(config=config, group=self.company.group)
+
+    def test_deep_descendant_uses_group_default(self):
+        self.user.groups.add(self.descendant.group)
+        request = self.factory.get("/")
+        request.user = self.user
+
+        self.assertEqual(
+            ProductSupportConfig.objects.route_support_request(request, self.product),
+            (ProductSupportConfig.SUPPORT_TYPE_ZENDESK, True),
+        )
+
+    def test_deep_descendant_can_override_group_default(self):
+        self.user.groups.add(self.descendant.group)
+        request = self.factory.get("/", {"support_type": "forum"})
+        request.user = self.user
+
+        self.assertEqual(
+            ProductSupportConfig.objects.route_support_request(request, self.product),
+            (ProductSupportConfig.SUPPORT_TYPE_FORUM, True),
+        )
+
+    def test_members_outside_company_cannot_use_organization_support(self):
+        sibling = self.parent.add_child(group=GroupFactory(), slug="unmapped-company")
+        unrelated = GroupProfile.add_root(group=GroupFactory(), slug="unrelated")
+        for profile in (self.root, self.parent, sibling, unrelated):
+            with self.subTest(group=profile.slug):
+                self.user.groups.set([profile.group])
+                request = self.factory.get("/", {"support_type": "zendesk"})
+                request.user = self.user
+
+                self.assertEqual(
+                    ProductSupportConfig.objects.route_support_request(request, self.product),
+                    (ProductSupportConfig.SUPPORT_TYPE_FORUM, False),
+                )
 
 
 class SubscriptionRoutingTests(TestCase):

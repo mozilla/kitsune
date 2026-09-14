@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AnonymousUser
+from django.test import override_settings
 
+from kitsune.groups.models import GroupProfile
+from kitsune.groups.tests import GroupProfileFactory
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import (
     ProductFactory,
@@ -8,7 +11,13 @@ from kitsune.products.tests import (
     TopicFactory,
     ZendeskConfigFactory,
 )
-from kitsune.products.utils import get_products, get_taxonomy, is_enterprise_user
+from kitsune.products.utils import (
+    get_products,
+    get_taxonomy,
+    is_enterprise_user,
+    should_show_enterprise_banner,
+)
+from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
 
@@ -536,157 +545,208 @@ class GetProductsTests(TestCase):
 class IsEnterpriseUserTests(TestCase):
     def setUp(self):
         super().setUp()
-        self.product = ProductFactory(slug="firefox-enterprise")
-        self.group = GroupFactory()
-        self.user_in_group = UserFactory(groups=[self.group])
-        self.user_not_in_group = UserFactory()
-
-    def _make_config(self, default, group_default, is_active=True, add_group=True):
-        config = ProductSupportConfigFactory(
-            product=self.product,
-            is_active=is_active,
-            default_support_type=default,
-            group_default_support_type=group_default,
-            zendesk_config=ZendeskConfigFactory(),
+        self.root = GroupProfileFactory(
+            slug="firefox-enterprise", visibility=GroupProfile.Visibility.MODERATED
         )
-        if add_group:
-            SupportOrganizationFactory(config=config, group=self.group)
-        return config
+        self.company = self.root.add_child(group=GroupFactory(), slug="company3")
+        self.team = self.company.add_child(group=GroupFactory(), slug="company3-team")
+        self.user = UserFactory(groups=[self.team.group])
 
-    def test_anonymous_user_false(self):
-        self._make_config(
-            ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-            None,
-        )
+    def test_root_membership_is_enterprise(self):
+        user = UserFactory(groups=[self.root.group])
+
+        self.assertTrue(is_enterprise_user(user))
+
+    def test_unmapped_company_and_deep_descendant_need_no_support_config(self):
+        company_member = UserFactory(groups=[self.company.group])
+
+        self.assertTrue(is_enterprise_user(company_member))
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertFalse(should_show_enterprise_banner(self.user))
+
+    def test_unrelated_tree_is_not_enterprise(self):
+        other_root = GroupProfileFactory()
+        other_team = other_root.add_child(group=GroupFactory(), slug="other-team")
+        user = UserFactory(groups=[other_team.group])
+
+        self.assertFalse(is_enterprise_user(user))
+
+    def test_anonymous_is_not_enterprise(self):
         self.assertFalse(is_enterprise_user(AnonymousUser()))
+        self.assertFalse(is_enterprise_user(None))
 
-    def test_user_not_in_support_organization_false(self):
-        self._make_config(
-            ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-            None,
-        )
-        self.assertFalse(is_enterprise_user(self.user_not_in_group))
+    def test_missing_enterprise_root_is_not_enterprise(self):
+        self.root.slug = "other-enterprise"
+        self.root.save(update_fields=["slug"])
 
-    def test_default_zendesk_group_null_in_group_true(self):
-        self._make_config(
-            ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-            None,
-        )
-        self.assertTrue(is_enterprise_user(self.user_in_group))
+        self.assertFalse(is_enterprise_user(self.user))
 
-    def test_default_zendesk_group_forum_in_group_false(self):
-        self._make_config(
-            ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-            ProductSupportConfig.SUPPORT_TYPE_FORUM,
-        )
-        self.assertFalse(is_enterprise_user(self.user_in_group))
+    @override_settings(ENTERPRISE_GROUP_SLUG="partner-support")
+    def test_configured_enterprise_tree_overrides_default(self):
+        root = GroupProfileFactory(slug="partner-support")
+        team = root.add_child(group=GroupFactory(), slug="partner-team")
+        user = UserFactory(groups=[team.group])
 
-    def test_default_zendesk_group_zendesk_in_group_true(self):
-        self._make_config(
-            ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-            ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-        )
-        self.assertTrue(is_enterprise_user(self.user_in_group))
+        self.assertTrue(is_enterprise_user(user))
+        self.assertFalse(is_enterprise_user(self.user))
 
-    def test_default_forum_group_null_in_group_false(self):
-        self._make_config(
-            ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            None,
-        )
-        self.assertFalse(is_enterprise_user(self.user_in_group))
+    def test_leadership_does_not_grant_membership(self):
+        leader = UserFactory()
+        self.root.leaders.add(leader)
 
-    def test_default_forum_group_forum_in_group_false(self):
-        self._make_config(
-            ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            ProductSupportConfig.SUPPORT_TYPE_FORUM,
-        )
-        self.assertFalse(is_enterprise_user(self.user_in_group))
+        self.assertTrue(self.root.can_view(leader))
+        self.assertFalse(is_enterprise_user(leader))
 
-    def test_default_forum_group_zendesk_in_group_true(self):
-        self._make_config(
-            ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-        )
-        self.assertTrue(is_enterprise_user(self.user_in_group))
+    def test_visibility_grant_does_not_grant_membership(self):
+        audit_group = GroupFactory()
+        auditor = UserFactory(groups=[audit_group])
+        self.root.visible_to_groups.add(audit_group)
 
-    def test_default_forum_group_zendesk_not_in_group_false(self):
-        self._make_config(
-            ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-        )
-        self.assertFalse(is_enterprise_user(self.user_not_in_group))
-
-    def test_inactive_config_false(self):
-        self._make_config(
-            ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-            None,
-            is_active=False,
-        )
-        self.assertFalse(is_enterprise_user(self.user_in_group))
+        self.assertTrue(self.root.can_view(auditor))
+        self.assertFalse(is_enterprise_user(auditor))
 
 
 class EnterpriseBannerCacheInvalidationTests(TestCase):
     def setUp(self):
         super().setUp()
+        self.root = GroupProfileFactory(slug="firefox-enterprise")
+        self.company = self.root.add_child(group=GroupFactory(), slug="company3")
+        self.team = self.company.add_child(group=GroupFactory(), slug="company3-team")
+        self.user = UserFactory(groups=[self.team.group])
         self.product = ProductFactory(slug="firefox-enterprise")
-        self.group = GroupFactory()
-        self.user = UserFactory(groups=[self.group])
         self.config = ProductSupportConfigFactory(
             product=self.product,
             is_active=True,
             default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-            group_default_support_type=None,
             zendesk_config=ZendeskConfigFactory(),
         )
-        self.organization = SupportOrganizationFactory(config=self.config, group=self.group)
 
-    def test_routing_change_invalidates_cache(self):
-        self.assertTrue(is_enterprise_user(self.user))
+    def test_active_support_shows_banner_only_to_enterprise_members(self):
+        self.assertTrue(should_show_enterprise_banner(self.user))
+        self.assertFalse(should_show_enterprise_banner(UserFactory()))
+        self.assertFalse(should_show_enterprise_banner(AnonymousUser()))
+        self.assertFalse(should_show_enterprise_banner(None))
+
+    def test_default_route_change_hides_banner_not_identity(self):
+        self.config.forum_config = AAQConfigFactory()
+        self.config.save()
+        self.assertTrue(should_show_enterprise_banner(self.user))
 
         self.config.default_support_type = ProductSupportConfig.SUPPORT_TYPE_FORUM
         self.config.save()
 
-        self.assertFalse(is_enterprise_user(self.user))
-
-    def test_is_active_toggle_invalidates_cache(self):
         self.assertTrue(is_enterprise_user(self.user))
+        self.assertFalse(should_show_enterprise_banner(self.user))
+
+    def test_group_default_takes_precedence_for_banner(self):
+        self.config.forum_config = AAQConfigFactory()
+        self.config.default_support_type = ProductSupportConfig.SUPPORT_TYPE_FORUM
+        self.config.group_default_support_type = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
+        self.config.save()
+        self.assertTrue(should_show_enterprise_banner(self.user))
+
+        self.config.default_support_type = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
+        self.config.group_default_support_type = ProductSupportConfig.SUPPORT_TYPE_FORUM
+        self.config.save()
+
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertFalse(should_show_enterprise_banner(self.user))
+
+    def test_group_membership_changes_update_banner(self):
+        self.assertTrue(should_show_enterprise_banner(self.user))
+
+        self.team.group.user_set.remove(self.user)
+        self.assertFalse(should_show_enterprise_banner(self.user))
+
+        self.team.group.user_set.add(self.user)
+        self.assertTrue(should_show_enterprise_banner(self.user))
+
+        self.team.group.user_set.clear()
+        self.assertFalse(should_show_enterprise_banner(self.user))
+
+    def test_company_move_updates_descendant_banner(self):
+        other_root = GroupProfileFactory()
+        self.assertTrue(should_show_enterprise_banner(self.user))
+
+        self.company.move(other_root, "last-child")
+        self.assertFalse(is_enterprise_user(self.user))
+        self.assertFalse(should_show_enterprise_banner(self.user))
+
+        self.company.refresh_from_db()
+        self.root.refresh_from_db()
+        self.company.move(self.root, "last-child")
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertTrue(should_show_enterprise_banner(self.user))
+
+    def test_config_creation_updates_unmapped_descendant_banner(self):
+        self.config.delete()
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertFalse(should_show_enterprise_banner(self.user))
+
+        ProductSupportConfigFactory(
+            product=self.product,
+            zendesk_config=ZendeskConfigFactory(),
+        )
+
+        self.assertTrue(should_show_enterprise_banner(self.user))
+
+    def test_config_activation_updates_unmapped_descendant_banner(self):
+        self.assertTrue(should_show_enterprise_banner(self.user))
 
         self.config.is_active = False
         self.config.save()
-
-        self.assertFalse(is_enterprise_user(self.user))
-
-    def test_config_delete_invalidates_cache(self):
         self.assertTrue(is_enterprise_user(self.user))
+        self.assertFalse(should_show_enterprise_banner(self.user))
+        with self.assertNumQueries(0):
+            self.assertFalse(should_show_enterprise_banner(self.user))
 
-        self.config.delete()
+        self.config.is_active = True
+        self.config.save()
+        self.assertTrue(should_show_enterprise_banner(self.user))
 
-        self.assertFalse(is_enterprise_user(self.user))
+    def test_removing_zendesk_from_hybrid_config_hides_banner_not_identity(self):
+        self.config.forum_config = AAQConfigFactory()
+        self.config.save()
+        self.assertTrue(should_show_enterprise_banner(self.user))
 
-    def test_organization_creation_invalidates_cache(self):
-        group = GroupFactory()
-        user = UserFactory(groups=[group])
-        self.assertFalse(is_enterprise_user(user))
+        self.config.zendesk_config = None
+        self.config.save()
 
-        SupportOrganizationFactory(config=self.config, group=group)
-
-        self.assertTrue(is_enterprise_user(user))
-
-    def test_organization_delete_invalidates_cache(self):
         self.assertTrue(is_enterprise_user(self.user))
+        self.assertFalse(should_show_enterprise_banner(self.user))
 
-        self.organization.delete()
+    def test_zendesk_deletion_hides_banner_not_identity(self):
+        self.config.forum_config = AAQConfigFactory()
+        self.config.save()
+        self.assertTrue(should_show_enterprise_banner(self.user))
 
-        self.assertFalse(is_enterprise_user(self.user))
+        self.config.zendesk_config.delete()
 
-    def test_organization_group_change_invalidates_old_and_new_members(self):
-        new_group = GroupFactory()
-        new_user = UserFactory(groups=[new_group])
         self.assertTrue(is_enterprise_user(self.user))
-        self.assertFalse(is_enterprise_user(new_user))
+        self.assertFalse(should_show_enterprise_banner(self.user))
 
-        self.organization.group = new_group
-        self.organization.save()
+    def test_product_rename_updates_unmapped_descendant_banner(self):
+        self.assertTrue(should_show_enterprise_banner(self.user))
 
-        self.assertFalse(is_enterprise_user(self.user))
-        self.assertTrue(is_enterprise_user(new_user))
+        self.product.slug = "other-product"
+        self.product.save()
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertFalse(should_show_enterprise_banner(self.user))
+
+        self.product.slug = "firefox-enterprise"
+        self.product.save()
+        self.assertTrue(should_show_enterprise_banner(self.user))
+
+    def test_organization_changes_do_not_revoke_identity_or_banner(self):
+        organization = SupportOrganizationFactory(config=self.config, group=self.company.group)
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertTrue(should_show_enterprise_banner(self.user))
+
+        organization.group = GroupFactory()
+        organization.save()
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertTrue(should_show_enterprise_banner(self.user))
+
+        organization.delete()
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertTrue(should_show_enterprise_banner(self.user))

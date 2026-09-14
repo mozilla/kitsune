@@ -9,6 +9,19 @@ class GroupProfileManager(MP_NodeManager):
         """All GroupProfiles whose group is configured as a support organization."""
         return self.filter(group__support_organizations__isnull=False).distinct()
 
+    def containing(self, user):
+        """Groups containing the user directly or through a subgroup, excluding leadership."""
+        if not (user and user.is_authenticated):
+            return self.none()
+        return self.filter(
+            Exists(
+                self.model.objects.filter(
+                    group__user=user,
+                    path__startswith=OuterRef("path"),
+                )
+            )
+        )
+
     def visible(self, user: User | None = None):
         """
         Returns a queryset of all group profiles visible to the given user.

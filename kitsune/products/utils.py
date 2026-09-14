@@ -1,24 +1,32 @@
 import json
 
 import yaml
+from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Prefetch, Q
 
+from kitsune.groups.models import GroupProfile
 from kitsune.products.models import Product, ProductSupportConfig, Topic
 
+ENTERPRISE_ZENDESK_CACHE_KEY = "products:enterprise-zendesk-available"
 _ENTERPRISE_BANNER_CACHE_TIMEOUT = 3600  # 1 hour
 
 
 def is_enterprise_user(user) -> bool:
-    """Return True if the user is in a firefox-enterprise support organization that routes to Zendesk."""
-    if not user.is_authenticated:
+    """Whether the user belongs to the enterprise group or any of its subgroups."""
+    return (
+        GroupProfile.objects.containing(user).filter(slug=settings.ENTERPRISE_GROUP_SLUG).exists()
+    )
+
+
+def should_show_enterprise_banner(user) -> bool:
+    """Show enterprise members the banner when Zendesk is the configured default."""
+    available = cache.get(ENTERPRISE_ZENDESK_CACHE_KEY)
+    if available is False or not is_enterprise_user(user):
         return False
 
-    cache_key = f"enterprise_hybrid_banner:{user.pk}"
-    result = cache.get(cache_key)
-
-    if result is None:
-        result = ProductSupportConfig.objects.filter(
+    if available is None:
+        available = ProductSupportConfig.objects.filter(
             Q(group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
             | Q(
                 default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
@@ -26,11 +34,12 @@ def is_enterprise_user(user) -> bool:
             ),
             product__slug="firefox-enterprise",
             is_active=True,
-            support_organizations__group__user=user,
+            zendesk_config__isnull=False,
         ).exists()
-        cache.set(cache_key, result, timeout=_ENTERPRISE_BANNER_CACHE_TIMEOUT)
-
-    return result
+        cache.set(
+            ENTERPRISE_ZENDESK_CACHE_KEY, available, timeout=_ENTERPRISE_BANNER_CACHE_TIMEOUT
+        )
+    return available
 
 
 def get_taxonomy(

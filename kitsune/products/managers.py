@@ -1,6 +1,6 @@
 from typing import Any, override
 
-from django.db.models import Manager
+from django.db.models import Manager, Q
 
 
 class NonArchivedManager(Manager):
@@ -53,6 +53,8 @@ class ProductSupportConfigManager(Manager):
                 - can_switch: whether user can toggle between channels
                 - Returns (None, False) if no config exists - view should handle error
         """
+        # Avoid cycles: groups.models -> wiki.models -> products.models -> this manager.
+        from kitsune.groups.models import GroupProfile
         from kitsune.products.models import ProductSupportConfig
 
         # Query config for this product
@@ -100,7 +102,8 @@ class ProductSupportConfigManager(Manager):
         user_in_group = (
             user.is_authenticated
             and support_config.support_organizations.filter(
-                group_id__in=user.groups.values_list("id", flat=True)
+                Q(group_id__in=user.groups.values_list("id", flat=True))
+                | Q(group_id__in=GroupProfile.objects.containing(user).values("group_id"))
             ).exists()
         )
 

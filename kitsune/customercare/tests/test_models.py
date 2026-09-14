@@ -251,16 +251,38 @@ class AccessibleToTests(TestCase):
         )
         self.assertEqual(accessible, {self.dave_ticket.id})
 
-    def test_root_moderator_sees_all_orgs(self):
-        """firefox-enterprise leader sees company1 + company2 tickets via moderation."""
+    def test_org_leader_sees_own_org_but_not_descendant_org(self):
+        self.c1.leaders.add(self.dave)
+        SupportOrganizationFactory(config=self.support_config, group=self.c1_it.group)
+        SupportTicketFactory(user=self.alice, product=self.product, org_group=self.c1_it)
+
+        accessible = set(
+            SupportTicket.objects.accessible_to(self.dave).values_list("id", flat=True)
+        )
+        self.assertEqual(
+            accessible, {self.alice_ticket.id, self.bob_ticket.id, self.dave_ticket.id}
+        )
+
+    def test_root_member_sees_only_own_tickets(self):
+        self.dave.groups.add(self.root.group)
+
+        accessible = set(
+            SupportTicket.objects.accessible_to(self.dave).values_list("id", flat=True)
+        )
+        self.assertEqual(accessible, {self.dave_ticket.id})
+
+    def test_root_moderator_sees_only_orgs_in_own_tree(self):
+        other_group = Group.objects.create(name="other-enterprise")
+        other_root = GroupProfile.add_root(group=other_group, slug="other-enterprise")
+        SupportOrganizationFactory(config=self.support_config, group=other_group)
+        SupportTicketFactory(user=self.dave, product=self.product, org_group=other_root)
+
         accessible = set(
             SupportTicket.objects.accessible_to(self.mallory).values_list("id", flat=True)
         )
-        self.assertIn(self.alice_ticket.id, accessible)
-        self.assertIn(self.bob_ticket.id, accessible)
-        self.assertIn(self.carol_ticket.id, accessible)
-        # personal ticket from non-org user is NOT moderated by mallory
-        self.assertNotIn(self.dave_ticket.id, accessible)
+        self.assertEqual(
+            accessible, {self.alice_ticket.id, self.bob_ticket.id, self.carol_ticket.id}
+        )
 
     def test_subtree_teammate_can_view_but_cannot_reply(self):
         """bob can view alice's ticket via the company1 org, but only alice may reply."""
