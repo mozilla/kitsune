@@ -1340,6 +1340,14 @@ ZENDESK_COMMENTS_SYNC_THRESHOLD = config("ZENDESK_COMMENTS_SYNC_THRESHOLD", defa
 ZENDESK_SYNC_TIMEOUT = config(
     "ZENDESK_SYNC_TIMEOUT", default="5,10", cast=Csv(int, post_process=tuple)
 )
+# Signing key for the Zendesk messaging widget, from Admin Center under
+# Account > Security > End user authentication. The key id goes in the JWT header.
+ZENDESK_CHAT_SIGNING_KEY_ID = config("ZENDESK_CHAT_SIGNING_KEY_ID", default="")
+ZENDESK_CHAT_SIGNING_SECRET = config("ZENDESK_CHAT_SIGNING_SECRET", default="")
+# Seconds. Zendesk asks the widget for a new token once this one expires.
+ZENDESK_CHAT_JWT_LIFETIME = config("ZENDESK_CHAT_JWT_LIFETIME", default=900, cast=int)
+# Multi-window limits (see kitsune.customercare.views.chat_jwt_is_ratelimited).
+ZENDESK_CHAT_RATELIMITS = config("ZENDESK_CHAT_RATELIMITS", default="10/m,60/h,300/d", cast=Csv())
 
 # Products that allow un-authenticated users to submit support requests
 LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])

@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.utils import timezone
 
@@ -8,8 +7,8 @@ RECORD_ERROR = "error"
 
 class RecordManager(models.Manager):
     def log(self, level, src, msg, **kwargs):
-        msg = msg.format(**kwargs).encode("utf-8")
-        return Record.objects.create(level=RECORD_INFO, src=src, msg=msg)
+        msg = msg.format(**kwargs)
+        return Record.objects.create(level=level, src=src, msg=msg)
 
     def info(self, src, msg, **kwargs):
         self.log(RECORD_INFO, src, msg, **kwargs)
