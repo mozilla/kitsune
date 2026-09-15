@@ -26,7 +26,11 @@ from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyExce
 from kitsune.customercare.forms import SupportTicketReplyForm
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import process_zendesk_update
-from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
+from kitsune.customercare.utils import (
+    generate_classification_tags,
+    resolve_chat_eligibility,
+    sync_ticket_from_zendesk,
+)
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.groups.templatetags.jinja_helpers import group_breadcrumbs
 from kitsune.journal.models import Record
@@ -61,10 +65,7 @@ def _reply_placeholder(ticket):
 
 
 def chat_jwt_is_ratelimited(request):
-    """Apply every window; return True if any is exceeded.
-
-    Deliberately not short-circuited, so the wider windows keep counting.
-    """
+    """Check every window so rejected requests still count toward wider limits."""
     limited = False
     for rate in settings.ZENDESK_CHAT_RATELIMITS:
         if is_ratelimited(request, "support-chat-jwt", rate):
@@ -75,13 +76,7 @@ def chat_jwt_is_ratelimited(request):
 @require_POST
 @never_cache
 def chat_jwt(request, product_slug):
-    """Sign a short-lived token that identifies the requesting user to Zendesk.
-
-    The messaging widget posts here whenever it needs to prove the requesting
-    user's identity, including when its previous token expires. POST rather than
-    GET so Django's CSRF middleware runs, which checks both the CSRF token and
-    the Origin header.
-    """
+    """Sign a short-lived chat identity token. POST enforces CSRF protection."""
     if not waffle.switch_is_active("zendesk-chat"):
         raise Http404
 
@@ -98,21 +93,21 @@ def chat_jwt(request, product_slug):
 
     user_info = f"user {user.username} (#{user.id})"
 
-    # Slug is user-supplied, so keep it short enough for the journal message.
     product = Product.active.filter(slug=product_slug).first()
     if product is None:
+        # Bound untrusted slugs in journal entries.
         Record.objects.info(
             CHAT_JOURNAL_SRC,
             f"{user_info} asked for chat with unknown product {product_slug[:80]}",
         )
         return HttpResponse(status=404)
 
-    # TODO: Replace with eligibility check.
-    is_eligible_for_chat = True
+    eligibility = resolve_chat_eligibility(user, product)
 
-    if not is_eligible_for_chat:
+    if not eligibility.eligible:
         Record.objects.info(
-            CHAT_JOURNAL_SRC, f"{user_info} is not eligible for chat for {product_slug}"
+            CHAT_JOURNAL_SRC,
+            f"{user_info} is not eligible for chat for {product_slug}: {eligibility.reason}",
         )
         return HttpResponse(status=403)
 
