@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any
 
 import waffle
@@ -11,9 +12,59 @@ from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
-from kitsune.products.models import Product, ProductSupportConfig, Topic, ZendeskTopic
+from kitsune.products.models import (
+    Product,
+    ProductSupportConfig,
+    SupportOrganization,
+    Topic,
+    ZendeskTopic,
+)
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
+
+
+@dataclass(frozen=True)
+class ChatEligibility:
+    org: SupportOrganization | None = None
+    reason: str | None = None
+
+    @property
+    def eligible(self) -> bool:
+        return self.org is not None
+
+
+def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
+    """Require exactly one chat-enabled organization for this product."""
+    if not (user and user.is_authenticated):
+        return ChatEligibility(reason="not_authenticated")
+    if not user.is_active:
+        return ChatEligibility(reason="inactive_user")
+    if product.is_archived:
+        return ChatEligibility(reason="product_unavailable")
+
+    config = product.support_configs.filter(is_active=True, zendesk_config__isnull=False).first()
+    if config is None:
+        return ChatEligibility(reason="no_ticketing_support")
+    if config.subscription_only and not user.profile.products.filter(pk=product.pk).exists():
+        return ChatEligibility(reason="subscription_required")
+
+    member_groups = GroupProfile.objects.containing(user).values("group_id")
+    organizations = config.support_organizations.filter(group_id__in=member_groups)
+    match list(organizations.filter(include_live_chat=True)[:2]):
+        case [org]:
+            return ChatEligibility(org=org)
+        case [_, _]:
+            return ChatEligibility(reason="ambiguous_multi_org")
+    if organizations.exists():
+        return ChatEligibility(reason="tier_without_chat")
+    if SupportOrganization.objects.filter(
+        group_id__in=member_groups,
+        config__is_active=True,
+        config__zendesk_config__isnull=False,
+        config__product__is_archived=False,
+    ).exists():
+        return ChatEligibility(reason="product_mismatch")
+    return ChatEligibility(reason="no_entitled_org")
 
 
 def resolve_org_group(submitter, product: Product) -> GroupProfile | None:

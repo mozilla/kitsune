@@ -9,6 +9,7 @@ from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.customercare.utils import (
     generate_classification_tags,
     process_zendesk_classification_result,
+    resolve_chat_eligibility,
     resolve_org_group,
     resolve_user_org_group,
     send_support_ticket_to_zendesk,
@@ -16,6 +17,7 @@ from kitsune.customercare.utils import (
 )
 from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
+from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
@@ -552,6 +554,179 @@ class ResolveOrgGroupTests(TestCase):
     def test_no_config_returns_none(self):
         product2 = ProductFactory()
         self.assertIsNone(resolve_org_group(self.it_user, product2))
+
+
+class ResolveChatEligibilityTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory()
+        self.config = ProductSupportConfigFactory(
+            product=self.product,
+            zendesk_config=ZendeskConfigFactory(),
+        )
+        self.root = GroupProfile.add_root(
+            group=Group.objects.create(name="enterprise"), slug="enterprise"
+        )
+        self.company = self.root.add_child(
+            group=Group.objects.create(name="company"), slug="company"
+        )
+        self.org = SupportOrganizationFactory(
+            config=self.config, group=self.company.group, include_live_chat=True
+        )
+        department = self.company.add_child(
+            group=Group.objects.create(name="department"), slug="department"
+        )
+        self.team = department.add_child(group=Group.objects.create(name="team"), slug="team")
+        self.user = UserFactory()
+        self.user.groups.add(self.company.group)
+
+    def _assert_eligible(self, result):
+        self.assertTrue(result.eligible)
+        self.assertEqual(result.org, self.org)
+        self.assertIsNone(result.reason)
+
+    def _assert_ineligible(self, result, reason):
+        self.assertFalse(result.eligible)
+        self.assertIsNone(result.org)
+        self.assertEqual(result.reason, reason)
+
+    def test_membership_resolves_one_org_per_product(self):
+        self.config.forum_config = AAQConfigFactory()
+        self.config.default_support_type = ProductSupportConfig.SUPPORT_TYPE_FORUM
+        self.config.group_default_support_type = ProductSupportConfig.SUPPORT_TYPE_FORUM
+        self.config.save()
+        SupportOrganizationFactory(
+            config=ProductSupportConfigFactory(zendesk_config=ZendeskConfigFactory()),
+            group=self.company.group,
+            include_live_chat=True,
+        )
+        for profile in (self.company, self.team):
+            with self.subTest(group=profile.slug):
+                self.user.groups.set([profile.group])
+                self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
+        self.user.groups.add(self.company.group)
+        self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
+
+    def test_ancestor_and_sibling_members_do_not_receive_chat(self):
+        sibling = self.root.add_child(group=Group.objects.create(name="sibling"), slug="sibling")
+        for profile in (self.root, sibling):
+            with self.subTest(group=profile.slug):
+                self.user.groups.set([profile.group])
+                self._assert_ineligible(
+                    resolve_chat_eligibility(self.user, self.product), "no_entitled_org"
+                )
+
+    def test_leadership_does_not_grant_chat(self):
+        self.user.groups.clear()
+        self.company.leaders.add(self.user)
+        self.root.leaders.add(self.user)
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, self.product), "no_entitled_org"
+        )
+
+    def test_moderated_visibility_does_not_grant_chat(self):
+        self.root.update_visibility(GroupProfile.Visibility.MODERATED)
+        auditors = Group.objects.create(name="auditors")
+        self.root.visible_to_groups.add(auditors)
+        self.company.visible_to_groups.add(auditors)
+        self.user.groups.set([auditors])
+        self.assertTrue(self.company.can_view(self.user))
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, self.product), "no_entitled_org"
+        )
+
+    def test_staff_and_superuser_privileges_do_not_grant_chat(self):
+        self.user.groups.clear()
+        self.user.is_staff = True
+        self.user.is_superuser = True
+        self.user.save()
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, self.product), "no_entitled_org"
+        )
+
+    def test_authentication_and_archived_product_guards(self):
+        for user in (None, AnonymousUser()):
+            with self.subTest(user=user):
+                self._assert_ineligible(
+                    resolve_chat_eligibility(user, self.product), "not_authenticated"
+                )
+        self.user.is_active = False
+        self.user.save()
+        self._assert_ineligible(resolve_chat_eligibility(self.user, self.product), "inactive_user")
+        self.user.is_active = True
+        self.user.save()
+        self.product.is_archived = True
+        self.product.save()
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, self.product), "product_unavailable"
+        )
+
+    def test_missing_or_forum_only_config_has_no_ticketing_support(self):
+        product = ProductFactory()
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, product), "no_ticketing_support"
+        )
+        ProductSupportConfigFactory(
+            product=product, zendesk_config=None, forum_config=AAQConfigFactory()
+        )
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, product), "no_ticketing_support"
+        )
+
+    def test_wrong_product_requires_active_nonarchived_ticketing_membership(self):
+        requested = ProductFactory()
+        ProductSupportConfigFactory(product=requested, zendesk_config=ZendeskConfigFactory())
+        self._assert_ineligible(resolve_chat_eligibility(self.user, requested), "product_mismatch")
+        self.config.is_active = False
+        self.config.save()
+        self._assert_ineligible(resolve_chat_eligibility(self.user, requested), "no_entitled_org")
+        self.config.is_active = True
+        self.config.save()
+        self.product.is_archived = True
+        self.product.save()
+        self._assert_ineligible(resolve_chat_eligibility(self.user, requested), "no_entitled_org")
+        self.product.is_archived = False
+        self.product.save()
+        self.config.forum_config = AAQConfigFactory()
+        self.config.zendesk_config = None
+        self.config.save()
+        self._assert_ineligible(resolve_chat_eligibility(self.user, requested), "no_entitled_org")
+
+    def test_nested_legacy_orgs_are_ambiguous_only_with_chat(self):
+        nested_org = SupportOrganizationFactory(
+            config=self.config, group=self.team.group, include_live_chat=False
+        )
+        self.user.groups.set([self.team.group])
+        self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
+
+        nested_org.include_live_chat = True
+        nested_org.save()
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, self.product), "ambiguous_multi_org"
+        )
+
+    def test_subscription_is_required_but_does_not_replace_org_membership(self):
+        self.config.subscription_only = True
+        self.config.save()
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, self.product), "subscription_required"
+        )
+        self.user.profile.products.add(self.product)
+        self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
+        self.user.groups.clear()
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, self.product), "no_entitled_org"
+        )
+
+    def test_config_changes_are_not_cached(self):
+        self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
+        self.config.is_active = False
+        self.config.save()
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, self.product), "no_ticketing_support"
+        )
+        self.config.is_active = True
+        self.config.save()
+        self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
 
 
 class ResolveUserOrgGroupTests(TestCase):
