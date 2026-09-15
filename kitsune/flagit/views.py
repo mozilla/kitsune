@@ -234,14 +234,18 @@ def get_hierarchical_topics(product, cache_timeout=3600):
         build_hierarchy()
         cache.set(cache_key, cached_topics, cache_timeout)
 
-    return [
-        {
+    result = []
+    for topic in cached_topics:
+        # We can't include a value with a literal string
+        # in pgettext (as this will lead to a new string
+        # creation), so we have to preset it.
+        raw_topic_title = topic["title"]
+        result.append({
             "id": topic["id"],
             "title": "&nbsp;" * (topic["level"] * 4)
-            + pgettext("DB: products.Topic.title", topic["title"]),
-        }
-        for topic in cached_topics
-    ]
+            + pgettext("DB: products.Topic.title", raw_topic_title),
+        })
+    return result
 
 
 @group_required(settings.STAFF_GROUP)
