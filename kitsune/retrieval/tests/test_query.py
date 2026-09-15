@@ -104,6 +104,28 @@ class LexicalClauseTests(SimpleTestCase):
         self.assertTrue(_contains(aaq, {"term": {"question_product_id": 3}}))
         self.assertFalse(_contains(kb, {"exists": {"field": "updated"}}))
 
+    def test_field_query_for_an_aaq_only_field_stays_source_specific(self):
+        # mozilla/sumo#3307: the field targets AAQ's mapping. The KB clause keeps the
+        # raw unmapped field name rather than leaking into KB text fields, and the
+        # advanced query does not exclude archived questions.
+        clauses = build_lexical_clauses(
+            "field:question_is_locked:false",
+            locale="en-US",
+            sources={"kb", "aaq"},
+            viewer_group_ids=(),
+        )
+
+        kb = _simple_query(clauses.kb_requested)
+        self.assertEqual(kb["fields"], ["question_is_locked"])
+        self.assertEqual(kb["query"], "false")
+
+        aaq = clauses.aaq_requested.to_dict()
+        aaq_query = aaq["bool"]["must"][0]["bool"]
+        self.assertEqual(
+            aaq_query["must"][0]["simple_query_string"]["fields"], ["question_is_locked"]
+        )
+        self.assertFalse(_contains(aaq, {"term": {"question_is_archived": False}}))
+
     def test_source_selection_does_not_create_unused_or_duplicate_clauses(self):
         aaq = build_lexical_clauses("firefox", locale="de", sources={"aaq"}, viewer_group_ids=())
         self.assertIsNone(aaq.kb_requested)
@@ -682,3 +704,61 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
         [aaq_candidate] = aaq_result.candidates
         self.assertIsInstance(aaq_candidate.evidence, LegacyQuestion)
         self.assertEqual(aaq_candidate.evidence.highlight.field, "question_content")
+
+    def test_advanced_field_query_stays_a_kb_non_match(self):
+        # Regression for mozilla/sumo#3307: an AAQ-only field query must not surface
+        # KB articles. The chunk text intentionally contains the query's literal words
+        # so a fallback onto default text fields would be caught as a leak. A single
+        # lexical child uses a standard retriever, so no licensed RRF is involved.
+        client = es_client().options(request_timeout=30)
+        now = datetime.now(UTC)
+        bulk(
+            client,
+            [
+                {
+                    "_index": ChunkDocument.Index.write_alias,
+                    "_id": "locked-chunk-0",
+                    "_source": {
+                        "kind": "chunk",
+                        "content_type": "kb",
+                        "object_id": "9",
+                        "family_id": "kb:9",
+                        "locale": "en-US",
+                        "position": 0,
+                        "heading_path": "Firefox > Locked",
+                        "scope": {"version": 1, "clauses": []},
+                        "visibility": "public",
+                        "access_group_ids": [],
+                        "product_ids": ["3"],
+                        "topic_ids": ["7"],
+                        "category": "10",
+                        "title": {"en-US": "question is locked false"},
+                        "summary": {"en-US": "question is locked false"},
+                        "content_text": {"en-US": "question is locked false"},
+                        "updated": now,
+                    },
+                }
+            ],
+            refresh=True,
+        )
+
+        result = _retrieve_unvalidated(
+            "field:question_is_locked:false",
+            kb_index=ChunkDocument.Index.read_alias,
+            locale="en-US",
+            sources={"kb"},
+            viewer_group_ids=(),
+            product_id=None,
+            query_vector=None,
+            similarity_floor=None,
+            semantic_k=2,
+            num_candidates=4,
+            rank_window_size=20,
+            locale_composition="combined",
+            page_size=10,
+            offset=0,
+            max_offset=10,
+            strict=True,
+        )
+        self.assertEqual(result.candidates, ())
+        self.assertEqual(result.mode, "lexical")

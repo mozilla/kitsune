@@ -5,7 +5,7 @@ from elasticsearch.dsl.query import SimpleQueryString as S
 from parameterized import parameterized
 from pyparsing import ParseException
 
-from kitsune.search.parser import Parser
+from kitsune.search.parser import Parser, is_plain_text_query
 
 
 class ElasticQueryContainsMixin:
@@ -54,6 +54,31 @@ class TestElasticQueryContainsMixin(SimpleTestCase, ElasticQueryContainsMixin):
                 self.assertNestedDictContains(superset, subset)
         else:
             self.assertNestedDictContains(superset, subset)
+
+
+class PlainTextQueryTests(SimpleTestCase):
+    @parameterized.expand(
+        [
+            ("firefox crashes", True),
+            ("更新 firefox", True),
+            ('"firefox crashes"', False),
+            ('firefox "sync error"', False),
+            ('"a"', False),
+            ('"unbalanced firefox', True),
+            ("field:title:firefox", False),
+            ("exact:question_is_locked:false", False),
+            ("range:question_created:gte:2021-05-27", False),
+            ("firefox AND crashes", False),
+            ("firefox OR crashes", False),
+            ("NOT firefox", False),
+            ("firefox NOT crashes", False),
+            ("", True),
+            ("   ", True),
+            ("(" * 11 + "a" + ")" * 11, False),  # parse failure is not provably plain text
+        ]
+    )
+    def test_classification(self, query, plain_text):
+        self.assertIs(is_plain_text_query(query), plain_text)
 
 
 class ParserTests(SimpleTestCase, ElasticQueryContainsMixin):
