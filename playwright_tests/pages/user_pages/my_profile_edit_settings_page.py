@@ -20,6 +20,8 @@ class MyProfileEditSettingsPage(BasePage):
             "//input[@id='id_kbforums_watch_after_reply']/following-sibling::label")
         self.watch_question_threads_I_comment_in_checkbox = page.locator(
             "//input[@id='id_questions_watch_after_reply']/following-sibling::label")
+        self.send_me_an_email_when_my_reply_is_marked_as_a_solution_checkbox = page.locator(
+            "//input[@id='id_email_authored_solutions']/following-sibling::label")
         self.send_emails_for_private_messages_checkbox = page.locator(
             "//input[@id='id_email_private_messages']/following-sibling::label")
         self.edit_settings_update_button = page.locator(
@@ -62,6 +64,10 @@ class MyProfileEditSettingsPage(BasePage):
         """Click on watch question threads I comment in checkbox"""
         self._click(self.watch_question_threads_I_comment_in_checkbox)
 
+    def click_on_send_me_an_email_when_my_reply_is_marked_as_a_solution(self):
+        """Click on send me an email when my reply is marked as a solution checkbox"""
+        self._click(self.send_me_an_email_when_my_reply_is_marked_as_a_solution_checkbox)
+
     def click_on_send_emails_for_private_messages(self):
         """Click on send emails for private messages checkbox"""
         self._click(self.send_emails_for_private_messages_checkbox)
@@ -90,6 +96,10 @@ class MyProfileEditSettingsPage(BasePage):
         """Check if watch question threads I comment in checkbox is checked"""
         return self._is_checkbox_checked(self.watch_question_threads_I_comment_in_checkbox)
 
+    def is_send_me_an_email_when_my_reply_is_marked_as_a_solution_checkbox_checked(self) -> bool:
+        """Check if send me an email when my reply is marked as a solution checkbox is checked"""
+        return self._is_checkbox_checked(self.send_me_an_email_when_my_reply_is_marked_as_a_solution_checkbox)
+
     def is_send_emails_for_private_messages_checkbox_checked(self) -> bool:
         """Check if send emails for private messages checkbox is checked"""
         return self._is_checkbox_checked(self.send_emails_for_private_messages_checkbox)
@@ -102,5 +112,6 @@ class MyProfileEditSettingsPage(BasePage):
             self.is_watch_kb_discussion_threads_i_start_checkbox_checked(),
             self.is_watch_kb_discussion_threads_i_comment_checkbox_checked(),
             self.is_watch_question_threads_i_comment_checkbox_checked(),
+            self.is_send_me_an_email_when_my_reply_is_marked_as_a_solution_checkbox_checked(),
             self.is_send_emails_for_private_messages_checkbox_checked(),
         ])
