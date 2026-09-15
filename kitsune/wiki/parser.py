@@ -255,7 +255,7 @@ class ForParser:
         stripped = ",".join([x.strip() for x in attrs.split(",")])
         return "<for data-for=" + quoteattr(stripped) + ">"
 
-    _FOR_OR_CLOSER = re.compile(r"(\s*)" r"(\{for(?: +([^\}]*))?\}|{/for})" r"(\s*)", re.MULTILINE)
+    _FOR_OR_CLOSER = re.compile(r"(\s*)" r"(\{for(?: +([^\}]*))\}|{/for})" r"(\s*)", re.MULTILINE)
 
     @classmethod
     def strip_fors(cls, text):
