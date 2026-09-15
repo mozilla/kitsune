@@ -411,6 +411,44 @@ class DeactivatedMemberVisibilityTests(TestCase):
         self.assertEqual(self._group_count(doc, "Members"), 4)
 
 
+class MemberOrderingTests(TestCase):
+    """Leaders and members are listed in alphabetical order of their displayed name."""
+
+    def setUp(self):
+        super().setUp()
+        self.group_profile = GroupProfileFactory()
+
+        # Added in reverse of the expected order, and usernames sort differently
+        # from displayed names, so sorting by the wrong thing fails here.
+        users = {
+            "Carol": None,
+            "alice": "carla",
+            "Bob": "",
+            "zoe": "Aaron",
+        }
+        for username, display_name in users.items():
+            user = UserFactory(username=username, profile__name=display_name)
+            self.group_profile.group.user_set.add(user)
+            if username in ("zoe", "Bob", "alice"):
+                self.group_profile.leaders.add(user)
+
+        # No profile row at all: must fall back to the username, not be dropped.
+        self.group_profile.group.user_set.add(UserFactory(username="quinn", profile=None))
+
+        self.url = reverse("groups.profile", args=[self.group_profile.slug])
+
+    def _names(self, section):
+        r = self.client.get(self.url)
+        self.assertEqual(200, r.status_code)
+        return [pq(el).text() for el in pq(r.content)(f"ul.users.{section} .user-name")]
+
+    def test_members_sorted_by_displayed_name(self):
+        self.assertEqual(self._names("members"), ["Aaron", "Bob", "carla", "Carol", "quinn"])
+
+    def test_leaders_sorted_by_displayed_name(self):
+        self.assertEqual(self._names("leaders"), ["Aaron", "Bob", "carla"])
+
+
 class GroupTicketsViewTests(TestCase):
     """Tests for the groups.tickets view."""
 
