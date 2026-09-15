@@ -16,6 +16,7 @@ from kitsune.groups.tests import GroupProfileFactory
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     ZendeskConfigFactory,
 )
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -429,7 +430,7 @@ class GroupTicketsViewTests(TestCase):
         )
         self.c1_group = Group.objects.create(name="company1")
         self.c1 = self.root.add_child(group=self.c1_group, slug="company1")
-        config.hybrid_support_groups.add(self.c1_group)
+        SupportOrganizationFactory(config=config, group=self.c1_group)
 
         self.c2_group = Group.objects.create(name="company2")
         self.c2 = self.root.add_child(group=self.c2_group, slug="company2")

@@ -181,7 +181,7 @@ class GroupProfile(TreeModelBase):
         return self.__class__.objects.visible(user).filter(pk=self.pk).exists()
 
     def is_org_root(self):
-        return self.group.hybrid_support_configs.exists()
+        return self.group.support_organizations.exists()
 
     def can_view_tickets(self, user):
         if not (user and user.is_authenticated):

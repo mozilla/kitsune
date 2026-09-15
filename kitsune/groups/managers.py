@@ -6,8 +6,21 @@ from treebeard.mp_tree import MP_NodeManager
 
 class GroupProfileManager(MP_NodeManager):
     def org_roots(self):
-        """All GroupProfiles marked as org roots via ProductSupportConfig.hybrid_support_groups."""
-        return self.filter(group__hybrid_support_configs__isnull=False).distinct()
+        """All GroupProfiles whose group is configured as a support organization."""
+        return self.filter(group__support_organizations__isnull=False).distinct()
+
+    def containing(self, user):
+        """Groups containing the user directly or through a subgroup, excluding leadership."""
+        if not (user and user.is_authenticated):
+            return self.none()
+        return self.filter(
+            Exists(
+                self.model.objects.filter(
+                    group__user=user,
+                    path__startswith=OuterRef("path"),
+                )
+            )
+        )
 
     def visible(self, user: User | None = None):
         """

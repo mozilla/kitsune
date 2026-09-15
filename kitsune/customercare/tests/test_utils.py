@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, Mock, patch
 
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import AnonymousUser, Group
 from django.utils import timezone
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
@@ -19,6 +19,7 @@ from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     TopicFactory,
     ZendeskConfigFactory,
     ZendeskTopicConfigurationFactory,
@@ -482,7 +483,7 @@ class ResolveOrgGroupTests(TestCase):
 
         self.c1_group = Group.objects.create(name="company1")
         self.c1 = self.root.add_child(group=self.c1_group, slug="company1")
-        self.config.hybrid_support_groups.add(self.c1_group)
+        SupportOrganizationFactory(config=self.config, group=self.c1_group)
 
         it_group = Group.objects.create(name="company1.IT")
         self.c1_it = self.c1.add_child(group=it_group, slug="company1-it")
@@ -494,13 +495,46 @@ class ResolveOrgGroupTests(TestCase):
     def test_descendant_member_resolves_to_org_root(self):
         self.assertEqual(resolve_org_group(self.it_user, self.product), self.c1)
 
-    def test_nested_hybrid_groups_resolves_to_deepest(self):
-        """When multiple ancestors are hybrid_support_groups, pick the nearest (deepest)."""
-        self.config.hybrid_support_groups.add(self.c1_it.group)
+    def test_nested_support_organizations_resolves_to_deepest(self):
+        """When multiple ancestors are support organizations, pick the nearest (deepest)."""
+        SupportOrganizationFactory(config=self.config, group=self.c1_it.group)
         self.assertEqual(resolve_org_group(self.it_user, self.product), self.c1_it)
+        self.assertEqual(resolve_user_org_group(self.it_user), self.c1_it)
 
     def test_non_member_resolves_to_none(self):
         self.assertIsNone(resolve_org_group(self.stranger, self.product))
+
+    def test_ancestor_sibling_and_unrelated_members_do_not_resolve_to_company(self):
+        sibling = self.root.add_child(group=Group.objects.create(name="company2"), slug="company2")
+        unrelated = GroupProfile.add_root(
+            group=Group.objects.create(name="unrelated"), slug="unrelated"
+        )
+        for profile in (self.root, sibling, unrelated):
+            with self.subTest(group=profile.slug):
+                self.stranger.groups.set([profile.group])
+                self.assertIsNone(resolve_org_group(self.stranger, self.product))
+                self.assertIsNone(resolve_user_org_group(self.stranger))
+
+    def test_equal_depth_organizations_resolve_by_slug(self):
+        company = self.root.add_child(group=Group.objects.create(name="company0"), slug="company0")
+        SupportOrganizationFactory(config=self.config, group=company.group)
+        self.it_user.groups.add(company.group)
+
+        self.assertEqual(resolve_org_group(self.it_user, self.product), company)
+        self.assertEqual(resolve_user_org_group(self.it_user), company)
+
+    def test_unauthenticated_users_do_not_resolve_to_organization(self):
+        for user in (None, AnonymousUser()):
+            with self.subTest(user=user):
+                self.assertIsNone(resolve_org_group(user, self.product))
+                self.assertIsNone(resolve_user_org_group(user))
+
+    def test_inactive_config_only_prevents_product_resolution(self):
+        self.config.is_active = False
+        self.config.save()
+
+        self.assertIsNone(resolve_org_group(self.it_user, self.product))
+        self.assertEqual(resolve_user_org_group(self.it_user), self.c1)
 
     def test_no_zendesk_config_returns_none(self):
         product2 = ProductFactory()
@@ -509,7 +543,7 @@ class ResolveOrgGroupTests(TestCase):
         )
         self.assertIsNone(resolve_org_group(self.it_user, product2))
 
-    def test_no_hybrid_support_groups_returns_none(self):
+    def test_no_support_organizations_returns_none(self):
         product2 = ProductFactory()
         zd2 = ZendeskConfigFactory(name="zd2")
         ProductSupportConfigFactory(product=product2, zendesk_config=zd2)
@@ -530,7 +564,7 @@ class ResolveUserOrgGroupTests(TestCase):
         self.root = GroupProfile.add_root(group=root_group, slug="firefox-enterprise")
         c1_group = Group.objects.create(name="company1")
         self.c1 = self.root.add_child(group=c1_group, slug="company1")
-        config.hybrid_support_groups.add(c1_group)
+        SupportOrganizationFactory(config=config, group=c1_group)
 
         it_group = Group.objects.create(name="company1.IT")
         self.c1_it = self.c1.add_child(group=it_group, slug="company1-it")

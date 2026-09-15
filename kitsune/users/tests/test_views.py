@@ -33,6 +33,7 @@ from kitsune.messages.utils import send_message
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     ZendeskConfigFactory,
 )
 from kitsune.questions.models import Answer, Question
@@ -448,13 +449,13 @@ class EditProfileTests(TestCase):
         """
         res = self.client.post(
             reverse("users.edit_my_profile", locale="en-US"),
-            {"username": "Test\U0001F63A\U0001F638", "name": "Test User"},
+            {"username": "Test\U0001f63a\U0001f638", "name": "Test User"},
         )
         self.assertEqual(200, res.status_code)
         doc = pq(res.content)
         self.assertTrue(doc("#id_username").closest(".has-error"))
         self.user.refresh_from_db()
-        self.assertNotEqual(self.user.username, "Test\U0001F63A\U0001F638")
+        self.assertNotEqual(self.user.username, "Test\U0001f63a\U0001f638")
 
 
 class FXAAuthenticationTests(TestCase):
@@ -884,7 +885,7 @@ class QuestionsContributedSidebarTests(TestCase):
         root = GroupProfile.add_root(group=root_group, slug="enterprise")
         c1_group = Group.objects.create(name="company1")
         self.c1 = root.add_child(group=c1_group, slug="company1")
-        config.hybrid_support_groups.add(c1_group)
+        SupportOrganizationFactory(config=config, group=c1_group)
 
         self.member = UserFactory(username="member")
         self.member.groups.add(c1_group)

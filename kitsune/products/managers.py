@@ -1,6 +1,6 @@
 from typing import Any, override
 
-from django.db.models import Manager
+from django.db.models import Manager, Q
 
 
 class NonArchivedManager(Manager):
@@ -53,6 +53,8 @@ class ProductSupportConfigManager(Manager):
                 - can_switch: whether user can toggle between channels
                 - Returns (None, False) if no config exists - view should handle error
         """
+        # Avoid cycles: groups.models -> wiki.models -> products.models -> this manager.
+        from kitsune.groups.models import GroupProfile
         from kitsune.products.models import ProductSupportConfig
 
         # Query config for this product
@@ -66,8 +68,7 @@ class ProductSupportConfigManager(Manager):
         # Subscription gate: check before any other routing logic
         if support_config.subscription_only:
             is_subscribed = (
-                user.is_authenticated
-                and user.profile.products.filter(id=product.id).exists()
+                user.is_authenticated and user.profile.products.filter(id=product.id).exists()
             )
             if not is_subscribed:
                 if support_config.unsubscribed_redirect_product_id:
@@ -92,16 +93,17 @@ class ProductSupportConfigManager(Manager):
             else:
                 raise ValueError(f"No support channels enabled for product {product.slug}")
 
-        # Hybrid without groups: All users can switch
-        if not support_config.hybrid_support_groups.exists():
+        # Hybrid without organizations: all users can switch
+        if not support_config.support_organizations.exists():
             support_type = requested_type or support_config.default_support_type
             return (support_type, True)
 
-        # Hybrid with groups: Check user membership
+        # Hybrid with organizations: check user membership
         user_in_group = (
             user.is_authenticated
-            and support_config.hybrid_support_groups.filter(
-                id__in=user.groups.values_list("id", flat=True)
+            and support_config.support_organizations.filter(
+                Q(group_id__in=user.groups.values_list("id", flat=True))
+                | Q(group_id__in=GroupProfile.objects.containing(user).values("group_id"))
             ).exists()
         )
 

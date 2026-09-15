@@ -8,6 +8,7 @@ from kitsune.groups.tests import GroupFactory, GroupProfileFactory
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     ZendeskConfigFactory,
 )
 from kitsune.sumo.tests import TestCase
@@ -1286,7 +1287,7 @@ class OrgRootTests(TestCase):
         product = ProductFactory()
         zd = ZendeskConfigFactory(name="zd")
         config = ProductSupportConfigFactory(product=product, zendesk_config=zd)
-        config.hybrid_support_groups.add(c1_group)
+        SupportOrganizationFactory(config=config, group=c1_group)
 
         self.c1_member = UserFactory(username="c1-member")
         self.c1_member.groups.add(c1_group)

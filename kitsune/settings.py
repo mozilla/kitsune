@@ -723,6 +723,7 @@ DEFAULT_USER_ICON = "sumo/img/user-icon.svg"
 AVATAR_SIZE = 200  # in pixels
 MAX_AVATAR_FILE_SIZE = 1310720  # 1MB, in bytes
 GROUP_AVATAR_PATH = "uploads/groupavatars/"
+ENTERPRISE_GROUP_SLUG = config("ENTERPRISE_GROUP_SLUG", default="firefox-enterprise")
 
 # Informs django-guardian that we don't want to enable object-level
 # permissions for anonymous users.
