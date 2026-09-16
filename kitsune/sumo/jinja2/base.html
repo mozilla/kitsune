@@ -20,8 +20,8 @@
   {% if settings.GA_CONSOLE_LOGGING %}data-ga-console-logging="true"{% endif %}
   {% if settings.GA_DEBUG_MODE %}data-ga-debug-mode="true"{% endif %}
   {% if show_chat %}
-  data-zendesk-chat-jwt-url="{{ url('customercare.chat_jwt', product_slug=settings.ZENDESK_CHAT_ELIGIBILITY_PRODUCT_SLUG) }}"
-  data-zendesk-chat-user="{{ user.username }}"
+  data-zendesk-chat-jwt-url="{{ url('customercare.chat_jwt', product_slug=(product or current_product).slug) }}"
+  data-zendesk-chat-user="{{ user.id }}"
   {% endif %}>
 <head>
   {% include "includes/google-analytics.html" %}

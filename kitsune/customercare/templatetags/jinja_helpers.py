@@ -1,30 +1,34 @@
-import waffle
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 from django_jinja import library
 
+from kitsune.customercare.utils import is_chat_enabled, resolve_chat_eligibility
+
+if TYPE_CHECKING:
+    from kitsune.products.models import Product
+
 
 @library.global_function
-def chat_is_available(request, products=None) -> bool:
-    """Whether to show the Zendesk chat widget on a page about these products.
-
-    Pass the products the page is about. Any one of them being a chat product is
-    enough. Omit them for a page that isn't about a product, such as the home
-    page, which skips the product check but is still gated on everything else.
-    """
-    if not (waffle.switch_is_active("zendesk-chat") and settings.ZENDESK_CHAT_WIDGET_KEY):
+def chat_is_available(request, product: Product | None) -> bool:
+    """Whether to show the Zendesk chat widget on a page about this product."""
+    if not product:
         return False
 
-    if not request.user.is_authenticated:
+    if not is_chat_enabled():
         return False
 
-    if request.LANGUAGE_CODE not in settings.ZENDESK_CHAT_LOCALES:
+    if request.LANGUAGE_CODE not in settings.ZENDESK_CHAT_ENABLED_LOCALES:
         return False
 
-    if products is not None:
-        slugs = settings.ZENDESK_CHAT_PRODUCT_SLUGS
-        if not any(product.slug in slugs for product in products):
-            return False
+    eligibility = resolve_chat_eligibility(request.user, product)
 
-    # TODO: Replace with eligibility check. Also stubbed in customercare/views.py,
-    # and the two must agree or the widget shows for users the endpoint refuses.
-    return True
+    request._show_chat = eligibility.eligible
+
+    return eligibility.eligible
+
+
+@library.global_function
+def to_zendesk_locale(locale: str) -> str:
+    """Returns the Zendesk locale for the given SUMO locale."""
+    return locale if locale == "en-US" else locale.lower()

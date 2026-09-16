@@ -11,6 +11,7 @@ from kitsune.sumo.middleware import (
     PlusToSpaceMiddleware,
     SetRemoteAddr,
     StripNulCharactersMiddleware,
+    SumoCSPMiddleware,
 )
 from kitsune.sumo.tests import TestCase
 
@@ -360,3 +361,78 @@ class StripNulCharactersRequestTestCase(TestCase):
         """The malformed spelling has to survive the whole stack too."""
         response = self.client.get("/en-US/questions/all?tagged=%%0000support")
         self.assertEqual(response.status_code, 200)
+
+
+def csp_directives(header):
+    """Returns the CSP header split into {directive: [sources]}."""
+    directives = {}
+    for part in header.split("; "):
+        name, _, sources = part.partition(" ")
+        directives[name] = sources.split()
+    return directives
+
+
+class SumoCSPMiddlewareTestCase(TestCase):
+    """The site-wide policy, plus the two kinds of request that loosen it."""
+
+    def _directives(self, path="/", show_chat=False):
+        """Run the middleware over one request and return its CSP directives.
+
+        Reading request.csp_nonce is what makes django-csp generate a nonce and
+        write it into the header, which a template normally does. Skip it and the
+        NONCE sentinel is quietly dropped, leaving every policy looking nonce-free
+        and the assertions below meaningless.
+        """
+        request = RequestFactory().get(path)
+        middleware = SumoCSPMiddleware(lambda req: HttpResponse())
+        middleware.process_request(request)
+        self.nonce = f"'nonce-{request.csp_nonce}'"
+        if show_chat:
+            request._show_chat = True
+        response = middleware.process_response(request, HttpResponse())
+        return csp_directives(response["Content-Security-Policy"])
+
+    def test_styles_normally_require_the_nonce(self):
+        directives = self._directives()
+
+        self.assertIn(self.nonce, directives["style-src"])
+        self.assertNotIn("'unsafe-inline'", directives["style-src"])
+
+    def test_chat_trades_the_style_nonce_for_unsafe_inline(self):
+        directives = self._directives(show_chat=True)
+
+        self.assertIn("'unsafe-inline'", directives["style-src"])
+        self.assertNotIn(self.nonce, directives["style-src"])
+
+    def test_chat_keeps_the_configured_style_hosts(self):
+        directives = self._directives(show_chat=True)
+
+        for source in settings.CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"]:
+            if isinstance(source, str):
+                self.assertIn(source, directives["style-src"])
+
+    def test_chat_leaves_style_attributes_blocked(self):
+        self.assertEqual(["'none'"], self._directives(show_chat=True)["style-src-attr"])
+
+    def test_chat_does_not_loosen_scripts(self):
+        directives = self._directives(show_chat=True)
+
+        self.assertIn(self.nonce, directives["script-src"])
+        self.assertNotIn("'unsafe-inline'", directives["script-src"])
+
+    def test_admin_allows_its_own_scripts(self):
+        directives = self._directives(path="/admin/")
+
+        self.assertIn("'self'", directives["script-src"])
+        self.assertIn("https://*.webservices.mozgcp.net", directives["script-src"])
+
+    def test_other_paths_do_not_allow_admin_scripts(self):
+        self.assertNotIn("'self'", self._directives()["script-src"])
+
+    def test_it_is_the_only_csp_middleware(self):
+        """A second one would override the header and turn the first one into a no-op,
+        since response middleware runs bottom-up and django-csp skips a header that
+        is already set."""
+        installed = [name for name in settings.MIDDLEWARE if name.endswith("CSPMiddleware")]
+
+        self.assertEqual(["kitsune.sumo.middleware.SumoCSPMiddleware"], installed)

@@ -1,11 +1,18 @@
+from django.contrib.auth.models import Group
 from django.test.utils import override_settings
 from waffle.testutils import override_switch
 
-from kitsune.products.tests import ProductFactory
+from kitsune.groups.models import GroupProfile
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    SupportOrganizationFactory,
+    ZendeskConfigFactory,
+)
 from kitsune.sumo.tests import TestCase
+from kitsune.sumo.tests.test_middleware import csp_directives
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import ApprovedRevisionFactory
 
 CHAT_WIDGET_KEY = "test-widget-key"
 SNIPPET_MARKER = "static.zdassets.com/ekr/snippet.js"
@@ -14,22 +21,29 @@ SNIPPET_MARKER = "static.zdassets.com/ekr/snippet.js"
 @override_switch("zendesk-chat", active=True)
 @override_settings(
     ZENDESK_CHAT_WIDGET_KEY=CHAT_WIDGET_KEY,
-    ZENDESK_CHAT_PRODUCT_SLUGS=["firefox"],
-    ZENDESK_CHAT_ELIGIBILITY_PRODUCT_SLUG="firefox-enterprise",
-    ZENDESK_CHAT_LOCALES={"en-US": "en-US", "de": "de"},
+    ZENDESK_CHAT_SIGNING_SECRET="test-signing-secret",
+    ZENDESK_CHAT_SIGNING_KEY_ID="test-key-id",
+    ZENDESK_CHAT_ENABLED_LOCALES=["en-US", "de"],
 )
 class ChatWidgetTemplateTests(TestCase):
-    """The widget snippet and its inline settings render into the page."""
+    """Test that the widget snippet and its inline settings render into the page."""
 
     def setUp(self):
+        self.product = ProductFactory(slug="firefox-enterprise")
+        config = ProductSupportConfigFactory(
+            product=self.product, zendesk_config=ZendeskConfigFactory()
+        )
+        root = GroupProfile.add_root(group=Group.objects.create(name="chat"), slug="chat")
+        company = root.add_child(group=Group.objects.create(name="company"), slug="company")
+        SupportOrganizationFactory(config=config, group=company.group, include_live_chat=True)
         self.user = UserFactory()
-        self.product = ProductFactory(slug="firefox")
+        self.user.groups.add(company.group)
 
     def _get(self, locale=None):
         url = reverse("products.product", args=[self.product.slug], locale=locale)
         return self.client.get(url, follow=True)
 
-    def test_snippet_renders_for_a_signed_in_user(self):
+    def test_snippet_renders_for_an_entitled_user(self):
         self.client.force_login(self.user)
         response = self._get()
 
@@ -37,12 +51,12 @@ class ChatWidgetTemplateTests(TestCase):
         self.assertContains(response, SNIPPET_MARKER)
         self.assertContains(response, CHAT_WIDGET_KEY)
 
-    def test_token_url_is_reversed_into_the_page(self):
-        """base.html renders on every page, so a missing route would 500 the site."""
+    def test_the_page_carries_the_token_url_and_the_user(self):
         self.client.force_login(self.user)
         response = self._get()
 
         self.assertContains(response, "/support-chat/jwt/firefox-enterprise")
+        self.assertContains(response, f'data-zendesk-chat-user="{self.user.id}"')
 
     def test_locale_is_set_to_the_page_locale(self):
         self.client.force_login(self.user)
@@ -50,12 +64,18 @@ class ChatWidgetTemplateTests(TestCase):
         self.assertContains(self._get(), "'locale', 'en-US')")
         self.assertContains(self._get(locale="de"), "'locale', 'de')")
 
-    def test_no_snippet_in_an_unmapped_locale(self):
+    def test_no_snippet_in_a_locale_that_is_not_enabled(self):
         self.client.force_login(self.user)
 
         self.assertNotContains(self._get(locale="fr"), SNIPPET_MARKER)
 
     def test_no_snippet_for_anonymous_users(self):
+        self.assertNotContains(self._get(), SNIPPET_MARKER)
+
+    def test_no_snippet_for_a_user_without_chat_access(self):
+        self.user.groups.clear()
+        self.client.force_login(self.user)
+
         self.assertNotContains(self._get(), SNIPPET_MARKER)
 
     @override_switch("zendesk-chat", active=False)
@@ -64,42 +84,16 @@ class ChatWidgetTemplateTests(TestCase):
 
         self.assertNotContains(self._get(), SNIPPET_MARKER)
 
-
-@override_switch("zendesk-chat", active=True)
-@override_settings(
-    ZENDESK_CHAT_WIDGET_KEY=CHAT_WIDGET_KEY,
-    ZENDESK_CHAT_PRODUCT_SLUGS=["firefox"],
-    ZENDESK_CHAT_ELIGIBILITY_PRODUCT_SLUG="firefox-enterprise",
-    ZENDESK_CHAT_LOCALES={"en-US": "en-US", "de": "de"},
-)
-class ChatWidgetArticleTests(TestCase):
-    """A KB article page shows the widget based on the article's products."""
-
-    def setUp(self):
-        self.user = UserFactory()
+    def test_a_chat_page_lets_the_widget_style_itself(self):
         self.client.force_login(self.user)
 
-    def _article(self, slug):
-        """An English article about this product, plus a German translation of it."""
-        parent = ApprovedRevisionFactory(
-            document__products=[ProductFactory(slug=slug)],
-            is_ready_for_localization=True,
-        ).document
-        translation = ApprovedRevisionFactory(
-            document__parent=parent,
-            document__locale="de",
-        ).document
-        return parent, translation
+        sources = csp_directives(self._get()["Content-Security-Policy"])["style-src"]
 
-    def test_snippet_renders_on_an_article(self):
-        """A translation has no products of its own - they sit on its English parent."""
-        parent, translation = self._article("firefox")
+        self.assertIn("'unsafe-inline'", sources)
+        self.assertEqual([], [source for source in sources if source.startswith("'nonce-")])
 
-        self.assertContains(self.client.get(parent.get_absolute_url()), SNIPPET_MARKER)
-        self.assertContains(self.client.get(translation.get_absolute_url()), SNIPPET_MARKER)
+    def test_a_page_without_chat_keeps_the_style_nonce(self):
+        sources = csp_directives(self._get()["Content-Security-Policy"])["style-src"]
 
-    def test_no_snippet_on_an_article_about_another_product(self):
-        parent, translation = self._article("thunderbird")
-
-        self.assertNotContains(self.client.get(parent.get_absolute_url()), SNIPPET_MARKER)
-        self.assertNotContains(self.client.get(translation.get_absolute_url()), SNIPPET_MARKER)
+        self.assertNotIn("'unsafe-inline'", sources)
+        self.assertNotEqual([], [source for source in sources if source.startswith("'nonce-")])

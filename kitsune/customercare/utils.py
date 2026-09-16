@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import Any
 
 import waffle
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from django.utils import timezone
 from zenpy.lib.exception import APIException, RecordNotFoundException
@@ -21,6 +23,23 @@ from kitsune.products.models import (
 )
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
+
+
+def is_chat_enabled() -> bool:
+    if not waffle.switch_is_active("zendesk-chat"):
+        return False
+
+    if not (
+        settings.ZENDESK_CHAT_WIDGET_KEY
+        and settings.ZENDESK_CHAT_SIGNING_SECRET
+        and settings.ZENDESK_CHAT_SIGNING_KEY_ID
+        and settings.ZENDESK_CHAT_ENABLED_LOCALES
+    ):
+        raise ImproperlyConfigured(
+            "Chat requires a widget key, a signing key and its secret, and enabled locales."
+        )
+
+    return True
 
 
 @dataclass(frozen=True)

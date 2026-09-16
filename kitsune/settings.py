@@ -574,7 +574,7 @@ MIDDLEWARE: tuple[str, ...] = (
     # using `request.csp_nonce` (e.g. Forbidden403Middleware), so that on
     # the response phase (which runs in reverse) it is the last to write
     # the CSP header. Otherwise `request.csp_nonce` raises CSPNonceError.
-    "kitsune.sumo.middleware.AdminCSPMiddleware",
+    "kitsune.sumo.middleware.SumoCSPMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "kitsune.sumo.middleware.SetRemoteAddr",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
@@ -1354,25 +1354,10 @@ ZENDESK_CHAT_RATELIMITS = config(
 )
 # Public key from the widget's installation snippet in Admin Center.
 ZENDESK_CHAT_WIDGET_KEY = config("ZENDESK_CHAT_WIDGET_KEY", default="")
-# Show the widget on pages about any of these products.
-ZENDESK_CHAT_PRODUCT_SLUGS = config(
-    "ZENDESK_CHAT_PRODUCT_SLUGS",
-    default="firefox,ios,mobile,firefox-enterprise",
-    cast=Csv(),
+# The locales within which the chat widget can be used.
+ZENDESK_CHAT_ENABLED_LOCALES = config(
+    "ZENDESK_CHAT_ENABLED_LOCALES", default="en-US,de", cast=Csv()
 )
-# The product every chat is checked against, whichever page it starts from.
-ZENDESK_CHAT_ELIGIBILITY_PRODUCT_SLUG = config(
-    "ZENDESK_CHAT_ELIGIBILITY_PRODUCT_SLUG", default="firefox-enterprise"
-)
-# SUMO locale -> Zendesk locale, for the pages that get the widget. Any other
-# locale doesn't show it. Spell the Zendesk side exactly as it appears in
-# https://support.zendesk.com/api/v2/locales/public.json - that list mixes cases
-# ("en-US" but "pt-br"), the codes don't always agree with ours (SUMO "ne-NP" is
-# Zendesk "ne"), and Zendesk silently ignores a code it doesn't recognise.
-ZENDESK_CHAT_LOCALES = {
-    "en-US": "en-US",
-    "de": "de",
-}
 
 # Products that allow un-authenticated users to submit support requests
 LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])
@@ -1441,8 +1426,7 @@ CONTENT_SECURITY_POLICY = {
         "style-src": [
             SELF,
             "https://*.webservices.mozgcp.net",
-            # The chat widget styles itself inline. A nonce here would cancel this out.
-            UNSAFE_INLINE,
+            NONCE,
         ],
         # Style attributes stay blocked, which is what a sanitizer bypass would use.
         "style-src-attr": [NONE],
