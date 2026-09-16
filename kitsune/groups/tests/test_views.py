@@ -450,6 +450,36 @@ class MemberOrderingTests(TestCase):
         self.assertEqual(self._names("leaders"), ["Aaron", "Bob", "carla"])
 
 
+class MemberOrderingTieBreakTests(TestCase):
+    """Users sharing a displayed name fall back to username order, not a random one."""
+
+    def setUp(self):
+        super().setUp()
+        self.group_profile = GroupProfileFactory()
+
+        # Everyone shows the same name, and they're created in reverse username
+        # order, so leaving the tie to the database would list them backwards.
+        for username in ("zeta", "mike", "alpha"):
+            user = UserFactory(username=username, profile__name="Alex Smith")
+            self.group_profile.group.user_set.add(user)
+            self.group_profile.leaders.add(user)
+
+        self.url = reverse("groups.profile", args=[self.group_profile.slug])
+
+    def _usernames(self, section):
+        """The usernames behind each row, read from the profile links."""
+        r = self.client.get(self.url)
+        self.assertEqual(200, r.status_code)
+        links = pq(r.content)(f"ul.users.{section} .user-name")
+        return [pq(el).attr("href").rstrip("/").rsplit("/", 1)[-1] for el in links]
+
+    def test_members_with_same_displayed_name_sorted_by_username(self):
+        self.assertEqual(self._usernames("members"), ["alpha", "mike", "zeta"])
+
+    def test_leaders_with_same_displayed_name_sorted_by_username(self):
+        self.assertEqual(self._usernames("leaders"), ["alpha", "mike", "zeta"])
+
+
 class GroupTicketsViewTests(TestCase):
     """Tests for the groups.tickets view."""
 
