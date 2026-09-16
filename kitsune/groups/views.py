@@ -85,8 +85,12 @@ def list(request):
 
 def profile(request, group_slug, member_form=None, leader_form=None):
     prof = _get_group_profile_or_404(request.user, group_slug)
-    leaders = prof.leaders.all().select_related("profile").order_by(DISPLAY_NAME_ORDER)
-    members_qs = prof.group.user_set.all().select_related("profile").order_by(DISPLAY_NAME_ORDER)
+    leaders = prof.leaders.all().select_related("profile").order_by(DISPLAY_NAME_ORDER, "username")
+    members_qs = (
+        prof.group.user_set.all()
+        .select_related("profile")
+        .order_by(DISPLAY_NAME_ORDER, "username")
+    )
 
     if not prof.can_view_inactive_members(request.user):
         leaders = leaders.filter(is_active=True)
