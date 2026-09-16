@@ -96,6 +96,7 @@ jobs:
             kitsune.customercare kitsune.kpi kitsune.upload kitsune.llm kitsune.announcements
             kitsune.gallery kitsune.notifications kitsune.messages kitsune.flagit kitsune.access
             kitsune.inproduct kitsune.kbadge kitsune.tidings kitsune.karma kitsune.tags
+            kitsune.journal kitsune.watchdog
 
   test-js:
     docker:
