@@ -91,6 +91,16 @@ cache aliases as configured, and use the same fast password hashing as serial te
 The development dependencies include `tblib` so failures in workers retain their
 tracebacks. The CI scripts continue to run ES and `no_parallel` tests serially.
 
+## CI test image
+
+The Docker `test` target reuses the compiled gettext catalogs, JavaScript
+catalogs, and `postatus.txt` from `jsi18n-generator`. This keeps the frontend
+and test image on the same translation snapshot instead of fetching and
+compiling translations twice.
+
+It still runs `collectstatic` with `.env-test`. Keep `postatus.txt` alongside
+the catalogs when changing this build: it is part of the collected static files.
+
 ## CI partition coverage
 
 The CircleCI `kitsune-tests` job runs `check_test_partitions` before its tests.
