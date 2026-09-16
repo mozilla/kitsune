@@ -67,6 +67,26 @@ You can specify specific tests:
 
 See the output of `./manage.py test --help` for more arguments.
 
+## CI partition coverage
+
+The CircleCI `kitsune-tests` job runs `check_test_partitions` before its tests.
+The command uses Django's test runner to discover test IDs under `kitsune` and
+compare them with the app labels of the test jobs scheduled in `.circleci/config.yml`.
+It fails on missing tests, overlapping partitions, or discovery errors. A job
+definition that is absent from the workflows does not count toward coverage.
+
+The check accounts for both passes of the test scripts: no-ES jobs exclude
+`es`-tagged tests, including tests also tagged `no_parallel`. Keep the command's
+tag handling in sync when changing `bin/run-unit-tests.sh` or
+`bin/run-unit-tests-no-es.sh`.
+
+To run the check in the development environment:
+
+    docker compose run --rm web ./manage.py check_test_partitions
+
+Use `--config PATH` to check an alternative CircleCI configuration. The check
+imports tests but does not execute them or create a test database.
+
 ## Running tests without collecting static files
 
 By default the test runner will run `collectstatic` to ensure that all

@@ -84,6 +84,7 @@ dependencies = [
     "django-treebeard>=5.2.2",
     "markdown>=3.10.3",
     "pyjwt>=2.13.0",
+    "pyyaml>=6,<7",
 ]
 
 [project.optional-dependencies]
