@@ -104,6 +104,17 @@ the look like a test.
     example, `forums.tests.document` is the modelmaker for
     `forums.Models.Document` class.
 
+## Password hashing
+
+The Python test runner uses Django's `MD5PasswordHasher` for disposable test
+passwords to avoid the cost of production-strength hashing in factories and
+logins. This applies to serial and spawned parallel runs, without requiring
+`TEST=True`. Application password hashing is unchanged, and the runner restores
+the original hashers when it exits, including when it raises an exception.
+
+Tests that exercise a specific password-hashing algorithm should select it with
+`django.test.override_settings(PASSWORD_HASHERS=[...])`.
+
 # Changing Tests
 
 Unless the current behavior, and thus the test that verifies that

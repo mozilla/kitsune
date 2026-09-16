@@ -4,6 +4,9 @@ import django.core.cache as cache_module
 from django.conf import settings
 from django.core.cache import CacheHandler
 from django.test.runner import DiscoverRunner, ParallelTestSuite
+from django.test.utils import override_settings
+
+_TEST_PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 
 def _configure_parallel_worker():
@@ -22,6 +25,9 @@ def _configure_parallel_worker():
     settings.CACHES = locmem_settings
     cache_module.caches = CacheHandler(locmem_settings)
 
+    # Spawned workers don't inherit the parent runner's settings override.
+    override_settings(PASSWORD_HASHERS=_TEST_PASSWORD_HASHERS).enable()
+
 
 class SpawnParallelTestSuite(ParallelTestSuite):
     process_setup = _configure_parallel_worker
@@ -39,4 +45,5 @@ class SpawnParallelRunner(DiscoverRunner):
     def run_tests(self, test_labels, **kwargs):
         if self.parallel > 1:
             multiprocessing.set_start_method("spawn", force=True)
-        return super().run_tests(test_labels, **kwargs)
+        with override_settings(PASSWORD_HASHERS=_TEST_PASSWORD_HASHERS):
+            return super().run_tests(test_labels, **kwargs)
