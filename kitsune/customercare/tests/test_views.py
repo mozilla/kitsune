@@ -782,6 +782,7 @@ class TicketDetailBreadcrumbsTests(TestCase):
         self.assertSubjectOnlyTrail(self._get(staff))
 
 
+CHAT_WIDGET_KEY = "test-chat-widget-key"
 CHAT_SIGNING_SECRET = "test-chat-signing-secret"
 CHAT_SIGNING_KEY_ID = "test-chat-key-id"
 CHAT_JWT_LIFETIME = 900
@@ -790,6 +791,7 @@ CHAT_RATELIMITS = ["10/m", "60/h", "300/d"]
 
 @override_switch("zendesk-chat", active=True)
 @override_settings(
+    ZENDESK_CHAT_WIDGET_KEY=CHAT_WIDGET_KEY,
     ZENDESK_CHAT_SIGNING_SECRET=CHAT_SIGNING_SECRET,
     ZENDESK_CHAT_SIGNING_KEY_ID=CHAT_SIGNING_KEY_ID,
     ZENDESK_CHAT_JWT_LIFETIME=CHAT_JWT_LIFETIME,

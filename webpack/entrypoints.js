@@ -20,6 +20,7 @@ const entrypoints = {
     "sumo/js/protocol-language-switcher-init.js",
     "sumo/js/sumo-tabs.js",
     "sumo/js/sumo-close-this.js",
+    "sumo/js/sign-out-sync.js",
   ],
   "common.fx.download": [
     "sumo/js/show-fx-download.js",

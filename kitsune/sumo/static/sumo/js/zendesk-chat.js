@@ -3,12 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { apiFetch } from "sumo/js/utils/fetch";
+import { SIGN_OUT_KEY } from "sumo/js/sign-out-sync";
 
-// Who we last signed in to the widget, so we can tell when a different user takes
-// over the browser. We keep our own record because the messaging API can't be asked
-// - it has no status call and no login event. Local storage because that's where the
-// widget keeps its own session: shared across tabs, and surviving a browser close.
-export const STORAGE_KEY = "zendesk-chat-user";
+// The ID of the user that last signed-in to the widget.
+export const SIGNED_IN_USER_KEY = "zendesk-chat-user";
 
 (function () {
   let html = document.documentElement;
@@ -16,6 +14,7 @@ export const STORAGE_KEY = "zendesk-chat-user";
     html.getAttribute('data-zendesk-chat-jwt-url'),
     html.getAttribute('data-zendesk-chat-user')
   );
+  removeChatOnSignOut();
 })();
 
 export function signInToChat(jwtUrl, sessionUser) {
@@ -23,37 +22,66 @@ export function signInToChat(jwtUrl, sessionUser) {
     return;
   }
 
-  let signedIn = window.localStorage.getItem(STORAGE_KEY);
+  let signedIn = window.localStorage.getItem(SIGNED_IN_USER_KEY);
 
-  if (signedIn && signedIn !== sessionUser) {
-    // Clear the previous user out. loginUser on its own doesn't replace them -
-    // tested on dev, where the new user saw the old one's conversation. logoutUser
-    // takes no callback, so this relies on zE running queued commands in order.
+  if (signedIn !== sessionUser) {
     window.zE('messenger', 'logoutUser');
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(SIGNED_IN_USER_KEY);
   }
 
   // Zendesk holds on to this and runs it again whenever it needs a fresh token,
-  // so it has to hit the network every time rather than reuse one.
+  // for example when the user sends something after the old one expired.
   function fetchToken(callback) {
     apiFetch(jwtUrl, { method: 'POST', dataType: 'text' })
       .then(callback)
       .catch((error) => {
-        console.error('Could not get a Zendesk chat token.', error);
-        // Answer with nothing rather than leaving Zendesk waiting on us forever.
-        // That lets it finish the login as a failure, so the callback below runs.
-        callback();
+        // We always remove the chat widget, otherwise the user could chat anonymously.
+        removeChat();
+        // An error means that the user has been refused access to chat (401, 403, 404),
+        // rate-limited (429), or another, unexpected error has occurred. We want to show
+        // the error in the console for every case other than refusal.
+        if (![401, 403, 404].includes(error.response?.status)) {
+          console.error('Could not get a Zendesk chat token.', error);
+        }
       });
   }
 
-  // Every page load, not just when the user changes: the widget doesn't restore an
-  // authenticated session on its own, so skipping this leaves the visitor anonymous
-  // with a fresh, empty conversation.
+  // Login the user on every page load. The widget doesn't restore an authenticated session
+  // on its own, so skipping this leaves the user anonymous with a fresh, empty conversation.
   window.zE('messenger', 'loginUser', fetchToken, (error) => {
     if (error) {
       console.error('Zendesk chat login failed.', error);
       return;
     }
-    window.localStorage.setItem(STORAGE_KEY, sessionUser);
+    window.localStorage.setItem(SIGNED_IN_USER_KEY, sessionUser);
   });
+}
+
+export function removeChat() {
+  window.zE('messenger', 'logoutUser');
+  window.zE('messenger', 'resetWidget');
+  window.zE('messenger', 'hide');
+}
+
+export function removeChatOnSignOut() {
+  if (typeof window.zE !== 'function') {
+    return () => {};
+  }
+
+  // This tab. Storage events never reach the tab that made the change, so a lone
+  // tab would otherwise hear nothing.
+  for (const form of document.querySelectorAll('form#sign-out')) {
+    form.addEventListener('submit', removeChat);
+  }
+
+  // Any other tab.
+  function onStorage(event) {
+    if (event.key === SIGN_OUT_KEY && event.newValue) {
+      removeChat();
+    }
+  }
+
+  window.addEventListener('storage', onStorage);
+
+  return () => window.removeEventListener('storage', onStorage);
 }

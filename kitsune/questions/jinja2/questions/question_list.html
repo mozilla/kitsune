@@ -13,6 +13,8 @@
 {% elif multiple_products %}
   {% set page_title = _('Multiple Products') %}
 {% else %}
+  {% set product = products[0] %}
+  {% set show_chat = chat_is_available(request, product) %}
   {% set page_title = pgettext('DB: products.Product.title', products[0].title) %}
   {% set logo = pgettext('DB: products.Product.image_alternate_url', products[0].image_alternate_url) %}
 {% endif %}
@@ -33,7 +35,6 @@
 {% set meta = (('robots', 'noindex'),) %}
 {% set ga_content_group = "support-forum-home" %}
 {% set matomo_mzla = not multiple_products and matomo_mzla_enabled(products) %}
-{% set show_chat = chat_is_available(request, products) %}
 
 {# This takes kwargs, even though it doesn't say so, because it uses them.
    It's a Jinja Magic thing. #}

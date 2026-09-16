@@ -1,7 +1,13 @@
 import { expect } from "chai";
 import sinon from "sinon";
 
-import { signInToChat, STORAGE_KEY } from "sumo/js/zendesk-chat";
+import { SIGN_OUT_KEY } from "sumo/js/sign-out-sync";
+import {
+  removeChat,
+  removeChatOnSignOut,
+  signInToChat,
+  SIGNED_IN_USER_KEY,
+} from "sumo/js/zendesk-chat";
 
 const JWT_URL = "/support-chat/jwt/firefox-enterprise";
 
@@ -14,7 +20,6 @@ function textResponse(body) {
   };
 }
 
-// Signing a different user in makes two zE calls, so don't assume which is which.
 function loginCall() {
   return window.zE.getCalls().find((call) => call.args[1] === "loginUser");
 }
@@ -23,14 +28,14 @@ describe("zendesk-chat", () => {
   beforeEach(() => {
     window.zE = sinon.stub();
     sinon.stub(window, "fetch").resolves(textResponse("a.signed.token"));
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(SIGNED_IN_USER_KEY);
     sinon.stub(console, "error");
   });
 
   afterEach(() => {
     window.fetch.restore();
     console.error.restore();
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(SIGNED_IN_USER_KEY);
     delete window.zE;
   });
 
@@ -41,9 +46,9 @@ describe("zendesk-chat", () => {
   });
 
   it("signs in again even when the widget already knows this user", () => {
-    // The widget doesn't restore an authenticated session itself, so skipping the
-    // login leaves them anonymous with a fresh, empty conversation. Checked on dev.
-    window.localStorage.setItem(STORAGE_KEY, "ringo");
+    // The widget doesn't restore an authenticated session itself, so skipping
+    // the login leaves it anonymous with a fresh, empty conversation.
+    window.localStorage.setItem(SIGNED_IN_USER_KEY, "ringo");
 
     signInToChat(JWT_URL, "ringo");
 
@@ -52,8 +57,7 @@ describe("zendesk-chat", () => {
   });
 
   it("signs the previous user out before signing a different one in", () => {
-    // Otherwise their conversation carries over on a shared browser.
-    window.localStorage.setItem(STORAGE_KEY, "paul");
+    window.localStorage.setItem(SIGNED_IN_USER_KEY, "paul");
 
     signInToChat(JWT_URL, "ringo");
 
@@ -62,19 +66,18 @@ describe("zendesk-chat", () => {
   });
 
   it("forgets the previous user as soon as they are signed out", () => {
-    // A failed login would otherwise leave us claiming they're still signed in.
-    window.localStorage.setItem(STORAGE_KEY, "paul");
+    window.localStorage.setItem(SIGNED_IN_USER_KEY, "paul");
 
     signInToChat(JWT_URL, "ringo");
 
-    expect(window.localStorage.getItem(STORAGE_KEY)).to.equal(null);
+    expect(window.localStorage.getItem(SIGNED_IN_USER_KEY)).to.equal(null);
   });
 
-  it("signs nobody out when the widget has no user", () => {
+  it("signs out first when it can't confirm who the widget has", () => {
     signInToChat(JWT_URL, "ringo");
 
     const commands = window.zE.getCalls().map((call) => call.args[1]);
-    expect(commands).to.eql(["loginUser"]);
+    expect(commands).to.eql(["logoutUser", "loginUser"]);
   });
 
   it("posts to the token url and hands the token back to Zendesk", async () => {
@@ -90,8 +93,6 @@ describe("zendesk-chat", () => {
   });
 
   it("fetches a fresh token every time Zendesk asks", async () => {
-    // Reusing one would loop: Zendesk 401s an expired token, re-runs this, and
-    // gets the same dead token back.
     signInToChat(JWT_URL, "ringo");
 
     const jwtCallback = loginCall().args[2];
@@ -101,17 +102,67 @@ describe("zendesk-chat", () => {
     expect(window.fetch.callCount).to.equal(2);
   });
 
-  it("answers Zendesk even when the token fetch fails", async () => {
-    // Staying silent would leave the login pending forever, so the failure
-    // callback below never runs and nothing reports the problem.
+  for (const status of [401, 403, 404, 429]) {
+    it(`removes the chat when the token request returns ${status}`, async () => {
+      window.fetch.resolves({
+        ok: false,
+        status,
+        headers: { get: () => "text/plain" },
+        text: async () => "",
+      });
+
+      signInToChat(JWT_URL, "ringo");
+
+      const handToZendesk = sinon.spy();
+      loginCall().args[2](handToZendesk);
+      // Waiting on the callback would hang. We never answer Zendesk now,
+      // because the widget is going away.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      const commands = window.zE.getCalls().map((call) => call.args[1]);
+      expect(commands).to.include.members(["resetWidget", "hide"]);
+      expect(handToZendesk.called).to.equal(false);
+    });
+  }
+
+  it("removes the chat when the token request fails outright", async () => {
     window.fetch.rejects(new Error("network down"));
 
     signInToChat(JWT_URL, "ringo");
 
-    const jwtCallback = loginCall().args[2];
-    const token = await new Promise((resolve) => jwtCallback(resolve));
+    loginCall().args[2](sinon.spy());
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(token).to.equal(undefined);
+    const commands = window.zE.getCalls().map((call) => call.args[1]);
+    expect(commands).to.include.members(["resetWidget", "hide"]);
+    expect(console.error.called).to.equal(true);
+  });
+
+  async function refuseTokenWith(status) {
+    window.fetch.resolves({
+      ok: false,
+      status,
+      headers: { get: () => "text/plain" },
+      text: async () => "",
+    });
+
+    signInToChat(JWT_URL, "ringo");
+
+    loginCall().args[2](sinon.spy());
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+
+  for (const status of [401, 403, 404]) {
+    it(`stays quiet about a ${status}, which is working as intended`, async () => {
+      await refuseTokenWith(status);
+
+      expect(console.error.called).to.equal(false);
+    });
+  }
+
+  it("speaks up about a 429, because our own limits may be too tight", async () => {
+    await refuseTokenWith(429);
+
     expect(console.error.called).to.equal(true);
   });
 
@@ -120,7 +171,7 @@ describe("zendesk-chat", () => {
 
     loginCall().args[3](null);
 
-    expect(window.localStorage.getItem(STORAGE_KEY)).to.equal("ringo");
+    expect(window.localStorage.getItem(SIGNED_IN_USER_KEY)).to.equal("ringo");
   });
 
   it("does not remember the user when login fails", () => {
@@ -128,6 +179,101 @@ describe("zendesk-chat", () => {
 
     loginCall().args[3]({ type: "LoginFailedError" });
 
-    expect(window.localStorage.getItem(STORAGE_KEY)).to.equal(null);
+    expect(window.localStorage.getItem(SIGNED_IN_USER_KEY)).to.equal(null);
+  });
+
+  describe("removeChat", () => {
+    it("logs out, clears local state, then hides", () => {
+      removeChat();
+
+      const commands = window.zE.getCalls().map((call) => call.args[1]);
+      expect(commands).to.eql(["logoutUser", "resetWidget", "hide"]);
+    });
+  });
+
+  describe("removeChatOnSignOut", () => {
+    let form;
+    let stopListening;
+
+    beforeEach(() => {
+      form = document.createElement("form");
+      form.id = "sign-out";
+      document.body.appendChild(form);
+      stopListening = () => {};
+    });
+
+    // jsdom shares one window across tests.
+    afterEach(() => {
+      stopListening();
+      form.remove();
+    });
+
+    function listen() {
+      stopListening = removeChatOnSignOut();
+    }
+
+    function storageEvent(key, newValue) {
+      // Real storage events only fire in the other tabs.
+      return new window.StorageEvent("storage", { key, newValue });
+    }
+
+    it("removes the chat when this tab signs out", () => {
+      listen();
+
+      form.dispatchEvent(new window.Event("submit"));
+
+      const commands = window.zE.getCalls().map((call) => call.args[1]);
+      expect(commands).to.eql(["logoutUser", "resetWidget", "hide"]);
+    });
+
+    it("lets the sign-out go ahead", () => {
+      listen();
+
+      const event = new window.Event("submit", { cancelable: true });
+      form.dispatchEvent(event);
+
+      expect(event.defaultPrevented).to.equal(false);
+    });
+
+    it("covers every sign-out form on the page", () => {
+      // The profile page renders its own, sharing the id with the one in the nav.
+      const second = document.createElement("form");
+      second.id = "sign-out";
+      document.body.appendChild(second);
+
+      listen();
+      second.dispatchEvent(new window.Event("submit"));
+
+      expect(window.zE.called).to.equal(true);
+      second.remove();
+    });
+
+    it("removes the chat when another tab signs out", () => {
+      listen();
+
+      window.dispatchEvent(storageEvent(SIGN_OUT_KEY, "1758000000000"));
+
+      const commands = window.zE.getCalls().map((call) => call.args[1]);
+      expect(commands).to.eql(["logoutUser", "resetWidget", "hide"]);
+    });
+
+    it("ignores changes to other keys", () => {
+      listen();
+
+      window.dispatchEvent(storageEvent("something-else", "1758000000000"));
+
+      expect(window.zE.called).to.equal(false);
+    });
+
+    it("does nothing on a page without the widget", () => {
+      delete window.zE;
+      listen();
+
+      window.zE = sinon.stub();
+      form.dispatchEvent(new window.Event("submit"));
+      window.dispatchEvent(storageEvent(SIGN_OUT_KEY, "1758000000000"));
+
+      expect(window.zE.called).to.equal(false);
+    });
   });
 });

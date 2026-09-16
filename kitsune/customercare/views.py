@@ -10,7 +10,7 @@ import requests
 import waffle
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.core.exceptions import ImproperlyConfigured, PermissionDenied, SuspiciousOperation
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.db import transaction
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -28,6 +28,7 @@ from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import process_zendesk_update
 from kitsune.customercare.utils import (
     generate_classification_tags,
+    is_chat_enabled,
     resolve_chat_eligibility,
     sync_ticket_from_zendesk,
 )
@@ -78,11 +79,8 @@ def chat_jwt_is_ratelimited(request):
 @never_cache
 def chat_jwt(request, product_slug):
     """Sign a short-lived chat identity token. POST enforces CSRF protection."""
-    if not waffle.switch_is_active("zendesk-chat"):
+    if not is_chat_enabled():
         raise Http404
-
-    if not (settings.ZENDESK_CHAT_SIGNING_SECRET and settings.ZENDESK_CHAT_SIGNING_KEY_ID):
-        raise ImproperlyConfigured("Support chat requires a signing key and secret.")
 
     user = request.user
 
