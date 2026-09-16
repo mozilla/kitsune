@@ -130,6 +130,7 @@ dev = [
     "google-api-python-client>=2.198.0,<3",
     "google-auth-oauthlib>=1.4.0,<2",
     "playwright>=1.61.0",
+    "tblib>=3,<4",
 ]
 
 [tool.ruff]

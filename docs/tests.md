@@ -67,6 +67,30 @@ You can specify specific tests:
 
 See the output of `./manage.py test --help` for more arguments.
 
+## Parallel tests
+
+The test runner selects the `spawn` multiprocessing method before Django resolves
+`--parallel=auto`. This avoids a silent fallback to one worker when the platform
+defaults to `forkserver`.
+
+`--parallel=auto` uses `DJANGO_TEST_PROCESSES` when set, otherwise the CPU count.
+An explicit `--parallel=N` takes precedence over that environment variable;
+`--parallel=1` runs serially. Django may reduce the worker count when there are
+fewer test classes than requested workers.
+
+CI sets `DJANGO_TEST_PROCESSES=2` in `docker/docker-compose.ci.yml` to match its
+current CPU allocation without depending on host CPU discovery. Update that
+limit when changing CI resources.
+
+For example, to limit an automatic run to two workers:
+
+    docker compose run --rm -e DJANGO_TEST_PROCESSES=2 web ./manage.py test kitsune.users --parallel=auto
+
+Spawned workers use a process-local default cache while preserving the other
+cache aliases as configured, and use the same fast password hashing as serial tests.
+The development dependencies include `tblib` so failures in workers retain their
+tracebacks. The CI scripts continue to run ES and `no_parallel` tests serially.
+
 ## CI partition coverage
 
 The CircleCI `kitsune-tests` job runs `check_test_partitions` before its tests.

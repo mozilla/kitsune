@@ -5,6 +5,8 @@ services:
       context: .
       target: test
     env_file: .env-test
+    environment:
+      DJANGO_TEST_PROCESSES: "2"
     depends_on:
       - postgres
       - elasticsearch
