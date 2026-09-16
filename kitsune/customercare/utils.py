@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any
 
 import waffle
@@ -11,9 +12,54 @@ from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
-from kitsune.products.models import Product, ProductSupportConfig, Topic, ZendeskTopic
+from kitsune.products.models import (
+    Product,
+    ProductSupportConfig,
+    SupportOrganization,
+    Topic,
+    ZendeskTopic,
+)
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
+
+
+@dataclass(frozen=True)
+class ChatEligibility:
+    org: SupportOrganization | None = None
+    reason: str | None = None
+    conflicting_orgs: tuple[SupportOrganization, ...] = ()
+
+    @property
+    def eligible(self) -> bool:
+        return self.org is not None
+
+
+def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
+    """Require one chat-enabled organization so ticket ownership is unambiguous."""
+    if not (user and user.is_authenticated):
+        return ChatEligibility(reason="not_authenticated")
+    if not user.is_active:
+        return ChatEligibility(reason="inactive_user")
+    if product.is_archived:
+        return ChatEligibility(reason="product_unavailable")
+
+    config = product.support_configs.filter(is_active=True, zendesk_config__isnull=False).first()
+    if config is None:
+        return ChatEligibility(reason="no_ticketing_support")
+    if config.subscription_only and not user.profile.products.filter(pk=product.pk).exists():
+        return ChatEligibility(reason="subscription_required")
+
+    member_groups = GroupProfile.objects.containing(user).values("group_id")
+    organizations = list(config.support_organizations.filter(group_id__in=member_groups))
+    chat_orgs = tuple(org for org in organizations if org.include_live_chat)
+    match chat_orgs:
+        case []:
+            reason = "org_without_chat" if organizations else "no_entitled_org"
+            return ChatEligibility(reason=reason)
+        case [org]:
+            return ChatEligibility(org=org)
+        case _:
+            return ChatEligibility(reason="ambiguous_multi_org", conflicting_orgs=chat_orgs)
 
 
 def resolve_org_group(submitter, product: Product) -> GroupProfile | None:
