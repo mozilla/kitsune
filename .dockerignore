@@ -21,6 +21,12 @@ __pycache__
 /dist
 .gnupg*
 styleguide
+.claude
+.cursor-server
+.mypy_cache
+gcloud
+.bash_history
+.pdbhistory
 
 # Ignore generated credentials from google-github-actions/auth
 gha-creds-*.json
