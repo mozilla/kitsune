@@ -188,7 +188,7 @@
             {# If the document has been created and has a current revision,
                we allow the localizer to keep the translation out of date
                with this new revision. #}
-            {{ submit_revision(revision_form, show_no_update_checkbox=(document and document.current_revision), include_diff=True, translate=True) }}
+            {{ submit_revision(revision_form, show_no_update_checkbox=(document and document.current_revision), include_diff=True, allow_draft=True) }}
             <div id="preview" class="cf"></div>
             <div id="preview-diff">
                 <div class="from">{{ revision_form.content.value() }}</div>
@@ -196,7 +196,7 @@
                 <div class="output"></div>
               </div>
             <div class="submit" id="preview-bottom">
-              {{ submit_revision(revision_form, buttons_only=True, include_diff=True, translate=True) }}
+              {{ submit_revision(revision_form, buttons_only=True, include_diff=True, allow_draft=True) }}
             </div>
             <div id="draft-message" class="alert" hidden>
             </div>
