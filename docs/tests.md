@@ -98,6 +98,19 @@ catalogs, and `postatus.txt` from `jsi18n-generator`. This keeps the frontend
 and test image on the same translation snapshot instead of fetching and
 compiling translations twice.
 
+The shared `l10n-generator` stage prepares gettext catalogs without copying
+application source. Docker's Git `ADD` resolves the current default-branch
+commit of `sumo-l10n` on each build and includes it in the cache key. Application-only
+changes reuse this stage; translation revisions, lint scripts, and Python
+dependency changes invalidate it. Cold builds still fetch and prepare translations.
+The script restores the shallow checkout's history before linting so invalid
+translations can still fall back to an earlier valid revision.
+
+Use `--build-arg L10N_REV=<full-commit-sha>` to pin translations for a reproducible
+build. The production target uses the same prepared gettext catalogs and status
+file. JavaScript catalogs are still generated with the application source and
+settings in each environment.
+
 It still runs `collectstatic` with `.env-test`. Keep `postatus.txt` alongside
 the catalogs when changing this build: it is part of the collected static files.
 

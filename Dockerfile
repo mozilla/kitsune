@@ -27,19 +27,34 @@ COPY pyproject.toml uv.lock ./
 RUN uv venv && uv sync --frozen --extra dev --no-install-project
 
 # =================================
-# Stage 2: Generate jsi18n files
+# Stage 2: Prepare gettext catalogs
+# =================================
+FROM python-base AS l10n-generator
+
+COPY scripts/l10n-fetch-lint-compile.sh scripts/dennis_shim.py ./scripts/
+
+# Git ADD keys the cache on the resolved commit, following the default branch unless pinned.
+ARG L10N_REV
+ADD --keep-git-dir=true https://github.com/mozilla-l10n/sumo-l10n.git#${L10N_REV} /app/locale
+RUN mkdir -p kitsune/sumo/static && \
+    ./scripts/l10n-fetch-lint-compile.sh
+
+# =================================
+# Stage 3: Generate jsi18n files
 # =================================
 FROM python-base AS jsi18n-generator
 
 COPY . .
 RUN uv sync --frozen --extra dev
 
+COPY --from=l10n-generator /app/locale /app/locale
+COPY --from=l10n-generator /app/kitsune/sumo/static/postatus.txt /app/kitsune/sumo/static/postatus.txt
+
 RUN cp .env-build .env && \
-    ./scripts/l10n-fetch-lint-compile.sh && \
     ./manage.py compilejsi18n
 
 # ==================================
-# Stage 3: Frontend Builder (Node.js)
+# Stage 4: Frontend Builder (Node.js)
 # ==================================
 FROM node:22-bookworm AS frontend-builder
 
@@ -57,7 +72,7 @@ RUN cp .env-build .env && \
     npm run webpack:test
 
 # =================================
-# Stage 4: Development Image Target
+# Stage 5: Development Image Target
 # =================================
 FROM python-base AS dev
 
@@ -66,7 +81,7 @@ COPY . .
 RUN uv sync --frozen --extra dev
 
 # =============================
-# Stage 5: Testing Image Target
+# Stage 6: Testing Image Target
 # =============================
 FROM python-base AS test
 
@@ -82,7 +97,7 @@ RUN cp .env-test .env && \
     ./manage.py collectstatic --noinput
 
 # ======================================
-# Stage 6: Build Production Dependencies
+# Stage 7: Build Production Dependencies
 # ======================================
 FROM python-base AS prod-deps
 
@@ -90,13 +105,16 @@ COPY --from=frontend-builder /app/dist /app/dist
 COPY . .
 
 RUN rm -rf .venv && uv venv && uv sync --frozen --no-dev --extra prod --no-install-project
+
+COPY --from=l10n-generator /app/locale /app/locale
+COPY --from=l10n-generator /app/kitsune/sumo/static/postatus.txt /app/kitsune/sumo/static/postatus.txt
+
 RUN cp .env-build .env && \
-    ./scripts/l10n-fetch-lint-compile.sh && \
     ./manage.py compilejsi18n && \
     ./manage.py collectstatic --noinput
 
 # =====================================
-# Stage 7: Final Clean Production Image
+# Stage 8: Final Clean Production Image
 # =====================================
 FROM python:3.14-slim-bookworm AS prod
 

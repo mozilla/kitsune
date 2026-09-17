@@ -2,8 +2,15 @@
 
 # Run this from the project root--not from this directory!
 
-git clone https://github.com/mozilla-l10n/sumo-l10n.git locale
-cd locale
+if [ ! -e locale/.git ]; then
+    git clone https://github.com/mozilla-l10n/sumo-l10n.git locale || exit 1
+fi
+cd locale || exit 1
+
+# Docker's Git ADD starts with a shallow checkout; lint fallback needs its ancestors.
+if [ "$(git rev-parse --is-shallow-repository)" = true ]; then
+    git fetch --unshallow origin "$(git rev-parse HEAD)" || exit 1
+fi
 
 postatus_file=../kitsune/sumo/static/postatus.txt
 head_hash=$(git log -n1 --format=%H)
