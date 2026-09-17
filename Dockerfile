@@ -74,9 +74,11 @@ COPY --from=frontend-builder /app/dist /app/dist
 COPY . .
 RUN uv sync --frozen --extra dev
 
+COPY --from=jsi18n-generator /app/locale /app/locale
+COPY --from=jsi18n-generator /app/jsi18n /app/jsi18n
+COPY --from=jsi18n-generator /app/kitsune/sumo/static/postatus.txt /app/kitsune/sumo/static/postatus.txt
+
 RUN cp .env-test .env && \
-    ./scripts/l10n-fetch-lint-compile.sh && \
-    ./manage.py compilejsi18n && \
     ./manage.py collectstatic --noinput
 
 # ======================================

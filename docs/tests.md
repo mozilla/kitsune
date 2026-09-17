@@ -67,6 +67,60 @@ You can specify specific tests:
 
 See the output of `./manage.py test --help` for more arguments.
 
+## Parallel tests
+
+The test runner selects the `spawn` multiprocessing method before Django resolves
+`--parallel=auto`. This avoids a silent fallback to one worker when the platform
+defaults to `forkserver`.
+
+`--parallel=auto` uses `DJANGO_TEST_PROCESSES` when set, otherwise the CPU count.
+An explicit `--parallel=N` takes precedence over that environment variable;
+`--parallel=1` runs serially. Django may reduce the worker count when there are
+fewer test classes than requested workers.
+
+CI sets `DJANGO_TEST_PROCESSES=2` in `docker/docker-compose.ci.yml` to match its
+current CPU allocation without depending on host CPU discovery. Update that
+limit when changing CI resources.
+
+For example, to limit an automatic run to two workers:
+
+    docker compose run --rm -e DJANGO_TEST_PROCESSES=2 web ./manage.py test kitsune.users --parallel=auto
+
+Spawned workers use a process-local default cache while preserving the other
+cache aliases as configured, and use the same fast password hashing as serial tests.
+The development dependencies include `tblib` so failures in workers retain their
+tracebacks. The CI scripts continue to run ES and `no_parallel` tests serially.
+
+## CI test image
+
+The Docker `test` target reuses the compiled gettext catalogs, JavaScript
+catalogs, and `postatus.txt` from `jsi18n-generator`. This keeps the frontend
+and test image on the same translation snapshot instead of fetching and
+compiling translations twice.
+
+It still runs `collectstatic` with `.env-test`. Keep `postatus.txt` alongside
+the catalogs when changing this build: it is part of the collected static files.
+
+## CI partition coverage
+
+The CircleCI `kitsune-tests` job runs `check_test_partitions` before its tests.
+The command uses Django's test runner to discover test IDs under `kitsune` and
+compare them with the app labels of the test jobs scheduled in `.circleci/config.yml`.
+It fails on missing tests, overlapping partitions, or discovery errors. A job
+definition that is absent from the workflows does not count toward coverage.
+
+The check accounts for both passes of the test scripts: no-ES jobs exclude
+`es`-tagged tests, including tests also tagged `no_parallel`. Keep the command's
+tag handling in sync when changing `bin/run-unit-tests.sh` or
+`bin/run-unit-tests-no-es.sh`.
+
+To run the check in the development environment:
+
+    docker compose run --rm web ./manage.py check_test_partitions
+
+Use `--config PATH` to check an alternative CircleCI configuration. The check
+imports tests but does not execute them or create a test database.
+
 ## Running tests without collecting static files
 
 By default the test runner will run `collectstatic` to ensure that all
@@ -103,6 +157,17 @@ the look like a test.
     modelmakers defined in the tests module of the Django app. For
     example, `forums.tests.document` is the modelmaker for
     `forums.Models.Document` class.
+
+## Password hashing
+
+The Python test runner uses Django's `MD5PasswordHasher` for disposable test
+passwords to avoid the cost of production-strength hashing in factories and
+logins. This applies to serial and spawned parallel runs, without requiring
+`TEST=True`. Application password hashing is unchanged, and the runner restores
+the original hashers when it exits, including when it raises an exception.
+
+Tests that exercise a specific password-hashing algorithm should select it with
+`django.test.override_settings(PASSWORD_HASHERS=[...])`.
 
 # Changing Tests
 

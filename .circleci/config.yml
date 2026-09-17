@@ -30,6 +30,9 @@ commands:
     parameters:
       app_labels:
         type: string
+      check_partitions:
+        type: boolean
+        default: false
     steps:
       - checkout:
           method: blobless
@@ -43,6 +46,12 @@ commands:
       - run:
           name: Start required services
           command: ./bin/dc_ci.sh up -d postgres redis
+      - when:
+          condition: << parameters.check_partitions >>
+          steps:
+            - run:
+                name: Check Python test partition coverage
+                command: ./bin/dc_ci.sh run --no-deps test ./manage.py check_test_partitions
       - run:
           name: Run unit tests
           command: ./bin/dc_ci.sh run --no-deps test ./bin/run-unit-tests-no-es.sh << parameters.app_labels >>
@@ -91,11 +100,13 @@ jobs:
       - image: cimg/python:3.14
     steps:
       - run-tests-no-es:
+          check_partitions: true
           app_labels: >-
             kitsune.sumo kitsune.users kitsune.forums kitsune.groups kitsune.dashboards
             kitsune.customercare kitsune.kpi kitsune.upload kitsune.llm kitsune.announcements
             kitsune.gallery kitsune.notifications kitsune.messages kitsune.flagit kitsune.access
             kitsune.inproduct kitsune.kbadge kitsune.tidings kitsune.karma kitsune.tags
+            kitsune.journal kitsune.watchdog
 
   test-js:
     docker:
