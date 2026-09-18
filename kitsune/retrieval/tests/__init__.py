@@ -51,20 +51,17 @@ def read_indexed_document(*, index: str, identity: ChunkIdentity) -> IndexedDocu
 
 class ChunkIndexTestCase(ElasticTestCase):
     """Create/drop the chunk index per test class — it isn't in `get_doc_types()`, so the
-    shared `es_init` doesn't build it."""
+    lexical test fixture doesn't build it."""
 
     @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
+    def setUpTestData(cls):
+        # Django rolls back class atomics if this hook fails, unlike setUpClass.
+        super().setUpTestData()
+        cls.addClassCleanup(cls._delete_indices)
         # a crashed run can leave an alias-less orphan index; start from a clean slate
         cls._delete_indices()
         create_write_generation(timestamp=datetime.now(tz=UTC), meta=configured_index_meta())
         ChunkDocument.migrate_reads()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls._delete_indices()
-        super().tearDownClass()
 
     @classmethod
     def _delete_indices(cls):

@@ -27,7 +27,11 @@ from kitsune.sumo.redis_utils import RedisError as RedisUnavailable
 from kitsune.sumo.redis_utils import redis_client
 
 NAMESPACE = "retrieval:"
-KEY_PREFIX = f"{NAMESPACE}lease"
+KEY_PREFIX = settings.RETRIEVAL_LOCK_KEY_PREFIX
+if not isinstance(KEY_PREFIX, str) or not KEY_PREFIX.startswith(NAMESPACE):
+    raise ImproperlyConfigured(
+        f"RETRIEVAL_LOCK_KEY_PREFIX must be a string starting with {NAMESPACE!r}."
+    )
 _LIFECYCLE_KEY = f"{KEY_PREFIX}:lifecycle"
 # Redis expiries are milliseconds, so anything shorter truncates to a ttl of zero — and
 # PEXPIRE with zero deletes the key outright.

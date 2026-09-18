@@ -1,5 +1,6 @@
 import time
 from functools import partial
+from importlib.util import find_spec, module_from_spec
 from unittest import mock
 from uuid import uuid4
 
@@ -18,6 +19,15 @@ from kitsune.retrieval.locks import (
     redis_lease,
 )
 from kitsune.sumo.redis_utils import RedisError, redis_client
+
+
+class LockPrefixTests(SimpleTestCase):
+    @override_settings(RETRIEVAL_LOCK_KEY_PREFIX="retrieval-other:lease")
+    def test_prefix_outside_namespace_fails_at_import(self):
+        spec = find_spec("kitsune.retrieval.locks")
+        assert spec is not None and spec.loader is not None
+        with self.assertRaisesMessage(ImproperlyConfigured, "RETRIEVAL_LOCK_KEY_PREFIX"):
+            spec.loader.exec_module(module_from_spec(spec))
 
 
 class LeaseTestCase(SimpleTestCase):

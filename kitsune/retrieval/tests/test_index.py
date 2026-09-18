@@ -1009,8 +1009,8 @@ class ScrollHygieneTests(ChunkIndexTestCase):
         return mock.patch.object(index_module, "scan", tracking)
 
     def _open_scrolls(self) -> int:
-        stats = es_client().nodes.stats(metric="indices", index_metric="search")
-        return sum(node["indices"]["search"]["open_contexts"] for node in stats["nodes"].values())
+        stats = es_client().indices.stats(index=self.index, metric="search")
+        return stats["indices"][self.index]["total"]["search"]["open_contexts"]
 
     def _assert_all_closed(self):
         self.assertTrue(self.scans, "no scan was created, so nothing was proven")

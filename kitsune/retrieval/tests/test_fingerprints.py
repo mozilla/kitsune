@@ -6,6 +6,7 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta, timezone
 from types import SimpleNamespace
 
+from django.conf import settings
 from django.test import SimpleTestCase
 from elasticsearch import NotFoundError
 
@@ -307,7 +308,7 @@ class IndexMetaIoTests(ElasticTestCase):
     def setUp(self):
         super().setUp()
         # Keep this outside ChunkDocument's wildcard and unique per parallel test process.
-        self.index = f"retrieval_fingerprint_meta_io_{os.getpid()}"
+        self.index = f"{settings.ES_INDEX_PREFIX}_fingerprint_meta_io_{os.getpid()}"
         self._drop_index()
         es_client().indices.create(index=self.index)
 

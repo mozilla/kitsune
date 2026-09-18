@@ -78,6 +78,14 @@ class SumoDocument(DSLDocument):
         return super().search(**kwargs)
 
     @classmethod
+    def init(cls, index=None, using=None):
+        # Index creation can outlast the query timeout. Replaying a timed-out
+        # create can fail with "already exists" after the first request succeeds.
+        client = cls._get_connection(using).options(request_timeout=60, max_retries=0)
+        # options() shares the transport; don't close it or change the query client.
+        super().init(index=index, using=client)
+
+    @classmethod
     def migrate_writes(cls, timestamp=None):
         """Create a new index for this document, and point the write alias at it."""
         timestamp = timestamp or datetime.now(tz=UTC)
@@ -419,7 +427,7 @@ class SumoSearchPaginator(DjPaginator):
             if isinstance(number, float) and not number.is_integer():
                 raise ValueError
             number = int(number)
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             raise PageNotAnInteger(_("That page number is not an integer"))
         if number < 1:
             raise EmptyPage(_("That page number is less than 1"))
