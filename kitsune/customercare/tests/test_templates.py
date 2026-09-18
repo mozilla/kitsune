@@ -23,7 +23,7 @@ SNIPPET_MARKER = "static.zdassets.com/ekr/snippet.js"
     ZENDESK_CHAT_WIDGET_KEY=CHAT_WIDGET_KEY,
     ZENDESK_CHAT_SIGNING_SECRET="test-signing-secret",
     ZENDESK_CHAT_SIGNING_KEY_ID="test-key-id",
-    ZENDESK_CHAT_ENABLED_LOCALES=["en-US", "de"],
+    ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES=["de"],
 )
 class ChatWidgetTemplateTests(TestCase):
     """Test that the widget snippet and its inline settings render into the page."""
@@ -64,10 +64,12 @@ class ChatWidgetTemplateTests(TestCase):
         self.assertContains(self._get(), "'locale', 'en-US')")
         self.assertContains(self._get(locale="de"), "'locale', 'de')")
 
-    def test_no_snippet_in_a_locale_that_is_not_enabled(self):
+    def test_a_locale_zendesk_does_not_support_still_gets_the_widget_in_english(self):
         self.client.force_login(self.user)
+        response = self._get(locale="fr")
 
-        self.assertNotContains(self._get(locale="fr"), SNIPPET_MARKER)
+        self.assertContains(response, SNIPPET_MARKER)
+        self.assertContains(response, "'locale', 'en-US')")
 
     def test_no_snippet_for_anonymous_users(self):
         self.assertNotContains(self._get(), SNIPPET_MARKER)
@@ -91,6 +93,20 @@ class ChatWidgetTemplateTests(TestCase):
 
         self.assertIn("'unsafe-inline'", sources)
         self.assertEqual([], [source for source in sources if source.startswith("'nonce-")])
+
+    def test_a_chat_page_allows_the_zendesk_hosts(self):
+        self.client.force_login(self.user)
+
+        directives = csp_directives(self._get()["Content-Security-Policy"])
+
+        self.assertIn("https://*.zdassets.com", directives["script-src"])
+        self.assertIn("wss://*.zendesk.com", directives["connect-src"])
+
+    def test_a_page_without_chat_names_no_zendesk_host(self):
+        directives = csp_directives(self._get()["Content-Security-Policy"])
+
+        self.assertNotIn("https://*.zdassets.com", directives["script-src"])
+        self.assertNotIn("wss://*.zendesk.com", directives["connect-src"])
 
     def test_a_page_without_chat_keeps_the_style_nonce(self):
         sources = csp_directives(self._get()["Content-Security-Policy"])["style-src"]

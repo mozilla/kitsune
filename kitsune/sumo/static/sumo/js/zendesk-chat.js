@@ -50,6 +50,7 @@ export function signInToChat(jwtUrl, sessionUser) {
   // on its own, so skipping this leaves the user anonymous with a fresh, empty conversation.
   window.zE('messenger', 'loginUser', fetchToken, (error) => {
     if (error) {
+      removeChat();
       console.error('Zendesk chat login failed.', error);
       return;
     }

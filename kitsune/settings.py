@@ -1354,9 +1354,9 @@ ZENDESK_CHAT_RATELIMITS = config(
 )
 # Public key from the widget's installation snippet in Admin Center.
 ZENDESK_CHAT_WIDGET_KEY = config("ZENDESK_CHAT_WIDGET_KEY", default="")
-# The locales within which the chat widget can be used.
-ZENDESK_CHAT_ENABLED_LOCALES = config(
-    "ZENDESK_CHAT_ENABLED_LOCALES", default="en-US,de", cast=Csv()
+# The non-English locales supported by the Zendesk widget and agents.
+ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES = config(
+    "ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES", default="", cast=Csv()
 )
 
 # Products that allow un-authenticated users to submit support requests
@@ -1368,6 +1368,32 @@ LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])
 ZENDESK_CHAT_ASSET_HOSTS = ["https://*.zdassets.com"]
 # The account's own API, websocket, and JSONP polling; subdomain differs per environment.
 ZENDESK_CHAT_API_HOSTS = ["https://*.zendesk.com"]
+
+# SumoCSPMiddleware adds these to the policy only for the pages that show the widget.
+ZENDESK_CHAT_CSP_SOURCES = {
+    "script-src": [
+        *ZENDESK_CHAT_ASSET_HOSTS,
+        # The account host serves scripts too, so this can't be narrowed to assets.
+        *ZENDESK_CHAT_API_HOSTS,
+    ],
+    "img-src": [
+        *ZENDESK_CHAT_ASSET_HOSTS,
+        *ZENDESK_CHAT_API_HOSTS,
+        # Attachments and avatars in chat conversations.
+        "https://*.zdusercontent.com",
+    ],
+    "media-src": [*ZENDESK_CHAT_ASSET_HOSTS],
+    "frame-src": [*ZENDESK_CHAT_ASSET_HOSTS, *ZENDESK_CHAT_API_HOSTS],
+    "font-src": [*ZENDESK_CHAT_ASSET_HOSTS],
+    "connect-src": [
+        *ZENDESK_CHAT_ASSET_HOSTS,
+        *ZENDESK_CHAT_API_HOSTS,
+        # The widget holds a live connection for the conversation.
+        "wss://*.zendesk.com",
+    ],
+    # The widget styles itself with styled-components, which can't take a nonce.
+    "style-src": [UNSAFE_INLINE],
+}
 
 # Django CSP configuration
 CONTENT_SECURITY_POLICY = {
@@ -1381,22 +1407,12 @@ CONTENT_SECURITY_POLICY = {
             # cdn.matomo.cloud is multi-tenant; a bare host source would defeat NONCE.
             f"https://{MATOMO_MZLA_CDN_HOST}/{MATOMO_MZLA_TRACKER_HOST}/matomo.js",
             "https://pontoon.mozilla.org",
-            *ZENDESK_CHAT_ASSET_HOSTS,
-            # The account host serves scripts too, so this can't be narrowed to assets.
-            # When chat's live connection falls back to JSONP polling it injects a
-            # script tag for /sc/faye. Drop this and chat says "Offline. You won't
-            # receive messages." - but only once the fallback is actually used.
-            *ZENDESK_CHAT_API_HOSTS,
             NONCE,
         ],
         "img-src": [
             SELF,
             "blob:",
             "data:",
-            *ZENDESK_CHAT_ASSET_HOSTS,
-            *ZENDESK_CHAT_API_HOSTS,
-            # Attachments and avatars in chat conversations.
-            "https://*.zdusercontent.com",
             "https://*.mozaws.net",
             "https://*.webservices.mozgcp.net",
             "https://*.google-analytics.com",
@@ -1410,18 +1426,14 @@ CONTENT_SECURITY_POLICY = {
         "media-src": [
             SELF,
             "https://*.webservices.mozgcp.net",
-            *ZENDESK_CHAT_ASSET_HOSTS,
         ],
         "frame-src": [
             SELF,
             "https://*.youtube.com",
-            *ZENDESK_CHAT_ASSET_HOSTS,
-            *ZENDESK_CHAT_API_HOSTS,
         ],
         "font-src": [
             SELF,
             "https://*.webservices.mozgcp.net",
-            *ZENDESK_CHAT_ASSET_HOSTS,
         ],
         "style-src": [
             SELF,
@@ -1446,15 +1458,15 @@ CONTENT_SECURITY_POLICY = {
             "https://accounts.firefox.com/metrics-flow",
             "https://accounts.stage.mozaws.net/metrics-flow",
             "https://basket.mozilla.org",
-            *ZENDESK_CHAT_ASSET_HOSTS,
-            *ZENDESK_CHAT_API_HOSTS,
-            # The widget holds a live connection for the conversation.
-            "wss://*.zendesk.com",
         ],
     },
 }
 
 if DEBUG:
+    # The nonce has to go, or browsers ignore UNSAFE_INLINE in the same directive.
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"].remove(NONCE)
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"].append(UNSAFE_INLINE)
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].remove(NONCE)
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].extend([UNSAFE_INLINE, UNSAFE_EVAL])
     # GraphiQL (DEBUG-only) loads from jsDelivr; restrict to /npm/ so arbitrary
     # /gh/ repo scripts can't be loaded.

@@ -56,20 +56,13 @@ describe("zendesk-chat", () => {
     expect(commands).to.eql(["loginUser"]);
   });
 
-  it("signs the previous user out before signing a different one in", () => {
+  it("signs the previous user out and forgets them before signing a different one in", () => {
     window.localStorage.setItem(SIGNED_IN_USER_KEY, "paul");
 
     signInToChat(JWT_URL, "ringo");
 
     const commands = window.zE.getCalls().map((call) => call.args[1]);
     expect(commands).to.eql(["logoutUser", "loginUser"]);
-  });
-
-  it("forgets the previous user as soon as they are signed out", () => {
-    window.localStorage.setItem(SIGNED_IN_USER_KEY, "paul");
-
-    signInToChat(JWT_URL, "ringo");
-
     expect(window.localStorage.getItem(SIGNED_IN_USER_KEY)).to.equal(null);
   });
 
@@ -102,8 +95,17 @@ describe("zendesk-chat", () => {
     expect(window.fetch.callCount).to.equal(2);
   });
 
-  for (const status of [401, 403, 404, 429]) {
-    it(`removes the chat when the token request returns ${status}`, async () => {
+  const REFUSALS = [
+    // Refusing access is the system working as intended, so it isn't worth logging.
+    { status: 401, logs: false },
+    { status: 403, logs: false },
+    { status: 404, logs: false },
+    // A 429 means our own rate limits may be too tight, which we want to hear about.
+    { status: 429, logs: true },
+  ];
+
+  for (const { status, logs } of REFUSALS) {
+    it(`removes the chat on a ${status} and ${logs ? "logs it" : "stays quiet"}`, async () => {
       window.fetch.resolves({
         ok: false,
         status,
@@ -122,6 +124,7 @@ describe("zendesk-chat", () => {
       const commands = window.zE.getCalls().map((call) => call.args[1]);
       expect(commands).to.include.members(["resetWidget", "hide"]);
       expect(handToZendesk.called).to.equal(false);
+      expect(console.error.called).to.equal(logs);
     });
   }
 
@@ -138,34 +141,6 @@ describe("zendesk-chat", () => {
     expect(console.error.called).to.equal(true);
   });
 
-  async function refuseTokenWith(status) {
-    window.fetch.resolves({
-      ok: false,
-      status,
-      headers: { get: () => "text/plain" },
-      text: async () => "",
-    });
-
-    signInToChat(JWT_URL, "ringo");
-
-    loginCall().args[2](sinon.spy());
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  }
-
-  for (const status of [401, 403, 404]) {
-    it(`stays quiet about a ${status}, which is working as intended`, async () => {
-      await refuseTokenWith(status);
-
-      expect(console.error.called).to.equal(false);
-    });
-  }
-
-  it("speaks up about a 429, because our own limits may be too tight", async () => {
-    await refuseTokenWith(429);
-
-    expect(console.error.called).to.equal(true);
-  });
-
   it("remembers the user once login succeeds", () => {
     signInToChat(JWT_URL, "ringo");
 
@@ -174,12 +149,17 @@ describe("zendesk-chat", () => {
     expect(window.localStorage.getItem(SIGNED_IN_USER_KEY)).to.equal("ringo");
   });
 
-  it("does not remember the user when login fails", () => {
+  it("forgets the user, removes the chat, and logs it when login fails", () => {
     signInToChat(JWT_URL, "ringo");
 
     loginCall().args[3]({ type: "LoginFailedError" });
 
+    const commands = window.zE.getCalls().map((call) => call.args[1]);
     expect(window.localStorage.getItem(SIGNED_IN_USER_KEY)).to.equal(null);
+    // Leaving the widget up would let the user chat anonymously.
+    expect(commands).to.include.members(["resetWidget", "hide"]);
+    // Zendesk rejected a token we just created, so chat is broken for everyone.
+    expect(console.error.called).to.equal(true);
   });
 
   describe("removeChat", () => {

@@ -12,7 +12,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.db import transaction
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -28,7 +28,6 @@ from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import process_zendesk_update
 from kitsune.customercare.utils import (
     generate_classification_tags,
-    is_chat_enabled,
     resolve_chat_eligibility,
     sync_ticket_from_zendesk,
 )
@@ -79,8 +78,6 @@ def chat_jwt_is_ratelimited(request):
 @never_cache
 def chat_jwt(request, product_slug):
     """Sign a short-lived chat identity token. POST enforces CSRF protection."""
-    if not is_chat_enabled():
-        raise Http404
 
     user = request.user
 
@@ -90,24 +87,18 @@ def chat_jwt(request, product_slug):
     if chat_jwt_is_ratelimited(request):
         return HttpResponse(status=429)
 
-    user_info = f"user {user.username} (#{user.id})"
+    product = get_object_or_404(Product.active, slug=product_slug)
 
-    product = Product.active.filter(slug=product_slug).first()
-    if product is None:
-        # Bound untrusted slugs in journal entries.
-        Record.objects.info(
-            CHAT_JOURNAL_SRC,
-            f"{user_info} asked for chat with unknown product {product_slug[:80]}",
-        )
-        return HttpResponse(status=404)
+    user_info = f"user {user.username} (#{user.id})"
 
     eligibility = resolve_chat_eligibility(user, product)
 
     if not eligibility.eligible:
-        Record.objects.info(
-            CHAT_JOURNAL_SRC,
-            f"{user_info} is not eligible for chat for {product_slug}: {eligibility.reason}",
-        )
+        if not eligibility.disabled_site_wide:
+            Record.objects.info(
+                CHAT_JOURNAL_SRC,
+                f"{user_info} is not eligible for chat for {product_slug}: {eligibility.reason}",
+            )
         if eligibility.conflicting_orgs:
             # Separate entries keep long org slugs within the journal's message limit.
             for slug in GroupProfile.objects.filter(

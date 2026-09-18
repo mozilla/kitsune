@@ -17,21 +17,18 @@ describe("sign-out-sync", () => {
     window.localStorage.removeItem(SIGN_OUT_KEY);
   });
 
-  it("announces a sign-out for the other tabs to hear", () => {
-    announceSignOutToOtherTabs();
-
-    form.dispatchEvent(new window.Event("submit"));
-
-    expect(window.localStorage.getItem(SIGN_OUT_KEY)).to.match(/^\d+$/);
-  });
-
-  it("writes a new value each time, so a later sign-out still reads as a change", () => {
+  it("announces when the sign-out happened, so a later one still reads as a change", () => {
+    // Storage events only fire on a change, so the value has to move each time.
+    // Pinning it to the clock is what guarantees that.
     window.localStorage.setItem(SIGN_OUT_KEY, "1");
+    const before = Date.now();
     announceSignOutToOtherTabs();
 
     form.dispatchEvent(new window.Event("submit"));
 
-    expect(window.localStorage.getItem(SIGN_OUT_KEY)).to.not.equal("1");
+    const announced = Number(window.localStorage.getItem(SIGN_OUT_KEY));
+    expect(announced).to.be.at.least(before);
+    expect(announced).to.be.at.most(Date.now());
   });
 
   it("lets the sign-out go ahead", () => {
