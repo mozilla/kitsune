@@ -6,7 +6,7 @@ from functools import wraps
 from ipaddress import ip_address
 
 import django.middleware.locale
-from csp.constants import SELF
+from csp.constants import NONCE, SELF, UNSAFE_INLINE
 from csp.middleware import CSPMiddleware
 from django.conf import settings
 from django.contrib import messages
@@ -434,22 +434,56 @@ class InAAQMiddleware(MiddlewareMixin):
         return None
 
 
-class AdminCSPMiddleware(CSPMiddleware):
-    """Allow the admin's own static scripts on admin paths only.
+class SumoCSPMiddleware(CSPMiddleware):
+    """Loosens the site-wide CSP for the few requests that need it.
 
-    The admin loads external JS without a CSP nonce, which the site-wide
-    nonce-only script-src would block. SELF covers same-origin static
-    (local/dev), the host covers the deployed static host.
+    This should be the only CSP middleware, because django-csp writes
+    the header once and skips it when it's already set.
     """
 
     def get_policy_parts(self, request, response, report_only=False):
         policy_parts = super().get_policy_parts(request, response, report_only=report_only)
-        if not report_only and request.path_info.startswith("/admin/"):
-            update = policy_parts.update or {}
-            update["script-src"] = [
-                *update.get("script-src", []),
-                SELF,
-                "https://*.webservices.mozgcp.net",
-            ]
-            policy_parts.update = update
+
+        if report_only:
+            return policy_parts
+
+        if request.path_info.startswith("/admin/"):
+            self._allow_admin_scripts(policy_parts)
+
+        elif getattr(request, "_show_chat", False):
+            self._allow_chat_sources(policy_parts)
+
         return policy_parts
+
+    @staticmethod
+    def _allow_admin_scripts(policy_parts):
+        """The admin loads its own scripts without a nonce, which the site-wide
+        nonce-only script-src would block. SELF covers same-origin static
+        (local/dev), the host covers the deployed static host.
+        """
+        update = policy_parts.update or {}
+        update["script-src"] = [
+            *update.get("script-src", []),
+            SELF,
+            "https://*.webservices.mozgcp.net",
+        ]
+        policy_parts.update = update
+
+    @staticmethod
+    def _allow_chat_sources(policy_parts):
+        """What the widget needs, kept off every page that doesn't show it.
+
+        These replace rather than extend the configured sources, because a
+        directive gaining UNSAFE_INLINE has to lose its NONCE: browsers ignore
+        UNSAFE_INLINE when a nonce sits in the same directive.
+        """
+        configured = settings.CONTENT_SECURITY_POLICY["DIRECTIVES"]
+        replace = policy_parts.replace or {}
+
+        for directive, chat_sources in settings.ZENDESK_CHAT_CSP_SOURCES.items():
+            sources = configured.get(directive, [])
+            if UNSAFE_INLINE in chat_sources:
+                sources = [source for source in sources if source != NONCE]
+            replace[directive] = [*sources, *chat_sources]
+
+        policy_parts.replace = replace

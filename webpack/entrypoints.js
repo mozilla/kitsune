@@ -20,6 +20,7 @@ const entrypoints = {
     "sumo/js/protocol-language-switcher-init.js",
     "sumo/js/sumo-tabs.js",
     "sumo/js/sumo-close-this.js",
+    "sumo/js/sign-out-sync.js",
   ],
   "common.fx.download": [
     "sumo/js/show-fx-download.js",
@@ -107,6 +108,9 @@ const entrypoints = {
   ],
   "matomo-mzla": [
     "sumo/js/matomo-mzla.js",
+  ],
+  "zendesk-chat": [
+    "sumo/js/zendesk-chat.js",
   ],
   contribute: [
     "./svelte/contribute",

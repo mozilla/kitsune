@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import Any
 
 import waffle
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from django.utils import timezone
 from zenpy.lib.exception import APIException, RecordNotFoundException
@@ -33,9 +35,23 @@ class ChatEligibility:
     def eligible(self) -> bool:
         return self.org is not None
 
+    @property
+    def disabled_site_wide(self) -> bool:
+        return self.reason == "chat_is_disabled"
+
 
 def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
     """Require one chat-enabled organization so ticket ownership is unambiguous."""
+    if not waffle.switch_is_active("zendesk-chat"):
+        return ChatEligibility(reason="chat_is_disabled")
+
+    if not (
+        settings.ZENDESK_CHAT_WIDGET_KEY
+        and settings.ZENDESK_CHAT_SIGNING_SECRET
+        and settings.ZENDESK_CHAT_SIGNING_KEY_ID
+    ):
+        raise ImproperlyConfigured("Chat requires a widget key, and a signing key and its secret.")
+
     if not (user and user.is_authenticated):
         return ChatEligibility(reason="not_authenticated")
     if not user.is_active:
