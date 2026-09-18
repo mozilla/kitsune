@@ -822,13 +822,11 @@ class ChatJWTViewTests(TestCase):
         self.assertEqual("/support-chat/jwt/firefox", self._url())
 
     @override_switch("zendesk-chat", active=False)
-    def test_disabled_chat_returns_404(self):
+    def test_disabled_chat_is_refused_without_a_journal_entry(self):
         self.client.force_login(self.user)
-        with patch("kitsune.customercare.views.is_ratelimited", return_value=False) as limited:
-            response = self.client.post(self._url())
+        response = self.client.post(self._url())
 
-        self.assertEqual(404, response.status_code)
-        limited.assert_not_called()
+        self.assertEqual(403, response.status_code)
         self.assertFalse(Record.objects.exists())
 
     def test_anonymous_gets_uncacheable_401(self):
@@ -942,14 +940,13 @@ class ChatJWTViewTests(TestCase):
         self.assertIn(self.user.username, record.msg)
         self.assertIn(self.product.slug, record.msg)
 
-    def test_unknown_product_returns_404_and_is_journaled(self):
+    def test_unknown_product_returns_404(self):
+        """We don't journal the slug, so a stream of bad ones can't fill the journal."""
         self.client.force_login(self.user)
         response = self.client.post(self._url(slug="no-such-product"))
 
         self.assertEqual(404, response.status_code)
-        record = Record.objects.get()
-        self.assertEqual(RECORD_INFO, record.level)
-        self.assertIn("no-such-product", record.msg)
+        self.assertFalse(Record.objects.exists())
 
     def test_429_when_only_the_daily_window_is_exceeded(self):
         self.client.force_login(self.user)

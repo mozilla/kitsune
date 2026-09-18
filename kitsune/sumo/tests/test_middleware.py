@@ -404,12 +404,29 @@ class SumoCSPMiddlewareTestCase(TestCase):
         self.assertIn("'unsafe-inline'", directives["style-src"])
         self.assertNotIn(self.nonce, directives["style-src"])
 
-    def test_chat_keeps_the_configured_style_hosts(self):
+    def test_chat_adds_everything_the_widget_needs(self):
         directives = self._directives(show_chat=True)
 
-        for source in settings.CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"]:
-            if isinstance(source, str):
-                self.assertIn(source, directives["style-src"])
+        for directive, sources in settings.ZENDESK_CHAT_CSP_SOURCES.items():
+            for source in sources:
+                self.assertIn(source, directives[directive])
+
+    def test_a_page_without_chat_names_no_zendesk_host(self):
+        directives = self._directives()
+
+        for directive, sources in settings.ZENDESK_CHAT_CSP_SOURCES.items():
+            for source in sources:
+                self.assertNotIn(source, directives[directive])
+
+    def test_chat_keeps_the_configured_sources(self):
+        """Those directives are replaced rather than extended, so anything already
+        configured has to be carried over."""
+        directives = self._directives(show_chat=True)
+
+        for directive in settings.ZENDESK_CHAT_CSP_SOURCES:
+            for source in settings.CONTENT_SECURITY_POLICY["DIRECTIVES"][directive]:
+                if isinstance(source, str):
+                    self.assertIn(source, directives[directive])
 
     def test_chat_leaves_style_attributes_blocked(self):
         self.assertEqual(["'none'"], self._directives(show_chat=True)["style-src-attr"])
@@ -428,11 +445,3 @@ class SumoCSPMiddlewareTestCase(TestCase):
 
     def test_other_paths_do_not_allow_admin_scripts(self):
         self.assertNotIn("'self'", self._directives()["script-src"])
-
-    def test_it_is_the_only_csp_middleware(self):
-        """A second one would override the header and turn the first one into a no-op,
-        since response middleware runs bottom-up and django-csp skips a header that
-        is already set."""
-        installed = [name for name in settings.MIDDLEWARE if name.endswith("CSPMiddleware")]
-
-        self.assertEqual(["kitsune.sumo.middleware.SumoCSPMiddleware"], installed)

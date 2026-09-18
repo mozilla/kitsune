@@ -2,7 +2,7 @@
 <script id="ze-snippet" nonce="{{ request.csp_nonce }}" src="https://static.zdassets.com/ekr/snippet.js?key={{ settings.ZENDESK_CHAT_WIDGET_KEY }}"></script>
 {# Inline and immediately after the snippet, as Zendesk recommends. Otherwise, the widget starts up with the defaults. #}
 <script nonce="{{ request.csp_nonce }}">
-  zE('messenger:set', 'locale', '{{ to_zendesk_locale(request.LANGUAGE_CODE) }}');
+  zE('messenger:set', 'locale', '{{ select_zendesk_locale(request.LANGUAGE_CODE) }}');
   // The "functional" setting drops analytics storage but keeps chat working.
   if (navigator.globalPrivacyControl || navigator.doNotTrack === '1') {
     zE('messenger:set', 'cookies', 'functional');

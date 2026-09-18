@@ -451,7 +451,7 @@ class SumoCSPMiddleware(CSPMiddleware):
             self._allow_admin_scripts(policy_parts)
 
         elif getattr(request, "_show_chat", False):
-            self._allow_chat_styles(policy_parts)
+            self._allow_chat_sources(policy_parts)
 
         return policy_parts
 
@@ -470,19 +470,20 @@ class SumoCSPMiddleware(CSPMiddleware):
         policy_parts.update = update
 
     @staticmethod
-    def _allow_chat_styles(policy_parts):
-        """The chat widget styles itself inline and can't be handed a nonce.
+    def _allow_chat_sources(policy_parts):
+        """What the widget needs, kept off every page that doesn't show it.
 
-        Browsers ignore UNSAFE_INLINE when a NONCE exists in the same directive,
-        so we must replace rather than update because the NONCE has to be removed.
+        These replace rather than extend the configured sources, because a
+        directive gaining UNSAFE_INLINE has to lose its NONCE: browsers ignore
+        UNSAFE_INLINE when a nonce sits in the same directive.
         """
+        configured = settings.CONTENT_SECURITY_POLICY["DIRECTIVES"]
         replace = policy_parts.replace or {}
-        replace["style-src"] = [
-            *(
-                source
-                for source in settings.CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"]
-                if source != NONCE
-            ),
-            UNSAFE_INLINE,
-        ]
+
+        for directive, chat_sources in settings.ZENDESK_CHAT_CSP_SOURCES.items():
+            sources = configured.get(directive, [])
+            if UNSAFE_INLINE in chat_sources:
+                sources = [source for source in sources if source != NONCE]
+            replace[directive] = [*sources, *chat_sources]
+
         policy_parts.replace = replace
