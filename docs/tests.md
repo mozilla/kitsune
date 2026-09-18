@@ -89,7 +89,30 @@ For example, to limit an automatic run to two workers:
 Spawned workers use a process-local default cache while preserving the other
 cache aliases as configured, and use the same fast password hashing as serial tests.
 The development dependencies include `tblib` so failures in workers retain their
-tracebacks. The CI scripts continue to run ES and `no_parallel` tests serially.
+tracebacks.
+
+The ES-enabled CI script runs all tests except `no_parallel` in the parallel pass,
+then runs `no_parallel` tests serially. The non-ES script excludes `es` in both
+passes. Both scripts force the serial pass to one worker, even when callers supply
+`--parallel`.
+
+When a parallel suite includes ES tests, each worker gets its own Elasticsearch
+index prefix and retrieval lease-key prefix, including a unique run identifier.
+These settings are applied before document classes bind their index names and
+aliases. Redis endpoints and database numbers are unchanged; production retrieval
+lease keys keep their existing format. The parent removes only that run's indices
+and lease keys when the suite exits, including after failfast terminates a worker.
+
+`ElasticTestCase` initializes lexical indices once per process, when the first ES
+test class runs. This also covers serial runs and Django's single-class fallback;
+tests no longer need a separate `es_init` command. `ChunkIndexTestCase` retains its
+per-class retrieval index lifecycle. Runs without ES tests do not initialize or
+clean up ES resources.
+
+Index setup uses a longer request timeout than searches and disables automatic
+retries on the DSL client. A timed-out create may already have succeeded on the
+server, so retrying it can report "index already exists". The normal clients and
+query timeout are restored after setup, including when initialization fails.
 
 ## CI test image
 
