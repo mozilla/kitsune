@@ -215,7 +215,7 @@ class EditQuestionForm(forms.ModelForm):
             except ValueError:
                 parsed = None
 
-            if parsed:
+            if isinstance(parsed, dict):
                 # Clean out unwanted garbage preferences.
                 if "modifiedPreferences" in parsed and isinstance(
                     parsed["modifiedPreferences"], dict
