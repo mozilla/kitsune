@@ -1,14 +1,46 @@
+from datetime import UTC, datetime
+from functools import cache
+
+from django.conf import settings
 from django.test import tag
 from django.test.utils import override_settings
+from elasticsearch.dsl import connections
 
+from kitsune.search.config import DEFAULT_ES_CONNECTION
 from kitsune.search.es_utils import get_doc_types
 from kitsune.sumo.tests import TestCase
+
+
+@cache
+@override_settings(ES_TIMEOUT=60)
+def _initialize_indices():
+    # Cold index creation can exceed the search timeout. Retrying a timed-out
+    # create can fail with "already exists" after the first request succeeds.
+    connection = connections.get_connection(DEFAULT_ES_CONNECTION)
+    connections.add_connection(
+        DEFAULT_ES_CONNECTION,
+        connection.options(request_timeout=settings.ES_TIMEOUT, max_retries=0),
+    )
+    try:
+        timestamp = datetime.now(tz=UTC)
+        for doc_type in get_doc_types():
+            doc_type.migrate_writes(timestamp=timestamp)
+            doc_type.migrate_reads()
+    finally:
+        # options() shares the transport; restore the client without closing it.
+        connections.add_connection(DEFAULT_ES_CONNECTION, connection)
 
 
 @tag("es")
 @override_settings(ES_LIVE_INDEXING=True)
 class ElasticTestCase(TestCase):
     """Base class for Elastic Search tests, providing some conveniences"""
+
+    @classmethod
+    def setUpClass(cls):
+        # Run once per process, only if an ES-backed test is actually selected.
+        _initialize_indices()
+        super().setUpClass()
 
     def tearDown(self):
         """Delete all documents in each index."""

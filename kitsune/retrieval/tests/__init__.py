@@ -51,7 +51,7 @@ def read_indexed_document(*, index: str, identity: ChunkIdentity) -> IndexedDocu
 
 class ChunkIndexTestCase(ElasticTestCase):
     """Create/drop the chunk index per test class — it isn't in `get_doc_types()`, so the
-    shared `es_init` doesn't build it."""
+    lexical test fixture doesn't build it."""
 
     @classmethod
     def setUpClass(cls):
