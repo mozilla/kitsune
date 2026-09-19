@@ -428,6 +428,9 @@ ShowFor.prototype.initShowFuncs = function () {
   this.showFuncs = new WeakMap();
   this.container.querySelectorAll('.for').forEach(function (elem) {
     var showFor = elem.dataset.for;
+    if (!showFor) {
+      return;
+    }
     var criteria = showFor.split(/\s*,\s*/);
     var showFunc = this.matchesCriteria.bind(this, criteria);
     this.showFuncs.set(elem, showFunc);
