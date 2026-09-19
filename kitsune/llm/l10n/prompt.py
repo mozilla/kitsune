@@ -72,7 +72,7 @@ r"\\{(button|menu|pref) [^}]*\\}"
 2. **Preserve unchanged** each string that case-sensitively matches the following regular expression:
 
     ```python
-    r"\\{(for|key|filepath) [^}]*\\}"
+    r"\\{(for|key|filepath) [^}]*\\}||<!--.*?-->"
     ```
 
     - In other words, preserve unchanged both the tags and the text inside the tags.
