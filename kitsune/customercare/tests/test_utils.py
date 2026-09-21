@@ -1,7 +1,10 @@
 from unittest.mock import MagicMock, Mock, patch
 
 from django.contrib.auth.models import AnonymousUser, Group
+from django.core.exceptions import ImproperlyConfigured
+from django.test import override_settings
 from django.utils import timezone
+from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.models import SupportTicket
@@ -556,6 +559,12 @@ class ResolveOrgGroupTests(TestCase):
         self.assertIsNone(resolve_org_group(self.it_user, product2))
 
 
+@override_switch("zendesk-chat", active=True)
+@override_settings(
+    ZENDESK_CHAT_WIDGET_KEY="test-widget-key",
+    ZENDESK_CHAT_SIGNING_SECRET="test-signing-secret",
+    ZENDESK_CHAT_SIGNING_KEY_ID="test-key-id",
+)
 class ResolveChatEligibilityTests(TestCase):
     def setUp(self):
         self.product = ProductFactory()
@@ -588,6 +597,18 @@ class ResolveChatEligibilityTests(TestCase):
         self.assertFalse(result.eligible)
         self.assertIsNone(result.org)
         self.assertEqual(result.reason, reason)
+
+    @override_switch("zendesk-chat", active=False)
+    def test_switch_off(self):
+        self._assert_ineligible(
+            resolve_chat_eligibility(self.user, self.product), "chat_is_disabled"
+        )
+
+    @override_settings(ZENDESK_CHAT_WIDGET_KEY="")
+    def test_switched_on_but_not_configured(self):
+        """This fails loudly on purpose, because it's a configuration mistake."""
+        with self.assertRaises(ImproperlyConfigured):
+            resolve_chat_eligibility(self.user, self.product)
 
     def test_membership_resolves_one_org_per_product(self):
         self.config.forum_config = AAQConfigFactory()

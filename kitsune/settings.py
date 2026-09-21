@@ -574,7 +574,7 @@ MIDDLEWARE: tuple[str, ...] = (
     # using `request.csp_nonce` (e.g. Forbidden403Middleware), so that on
     # the response phase (which runs in reverse) it is the last to write
     # the CSP header. Otherwise `request.csp_nonce` raises CSPNonceError.
-    "kitsune.sumo.middleware.AdminCSPMiddleware",
+    "kitsune.sumo.middleware.SumoCSPMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "kitsune.sumo.middleware.SetRemoteAddr",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
@@ -1347,11 +1347,53 @@ ZENDESK_CHAT_SIGNING_KEY_ID = config("ZENDESK_CHAT_SIGNING_KEY_ID", default="")
 ZENDESK_CHAT_SIGNING_SECRET = config("ZENDESK_CHAT_SIGNING_SECRET", default="")
 # Seconds. Zendesk asks the widget for a new token once this one expires.
 ZENDESK_CHAT_JWT_LIFETIME = config("ZENDESK_CHAT_JWT_LIFETIME", default=900, cast=int)
-# Multi-window limits (see kitsune.customercare.views.chat_jwt_is_ratelimited).
-ZENDESK_CHAT_RATELIMITS = config("ZENDESK_CHAT_RATELIMITS", default="10/m,60/h,300/d", cast=Csv())
+# Multi-window limits (see kitsune.customercare.views.chat_jwt_is_ratelimited). The
+# widget asks for a token on every page load, so these have to clear ordinary reading.
+ZENDESK_CHAT_RATELIMITS = config(
+    "ZENDESK_CHAT_RATELIMITS", default="60/m,600/h,2000/d", cast=Csv()
+)
+# Public key from the widget's installation snippet in Admin Center.
+ZENDESK_CHAT_WIDGET_KEY = config("ZENDESK_CHAT_WIDGET_KEY", default="")
+# The non-English locales supported by the Zendesk widget and agents.
+ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES = config(
+    "ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES", default="", cast=Csv()
+)
 
 # Products that allow un-authenticated users to submit support requests
 LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])
+
+# Zendesk messaging widget. Wildcards because the widget lazy-loads chunks, and
+# because the account subdomain differs per environment.
+# The widget's code and its lazy-loaded chunks.
+ZENDESK_CHAT_ASSET_HOSTS = ["https://*.zdassets.com"]
+# The account's own API, websocket, and JSONP polling; subdomain differs per environment.
+ZENDESK_CHAT_API_HOSTS = ["https://*.zendesk.com"]
+
+# SumoCSPMiddleware adds these to the policy only for the pages that show the widget.
+ZENDESK_CHAT_CSP_SOURCES = {
+    "script-src": [
+        *ZENDESK_CHAT_ASSET_HOSTS,
+        # The account host serves scripts too, so this can't be narrowed to assets.
+        *ZENDESK_CHAT_API_HOSTS,
+    ],
+    "img-src": [
+        *ZENDESK_CHAT_ASSET_HOSTS,
+        *ZENDESK_CHAT_API_HOSTS,
+        # Attachments and avatars in chat conversations.
+        "https://*.zdusercontent.com",
+    ],
+    "media-src": [*ZENDESK_CHAT_ASSET_HOSTS],
+    "frame-src": [*ZENDESK_CHAT_ASSET_HOSTS, *ZENDESK_CHAT_API_HOSTS],
+    "font-src": [*ZENDESK_CHAT_ASSET_HOSTS],
+    "connect-src": [
+        *ZENDESK_CHAT_ASSET_HOSTS,
+        *ZENDESK_CHAT_API_HOSTS,
+        # The widget holds a live connection for the conversation.
+        "wss://*.zendesk.com",
+    ],
+    # The widget styles itself with styled-components, which can't take a nonce.
+    "style-src": [UNSAFE_INLINE],
+}
 
 # Django CSP configuration
 CONTENT_SECURITY_POLICY = {
@@ -1398,6 +1440,8 @@ CONTENT_SECURITY_POLICY = {
             "https://*.webservices.mozgcp.net",
             NONCE,
         ],
+        # Style attributes stay blocked, which is what a sanitizer bypass would use.
+        "style-src-attr": [NONE],
         "form-action": [
             SELF,
             "https://accounts.firefox.com",
@@ -1419,7 +1463,10 @@ CONTENT_SECURITY_POLICY = {
 }
 
 if DEBUG:
+    # The nonce has to go, or browsers ignore UNSAFE_INLINE in the same directive.
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"].remove(NONCE)
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"].append(UNSAFE_INLINE)
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].remove(NONCE)
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].extend([UNSAFE_INLINE, UNSAFE_EVAL])
     # GraphiQL (DEBUG-only) loads from jsDelivr; restrict to /npm/ so arbitrary
     # /gh/ repo scripts can't be loaded.
