@@ -1,16 +1,36 @@
+import json
+from base64 import b64decode
 from unittest.mock import Mock, patch
 
+import requests
+from django.contrib.auth.models import AnonymousUser
+from django.core.cache import cache
+from django.core.checks import Warning
+from django.test import SimpleTestCase, override_settings
+from zenpy.lib.exception import APIException, ZenpyException
+
+from kitsune.customercare.checks import check_zendesk_oauth_configuration
 from kitsune.customercare.zendesk import LOGINLESS_TAG, ZendeskClient
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
 
+@override_settings(
+    ZENDESK_SUBDOMAIN="oauth-test",
+    ZENDESK_OAUTH_CLIENT_ID="sumo",
+    ZENDESK_OAUTH_CLIENT_SECRET="test-client-secret",
+)
 class ZendeskClientTests(TestCase):
     """Tests for ZendeskClient tag handling."""
 
     def setUp(self):
         """Set up test data."""
         self.user = UserFactory()
+        token_patch = patch(
+            "kitsune.customercare.zendesk.get_oauth_token", return_value="test-access-token"
+        )
+        token_patch.start()
+        self.addCleanup(token_patch.stop)
 
     @patch("kitsune.customercare.zendesk.Zenpy")
     @patch("django.conf.settings.ZENDESK_PRODUCT_FIELD_ID", 123)
@@ -67,8 +87,6 @@ class ZendeskClientTests(TestCase):
     @patch("django.conf.settings.ZENDESK_CONTACT_LABEL_ID", 127)
     def test_create_ticket_includes_loginless_tag_plus_zendesk_tags(self, mock_zenpy):
         """Test that loginless tickets include both loginless tag and taxonomy tags."""
-        from django.contrib.auth.models import AnonymousUser
-
         mock_client = Mock()
         mock_zenpy.return_value = mock_client
         mock_client.tickets.create.return_value = Mock(id=789)
@@ -547,8 +565,6 @@ class ZendeskClientTests(TestCase):
     @patch("kitsune.customercare.zendesk.Zenpy")
     def test_add_ticket_comment_with_anonymous_user(self, mock_zenpy):
         """Test that add_ticket_comment raises ValueError for anonymous users."""
-        from django.contrib.auth.models import AnonymousUser
-
         mock_client = Mock()
         mock_zenpy.return_value = mock_client
 
@@ -573,19 +589,198 @@ class ZendeskClientTests(TestCase):
         self.assertEqual(ticket_arg.status, "solved")
 
 
-class ZendeskClientConstructorTests(TestCase):
-    """Tests for ZendeskClient kwargs forwarding to the Zenpy constructor."""
+@override_settings(
+    ZENDESK_SUBDOMAIN="oauth-test",
+    ZENDESK_USER_EMAIL="legacy@example.com",
+    ZENDESK_API_TOKEN="legacy-api-token",
+    ZENDESK_OAUTH_CLIENT_ID="sumo",
+    ZENDESK_OAUTH_CLIENT_SECRET="test-client-secret",
+    CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}},
+)
+class ZendeskOAuthTests(SimpleTestCase):
+    def setUp(self):
+        cache.clear()
+        self.addCleanup(cache.clear)
+        self.token_requests = []
+        self.api_requests = []
+        self.token_status = 200
+        self.api_status = 200
+        clock_patch = patch("time.time", return_value=1_800_000_000)
+        self.clock = clock_patch.start()
+        self.addCleanup(clock_patch.stop)
+        transport_patch = patch("requests.sessions.Session.send", side_effect=self._send)
+        transport_patch.start()
+        self.addCleanup(transport_patch.stop)
 
-    @patch("kitsune.customercare.zendesk.Zenpy")
-    def test_timeout_kwarg_forwarded(self, mock_zenpy):
-        ZendeskClient(timeout=12)
-        kwargs = mock_zenpy.call_args.kwargs
-        self.assertEqual(12, kwargs["timeout"])
+    def _send(self, request, **kwargs):
+        response = requests.Response()
+        response.request = request
+        response.url = request.url
+        response.status_code = 200
+        if request.url.endswith("/oauth/tokens"):
+            self.token_requests.append(request)
+            response.status_code = self.token_status
+            data = {
+                "access_token": f"access-token-{len(self.token_requests)}",
+                "expires_in": 1800,
+                "token_type": "bearer",
+            }
+        else:
+            self.api_requests.append(request)
+            response.status_code = self.api_status
+            data = (
+                {"ticket": {"id": 123, "subject": "Support request"}}
+                if self.api_status == 200
+                else {"error": "invalid_token"}
+            )
+        response._content = json.dumps(data).encode()
+        return response
 
-    @patch("kitsune.customercare.zendesk.Zenpy")
-    def test_credentials_still_forwarded(self, mock_zenpy):
-        ZendeskClient(timeout=5)
-        kwargs = mock_zenpy.call_args.kwargs
-        self.assertIn("email", kwargs)
-        self.assertIn("token", kwargs)
-        self.assertIn("subdomain", kwargs)
+    def test_sdk_uses_bearer_authentication_and_reuses_token_across_clients(self):
+        self.assertEqual(ZendeskClient().get_ticket(123).subject, "Support request")
+        ZendeskClient().get_ticket(123)
+
+        self.assertEqual(len(self.token_requests), 1)
+        request = self.token_requests[0]
+        self.assertEqual(request.url, "https://oauth-test.zendesk.com/oauth/tokens")
+        self.assertEqual(request.method, "POST")
+        self.assertEqual(
+            json.loads(request.body),
+            {
+                "grant_type": "client_credentials",
+                "client_id": "sumo",
+                "client_secret": "test-client-secret",
+                "scope": "read users:write tickets:write",
+            },
+        )
+        self.assertEqual(
+            [request.headers["Authorization"] for request in self.api_requests],
+            ["Bearer access-token-1", "Bearer access-token-1"],
+        )
+
+    @override_settings(ZENDESK_OAUTH_CLIENT_ID="", ZENDESK_OAUTH_CLIENT_SECRET="")
+    def test_legacy_authentication_when_oauth_is_disabled(self):
+        self.assertEqual(ZendeskClient().get_ticket(123).subject, "Support request")
+
+        self.assertEqual(self.token_requests, [])
+        scheme, credentials = self.api_requests[0].headers["Authorization"].split()
+        self.assertEqual(scheme, "Basic")
+        self.assertEqual(
+            b64decode(credentials).decode(), "legacy@example.com/token:legacy-api-token"
+        )
+
+    def test_partial_oauth_configuration_uses_legacy_authentication(self):
+        for missing_setting in ("ZENDESK_OAUTH_CLIENT_ID", "ZENDESK_OAUTH_CLIENT_SECRET"):
+            with self.subTest(missing_setting=missing_setting):
+                with self.settings(**{missing_setting: ""}):
+                    ZendeskClient().get_ticket(123)
+                scheme, credentials = self.api_requests[-1].headers["Authorization"].split()
+                self.assertEqual(scheme, "Basic")
+                self.assertEqual(
+                    b64decode(credentials).decode(), "legacy@example.com/token:legacy-api-token"
+                )
+        self.assertEqual(self.token_requests, [])
+
+    @override_settings(ZENDESK_OAUTH_CLIENT_ID="", ZENDESK_OAUTH_CLIENT_SECRET="")
+    def test_incomplete_legacy_credentials_fail_before_any_request(self):
+        for missing_setting in (
+            "ZENDESK_SUBDOMAIN",
+            "ZENDESK_USER_EMAIL",
+            "ZENDESK_API_TOKEN",
+        ):
+            with self.subTest(missing_setting=missing_setting):
+                with self.settings(**{missing_setting: ""}):
+                    client = ZendeskClient()
+                    with self.assertRaises(ZenpyException):
+                        client.get_ticket(123)
+        self.assertEqual(self.token_requests, [])
+        self.assertEqual(self.api_requests, [])
+
+    @override_settings(ZENDESK_SUBDOMAIN="")
+    def test_oauth_requires_a_subdomain_before_any_request(self):
+        client = ZendeskClient()
+        with self.assertRaises(ZenpyException):
+            client.get_ticket(123)
+        self.assertEqual(self.token_requests, [])
+        self.assertEqual(self.api_requests, [])
+
+    def test_oauth_api_rejection_does_not_fall_back_to_legacy(self):
+        self.api_status = 401
+        with self.assertRaises(APIException):
+            ZendeskClient().get_ticket(123)
+        self.assertEqual(
+            [request.headers["Authorization"] for request in self.api_requests],
+            ["Bearer access-token-1"],
+        )
+
+    @patch("kitsune.customercare.zendesk.requests.post", side_effect=requests.Timeout)
+    def test_oauth_timeout_does_not_fall_back_to_legacy(self, mock_post):
+        client = ZendeskClient()
+        with self.assertRaises(requests.Timeout):
+            client.get_ticket(123)
+        self.assertEqual(self.api_requests, [])
+
+    def test_reacquires_token_before_expiry(self):
+        ZendeskClient().get_ticket(123)
+        self.clock.return_value += 1700
+        ZendeskClient().get_ticket(123)
+        self.clock.return_value += 99
+        ZendeskClient().get_ticket(123)
+
+        self.assertEqual(
+            [request.headers["Authorization"] for request in self.api_requests],
+            ["Bearer access-token-1", "Bearer access-token-1", "Bearer access-token-2"],
+        )
+
+    def test_rotated_secret_does_not_reuse_cached_token(self):
+        ZendeskClient().get_ticket(123)
+        with self.settings(ZENDESK_OAUTH_CLIENT_SECRET="replacement-secret"):
+            ZendeskClient().get_ticket(123)
+
+        self.assertEqual(self.api_requests[-1].headers["Authorization"], "Bearer access-token-2")
+        self.assertEqual(
+            json.loads(self.token_requests[-1].body)["client_secret"], "replacement-secret"
+        )
+
+    def test_other_account_does_not_reuse_cached_token(self):
+        ZendeskClient().get_ticket(123)
+        with self.settings(ZENDESK_SUBDOMAIN="other-account"):
+            ZendeskClient().get_ticket(123)
+
+        self.assertEqual(self.api_requests[-1].headers["Authorization"], "Bearer access-token-2")
+        self.assertEqual(
+            self.token_requests[-1].url, "https://other-account.zendesk.com/oauth/tokens"
+        )
+
+    def test_token_failure_is_lazy_and_not_cached(self):
+        self.token_status = 401
+        client = ZendeskClient()
+        with self.assertRaises(requests.HTTPError):
+            client.get_ticket(123)
+        self.assertEqual(self.api_requests, [])
+
+        self.token_status = 200
+        self.assertEqual(client.get_ticket(123).subject, "Support request")
+        self.assertEqual(self.api_requests[-1].headers["Authorization"], "Bearer access-token-2")
+
+
+class ZendeskConfigurationChecksTests(SimpleTestCase):
+    def test_partial_oauth_configuration_warns(self):
+        for client_id, client_secret in (("sumo", ""), ("", "secret")):
+            with self.subTest(client_id=client_id, client_secret=client_secret):
+                with self.settings(
+                    ZENDESK_OAUTH_CLIENT_ID=client_id,
+                    ZENDESK_OAUTH_CLIENT_SECRET=client_secret,
+                ):
+                    warnings = check_zendesk_oauth_configuration(None)
+                self.assertEqual([warning.id for warning in warnings], ["customercare.W001"])
+                self.assertIsInstance(warnings[0], Warning)
+
+    def test_complete_or_disabled_oauth_configuration_is_quiet(self):
+        for client_id, client_secret in (("sumo", "secret"), ("", "")):
+            with self.subTest(client_id=client_id, client_secret=client_secret):
+                with self.settings(
+                    ZENDESK_OAUTH_CLIENT_ID=client_id,
+                    ZENDESK_OAUTH_CLIENT_SECRET=client_secret,
+                ):
+                    self.assertEqual(check_zendesk_oauth_configuration(None), [])
