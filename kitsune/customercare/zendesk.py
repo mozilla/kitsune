@@ -11,8 +11,13 @@ from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
 from zenpy.lib.exception import ZenpyException
 
+from kitsune.customercare.models import SupportTicket
+
 NO_RESPONSE = "No response provided."
 LOGINLESS_TAG = "loginless_ticket"
+CHAT_REVOKED_TAG = "chat-access-revoked"
+# The channel Zendesk gives tickets that started life in the messaging widget.
+MESSAGING_CHANNEL = "native_messaging"
 OAUTH_SCOPES = "read users:write tickets:write"
 OAUTH_EXPIRY_MARGIN = 60
 
@@ -289,3 +294,23 @@ class ZendeskClient:
         """Update a ticket's status in Zendesk."""
         ticket = Ticket(id=ticket_id, status=status)
         return self.client.tickets.update(ticket)
+
+    def get_active_chat_tickets(self, zendesk_id):
+        """Return the active live-chat tickets requested by the Zendesk user with this id.
+
+        Takes a Zendesk user id rather than a Django user, so it still works after the
+        user has been deleted.
+        """
+        if not zendesk_id:
+            return []
+
+        active = SupportTicket.statuses_in_group(SupportTicket.ZD_GROUP_ACTIVE)
+        return [
+            ticket
+            for ticket in self.client.users.requested(int(zendesk_id))
+            if ticket.via.channel == MESSAGING_CHANNEL and ticket.status in active
+        ]
+
+    def add_ticket_tags(self, ticket_id, tags):
+        """Add tags to a ticket, keeping the tags it already has."""
+        return self.client.tickets.add_tags(ticket_id, list(tags))

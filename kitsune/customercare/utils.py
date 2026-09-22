@@ -78,6 +78,21 @@ def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
             return ChatEligibility(reason="ambiguous_multi_org", conflicting_orgs=chat_orgs)
 
 
+def has_chat_access(user) -> bool:
+    """Whether the user can live chat about any product that offers it.
+
+    A deleted user is passed as None.
+    """
+    if user is None:
+        return False
+    products = Product.active.filter(
+        support_configs__is_active=True,
+        support_configs__zendesk_config__isnull=False,
+        support_configs__support_organizations__include_live_chat=True,
+    ).distinct()
+    return any(resolve_chat_eligibility(user, product).eligible for product in products)
+
+
 def resolve_org_group(submitter, product: Product) -> GroupProfile | None:
     config = ProductSupportConfig.objects.filter(
         product=product, is_active=True, zendesk_config__isnull=False

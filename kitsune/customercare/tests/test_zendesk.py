@@ -10,9 +10,18 @@ from django.test import SimpleTestCase, override_settings
 from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.checks import check_zendesk_oauth_configuration
-from kitsune.customercare.zendesk import LOGINLESS_TAG, ZendeskClient
+from kitsune.customercare.zendesk import (
+    CHAT_REVOKED_TAG,
+    LOGINLESS_TAG,
+    MESSAGING_CHANNEL,
+    ZendeskClient,
+)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
+
+
+def chat_ticket(id, status="open", channel=MESSAGING_CHANNEL):
+    return Mock(id=id, status=status, via=Mock(channel=channel))
 
 
 @override_settings(
@@ -587,6 +596,36 @@ class ZendeskClientTests(TestCase):
         ticket_arg = mock_client.tickets.update.call_args[0][0]
         self.assertEqual(ticket_arg.id, 123)
         self.assertEqual(ticket_arg.status, "solved")
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_no_zendesk_id_asks_zendesk_nothing(self, mock_zenpy):
+        tickets = ZendeskClient().get_active_chat_tickets("")
+
+        self.assertEqual(tickets, [])
+        mock_zenpy.return_value.users.requested.assert_not_called()
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_keeps_only_the_users_active_chat_tickets(self, mock_zenpy):
+        users = mock_zenpy.return_value.users
+        chats = [chat_ticket(1, "new"), chat_ticket(2, "open"), chat_ticket(3, "pending")]
+        chats += [chat_ticket(4, "hold")]
+        users.requested.return_value = [
+            *chats,
+            chat_ticket(5, "solved"),
+            chat_ticket(6, "closed"),
+            chat_ticket(7, channel="web"),
+        ]
+
+        tickets = ZendeskClient().get_active_chat_tickets("789")
+
+        self.assertEqual(tickets, chats)
+        users.requested.assert_called_once_with(789)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_adds_tags_without_replacing_the_tickets_others(self, mock_zenpy):
+        ZendeskClient().add_ticket_tags(46, (CHAT_REVOKED_TAG,))
+
+        mock_zenpy.return_value.tickets.add_tags.assert_called_once_with(46, [CHAT_REVOKED_TAG])
 
 
 @override_settings(

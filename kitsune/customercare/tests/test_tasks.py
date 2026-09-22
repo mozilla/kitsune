@@ -1,26 +1,138 @@
-from unittest.mock import patch
+from unittest.mock import Mock, call, patch
 
+from django.contrib.auth.models import Group
+from django.test import override_settings
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from waffle.testutils import override_switch
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import (
+    create_zendesk_user,
     process_failed_zendesk_tickets,
     process_zendesk_update,
     sync_active_support_tickets,
     sync_support_ticket,
+    tag_revoked_chat_tickets,
     zendesk_submission_classifier,
 )
+from kitsune.customercare.zendesk import CHAT_REVOKED_TAG
+from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.llm.support.classifiers import classify_zendesk_submission
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     TopicFactory,
     ZendeskConfigFactory,
     ZendeskTopicFactory,
 )
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import UserFactory
+
+
+@override_switch("zendesk-chat", active=True)
+@override_settings(
+    ZENDESK_CHAT_WIDGET_KEY="test-widget-key",
+    ZENDESK_CHAT_SIGNING_SECRET="test-signing-secret",
+    ZENDESK_CHAT_SIGNING_KEY_ID="test-key-id",
+)
+@patch("kitsune.customercare.tasks.ZendeskClient")
+class TagRevokedChatTicketsTests(TestCase):
+    def setUp(self):
+        config = ProductSupportConfigFactory(
+            product=ProductFactory(), zendesk_config=ZendeskConfigFactory()
+        )
+        self.group = GroupProfile.add_root(
+            group=Group.objects.create(name="company"), slug="company"
+        ).group
+        self.org = SupportOrganizationFactory(
+            config=config, group=self.group, include_live_chat=True
+        )
+        # A product that has never offered chat, which the user can't chat about.
+        ProductFactory()
+        self.user = UserFactory()
+        self.user.groups.add(self.group)
+
+    def _notify(self):
+        tag_revoked_chat_tickets("789", self.user.id)
+
+    def test_nothing_is_sent_while_they_can_still_chat(self, mock_client):
+        self._notify()
+
+        mock_client.assert_not_called()
+
+    @override_switch("zendesk-chat", active=False)
+    def test_nothing_is_sent_when_chat_is_off_for_everyone(self, mock_client):
+        self.user.groups.clear()
+
+        self._notify()
+
+        mock_client.assert_not_called()
+
+    def test_losing_access_tags_every_active_chat(self, mock_client):
+        client = mock_client.return_value
+        client.get_active_chat_tickets.return_value = [Mock(id=46), Mock(id=15)]
+        self.user.groups.clear()
+
+        self._notify()
+
+        client.get_active_chat_tickets.assert_called_once_with("789")
+        self.assertEqual(
+            client.add_ticket_tags.call_args_list,
+            [call(46, [CHAT_REVOKED_TAG]), call(15, [CHAT_REVOKED_TAG])],
+        )
+
+    def test_an_organization_that_stops_offering_chat_tags_its_members_chats(self, mock_client):
+        client = mock_client.return_value
+        client.get_active_chat_tickets.return_value = [Mock(id=46)]
+        self.org.include_live_chat = False
+        self.org.save()
+
+        self._notify()
+
+        client.add_ticket_tags.assert_called_once_with(46, [CHAT_REVOKED_TAG])
+
+    def test_a_deleted_user_is_found_by_their_zendesk_id(self, mock_client):
+        client = mock_client.return_value
+        client.get_active_chat_tickets.return_value = [Mock(id=46)]
+        user_id = self.user.id
+        self.user.delete()
+
+        tag_revoked_chat_tickets("789", user_id)
+
+        client.get_active_chat_tickets.assert_called_once_with("789")
+        client.add_ticket_tags.assert_called_once_with(46, [CHAT_REVOKED_TAG])
+
+
+@patch("kitsune.customercare.tasks.ZendeskClient")
+class CreateZendeskUserTests(TestCase):
+    def test_creates_a_zendesk_user_for_a_user_without_one(self, mock_client):
+        user = UserFactory()
+
+        create_zendesk_user(user.id)
+
+        mock_client.return_value.create_user.assert_called_once_with(user)
+
+    def test_a_user_who_already_has_one_is_left_alone(self, mock_client):
+        user = UserFactory()
+        # Saved on its own so the save signal doesn't call Zendesk.
+        user.profile.zendesk_id = "789"
+        user.profile.save(update_fields=["zendesk_id"])
+
+        create_zendesk_user(user.id)
+
+        mock_client.assert_not_called()
+
+    def test_a_deleted_user_is_skipped(self, mock_client):
+        user = UserFactory()
+        user_id = user.id
+        user.delete()
+
+        create_zendesk_user(user_id)
+
+        mock_client.assert_not_called()
 
 
 class ZendeskSubmissionClassifierTests(TestCase):

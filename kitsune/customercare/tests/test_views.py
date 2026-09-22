@@ -814,9 +814,36 @@ class ChatJWTViewTests(TestCase):
             config=self.config, group=company.group, include_live_chat=True
         )
         self.user.groups.add(company.group)
+        self.create_zendesk_user = self.enterContext(
+            patch("kitsune.customercare.views.create_zendesk_user.delay")
+        )
 
     def _url(self, slug=None):
         return reverse("customercare.chat_jwt", args=[slug or self.product.slug])
+
+    def test_entitled_user_without_a_zendesk_user_gets_one(self):
+        self.client.force_login(self.user)
+
+        self.assertEqual(200, self.client.post(self._url()).status_code)
+
+        self.create_zendesk_user.assert_called_once_with(self.user.id)
+
+    def test_entitled_user_with_a_zendesk_user_does_not_get_another(self):
+        self.user.profile.zendesk_id = "789"
+        self.user.profile.save(update_fields=["zendesk_id"])
+        self.client.force_login(self.user)
+
+        self.assertEqual(200, self.client.post(self._url()).status_code)
+
+        self.create_zendesk_user.assert_not_called()
+
+    def test_ineligible_user_does_not_get_a_zendesk_user(self):
+        self.user.groups.clear()
+        self.client.force_login(self.user)
+
+        self.assertEqual(403, self.client.post(self._url()).status_code)
+
+        self.create_zendesk_user.assert_not_called()
 
     def test_url_is_not_locale_prefixed(self):
         self.assertEqual("/support-chat/jwt/firefox", self._url())
