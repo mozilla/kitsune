@@ -7,6 +7,10 @@ from zenpy.lib.api_objects import User as ZendeskUser
 
 NO_RESPONSE = "No response provided."
 LOGINLESS_TAG = "loginless_ticket"
+# Marks a conversation whose agent has already been told the user lost chat access.
+CHAT_REVOKED_TAG = "chat-access-revoked"
+# The channel Zendesk gives tickets that started life in the messaging widget.
+MESSAGING_CHANNEL = "native_messaging"
 
 
 class ZendeskClient:
@@ -76,6 +80,40 @@ class ZendeskClient:
             user_found = user
 
         return user_found
+
+    def get_live_chat_tickets(self, fxa_uid, including_any_tags=(), excluding_tag=""):
+        """Return all of the "active" tickets created via live-chats started by the
+        user identified with the provided fxa_uid.
+
+        Takes an FxA UID rather than a Django user, so it still works after the user
+        has been deleted. An "active" ticket is one that has not yet been solved or
+        closed.
+        """
+        if not fxa_uid:
+            return []
+
+        zendesk_user = None
+        for user in self.client.search(type="user", external_id=fxa_uid):
+            if zendesk_user is not None:
+                raise ValueError(f"Found more than one user with external_id {fxa_uid}")
+            zendesk_user = user
+
+        if zendesk_user is None:
+            return []
+
+        query = {
+            "type": "ticket",
+            "via": MESSAGING_CHANNEL,
+            "requester_id": zendesk_user.id,
+            "status_less_than": "solved",
+        }
+        if including_any_tags:
+            # Zendesk treats repeated tags terms as "any of these".
+            query["tags"] = list(including_any_tags)
+        if excluding_tag:
+            query["minus"] = f"tags:{excluding_tag}"
+
+        return list(self.client.search(**query))
 
     def create_user(self, user, email=""):
         """Given a Django user, create a user in Zendesk."""
@@ -213,19 +251,31 @@ class ZendeskClient:
         if not (user and user.is_authenticated):
             raise ValueError("Anonymous users are not allowed to comment.")
 
-        if user.profile.zendesk_id:
-            author_id = user.profile.zendesk_id
-        else:
-            author_id = self.create_user(user).id
+        author_id = user.profile.zendesk_id or self.create_user(user).id
 
+        return self._comment_on_ticket(
+            ticket_id, comment_body, public=public, author_id=author_id, status=status
+        )
+
+    def add_internal_note(self, ticket_id, note, tags=()):
+        """Add a note to a ticket that only agents can see.
+
+        Leaving out the author is what makes the note come from the integration
+        rather than from a person.
+        """
+        return self._comment_on_ticket(ticket_id, note, public=False, tags=tags)
+
+    def _comment_on_ticket(self, ticket_id, body, public, author_id=None, status=None, tags=()):
+        """Comment on a ticket, optionally changing its status or adding tags."""
         ticket = Ticket(id=ticket_id)
+        ticket.comment = ZendeskComment(body=body, public=public)
+        if author_id:
+            ticket.comment.author_id = int(author_id)
         if status:
             ticket.status = status
-        ticket.comment = ZendeskComment(
-            author_id=int(author_id),
-            body=comment_body,
-            public=public,
-        )
+        if tags:
+            # Adds to the ticket's tags. Setting "tags" would replace the agent's.
+            ticket.additional_tags = list(tags)
         return self.client.tickets.update(ticket)
 
     def update_ticket_status(self, ticket_id, status):

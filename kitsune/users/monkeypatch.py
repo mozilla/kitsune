@@ -14,7 +14,12 @@ _activate_users.short_description = "Activate selected users"  # type: ignore
 
 
 def _deactivate_users(admin, request, qs):
-    num = qs.update(is_active=False)
+    # Saved one by one rather than with update(), so the pre_save signals still run.
+    num = 0
+    for user in qs:
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+        num += 1
     msg = "{} users deactivated.".format(num) if num != 1 else "One user deactivated."
     admin.message_user(request, msg)
 

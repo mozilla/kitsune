@@ -29,7 +29,7 @@ class ChatWidgetTemplateTests(TestCase):
     """Test that the widget snippet and its inline settings render into the page."""
 
     def setUp(self):
-        self.product = ProductFactory(slug="firefox-enterprise")
+        self.product = ProductFactory(slug="firefox-enterprise", title="Firefox for Enterprise")
         config = ProductSupportConfigFactory(
             product=self.product, zendesk_config=ZendeskConfigFactory()
         )
@@ -51,12 +51,15 @@ class ChatWidgetTemplateTests(TestCase):
         self.assertContains(response, SNIPPET_MARKER)
         self.assertContains(response, CHAT_WIDGET_KEY)
 
-    def test_the_page_carries_the_token_url_and_the_user(self):
+    def test_the_page_carries_the_token_url_the_user_and_the_product_tag(self):
         self.client.force_login(self.user)
         response = self._get()
 
         self.assertContains(response, "/support-chat/jwt/firefox-enterprise")
         self.assertContains(response, f'data-zendesk-chat-user="{self.user.id}"')
+        self.assertContains(
+            response, 'data-zendesk-chat-product-tag="product-firefox-for-enterprise"'
+        )
 
     def test_locale_is_set_to_the_page_locale(self):
         self.client.force_login(self.user)

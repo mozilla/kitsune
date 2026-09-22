@@ -30,7 +30,7 @@ from kitsune.wiki.utils import generate_short_url
 log = logging.getLogger("k.users")
 
 
-def get_community_team_member_info(email_type='contributor'):
+def get_community_team_member_info(email_type="contributor"):
     """Get a random member from the Community Team who has logged in within 30 days."""
     thirty_days_ago = timezone.now() - timedelta(days=30)
 
@@ -41,8 +41,7 @@ def get_community_team_member_info(email_type='contributor'):
 
     if community_team:
         active_members = community_team.user_set.filter(
-            is_active=True,
-            last_login__gte=thirty_days_ago
+            is_active=True, last_login__gte=thirty_days_ago
         )
 
         if active_members.exists():
@@ -51,27 +50,23 @@ def get_community_team_member_info(email_type='contributor'):
 
             # Build the PM URL
             campaign_map = {
-                'contributor': 'new-contributor',
-                'first_answer': 'first-answer',
-                'first_l10n': 'first-revision'
+                "contributor": "new-contributor",
+                "first_answer": "first-answer",
+                "first_l10n": "first-revision",
             }
-            campaign = campaign_map.get(email_type, 'new-contributor')
+            campaign = campaign_map.get(email_type, "new-contributor")
 
             pm_url = f"https://support.mozilla.org/messages/new?to={username}&utm_campaign={campaign}&utm_medium=bitly&utm_source=email"
             pm_link = generate_short_url(pm_url) or pm_url
 
             return {
-                'username': username,
-                'name': member.first_name or username,
-                'pm_link': pm_link
+                "username": username,
+                "name": member.first_name or username,
+                "pm_link": pm_link,
             }
 
     # Default fallback - return generic Community Team info without PM link
-    return {
-        'username': 'Community Team',
-        'name': 'Community Team',
-        'pm_link': None
-    }
+    return {"username": "Community Team", "name": "Community Team", "pm_link": None}
 
 
 def add_to_contributors(user, language_code, contribution_area=""):
@@ -174,12 +169,7 @@ def deactivate_user(user, moderator):
 
 
 def anonymize_user(user):
-    # Clear the profile
     uid = uuid4()
-    profile = user.profile
-    profile.clear()
-    profile.fxa_uid = "{user_id}-{uid}".format(user_id=user.id, uid=str(uid))
-    profile.save()
 
     # Change key information, clear the user's inbox/outbox, and deactivate the user.
     user.username = f"user{uid.int}"
@@ -189,7 +179,14 @@ def anonymize_user(user):
     # sent by the user.
     InboxMessage.objects.filter(to=user).delete()
     OutboxMessage.objects.filter(sender=user).delete()
+    # Before the profile is cleared, so signal receivers can still read the FxA UID.
     deactivate_user(user, user)
+
+    # Clear the profile
+    profile = user.profile
+    profile.clear()
+    profile.fxa_uid = "{user_id}-{uid}".format(user_id=user.id, uid=str(uid))
+    profile.save()
 
     # Remove from all groups
     user.groups.clear()
@@ -237,7 +234,6 @@ def delete_user_pipeline(user: User) -> None:
     """
     Deletes a user and all associated data.
     """
-
     publisher = UserDeletionPublisher(user=user)
 
     publisher.register_listener(ThreadListener())

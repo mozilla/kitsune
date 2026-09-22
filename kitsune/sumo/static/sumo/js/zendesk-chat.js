@@ -12,12 +12,13 @@ export const SIGNED_IN_USER_KEY = "zendesk-chat-user";
   let html = document.documentElement;
   signInToChat(
     html.getAttribute('data-zendesk-chat-jwt-url'),
-    html.getAttribute('data-zendesk-chat-user')
+    html.getAttribute('data-zendesk-chat-user'),
+    html.getAttribute('data-zendesk-chat-product-tag')
   );
   removeChatOnSignOut();
 })();
 
-export function signInToChat(jwtUrl, sessionUser) {
+export function signInToChat(jwtUrl, sessionUser, productTag) {
   if (!jwtUrl || !sessionUser || typeof window.zE !== 'function') {
     return;
   }
@@ -27,6 +28,10 @@ export function signInToChat(jwtUrl, sessionUser) {
   if (signedIn !== sessionUser) {
     window.zE('messenger', 'logoutUser');
     window.localStorage.removeItem(SIGNED_IN_USER_KEY);
+  }
+
+  if (productTag) {
+    window.zE('messenger:set', 'conversationTags', [productTag]);
   }
 
   // Zendesk holds on to this and runs it again whenever it needs a fresh token,

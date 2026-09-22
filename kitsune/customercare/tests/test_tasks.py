@@ -1,26 +1,156 @@
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
+from django.contrib.auth.models import Group
+from django.test import override_settings
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from waffle.testutils import override_switch
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import (
+    notify_agents_of_revoked_chat_access,
     process_failed_zendesk_tickets,
     process_zendesk_update,
     sync_active_support_tickets,
     sync_support_ticket,
     zendesk_submission_classifier,
 )
+from kitsune.customercare.utils import chat_product_tag
+from kitsune.customercare.zendesk import CHAT_REVOKED_TAG
+from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.llm.support.classifiers import classify_zendesk_submission
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     TopicFactory,
     ZendeskConfigFactory,
     ZendeskTopicFactory,
 )
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import UserFactory
+
+
+@override_switch("zendesk-chat", active=True)
+@override_settings(
+    ZENDESK_CHAT_WIDGET_KEY="test-widget-key",
+    ZENDESK_CHAT_SIGNING_SECRET="test-signing-secret",
+    ZENDESK_CHAT_SIGNING_KEY_ID="test-key-id",
+)
+@patch("kitsune.customercare.tasks.ZendeskClient")
+class NotifyAgentsOfRevokedChatAccessTests(TestCase):
+    def setUp(self):
+        root = GroupProfile.add_root(group=Group.objects.create(name="chat"), slug="chat")
+        self.enterprise, self.enterprise_group = self._chat_product(
+            root, "Firefox for Enterprise", "company-a"
+        )
+        self.vpn, self.vpn_group = self._chat_product(root, "Mozilla VPN", "company-b")
+        # A product that has never offered chat, which the user can't chat about.
+        ProductFactory(title="Firefox")
+        self.user = UserFactory(profile__fxa_uid="abc123")
+        self.user.groups.add(self.enterprise_group, self.vpn_group)
+
+    def _chat_product(self, root, title, group_name):
+        product = ProductFactory(title=title)
+        config = ProductSupportConfigFactory(
+            product=product, zendesk_config=ZendeskConfigFactory()
+        )
+        group = root.add_child(group=Group.objects.create(name=group_name), slug=group_name).group
+        SupportOrganizationFactory(config=config, group=group, include_live_chat=True)
+        return product, group
+
+    def _notify(self, product_ids=None):
+        notify_agents_of_revoked_chat_access("abc123", self.user.id, product_ids)
+
+    def test_nothing_is_sent_while_they_can_still_chat(self, mock_client):
+        self._notify()
+
+        mock_client.assert_not_called()
+
+    @override_switch("zendesk-chat", active=False)
+    def test_nothing_is_sent_when_chat_is_off_for_everyone(self, mock_client):
+        self.user.groups.clear()
+
+        self._notify()
+
+        mock_client.assert_not_called()
+
+    def test_losing_every_product_notes_every_live_chat(self, mock_client):
+        client = mock_client.return_value
+        client.get_live_chat_tickets.return_value = [Mock(id=46, tags=[]), Mock(id=15, tags=[])]
+        self.user.groups.clear()
+
+        self._notify()
+
+        client.get_live_chat_tickets.assert_called_once_with(
+            "abc123", including_any_tags=(), excluding_tag=CHAT_REVOKED_TAG
+        )
+        self.assertEqual([c.args[0] for c in client.add_internal_note.call_args_list], [46, 15])
+        for c in client.add_internal_note.call_args_list:
+            self.assertEqual(c.kwargs["tags"], [CHAT_REVOKED_TAG])
+
+    def test_a_ticket_is_not_noted_twice_before_zendesk_search_sees_the_tag(self, mock_client):
+        client = mock_client.return_value
+        # Zendesk search still returns the ticket the second time, as if the tag
+        # added the first time isn't searchable yet.
+        client.get_live_chat_tickets.return_value = [Mock(id=46, tags=[])]
+        self.user.groups.clear()
+
+        self._notify()
+        self._notify()
+
+        client.add_internal_note.assert_called_once()
+
+    def test_losing_one_product_notes_only_its_chats(self, mock_client):
+        client = mock_client.return_value
+        vpn_tag = chat_product_tag(self.vpn)
+        client.get_live_chat_tickets.return_value = [Mock(id=46, tags=["fxps-chat", vpn_tag])]
+        self.user.groups.remove(self.vpn_group)
+
+        self._notify()
+
+        searched = client.get_live_chat_tickets.call_args.kwargs["including_any_tags"]
+        self.assertIn(vpn_tag, searched)
+        self.assertNotIn(chat_product_tag(self.enterprise), searched)
+        client.add_internal_note.assert_called_once_with(
+            46,
+            "This person no longer has live chat access for Mozilla VPN because "
+            "they're no longer in an organization that includes live chat.",
+            tags=[CHAT_REVOKED_TAG],
+        )
+
+    def test_a_product_that_just_stopped_offering_chat_is_noted_when_named(self, mock_client):
+        client = mock_client.return_value
+        vpn_tag = chat_product_tag(self.vpn)
+        client.get_live_chat_tickets.return_value = [Mock(id=46, tags=[vpn_tag])]
+        self.vpn.support_configs.get().support_organizations.update(include_live_chat=False)
+
+        self._notify(product_ids=[self.vpn.pk])
+
+        client.add_internal_note.assert_called_once_with(
+            46,
+            "This person no longer has live chat access for Mozilla VPN because "
+            "their organization no longer includes live chat.",
+            tags=[CHAT_REVOKED_TAG],
+        )
+
+    def test_a_deleted_user_is_found_by_their_fxa_uid(self, mock_client):
+        client = mock_client.return_value
+        client.get_live_chat_tickets.return_value = [Mock(id=46, tags=[])]
+        user_id = self.user.id
+        self.user.delete()
+
+        notify_agents_of_revoked_chat_access("abc123", user_id)
+
+        client.get_live_chat_tickets.assert_called_once_with(
+            "abc123", including_any_tags=(), excluding_tag=CHAT_REVOKED_TAG
+        )
+        client.add_internal_note.assert_called_once_with(
+            46,
+            "This person no longer has live chat access because their SUMO account was deleted.",
+            tags=[CHAT_REVOKED_TAG],
+        )
 
 
 class ZendeskSubmissionClassifierTests(TestCase):

@@ -10,7 +10,9 @@ from zenpy.lib.exception import APIException, RecordNotFoundException
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.customercare.utils import (
+    chat_product_tag,
     generate_classification_tags,
+    get_chat_ineligibility,
     process_zendesk_classification_result,
     resolve_chat_eligibility,
     resolve_org_group,
@@ -557,6 +559,127 @@ class ResolveOrgGroupTests(TestCase):
     def test_no_config_returns_none(self):
         product2 = ProductFactory()
         self.assertIsNone(resolve_org_group(self.it_user, product2))
+
+
+@override_switch("zendesk-chat", active=True)
+@override_settings(
+    ZENDESK_CHAT_WIDGET_KEY="test-widget-key",
+    ZENDESK_CHAT_SIGNING_SECRET="test-signing-secret",
+    ZENDESK_CHAT_SIGNING_KEY_ID="test-key-id",
+)
+class ChatIneligibilityTests(TestCase):
+    def setUp(self):
+        root = GroupProfile.add_root(group=Group.objects.create(name="chat"), slug="chat")
+        self.enterprise, self.enterprise_group = self._chat_product(
+            root, "Firefox for Enterprise", "company-a"
+        )
+        self.vpn, self.vpn_group = self._chat_product(root, "Mozilla VPN", "company-b")
+        # A product that has never offered chat.
+        ProductFactory(title="Firefox")
+        self.user = UserFactory()
+        self.user.groups.add(self.enterprise_group, self.vpn_group)
+
+    def _chat_product(self, root, title, group_name):
+        product = ProductFactory(title=title)
+        config = ProductSupportConfigFactory(
+            product=product, zendesk_config=ZendeskConfigFactory()
+        )
+        group = root.add_child(group=Group.objects.create(name=group_name), slug=group_name).group
+        SupportOrganizationFactory(config=config, group=group, include_live_chat=True)
+        return product, group
+
+    def test_a_product_that_never_offered_chat_is_ignored(self):
+        ineligibility = get_chat_ineligibility(self.user)
+
+        self.assertEqual(ineligibility.reasons, {})
+        self.assertFalse(ineligibility.all_products)
+
+    def test_losing_one_product_names_it(self):
+        self.user.groups.remove(self.vpn_group)
+
+        ineligibility = get_chat_ineligibility(self.user)
+
+        self.assertFalse(ineligibility.all_products)
+        self.assertIn(chat_product_tag(self.vpn), ineligibility.product_tags)
+        self.assertNotIn(chat_product_tag(self.enterprise), ineligibility.product_tags)
+        self.assertEqual(
+            ineligibility.note(["fxps-chat", chat_product_tag(self.vpn)]),
+            "This person no longer has live chat access for Mozilla VPN because "
+            "they're no longer in an organization that includes live chat.",
+        )
+
+    def test_a_product_that_stops_offering_chat_only_counts_when_named(self):
+        self.vpn.support_configs.get().support_organizations.update(include_live_chat=False)
+
+        self.assertEqual(get_chat_ineligibility(self.user).reasons, {})
+
+        ineligibility = get_chat_ineligibility(self.user, product_ids=[self.vpn.pk])
+
+        self.assertFalse(ineligibility.all_products)
+        self.assertEqual(
+            ineligibility.note([chat_product_tag(self.vpn)]),
+            "This person no longer has live chat access for Mozilla VPN because "
+            "their organization no longer includes live chat.",
+        )
+
+    def test_losing_every_product_gives_the_reason_for_the_tickets_product(self):
+        self.user.groups.clear()
+
+        ineligibility = get_chat_ineligibility(self.user)
+
+        self.assertTrue(ineligibility.all_products)
+        self.assertEqual(
+            ineligibility.note([chat_product_tag(self.enterprise)]),
+            "This person no longer has live chat access because "
+            "they're no longer in an organization that includes live chat.",
+        )
+
+    def test_an_untagged_ticket_gets_the_reason_when_every_product_shares_it(self):
+        self.user.groups.clear()
+
+        ineligibility = get_chat_ineligibility(self.user)
+
+        self.assertEqual(
+            ineligibility.note([]),
+            "This person no longer has live chat access because "
+            "they're no longer in an organization that includes live chat.",
+        )
+
+    def test_an_untagged_ticket_gets_no_reason_when_the_reasons_differ(self):
+        self.vpn.support_configs.get().support_organizations.update(include_live_chat=False)
+        self.user.groups.remove(self.enterprise_group)
+
+        ineligibility = get_chat_ineligibility(self.user, product_ids=[self.vpn.pk])
+
+        self.assertTrue(ineligibility.all_products)
+        self.assertEqual(ineligibility.note([]), "This person no longer has live chat access.")
+
+    def test_a_deactivated_user_is_ineligible_everywhere_for_one_reason(self):
+        self.user.is_active = False
+        self.user.save()
+
+        ineligibility = get_chat_ineligibility(self.user)
+
+        self.assertTrue(ineligibility.all_products)
+        expected = "This person no longer has live chat access because their SUMO account was deactivated."
+        self.assertEqual(ineligibility.note([chat_product_tag(self.vpn)]), expected)
+        self.assertEqual(ineligibility.note([]), expected)
+
+    def test_a_deleted_user_is_ineligible_everywhere_for_one_reason(self):
+        ineligibility = get_chat_ineligibility(None)
+
+        self.assertTrue(ineligibility.all_products)
+        self.assertEqual(
+            ineligibility.note([]),
+            "This person no longer has live chat access because their SUMO account was deleted.",
+        )
+
+
+class ChatProductTagTests(TestCase):
+    def test_lowercases_the_title_and_swaps_spaces_for_dashes(self):
+        product = ProductFactory(title="Firefox for Android")
+
+        self.assertEqual(chat_product_tag(product), "product-firefox-for-android")
 
 
 @override_switch("zendesk-chat", active=True)

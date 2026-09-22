@@ -1,10 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import waffle
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
@@ -76,6 +77,85 @@ def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
             return ChatEligibility(org=org)
         case _:
             return ChatEligibility(reason="ambiguous_multi_org", conflicting_orgs=chat_orgs)
+
+
+CHAT_LOSS_EXPLANATIONS = {
+    "account_deleted": "their SUMO account was deleted",
+    "inactive_user": "their SUMO account was deactivated",
+    "no_entitled_org": "they're no longer in an organization that includes live chat",
+    "org_without_chat": "their organization no longer includes live chat",
+    "subscription_required": "they no longer have the subscription the product requires",
+    "no_ticketing_support": "the product no longer offers live chat",
+    "ambiguous_multi_org": (
+        "they're in more than one organization with live chat for the product, "
+        "so the conversation can't be tied to one"
+    ),
+}
+
+
+@dataclass(frozen=True)
+class ChatIneligibility:
+    # The products the user can't chat about, and the reason for each.
+    reasons: dict[Product, str] = field(default_factory=dict)
+    # Whether the user can't chat about any product at all.
+    all_products: bool = False
+
+    @property
+    def product_tags(self) -> list[str]:
+        return [chat_product_tag(product) for product in self.reasons]
+
+    def note(self, ticket_tags) -> str:
+        """The note for the agent on a chat ticket carrying these tags."""
+        for product, reason in self.reasons.items():
+            if chat_product_tag(product) in ticket_tags:
+                explanation = CHAT_LOSS_EXPLANATIONS[reason]
+                if self.all_products:
+                    return f"This person no longer has live chat access because {explanation}."
+                return (
+                    f"This person no longer has live chat access for {product.title} "
+                    f"because {explanation}."
+                )
+
+        # A ticket without a product tag.
+        reasons = set(self.reasons.values())
+        if len(reasons) == 1:
+            explanation = CHAT_LOSS_EXPLANATIONS[reasons.pop()]
+            return f"This person no longer has live chat access because {explanation}."
+        return "This person no longer has live chat access."
+
+
+def get_chat_ineligibility(user, product_ids=()) -> ChatIneligibility:
+    """Which products offering live chat this user can't chat about, and why.
+
+    Pass product_ids for products that just stopped offering chat, for example when
+    their only live-chat organization was deleted, so they still count. A deleted
+    user is passed as None.
+    """
+    products = list(
+        Product.active.filter(
+            Q(support_configs__support_organizations__include_live_chat=True)
+            | Q(pk__in=product_ids)
+        ).distinct()
+    )
+
+    reasons = {}
+    for product in products:
+        if user is None:
+            reasons[product] = "account_deleted"
+        elif reason := resolve_chat_eligibility(user, product).reason:
+            reasons[product] = reason
+
+    return ChatIneligibility(
+        reasons=reasons, all_products=bool(reasons) and len(reasons) == len(products)
+    )
+
+
+def chat_product_tag(product: Product) -> str:
+    """The Zendesk tag marking which product a chat was started about.
+
+    For example, "Firefox for Android" -> "product-firefox-for-android".
+    """
+    return f"product-{product.title.lower().replace(' ', '-')}"
 
 
 def resolve_org_group(submitter, product: Product) -> GroupProfile | None:

@@ -3,10 +3,12 @@ from typing import TYPE_CHECKING
 from django.conf import settings
 from django_jinja import library
 
-from kitsune.customercare.utils import resolve_chat_eligibility
+from kitsune.customercare.utils import chat_product_tag, resolve_chat_eligibility
 
 if TYPE_CHECKING:
     from kitsune.products.models import Product
+
+library.global_function(chat_product_tag)
 
 
 @library.global_function

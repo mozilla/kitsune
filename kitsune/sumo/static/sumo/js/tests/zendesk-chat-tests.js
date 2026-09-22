@@ -73,6 +73,26 @@ describe("zendesk-chat", () => {
     expect(commands).to.eql(["logoutUser", "loginUser"]);
   });
 
+  it("tags the conversation with the product after signing out and before signing in", () => {
+    // Signing out clears the tags, so they have to be set after it.
+    window.localStorage.setItem(SIGNED_IN_USER_KEY, "paul");
+
+    signInToChat(JWT_URL, "ringo", "product-firefox-for-enterprise");
+
+    const commands = window.zE.getCalls().map((call) => call.args[1]);
+    expect(commands).to.eql(["logoutUser", "conversationTags", "loginUser"]);
+    const tagCall = window.zE.getCalls().find((call) => call.args[1] === "conversationTags");
+    expect(tagCall.args[0]).to.equal("messenger:set");
+    expect(tagCall.args[2]).to.eql(["product-firefox-for-enterprise"]);
+  });
+
+  it("sets no tags without a product tag", () => {
+    signInToChat(JWT_URL, "ringo", null);
+
+    const commands = window.zE.getCalls().map((call) => call.args[1]);
+    expect(commands).to.not.include("conversationTags");
+  });
+
   it("posts to the token url and hands the token back to Zendesk", async () => {
     signInToChat(JWT_URL, "ringo");
 
