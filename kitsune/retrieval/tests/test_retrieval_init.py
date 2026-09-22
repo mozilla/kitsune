@@ -2,11 +2,13 @@ from contextlib import contextmanager
 from dataclasses import replace
 from datetime import UTC, datetime
 from io import StringIO
-from unittest import mock
+from unittest import TestResult, TestSuite, mock
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import override_settings
+from django.db import connection
+from django.test import SimpleTestCase, override_settings
+from elastic_transport import ConnectionTimeout
 
 from kitsune.retrieval.chunking import CHUNKING_GENERATION
 from kitsune.retrieval.embeddings import configured_embedding_recipe
@@ -73,6 +75,39 @@ def _approved_document():
     ApprovedRevisionFactory(document=document, summary="How to install.")
     document.refresh_from_db()
     return document
+
+
+class ChunkIndexFixtureTests(SimpleTestCase):
+    databases = {"default"}
+
+    def test_failed_generation_setup_leaves_the_database_usable(self):
+        class FailedFixture(ChunkIndexTestCase):
+            def runTest(self):
+                self.fail("The test body must not run after failed class setup")
+
+        result = TestResult()
+        try:
+            with (
+                mock.patch("kitsune.search.tests._initialize_indices"),
+                mock.patch.object(FailedFixture, "_delete_indices"),
+                mock.patch(
+                    "kitsune.retrieval.tests.create_write_generation",
+                    side_effect=ConnectionTimeout("Generation acknowledgement lost"),
+                ),
+            ):
+                TestSuite([FailedFixture()]).run(result)
+
+            self.assertEqual(len(result.errors), 1)
+            self.assertIn("ConnectionTimeout", result.errors[0][1])
+            # A subsequent class must be able to reconnect after normal DB teardown.
+            connection.close()
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                self.assertEqual(cursor.fetchone(), (1,))
+        finally:
+            # Keep a failing regression from poisoning the rest of the test worker.
+            if connection.in_atomic_block:
+                FailedFixture._rollback_atomics(FailedFixture.cls_atomics)
 
 
 class LifecycleTestCase(ChunkIndexTestCase):

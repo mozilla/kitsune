@@ -392,6 +392,8 @@ RETRIEVAL_KNN_SIMILARITY_FLOORS = config(
     "RETRIEVAL_KNN_SIMILARITY_FLOORS", default="{}", cast=json.loads
 )
 
+# Keep deployed lease keys stable; test-worker overrides must retain the "retrieval:" namespace.
+RETRIEVAL_LOCK_KEY_PREFIX = "retrieval:lease"
 # Retrieval document leases have no background renewer. Keep each retrieval task's Celery
 # time limit below this ttl so the lease cannot lapse while the task is running.
 RETRIEVAL_LOCK_TTL_SECONDS = config("RETRIEVAL_LOCK_TTL_SECONDS", default=300, cast=float)

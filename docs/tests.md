@@ -89,7 +89,34 @@ For example, to limit an automatic run to two workers:
 Spawned workers use a process-local default cache while preserving the other
 cache aliases as configured, and use the same fast password hashing as serial tests.
 The development dependencies include `tblib` so failures in workers retain their
-tracebacks. The CI scripts continue to run ES and `no_parallel` tests serially.
+tracebacks.
+
+The ES-enabled CI script runs all tests except `no_parallel` in the parallel pass,
+then runs `no_parallel` tests serially. The non-ES script excludes `es` in both
+passes. Both scripts force the serial pass to one worker, even when callers supply
+`--parallel`.
+
+When a parallel suite includes ES tests, each worker gets its own Elasticsearch
+index prefix and retrieval lease-key prefix, including a unique run identifier.
+These settings are applied before document classes bind their index names and
+aliases. Redis endpoints and database numbers are unchanged; production retrieval
+lease keys keep their existing format. The parent removes only that run's indices
+and lease keys when the suite exits, including after failfast terminates a worker.
+
+`ElasticTestCase` initializes lexical indices once per process, when the first ES
+test class runs. This also covers serial runs and Django's single-class fallback;
+tests no longer need a separate `es_init` command. `ChunkIndexTestCase` retains its
+per-class retrieval index lifecycle. Generation setup runs in `setUpTestData`, so
+Django rolls back class transactions if setup fails; class cleanup removes the
+indices even after failed setup. Runs without ES tests do not initialize or clean
+up ES resources.
+
+`SumoDocument.init()` uses a longer request timeout than searches and disables
+automatic retries for index initialization. This covers both lexical indices and
+retrieval generations, including generations created inside tests. A timed-out
+create may already have succeeded on the server, so retrying it can report "index
+already exists". Request-local client options leave the query client and its
+timeout unchanged, including when initialization fails.
 
 ## CI test image
 
@@ -97,6 +124,19 @@ The Docker `test` target reuses the compiled gettext catalogs, JavaScript
 catalogs, and `postatus.txt` from `jsi18n-generator`. This keeps the frontend
 and test image on the same translation snapshot instead of fetching and
 compiling translations twice.
+
+The shared `l10n-generator` stage prepares gettext catalogs without copying
+application source. Docker's Git `ADD` resolves the current default-branch
+commit of `sumo-l10n` on each build and includes it in the cache key. Application-only
+changes reuse this stage; translation revisions, lint scripts, and Python
+dependency changes invalidate it. Cold builds still fetch and prepare translations.
+The script restores the shallow checkout's history before linting so invalid
+translations can still fall back to an earlier valid revision.
+
+Use `--build-arg L10N_REV=<full-commit-sha>` to pin translations for a reproducible
+build. The production target uses the same prepared gettext catalogs and status
+file. JavaScript catalogs are still generated with the application source and
+settings in each environment.
 
 It still runs `collectstatic` with `.env-test`. Keep `postatus.txt` alongside
 the catalogs when changing this build: it is part of the collected static files.
