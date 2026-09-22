@@ -78,9 +78,9 @@ An explicit `--parallel=N` takes precedence over that environment variable;
 `--parallel=1` runs serially. Django may reduce the worker count when there are
 fewer test classes than requested workers.
 
-CI sets `DJANGO_TEST_PROCESSES=2` in `docker/docker-compose.ci.yml` to keep worker
-concurrency explicit while database and search services share the runner.
-Re-evaluate that limit when changing CI resources.
+GitHub Actions sets `DJANGO_TEST_PROCESSES=4` for non-ES partitions and `2` for
+ES partitions, leaving more CPU capacity for Elasticsearch on those runners.
+The CI Compose override forwards this value and defaults to `2` for local runs.
 
 For example, to limit an automatic run to two workers:
 
@@ -125,11 +125,12 @@ to `main` and `dev`, merge queues, and manual dispatch. Lint, the four Python
 partitions, and JavaScript tests run independently. The deployment and Playwright
 workflows are separate and unchanged by unit-test CI.
 
-Each test job builds and loads its Docker target with Buildx. Python jobs share
-the `ci-test` GitHub Actions cache; only `kitsune-tests` exports it, avoiding
-duplicate cache uploads. The frontend target uses `ci-frontend`, separate from
-both Python and production image caches. These jobs need no registry credentials
-or repository secrets, including on fork pull requests.
+Each Python test job builds and loads the `test` Docker target with Buildx. These
+jobs share the `ci-test` GitHub Actions cache; only `kitsune-tests` exports it,
+avoiding duplicate cache uploads. The JavaScript job runs `npm ci` and
+`npm run webpack:test` directly on Node.js, with npm caching and no application
+image build. These jobs need no registry credentials or repository secrets,
+including on fork pull requests.
 
 The CI Compose override starts only PostgreSQL and Redis for non-ES partitions,
 plus Elasticsearch for ES partitions. Synonyms use the shared bind mount, and the
@@ -141,7 +142,7 @@ the wiki partition locally with services isolated from the development project:
 ```bash
 ./bin/dc_ci.sh -p kitsune-ci build test
 ./bin/dc_ci.sh -p kitsune-ci up -d postgres redis
-./bin/dc_ci.sh -p kitsune-ci run --rm --no-deps --pull never -T test \
+DJANGO_TEST_PROCESSES=4 ./bin/dc_ci.sh -p kitsune-ci run --rm --no-deps --pull never -T test \
     ./bin/run-unit-tests-no-es.sh kitsune.wiki kitsune.kbforums
 ./bin/dc_ci.sh -p kitsune-ci down --volumes
 ```
@@ -158,6 +159,10 @@ catalogs, and `postatus.txt` from `jsi18n-generator`. This keeps the frontend
 and test image on the same translation snapshot instead of fetching and
 compiling translations twice.
 
+The shared frontend builder produces production and pre-rendered assets only.
+JavaScript unit tests run in the separate Node.js job, not during image builds,
+so their bundle is not copied into test or production images.
+
 The shared `l10n-generator` stage prepares gettext catalogs without copying
 application source. Docker's Git `ADD` resolves the current default-branch
 commit of `sumo-l10n` on each build and includes it in the cache key. Application-only
@@ -165,6 +170,9 @@ changes reuse this stage; translation revisions, lint scripts, and Python
 dependency changes invalidate it. Cold builds still fetch and prepare translations.
 The script restores the shallow checkout's history before linting so invalid
 translations can still fall back to an earlier valid revision.
+After successful linting and compilation, the Docker stage removes `locale/.git`
+before copying the catalogs into later stages. The local translation script
+retains its Git history.
 
 Use `--build-arg L10N_REV=<full-commit-sha>` to pin translations for a reproducible
 build. The production target uses the same prepared gettext catalogs and status

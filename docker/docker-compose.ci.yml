@@ -6,18 +6,11 @@ services:
       target: test
     env_file: .env-test
     environment:
-      DJANGO_TEST_PROCESSES: "2"
+      DJANGO_TEST_PROCESSES: ${DJANGO_TEST_PROCESSES:-2}
     depends_on:
       - postgres
       - elasticsearch
       - redis
-
-  frontend-test:
-    image: kitsune-frontend-test:ci
-    build:
-      context: .
-      target: frontend-builder
-    command: npx mocha --require ./webpack/mocha-require dist/tests.js
 
   postgres:
     ports: !reset []

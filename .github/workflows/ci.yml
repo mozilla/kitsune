@@ -85,6 +85,7 @@ jobs:
     env:
       APP_LABELS: ${{ matrix.app_labels }}
       ELASTICSEARCH: ${{ matrix.elasticsearch }}
+      DJANGO_TEST_PROCESSES: ${{ matrix.elasticsearch && '2' || '4' }}
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
@@ -146,25 +147,14 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Prepare Compose environment
-        run: cp .env-build .env
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-
-      - name: Build frontend test image
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          context: .
-          target: frontend-builder
-          tags: kitsune-frontend-test:ci
-          load: true
-          cache-from: type=gha,scope=ci-frontend
-          cache-to: type=gha,scope=ci-frontend,mode=max
+          node-version: '22'
+          cache: npm
+
+      - name: Install Node.js dependencies
+        run: npm ci
 
       - name: Run JavaScript tests
-        run: ./bin/dc_ci.sh run --rm --no-deps --pull never -T frontend-test
-
-      - name: Clean up test containers
-        if: always()
-        run: ./bin/dc_ci.sh down --volumes --remove-orphans
+        run: npm run webpack:test
