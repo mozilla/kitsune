@@ -1,6 +1,6 @@
-version: "3.8"
 services:
   test:
+    image: kitsune-test:ci
     build:
       context: .
       target: test
@@ -13,10 +13,17 @@ services:
       - redis
 
   frontend-test:
+    image: kitsune-frontend-test:ci
     build:
       context: .
       target: frontend-builder
     command: npx mocha --require ./webpack/mocha-require dist/tests.js
+
+  postgres:
+    ports: !reset []
+
+  elasticsearch:
+    ports: !reset []
 
   prod:
     build:

@@ -13,7 +13,7 @@ from django.test.utils import get_runner, iter_test_cases
 
 
 class Command(BaseCommand):
-    help = "Check that CircleCI runs every discovered Python test exactly once."
+    help = "Check that GitHub Actions runs every discovered Python test exactly once."
     requires_system_checks = ()
     test_labels = ("kitsune",)
 
@@ -21,8 +21,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--config",
             type=Path,
-            default=Path(settings.BASE_DIR) / ".circleci" / "config.yml",
-            help="CircleCI configuration to check.",
+            default=Path(settings.BASE_DIR) / ".github" / "workflows" / "ci.yml",
+            help="GitHub Actions workflow to check.",
         )
 
     def discover(self, labels):
@@ -43,34 +43,42 @@ class Command(BaseCommand):
         with options["config"].open() as config_file:
             config = yaml.safe_load(config_file)
 
+        try:
+            matrix = config["jobs"]["python-tests"]["strategy"]["matrix"]
+        except (KeyError, TypeError) as error:
+            raise CommandError("GitHub Actions python-tests matrix is missing.") from error
+        if not isinstance(matrix, dict) or set(matrix) != {"include"}:
+            raise CommandError("The python-tests matrix must contain only include.")
+        partitions = matrix["include"]
+        if not isinstance(partitions, list) or not partitions:
+            raise CommandError("The python-tests matrix include must be a nonempty list.")
+
         expected = {test.id() for test in self.discover(self.test_labels)}
         if not expected:
             raise CommandError("No Python tests were discovered.")
 
         owners = defaultdict(list)
-        for workflow in config["workflows"].values():
-            if not isinstance(workflow, dict):
-                continue  # CircleCI also permits a workflow version number.
-            for invocation in workflow["jobs"]:
-                job_name = invocation if isinstance(invocation, str) else next(iter(invocation))
-                job = config["jobs"][job_name]
-                for step in job["steps"]:
-                    if not isinstance(step, dict):
-                        continue
-                    for command in ("run-tests-no-es", "run-tests-with-es"):
-                        if command not in step:
-                            continue
-                        labels = step[command]["app_labels"].split()
-                        if not labels:
-                            raise CommandError(f"{job_name}: app_labels must not be empty.")
-                        # Discover before filtering so an import error cannot be hidden by tags.
-                        tests = self.discover(labels)
-                        # The two passes in each shell runner cover all its tests, except that
-                        # run-unit-tests-no-es.sh excludes the es tag from both passes.
-                        if command == "run-tests-no-es":
-                            tests = filter_tests_by_tags(tests, set(), {"es"})
-                        for test in tests:
-                            owners[test.id()].append(job_name)
+        for partition in partitions:
+            if not isinstance(partition, dict):
+                raise CommandError("Each python-tests matrix row must be a mapping.")
+            job_name = partition.get("name")
+            if not isinstance(job_name, str) or not job_name.strip():
+                raise CommandError("Each python-tests matrix row must have a nonempty name.")
+            app_labels = partition.get("app_labels")
+            labels = app_labels.split() if isinstance(app_labels, str) else []
+            if not labels:
+                raise CommandError(f"{job_name}: app_labels must be a nonempty string.")
+            elasticsearch = partition.get("elasticsearch")
+            if not isinstance(elasticsearch, bool):
+                raise CommandError(f"{job_name}: elasticsearch must be a boolean.")
+            # Discover before filtering so an import error cannot be hidden by tags.
+            tests = self.discover(labels)
+            # The two passes in each shell runner cover all its tests, except that
+            # run-unit-tests-no-es.sh excludes the es tag from both passes.
+            if not elasticsearch:
+                tests = filter_tests_by_tags(tests, set(), {"es"})
+            for test in tests:
+                owners[test.id()].append(job_name)
 
         errors = []
         missing = expected - owners.keys()
@@ -90,5 +98,5 @@ class Command(BaseCommand):
             raise CommandError("\n\n".join(errors))
 
         return self.style.SUCCESS(
-            f"All {len(expected)} discovered Python tests are assigned exactly once in CircleCI."
+            f"All {len(expected)} discovered Python tests are assigned exactly once in GitHub Actions."
         )

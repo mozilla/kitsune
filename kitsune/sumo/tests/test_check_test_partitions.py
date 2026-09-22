@@ -49,26 +49,20 @@ class TestPartitionTests(SimpleTestCase):
         self.enterContext(patch.object(sys, "path", [str(self.root), *sys.path]))
         self.enterContext(patch.object(Command, "test_labels", ("partition_fixtures",)))
         self.addCleanup(self.unload_fixtures)
-        self.config = {
-            "jobs": {
-                "general-tests": {
-                    "steps": [{"run-tests-no-es": {"app_labels": "partition_fixtures"}}]
-                },
-                "search-tests": {
-                    "steps": [
-                        {
-                            "run-tests-with-es": {
-                                "app_labels": "partition_fixtures.test_cases.SearchTests"
-                            }
-                        }
-                    ]
-                },
+        self.partitions = [
+            {
+                "name": "general-tests",
+                "app_labels": "partition_fixtures",
+                "elasticsearch": False,
             },
-            "workflows": {
-                "version": 2,
-                "tests": {"jobs": ["general-tests", {"search-tests": {"name": "search"}}]},
+            {
+                "name": "search-tests",
+                "app_labels": "partition_fixtures.test_cases.SearchTests",
+                "elasticsearch": True,
             },
-        }
+        ]
+        self.matrix = {"include": self.partitions}
+        self.config = {"jobs": {"python-tests": {"strategy": {"matrix": self.matrix}}}}
 
     def unload_fixtures(self):
         for name in list(sys.modules):
@@ -86,7 +80,7 @@ class TestPartitionTests(SimpleTestCase):
         self.assertRegex(self.check_partitions(), r"\b4\b")
 
     def test_partial_app_assignment_leaves_a_test_uncovered(self):
-        self.config["jobs"]["general-tests"]["steps"][0]["run-tests-no-es"]["app_labels"] = (
+        self.partitions[0]["app_labels"] = (
             "partition_fixtures.test_cases.RegularTests.test_parallel"
         )
         with self.assertRaises(CommandError) as error:
@@ -96,9 +90,7 @@ class TestPartitionTests(SimpleTestCase):
         )
 
     def test_overlapping_partitions_report_test_and_both_jobs(self):
-        self.config["jobs"]["search-tests"]["steps"][0]["run-tests-with-es"]["app_labels"] = (
-            "partition_fixtures"
-        )
+        self.partitions[1]["app_labels"] = "partition_fixtures"
         with self.assertRaises(CommandError) as error:
             self.check_partitions()
         message = str(error.exception)
@@ -107,17 +99,15 @@ class TestPartitionTests(SimpleTestCase):
         self.assertIn("search-tests", message)
 
     def test_no_es_job_excludes_es_tests_even_when_also_tagged_serial(self):
-        self.config["jobs"]["search-tests"]["steps"] = [
-            {"run-tests-no-es": {"app_labels": "partition_fixtures.test_cases.SearchTests"}}
-        ]
+        self.partitions[1]["elasticsearch"] = False
         with self.assertRaises(CommandError) as error:
             self.check_partitions()
         message = str(error.exception)
         self.assertIn("partition_fixtures.test_cases.SearchTests.test_search", message)
         self.assertIn("partition_fixtures.test_cases.SearchTests.test_serial_search", message)
 
-    def test_job_definition_without_workflow_invocation_does_not_cover_tests(self):
-        self.config["workflows"]["tests"]["jobs"] = ["general-tests"]
+    def test_missing_matrix_row_leaves_its_tests_uncovered(self):
+        del self.partitions[1]
         with self.assertRaises(CommandError) as error:
             self.check_partitions()
         self.assertIn(
@@ -125,10 +115,36 @@ class TestPartitionTests(SimpleTestCase):
         )
 
     def test_empty_labels_do_not_fall_back_to_full_discovery(self):
-        self.config["jobs"]["general-tests"]["steps"][0]["run-tests-no-es"]["app_labels"] = ""
+        self.partitions[0]["app_labels"] = ""
         with self.assertRaises(CommandError) as error:
             self.check_partitions()
         self.assertIn("general-tests", str(error.exception))
+
+    def test_extra_matrix_axis_cannot_hide_duplicate_runs(self):
+        self.matrix["os"] = ["ubuntu-latest", "macos-latest"]
+        with self.assertRaises(CommandError):
+            self.check_partitions()
+
+    def test_matrix_exclude_cannot_hide_uncovered_tests(self):
+        self.matrix["exclude"] = [self.partitions[1]]
+        with self.assertRaises(CommandError):
+            self.check_partitions()
+
+    def test_malformed_partition_fields_are_rejected(self):
+        for field, value in (
+            ("name", ""),
+            ("app_labels", ["partition_fixtures.test_cases.SearchTests"]),
+            ("elasticsearch", "false"),
+        ):
+            with self.subTest(field=field):
+                with patch.dict(self.partitions[1], {field: value}):
+                    with self.assertRaises(CommandError):
+                        self.check_partitions()
+
+    def test_missing_elasticsearch_flag_does_not_default_to_no_es(self):
+        del self.partitions[0]["elasticsearch"]
+        with self.assertRaises(CommandError):
+            self.check_partitions()
 
     def test_import_error_cannot_count_as_a_covered_test(self):
         (self.package / "test_broken.py").write_text(
@@ -139,9 +155,7 @@ class TestPartitionTests(SimpleTestCase):
         self.assertIn("ImportError: partition fixture dependency is missing", str(error.exception))
 
     def test_invalid_partition_label_reports_discovery_error(self):
-        self.config["jobs"]["general-tests"]["steps"][0]["run-tests-no-es"]["app_labels"] = (
-            "partition_fixtures.missing"
-        )
+        self.partitions[0]["app_labels"] = "partition_fixtures.missing"
         with self.assertRaises(CommandError) as error:
             self.check_partitions()
         self.assertIn("partition_fixtures.missing", str(error.exception))

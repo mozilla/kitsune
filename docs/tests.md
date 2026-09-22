@@ -78,9 +78,9 @@ An explicit `--parallel=N` takes precedence over that environment variable;
 `--parallel=1` runs serially. Django may reduce the worker count when there are
 fewer test classes than requested workers.
 
-CI sets `DJANGO_TEST_PROCESSES=2` in `docker/docker-compose.ci.yml` to match its
-current CPU allocation without depending on host CPU discovery. Update that
-limit when changing CI resources.
+CI sets `DJANGO_TEST_PROCESSES=2` in `docker/docker-compose.ci.yml` to keep worker
+concurrency explicit while database and search services share the runner.
+Re-evaluate that limit when changing CI resources.
 
 For example, to limit an automatic run to two workers:
 
@@ -118,6 +118,39 @@ create may already have succeeded on the server, so retrying it can report "inde
 already exists". Request-local client options leave the query client and its
 timeout unchanged, including when initialization fails.
 
+## GitHub Actions
+
+The CI workflow is `.github/workflows/ci.yml`. It runs on pull requests, pushes
+to `main` and `dev`, merge queues, and manual dispatch. Lint, the four Python
+partitions, and JavaScript tests run independently. The deployment and Playwright
+workflows are separate and unchanged by unit-test CI.
+
+Each test job builds and loads its Docker target with Buildx. Python jobs share
+the `ci-test` GitHub Actions cache; only `kitsune-tests` exports it, avoiding
+duplicate cache uploads. The frontend target uses `ci-frontend`, separate from
+both Python and production image caches. These jobs need no registry credentials
+or repository secrets, including on fork pull requests.
+
+The CI Compose override starts only PostgreSQL and Redis for non-ES partitions,
+plus Elasticsearch for ES partitions. Synonyms use the shared bind mount, and the
+CI override does not publish database or Elasticsearch ports on the host.
+
+The `bin/dc_ci.sh` wrapper uses the `docker compose` plugin. For example, to run
+the wiki partition locally with services isolated from the development project:
+
+```bash
+./bin/dc_ci.sh -p kitsune-ci build test
+./bin/dc_ci.sh -p kitsune-ci up -d postgres redis
+./bin/dc_ci.sh -p kitsune-ci run --rm --no-deps --pull never -T test \
+    ./bin/run-unit-tests-no-es.sh kitsune.wiki kitsune.kbforums
+./bin/dc_ci.sh -p kitsune-ci down --volumes
+```
+
+Compose needs a local `.env`; CI creates it by copying `.env-build`. Preserve
+any existing local `.env` before reproducing that step. For ES partitions, also
+start `elasticsearch` and use `bin/run-unit-tests.sh` with the app labels from
+the workflow matrix.
+
 ## CI test image
 
 The Docker `test` target reuses the compiled gettext catalogs, JavaScript
@@ -143,11 +176,13 @@ the catalogs when changing this build: it is part of the collected static files.
 
 ## CI partition coverage
 
-The CircleCI `kitsune-tests` job runs `check_test_partitions` before its tests.
+The GitHub Actions `kitsune-tests` job runs `check_test_partitions` before its tests.
 The command uses Django's test runner to discover test IDs under `kitsune` and
-compare them with the app labels of the test jobs scheduled in `.circleci/config.yml`.
-It fails on missing tests, overlapping partitions, or discovery errors. A job
-definition that is absent from the workflows does not count toward coverage.
+compare them with `jobs.python-tests.strategy.matrix.include` in
+`.github/workflows/ci.yml`. It fails on missing tests, overlapping partitions,
+or discovery errors. Each matrix row declares its name, app labels, and whether
+it runs Elasticsearch tests. Keep this an include-only matrix: additional axes
+or exclusions are rejected rather than silently miscounted.
 
 The check accounts for both passes of the test scripts: no-ES jobs exclude
 `es`-tagged tests, including tests also tagged `no_parallel`. Keep the command's
@@ -158,7 +193,7 @@ To run the check in the development environment:
 
     docker compose run --rm web ./manage.py check_test_partitions
 
-Use `--config PATH` to check an alternative CircleCI configuration. The check
+Use `--config PATH` to check an alternative GitHub Actions workflow. The check
 imports tests but does not execute them or create a test database.
 
 ## Running tests without collecting static files
