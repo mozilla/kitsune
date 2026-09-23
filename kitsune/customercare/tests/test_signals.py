@@ -2,71 +2,64 @@ from unittest.mock import Mock, patch
 
 from django.contrib.auth.models import Group, User
 
-from kitsune.customercare.tasks import notify_agents_if_chat_revoked
+from kitsune.customercare.tasks import tag_chat_tickets_if_revoked
 from kitsune.groups.models import GroupProfile
-from kitsune.products.models import SupportOrganization
+from kitsune.products.models import ProductSupportConfig, SupportOrganization
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
     SupportOrganizationFactory,
     ZendeskConfigFactory,
 )
+from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.monkeypatch import _deactivate_users
 from kitsune.users.tests import UserFactory
 from kitsune.users.utils import anonymize_user, delete_user_pipeline
 
 
-@patch("kitsune.customercare.tasks.notify_agents_of_revoked_chat_access.delay")
-class NotifyAgentsIfChatRevokedTests(TestCase):
+@patch("kitsune.customercare.tasks.tag_revoked_chat_tickets.delay")
+class TagChatTicketsIfRevokedTests(TestCase):
     def test_queues_the_task_once_the_change_is_saved(self, delay):
         user = UserFactory(profile__fxa_uid="abc123")
 
         with self.captureOnCommitCallbacks() as callbacks:
-            notify_agents_if_chat_revoked(user)
+            tag_chat_tickets_if_revoked(user)
             delay.assert_not_called()
 
         callbacks[0]()
-        delay.assert_called_once_with("abc123", user.id, None)
-
-    def test_passes_along_products_that_just_stopped_offering_chat(self, delay):
-        user = UserFactory(profile__fxa_uid="abc123")
-
-        with self.captureOnCommitCallbacks(execute=True):
-            notify_agents_if_chat_revoked(user, product_ids=[7])
-
-        delay.assert_called_once_with("abc123", user.id, [7])
+        delay.assert_called_once_with("abc123", user.id)
 
     def test_reads_the_fxa_uid_before_anonymizing_replaces_it(self, delay):
         user = UserFactory(profile__fxa_uid="abc123")
 
         with self.captureOnCommitCallbacks(execute=True):
-            notify_agents_if_chat_revoked(user)
+            tag_chat_tickets_if_revoked(user)
             user.profile.fxa_uid = "replaced"
             user.profile.save()
 
-        delay.assert_called_once_with("abc123", user.id, None)
+        delay.assert_called_once_with("abc123", user.id)
 
     def test_a_user_without_an_fxa_uid_is_skipped(self, delay):
         user = UserFactory(profile__fxa_uid="")
 
         with self.captureOnCommitCallbacks(execute=True):
-            notify_agents_if_chat_revoked(user)
+            tag_chat_tickets_if_revoked(user)
 
         delay.assert_not_called()
 
 
-@patch("kitsune.customercare.signals.notify_agents_if_chat_revoked")
+@patch("kitsune.customercare.signals.tag_chat_tickets_if_revoked")
 class RevokedChatSignalTests(TestCase):
     def setUp(self):
         self.product = ProductFactory()
-        config = ProductSupportConfigFactory(
+        self.config = ProductSupportConfigFactory(
             product=self.product, zendesk_config=ZendeskConfigFactory()
         )
         root = GroupProfile.add_root(group=Group.objects.create(name="chat"), slug="chat")
         company = root.add_child(group=Group.objects.create(name="company"), slug="company")
         self.org = SupportOrganizationFactory(
-            config=config, group=company.group, include_live_chat=True
+            config=self.config, group=company.group, include_live_chat=True
         )
         # Membership of a subgroup counts for the organization above it.
         self.team = company.add_child(group=Group.objects.create(name="team"), slug="team").group
@@ -91,7 +84,7 @@ class RevokedChatSignalTests(TestCase):
         notify.side_effect = lambda user: seen.append(User.objects.get(pk=user.pk).is_active)
         return seen
 
-    def test_deleting_a_user_notifies_before_their_fxa_uid_is_gone(self, notify):
+    def test_deleting_a_user_tags_before_their_fxa_uid_is_gone(self, notify):
         seen = []
         notify.side_effect = lambda user: seen.append(user.profile.fxa_uid)
 
@@ -99,7 +92,7 @@ class RevokedChatSignalTests(TestCase):
 
         self.assertEqual(seen[0], "abc123")
 
-    def test_anonymizing_a_user_notifies_after_deactivating_but_before_the_fxa_uid_changes(
+    def test_anonymizing_a_user_tags_after_deactivating_but_before_the_fxa_uid_changes(
         self, notify
     ):
         seen = []
@@ -118,7 +111,7 @@ class RevokedChatSignalTests(TestCase):
 
         notify.assert_not_called()
 
-    def test_deactivating_a_user_notifies_after_the_save(self, notify):
+    def test_deactivating_a_user_tags_after_the_save(self, notify):
         active = self.is_active_in_db(notify)
 
         self.user.is_active = False
@@ -135,7 +128,7 @@ class RevokedChatSignalTests(TestCase):
 
         notify.assert_not_called()
 
-    def test_the_admins_bulk_deactivation_notifies_after_the_save(self, notify):
+    def test_the_admins_bulk_deactivation_tags_after_the_save(self, notify):
         active = self.is_active_in_db(notify)
 
         _deactivate_users(Mock(), Mock(), User.objects.filter(pk=self.user.pk))
@@ -143,7 +136,7 @@ class RevokedChatSignalTests(TestCase):
         self.assertEqual(self.notified(notify), {self.user})
         self.assertEqual(active, [False])
 
-    def test_removal_from_a_chat_group_notifies_from_either_side(self, notify):
+    def test_removal_from_a_chat_group_tags_from_either_side(self, notify):
         self.user.groups.remove(self.team)
         self.assertEqual(self.notified(notify), {self.user})
 
@@ -152,7 +145,7 @@ class RevokedChatSignalTests(TestCase):
         self.team.user_set.remove(self.user)
         self.assertEqual(self.notified(notify), {self.user})
 
-    def test_clearing_groups_notifies_from_either_side(self, notify):
+    def test_clearing_groups_tags_from_either_side(self, notify):
         self.user.groups.clear()
         self.assertEqual(self.notified(notify), {self.user})
 
@@ -167,7 +160,7 @@ class RevokedChatSignalTests(TestCase):
 
         notify.assert_not_called()
 
-    def test_deleting_a_chat_subgroup_notifies_its_members(self, notify):
+    def test_deleting_a_chat_subgroup_tags_its_members(self, notify):
         self.team.delete()
 
         self.assertEqual(self.notified(notify), {self.user})
@@ -177,11 +170,9 @@ class RevokedChatSignalTests(TestCase):
 
         notify.assert_not_called()
 
-    def test_switching_chat_off_for_an_organization_notifies_its_members_after_the_save(
-        self, notify
-    ):
+    def test_switching_chat_off_for_an_organization_tags_its_members_after_the_save(self, notify):
         has_chat = []
-        notify.side_effect = lambda user, product_ids: has_chat.append(
+        notify.side_effect = lambda user: has_chat.append(
             SupportOrganization.objects.get(pk=self.org.pk).include_live_chat
         )
 
@@ -190,16 +181,63 @@ class RevokedChatSignalTests(TestCase):
 
         self.assertEqual(self.notified(notify), {self.user})
         self.assertEqual(has_chat, [False])
-        # The product may have no live-chat organization left, so it's named.
-        self.assertEqual(notify.call_args.kwargs["product_ids"], [self.product.pk])
 
     def test_saving_an_organization_that_keeps_chat_does_not(self, notify):
         self.org.save()
 
         notify.assert_not_called()
 
-    def test_deleting_an_organization_notifies_its_members(self, notify):
+    def test_deleting_an_organization_tags_its_members(self, notify):
         self.org.delete()
 
         self.assertEqual(self.notified(notify), {self.user})
-        self.assertEqual(notify.call_args.kwargs["product_ids"], [self.product.pk])
+
+    def test_switching_off_a_config_tags_its_organizations_members(self, notify):
+        self.config.is_active = False
+        self.config.save()
+
+        self.assertEqual(self.notified(notify), {self.user})
+
+    def test_dropping_zendesk_from_a_config_tags_its_organizations_members(self, notify):
+        self.config.forum_config = AAQConfigFactory()
+        self.config.zendesk_config = None
+        self.config.save()
+
+        self.assertEqual(self.notified(notify), {self.user})
+
+    def test_a_config_requiring_a_subscription_tags_its_organizations_members(self, notify):
+        self.config.subscription_only = True
+        self.config.save()
+
+        self.assertEqual(self.notified(notify), {self.user})
+
+    def test_saving_a_config_that_keeps_chat_does_not(self, notify):
+        self.config.save()
+
+        notify.assert_not_called()
+
+    def test_losing_a_subscription_that_chat_requires_tags(self, notify):
+        ProductSupportConfig.objects.filter(pk=self.config.pk).update(subscription_only=True)
+        self.user.profile.products.add(self.product)
+
+        self.user.profile.products.remove(self.product)
+
+        self.assertEqual(self.notified(notify), {self.user})
+
+    def test_losing_a_subscription_that_chat_does_not_require_does_not(self, notify):
+        self.user.profile.products.add(self.product)
+
+        self.user.profile.products.remove(self.product)
+
+        notify.assert_not_called()
+
+    def test_a_login_sync_tags_only_when_the_subscription_is_gone(self, notify):
+        ProductSupportConfig.objects.filter(pk=self.config.pk).update(subscription_only=True)
+        self.user.profile.products.add(self.product)
+
+        # The login sync sets the products from the Mozilla account's subscriptions.
+        self.user.profile.products.set([self.product])
+        notify.assert_not_called()
+
+        self.user.profile.products.set([])
+        self.assertEqual(self.notified(notify), {self.user})

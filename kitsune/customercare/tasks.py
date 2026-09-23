@@ -4,17 +4,15 @@ from functools import partial
 
 import waffle
 from celery import group, shared_task
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.utils import (
-    get_chat_ineligibility,
+    has_chat_access,
     process_zendesk_classification_result,
     sync_ticket_from_zendesk,
 )
@@ -94,49 +92,27 @@ def update_zendesk_identity(user_id: int, email: str) -> None:
 
 
 @shared_task
-@skip_if_read_only_mode
-def notify_agents_of_revoked_chat_access(
-    fxa_uid: str, user_id: int, product_ids: list[int] | None = None
-) -> None:
-    """Tell the agents on a user's live chats why the user lost chat access.
+def tag_revoked_chat_tickets(fxa_uid: str, user_id: int) -> None:
+    """Tag a user's active live-chat tickets once the user has lost chat access.
 
     Run after anything that might have cost a user chat access. Takes the FxA UID
     as well as the user id, because once a user is deleted we can no longer look up
-    their FxA UID. product_ids names products that just stopped offering chat.
+    their FxA UID.
     """
-    # Turning chat off for everyone isn't something agents need telling about.
+    # Turning chat off for everyone doesn't call for tagging anyone's tickets.
     if not waffle.switch_is_active("zendesk-chat"):
         return
 
-    ineligibility = get_chat_ineligibility(
-        User.objects.filter(pk=user_id).first(), product_ids=product_ids or ()
-    )
-    if not ineligibility.reasons:
+    if has_chat_access(User.objects.filter(pk=user_id).first()):
         return
 
     client = ZendeskClient()
-
-    tickets = client.get_live_chat_tickets(
-        fxa_uid,
-        # Losing chat everywhere concerns every chat, whatever product it's about.
-        including_any_tags=() if ineligibility.all_products else ineligibility.product_tags,
-        excluding_tag=CHAT_REVOKED_TAG,
-    )
-
-    for ticket in tickets:
-        # Zendesk search can take minutes to see the tag, so skip tickets noted recently.
-        # add() only succeeds for the first task to try, even if two run at once.
-        if not cache.add(
-            f"customercare:chat-revoked:{ticket.id}", True, settings.CACHE_SHORT_TIMEOUT
-        ):
-            continue
-        client.add_internal_note(
-            ticket.id, ineligibility.note(ticket.tags), tags=[CHAT_REVOKED_TAG]
-        )
+    for ticket in client.get_active_chat_tickets(fxa_uid):
+        client.add_ticket_tags(ticket.id, [CHAT_REVOKED_TAG])
 
 
-def notify_agents_if_chat_revoked(user, product_ids=None) -> None:
-    """Queue notify_agents_of_revoked_chat_access for once the current change is saved.
+def tag_chat_tickets_if_revoked(user) -> None:
+    """Queue tag_revoked_chat_tickets for once the current change is saved.
 
     The FxA UID and user id are read now, because deleting or anonymizing the user
     erases them before the task runs.
@@ -148,8 +124,7 @@ def notify_agents_if_chat_revoked(user, product_ids=None) -> None:
     if fxa_uid:
         # robust: a queueing failure is logged rather than failing the change that saved.
         transaction.on_commit(
-            partial(notify_agents_of_revoked_chat_access.delay, fxa_uid, user.id, product_ids),
-            robust=True,
+            partial(tag_revoked_chat_tickets.delay, fxa_uid, user.id), robust=True
         )
 
 

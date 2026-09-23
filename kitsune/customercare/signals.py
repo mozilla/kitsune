@@ -3,9 +3,9 @@ from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_sav
 from django.dispatch import receiver
 from zenpy.lib.exception import ZenpyException
 
-from kitsune.customercare.tasks import notify_agents_if_chat_revoked, update_zendesk_user
+from kitsune.customercare.tasks import tag_chat_tickets_if_revoked, update_zendesk_user
 from kitsune.groups.models import GroupProfile
-from kitsune.products.models import SupportOrganization
+from kitsune.products.models import ProductSupportConfig, SupportOrganization
 from kitsune.users.models import Profile
 
 
@@ -44,8 +44,8 @@ def grants_chat(group_profiles) -> bool:
     return group_profiles.filter(group__support_organizations__include_live_chat=True).exists()
 
 
-def notify_agents_about_org_members(org):
-    """Notify for everyone in the organization's group or its subgroups."""
+def tag_chat_tickets_of_org_members(org):
+    """Queue tagging for everyone in the organization's group or its subgroups."""
     group_profile = GroupProfile.objects.filter(group_id=org.group_id).first()
     if group_profile is None:
         return
@@ -54,17 +54,15 @@ def notify_agents_about_org_members(org):
         .select_related("profile")
         .distinct()
     )
-    # The product may have no live-chat organization left, so name it for the task.
-    product_ids = [org.config.product_id]
     for user in members:
-        notify_agents_if_chat_revoked(user, product_ids=product_ids)
+        tag_chat_tickets_if_revoked(user)
 
 
 @receiver(pre_delete, sender=User, dispatch_uid="customercare.signals.on_user_deletion.User")
 def on_user_deletion(sender, instance, **kwargs):
     # Django sends this inside the delete's transaction, before the profile is gone.
     if grants_chat(GroupProfile.objects.containing(instance)):
-        notify_agents_if_chat_revoked(instance)
+        tag_chat_tickets_if_revoked(instance)
 
 
 @receiver(pre_save, sender=User, dispatch_uid="customercare.signals.check_deactivation.User")
@@ -84,7 +82,7 @@ def on_deactivation(sender, instance, **kwargs):
     if getattr(instance, "_is_being_deactivated", False) and grants_chat(
         GroupProfile.objects.containing(instance)
     ):
-        notify_agents_if_chat_revoked(instance)
+        tag_chat_tickets_if_revoked(instance)
 
 
 @receiver(
@@ -113,7 +111,7 @@ def on_group_removal(sender, instance, action, reverse, pk_set, **kwargs):
         return
 
     for user in users:
-        notify_agents_if_chat_revoked(user)
+        tag_chat_tickets_if_revoked(user)
 
 
 @receiver(pre_delete, sender=Group, dispatch_uid="customercare.signals.on_group_deletion.Group")
@@ -124,7 +122,7 @@ def on_group_deletion(sender, instance, **kwargs):
         return
     if grants_chat(GroupProfile.objects.containing_groups([instance.pk])):
         for user in instance.user_set.select_related("profile"):
-            notify_agents_if_chat_revoked(user)
+            tag_chat_tickets_if_revoked(user)
 
 
 @receiver(
@@ -158,7 +156,7 @@ def check_organization_change(sender, instance, **kwargs):
 def on_organization_change(sender, instance, **kwargs):
     # Queued after the save, so the tasks can't read the organization before it's saved.
     if old := getattr(instance, "_old_org_losing_chat", None):
-        notify_agents_about_org_members(old)
+        tag_chat_tickets_of_org_members(old)
 
 
 @receiver(
@@ -168,4 +166,60 @@ def on_organization_change(sender, instance, **kwargs):
 )
 def on_organization_deletion(sender, instance, **kwargs):
     if instance.include_live_chat:
-        notify_agents_about_org_members(instance)
+        tag_chat_tickets_of_org_members(instance)
+
+
+@receiver(
+    pre_save,
+    sender=ProductSupportConfig,
+    dispatch_uid="customercare.signals.check_config_change.ProductSupportConfig",
+)
+def check_config_change(sender, instance, **kwargs):
+    # Checked before the save, while the database still has the old config.
+    instance._is_losing_chat = False
+    if instance.pk is None:
+        return
+    old = ProductSupportConfig.objects.filter(
+        pk=instance.pk, is_active=True, zendesk_config__isnull=False
+    ).first()
+    if old is None:
+        return
+    # Switching off, dropping Zendesk, or requiring a subscription can all take chat
+    # away from the people its organizations covered.
+    instance._is_losing_chat = (
+        not instance.is_active
+        or instance.zendesk_config_id is None
+        or (instance.subscription_only and not old.subscription_only)
+    )
+
+
+@receiver(
+    post_save,
+    sender=ProductSupportConfig,
+    dispatch_uid="customercare.signals.on_config_change.ProductSupportConfig",
+)
+def on_config_change(sender, instance, **kwargs):
+    # Queued after the save, so the tasks can't read the config before it's saved.
+    if getattr(instance, "_is_losing_chat", False):
+        for org in instance.support_organizations.filter(include_live_chat=True):
+            tag_chat_tickets_of_org_members(org)
+
+
+@receiver(
+    m2m_changed,
+    sender=Profile.products.through,
+    dispatch_uid="customercare.signals.on_subscription_removal.Profile.products",
+)
+def on_subscription_removal(sender, instance, action, reverse, pk_set, **kwargs):
+    # Both the subscription webhook and the login sync remove products this way.
+    if action != "post_remove" or reverse:
+        return
+    # Only products whose live chat requires a subscription matter.
+    if ProductSupportConfig.objects.filter(
+        product__in=pk_set,
+        is_active=True,
+        zendesk_config__isnull=False,
+        subscription_only=True,
+        support_organizations__include_live_chat=True,
+    ).exists():
+        tag_chat_tickets_if_revoked(instance.user)

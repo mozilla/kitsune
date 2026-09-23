@@ -1,6 +1,11 @@
 from unittest.mock import Mock, patch
 
-from kitsune.customercare.zendesk import CHAT_REVOKED_TAG, LOGINLESS_TAG, ZendeskClient
+from kitsune.customercare.zendesk import (
+    CHAT_REVOKED_TAG,
+    LOGINLESS_TAG,
+    MESSAGING_CHANNEL,
+    ZendeskClient,
+)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -573,90 +578,52 @@ class ZendeskClientTests(TestCase):
         self.assertEqual(ticket_arg.status, "solved")
 
 
+def chat_ticket(id, status="open", channel=MESSAGING_CHANNEL):
+    return Mock(id=id, status=status, via=Mock(channel=channel))
+
+
 @patch("kitsune.customercare.zendesk.Zenpy")
-class LiveChatTicketsTests(TestCase):
+class ActiveChatTicketsTests(TestCase):
     def test_no_fxa_uid_asks_zendesk_nothing(self, mock_zenpy):
-        tickets = ZendeskClient().get_live_chat_tickets("")
+        tickets = ZendeskClient().get_active_chat_tickets("")
 
         self.assertEqual(tickets, [])
-        mock_zenpy.return_value.search.assert_not_called()
+        mock_zenpy.return_value.users.assert_not_called()
 
     def test_no_zendesk_user_means_no_tickets(self, mock_zenpy):
-        search = mock_zenpy.return_value.search
-        search.return_value = iter([])
+        users = mock_zenpy.return_value.users
+        users.return_value = []
 
-        tickets = ZendeskClient().get_live_chat_tickets("abc123")
+        tickets = ZendeskClient().get_active_chat_tickets("abc123")
 
         self.assertEqual(tickets, [])
-        search.assert_called_once_with(type="user", external_id="abc123")
+        users.assert_called_once_with(external_id="abc123")
+        users.requested.assert_not_called()
 
-    def test_finds_the_users_unsolved_chat_tickets(self, mock_zenpy):
-        search = mock_zenpy.return_value.search
-        live = [Mock(id=46), Mock(id=15)]
-        search.side_effect = [iter([Mock(id=789)]), iter(live)]
+    def test_keeps_only_the_users_active_chat_tickets(self, mock_zenpy):
+        users = mock_zenpy.return_value.users
+        users.return_value = [Mock(id=789)]
+        chats = [chat_ticket(1, "new"), chat_ticket(2, "open"), chat_ticket(3, "pending")]
+        chats += [chat_ticket(4, "hold")]
+        users.requested.return_value = [
+            *chats,
+            chat_ticket(5, "solved"),
+            chat_ticket(6, "closed"),
+            chat_ticket(7, channel="web"),
+        ]
 
-        tickets = ZendeskClient().get_live_chat_tickets("abc123", excluding_tag=CHAT_REVOKED_TAG)
+        tickets = ZendeskClient().get_active_chat_tickets("abc123")
 
-        self.assertEqual(tickets, live)
-        search.assert_called_with(
-            type="ticket",
-            via="native_messaging",
-            requester_id=789,
-            status_less_than="solved",
-            minus=f"tags:{CHAT_REVOKED_TAG}",
-        )
-
-    def test_narrows_to_tickets_with_any_of_the_given_tags(self, mock_zenpy):
-        search = mock_zenpy.return_value.search
-        search.side_effect = [iter([Mock(id=789)]), iter([])]
-        tags = ("product-firefox", "product-mozilla-vpn")
-
-        ZendeskClient().get_live_chat_tickets("abc123", including_any_tags=tags)
-
-        self.assertEqual(search.call_args.kwargs["tags"], list(tags))
-
-    def test_filters_on_no_tags_unless_asked(self, mock_zenpy):
-        search = mock_zenpy.return_value.search
-        search.side_effect = [iter([Mock(id=789)]), iter([])]
-
-        ZendeskClient().get_live_chat_tickets("abc123")
-
-        self.assertNotIn("tags", search.call_args.kwargs)
-        self.assertNotIn("minus", search.call_args.kwargs)
-
-    def test_two_zendesk_users_with_one_fxa_uid_is_an_error(self, mock_zenpy):
-        mock_zenpy.return_value.search.return_value = iter([Mock(id=1), Mock(id=2)])
-
-        with self.assertRaises(ValueError):
-            ZendeskClient().get_live_chat_tickets("abc123")
+        self.assertEqual(tickets, chats)
+        users.requested.assert_called_once_with(789)
 
 
 @patch("kitsune.customercare.zendesk.Zenpy")
-class InternalNoteTests(TestCase):
-    def sent(self, mock_zenpy):
-        """What actually goes over the wire to Zendesk."""
-        return mock_zenpy.return_value.tickets.update.call_args[0][0].to_dict(serialize=True)
+class AddTicketTagsTests(TestCase):
+    def test_adds_tags_without_replacing_the_tickets_others(self, mock_zenpy):
+        ZendeskClient().add_ticket_tags(46, (CHAT_REVOKED_TAG,))
 
-    def test_note_is_private_and_from_the_integration(self, mock_zenpy):
-        ZendeskClient().add_internal_note(46, "Chat access ended.")
-
-        payload = self.sent(mock_zenpy)
-        self.assertEqual(payload["id"], 46)
-        self.assertEqual(payload["comment"]["body"], "Chat access ended.")
-        self.assertIs(payload["comment"]["public"], False)
-        self.assertNotIn("author_id", payload["comment"])
-
-    def test_tags_are_added_without_replacing_the_agents(self, mock_zenpy):
-        ZendeskClient().add_internal_note(46, "Chat access ended.", tags=[CHAT_REVOKED_TAG])
-
-        payload = self.sent(mock_zenpy)
-        self.assertEqual(payload["additional_tags"], [CHAT_REVOKED_TAG])
-        self.assertNotIn("tags", payload)
-
-    def test_no_tags_sends_no_tags(self, mock_zenpy):
-        ZendeskClient().add_internal_note(46, "Chat access ended.")
-
-        self.assertNotIn("additional_tags", self.sent(mock_zenpy))
+        mock_zenpy.return_value.tickets.add_tags.assert_called_once_with(46, [CHAT_REVOKED_TAG])
 
 
 class ZendeskClientConstructorTests(TestCase):
