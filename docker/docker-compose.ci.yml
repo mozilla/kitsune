@@ -1,22 +1,22 @@
-version: "3.8"
 services:
   test:
+    image: kitsune-test:ci
     build:
       context: .
       target: test
     env_file: .env-test
     environment:
-      DJANGO_TEST_PROCESSES: "2"
+      DJANGO_TEST_PROCESSES: ${DJANGO_TEST_PROCESSES:-2}
     depends_on:
       - postgres
       - elasticsearch
       - redis
 
-  frontend-test:
-    build:
-      context: .
-      target: frontend-builder
-    command: npx mocha --require ./webpack/mocha-require dist/tests.js
+  postgres:
+    ports: !reset []
+
+  elasticsearch:
+    ports: !reset []
 
   prod:
     build:

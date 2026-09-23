@@ -11,7 +11,7 @@ see [Retrieval and hybrid search](retrieval.md).
 
 The shared Docker service runs Elasticsearch and Kibana at the same version as the hosted
 stage cluster and starts new Elasticsearch data volumes with a self-generated trial
-license. CircleCI uses this service too, which lets real integration tests exercise licensed
+license. GitHub Actions uses this service too, which lets real integration tests exercise licensed
 features such as reciprocal rank fusion.
 
 The license belongs to the Elasticsearch data volume. Adding the Docker setting does not

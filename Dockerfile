@@ -37,7 +37,8 @@ COPY scripts/l10n-fetch-lint-compile.sh scripts/dennis_shim.py ./scripts/
 ARG L10N_REV
 ADD --keep-git-dir=true https://github.com/mozilla-l10n/sumo-l10n.git#${L10N_REV} /app/locale
 RUN mkdir -p kitsune/sumo/static && \
-    ./scripts/l10n-fetch-lint-compile.sh
+    ./scripts/l10n-fetch-lint-compile.sh && \
+    rm -rf /app/locale/.git
 
 # =================================
 # Stage 3: Generate jsi18n files
@@ -68,8 +69,7 @@ COPY --from=jsi18n-generator /app/jsi18n ./jsi18n
 
 RUN cp .env-build .env && \
     npm run webpack:build:prod && \
-    npm run webpack:build:pre-render && \
-    npm run webpack:test
+    npm run webpack:build:pre-render
 
 # =================================
 # Stage 5: Development Image Target

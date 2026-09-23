@@ -4,7 +4,7 @@
     "repository": {
         "url": "https://github.com/mozilla/kitsune/",
         "license": "BSD 3-Clause",
-        "tests": "https://app.circleci.com/pipelines/github/mozilla/kitsune"
+        "tests": "https://github.com/mozilla/kitsune/actions/workflows/ci.yml"
     },
     "participate": {
         "home": "https://mozilla.github.io/kitsune/contributors/",
