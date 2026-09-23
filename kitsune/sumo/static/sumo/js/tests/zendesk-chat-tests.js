@@ -73,6 +73,37 @@ describe("zendesk-chat", () => {
     expect(commands).to.eql(["logoutUser", "loginUser"]);
   });
 
+  it("sets the conversation tags after signing out, since signing out clears them", () => {
+    signInToChat(JWT_URL, "ringo", "stage");
+
+    const commands = window.zE.getCalls().map((call) => call.args[1]);
+    expect(commands).to.eql(["logoutUser", "conversationTags", "loginUser"]);
+    expect(window.zE.getCall(1).args[2]).to.eql(["stage"]);
+  });
+
+  it("sets the conversation tags when the widget already knows this user", () => {
+    window.localStorage.setItem(SIGNED_IN_USER_KEY, "ringo");
+
+    signInToChat(JWT_URL, "ringo", "stage");
+
+    const commands = window.zE.getCalls().map((call) => call.args[1]);
+    expect(commands).to.eql(["conversationTags", "loginUser"]);
+  });
+
+  it("splits several tags into a list", () => {
+    signInToChat(JWT_URL, "ringo", "stage other");
+
+    const tagsCall = window.zE.getCalls().find((call) => call.args[1] === "conversationTags");
+    expect(tagsCall.args[2]).to.eql(["stage", "other"]);
+  });
+
+  it("sets no conversation tags when there are none", () => {
+    signInToChat(JWT_URL, "ringo", null);
+
+    const commands = window.zE.getCalls().map((call) => call.args[1]);
+    expect(commands).to.not.include("conversationTags");
+  });
+
   it("posts to the token url and hands the token back to Zendesk", async () => {
     signInToChat(JWT_URL, "ringo");
 

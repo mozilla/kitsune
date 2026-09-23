@@ -22,6 +22,7 @@
   {% if show_chat %}
   data-zendesk-chat-jwt-url="{{ url('customercare.chat_jwt', product_slug=(product or current_product).slug) }}"
   data-zendesk-chat-user="{{ user.id }}"
+  {% if settings.ZENDESK_CHAT_TAGS %}data-zendesk-chat-tags="{{ settings.ZENDESK_CHAT_TAGS }}"{% endif %}
   {% endif %}>
 <head>
   {% include "includes/google-analytics.html" %}
