@@ -1,27 +1,84 @@
+from functools import cached_property
+from hashlib import sha256
+
+import requests
 from django.conf import settings
+from django.core.cache import cache
 from zenpy import Zenpy
 from zenpy.lib.api_objects import Comment as ZendeskComment
 from zenpy.lib.api_objects import Identity as ZendeskIdentity
 from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
+from zenpy.lib.exception import ZenpyException
 
 NO_RESPONSE = "No response provided."
 LOGINLESS_TAG = "loginless_ticket"
+OAUTH_SCOPES = "read users:write tickets:write"
+OAUTH_EXPIRY_MARGIN = 60
+
+
+def get_oauth_token():
+    """Reuse the service token across web and Celery workers until near expiry."""
+    subdomain = settings.ZENDESK_SUBDOMAIN
+    client_id = settings.ZENDESK_OAUTH_CLIENT_ID
+    client_secret = settings.ZENDESK_OAUTH_CLIENT_SECRET
+    if not all((subdomain, client_id, client_secret)):
+        raise ZenpyException("Zendesk OAuth requires a subdomain, client ID, and client secret.")
+
+    # Isolate accounts and invalidate cached credentials when the secret rotates.
+    identity = sha256(f"{subdomain}:{client_id}:{client_secret}".encode()).hexdigest()
+    cache_key = f"customercare:zendesk:oauth:{identity}"
+    if token := cache.get(cache_key):
+        return token
+
+    response = requests.post(
+        f"https://{subdomain}.zendesk.com/oauth/tokens",
+        json={
+            "grant_type": "client_credentials",
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "scope": OAUTH_SCOPES,
+        },
+        timeout=settings.ZENDESK_SYNC_TIMEOUT,
+    )
+    response.raise_for_status()
+    data = response.json()
+    token = data["access_token"]
+    cache.set(cache_key, token, timeout=max(0, data["expires_in"] - OAUTH_EXPIRY_MARGIN))
+    return token
 
 
 class ZendeskClient:
     """Client to connect to Zendesk API."""
 
     def __init__(self, **kwargs):
-        """Initialize Zendesk API client."""
-        creds = {
-            "email": settings.ZENDESK_USER_EMAIL,
-            "token": settings.ZENDESK_API_TOKEN,
-            "subdomain": settings.ZENDESK_SUBDOMAIN,
-        }
         # Bound every call so an unreachable/slow Zendesk can't hang a worker.
         kwargs.setdefault("timeout", settings.ZENDESK_SYNC_TIMEOUT)
-        self.client = Zenpy(**(creds | kwargs))
+        self._kwargs = kwargs
+
+    @cached_property
+    def client(self):
+        # Fetch credentials inside the caller's API-operation error handling.
+        if settings.ZENDESK_OAUTH_CLIENT_ID and settings.ZENDESK_OAUTH_CLIENT_SECRET:
+            creds = {"oauth_token": get_oauth_token()}
+        else:
+            if not all(
+                (
+                    settings.ZENDESK_SUBDOMAIN,
+                    settings.ZENDESK_USER_EMAIL,
+                    settings.ZENDESK_API_TOKEN,
+                )
+            ):
+                raise ZenpyException(
+                    "Zendesk API token authentication requires a subdomain, user email, "
+                    "and API token."
+                )
+            creds = {
+                "email": settings.ZENDESK_USER_EMAIL,
+                "token": settings.ZENDESK_API_TOKEN,
+            }
+        creds["subdomain"] = settings.ZENDESK_SUBDOMAIN
+        return Zenpy(**(creds | self._kwargs))
 
     def _user_to_zendesk_user(self, user, email):
         """Given a Django user, return a Zendesk user."""

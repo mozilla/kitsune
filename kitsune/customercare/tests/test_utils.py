@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, Mock, patch
 
+import requests
 from django.contrib.auth.models import AnonymousUser, Group
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
@@ -222,6 +223,7 @@ class SendSupportTicketToZendeskTests(TestCase):
         self.submission.country = "US"
         self.submission.update_channel = ""
         self.submission.policy_distribution = ""
+        self.submission.urgency = ""
         self.submission.zendesk_tags = []
 
     @patch("kitsune.customercare.utils.ZendeskClient")
@@ -303,6 +305,25 @@ class SendSupportTicketToZendeskTests(TestCase):
         self.assertTrue(result)
         self.assertEqual(self.submission.zendesk_ticket_id, "12345")
         self.assertEqual(self.submission.submission_status, SupportTicket.STATUS_SENT)
+
+    @override_settings(
+        ZENDESK_SUBDOMAIN="oauth-test",
+        ZENDESK_OAUTH_CLIENT_ID="sumo",
+        ZENDESK_OAUTH_CLIENT_SECRET="test-client-secret",
+    )
+    @patch("kitsune.customercare.utils.flag_object")
+    @patch("kitsune.customercare.utils.Profile")
+    @patch(
+        "kitsune.customercare.zendesk.get_oauth_token",
+        side_effect=requests.Timeout("OAuth token endpoint timed out"),
+    )
+    def test_oauth_failure_flags_submission(self, mock_token, mock_profile, mock_flag_object):
+        result = send_support_ticket_to_zendesk(self.submission)
+
+        self.assertFalse(result)
+        self.assertEqual(self.submission.submission_status, SupportTicket.STATUS_FLAGGED)
+        self.submission.save.assert_called_with(update_fields=["submission_status"])
+        mock_flag_object.assert_called_once()
 
 
 class ProcessZendeskClassificationResultTests(TestCase):
