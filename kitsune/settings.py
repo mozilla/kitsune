@@ -1362,6 +1362,8 @@ ZENDESK_CHAT_WIDGET_KEY = config("ZENDESK_CHAT_WIDGET_KEY", default="")
 ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES = config(
     "ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES", default="", cast=Csv()
 )
+# Space-separated list of tags that will be added to all Zendesk live-chat conversations/tickets.
+ZENDESK_CHAT_TAGS = config("ZENDESK_CHAT_TAGS", default="")
 
 # Products that allow un-authenticated users to submit support requests
 LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])
