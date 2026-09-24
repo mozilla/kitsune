@@ -1391,7 +1391,12 @@ ZENDESK_CHAT_CSP_SOURCES = {
         "https://www.gravatar.com",
     ],
     "media-src": [*ZENDESK_CHAT_ASSET_HOSTS],
-    "frame-src": [*ZENDESK_CHAT_ASSET_HOSTS, *ZENDESK_CHAT_API_HOSTS],
+    "frame-src": [
+        *ZENDESK_CHAT_ASSET_HOSTS,
+        *ZENDESK_CHAT_API_HOSTS,
+        # The CSAT survey, served from the branded help-center domain.
+        "https://enterprise-help.mozilla.com",
+    ],
     "font-src": [*ZENDESK_CHAT_ASSET_HOSTS],
     "connect-src": [
         *ZENDESK_CHAT_ASSET_HOSTS,
