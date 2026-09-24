@@ -1385,6 +1385,8 @@ ZENDESK_CHAT_CSP_SOURCES = {
         *ZENDESK_CHAT_API_HOSTS,
         # Attachments and avatars in chat conversations.
         "https://*.zdusercontent.com",
+        # Default avatars for people without one.
+        "https://www.gravatar.com",
     ],
     "media-src": [*ZENDESK_CHAT_ASSET_HOSTS],
     "frame-src": [*ZENDESK_CHAT_ASSET_HOSTS, *ZENDESK_CHAT_API_HOSTS],
