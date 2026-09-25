@@ -116,9 +116,9 @@ class ViewProfileTests(TestCase):
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
         self.assertEqual(0, doc("#edit-profile-link").length)
-        self.assertEqual(self.u.username, doc("h2.user").text())
+        self.assertEqual(self.u.username, doc("h2.entity-card--name").text())
         # No name set => no optional fields.
-        self.assertEqual(0, doc(".contact").length)
+        self.assertEqual(0, doc(".avatar-group--details-list").length)
         # Check canonical url
         self.assertEqual(
             "{}/en-US/user/{}/".format(settings.CANONICAL_URL, self.u.username),
@@ -206,6 +206,60 @@ class ViewProfileTests(TestCase):
         AwardFactory(user=u, badge=b)
         r = self.client.get(reverse("users.profile", args=[u.username]))
         assert badge_title.encode() in r.content
+
+
+class ViewedUserNavTests(TestCase):
+    """Sidebar identity nav shown on another user's contribution pages.
+
+    The profile page names the user in its entity card, but the contribution
+    and edit pages have no other indication of whose page it is, nor a route
+    back to the profile.
+    """
+
+    CONTRIBUTION_VIEWS = ("users.answers", "users.documents", "users.questions")
+
+    def setUp(self):
+        self.owner = UserFactory()
+        self.viewer = UserFactory()
+
+    def heading(self, response):
+        return pq(response.content)(".sidebar-account-nav-card .details-heading").text()
+
+    def profile_links(self, response):
+        profile_path = reverse("users.profile", args=[self.owner.username])
+        links = pq(response.content)(".sidebar-account-nav-card a")
+        return [a for a in links if (a.attrib.get("href") or "") == profile_path]
+
+    def test_nav_links_back_to_profile_for_other_users(self):
+        self.client.login(username=self.viewer.username, password="testpass")
+        for viewname in self.CONTRIBUTION_VIEWS:
+            with self.subTest(viewname=viewname):
+                r = self.client.get(reverse(viewname, args=[self.owner.username]))
+                self.assertEqual(200, r.status_code)
+                self.assertEqual(1, len(self.profile_links(r)))
+
+    def test_owner_keeps_personal_tabs(self):
+        """The owner gets their own account nav, not the viewed-user nav."""
+        self.client.login(username=self.owner.username, password="testpass")
+        for viewname in self.CONTRIBUTION_VIEWS:
+            with self.subTest(viewname=viewname):
+                r = self.client.get(reverse(viewname, args=[self.owner.username]))
+                self.assertEqual(200, r.status_code)
+                self.assertEqual("My Profile", self.heading(r))
+
+    def test_profile_page_does_not_duplicate_the_entity_card(self):
+        """profile.html names the user in its entity card, so no nav there."""
+        self.client.login(username=self.viewer.username, password="testpass")
+        r = self.client.get(reverse("users.profile", args=[self.owner.username]))
+        self.assertEqual(200, r.status_code)
+        self.assertEqual(0, len(self.profile_links(r)))
+
+    def test_nav_on_edit_profile_for_moderators(self):
+        add_permission(self.viewer, Profile, "change_profile")
+        self.client.login(username=self.viewer.username, password="testpass")
+        r = self.client.get(reverse("users.edit_profile", args=[self.owner.username]))
+        self.assertEqual(200, r.status_code)
+        self.assertEqual(1, len(self.profile_links(r)))
 
 
 class FlagProfileTests(TestCase):

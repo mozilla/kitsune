@@ -1,5 +1,6 @@
 {% extends "users/base.html" %}
 {% from "users/includes/notification_macros.html" import notification_fxa_updated %}
+{% from "users/includes/macros.html" import viewed_user_nav %}
 
 {% set title = _('Edit Profile') %}
 {% set classes = 'profile' %}
@@ -7,6 +8,11 @@
 {% if not user_form.errors %}
  {% set crumbs = [((profile_url(user=profile.user), 'rel="nofollow"'), profile.user.username), (None, title)] %}
 {% endif %}
+
+{% block side_top %}
+  {{ viewed_user_nav(profile, request.user) }}
+  {{ super() }}
+{% endblock %}
 
 {% block above_main %}
 {% if fxa_messages %}
