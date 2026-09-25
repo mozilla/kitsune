@@ -125,8 +125,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile.save()
         # User subscription information
         products = Product.active.filter(codename__in=subscriptions)
-        profile.products.clear()
-        profile.products.add(*products)
+        profile.products.set(products)
 
         # This is a new sumo profile, show edit profile message
         messages.success(
@@ -221,8 +220,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile.fxa_avatar = claims.get("avatar", "")
         # User subscription information
         products = Product.active.filter(codename__in=subscriptions)
-        profile.products.clear()
-        profile.products.add(*products)
+        profile.products.set(products)
 
         # update contributor status
         self.update_contributor_status(profile)

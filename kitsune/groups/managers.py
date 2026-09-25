@@ -9,17 +9,18 @@ class GroupProfileManager(MP_NodeManager):
         """All GroupProfiles whose group is configured as a support organization."""
         return self.filter(group__support_organizations__isnull=False).distinct()
 
+    def containing_groups(self, groups):
+        """These groups and every group above them."""
+        return self.filter(
+            Exists(self.model.objects.filter(path__startswith=OuterRef("path"), group__in=groups))
+        )
+
     def containing(self, user):
         """Groups containing the user directly or through a subgroup, excluding leadership."""
         if not (user and user.is_authenticated):
             return self.none()
         return self.filter(
-            Exists(
-                self.model.objects.filter(
-                    group__user=user,
-                    path__startswith=OuterRef("path"),
-                )
-            )
+            Exists(self.model.objects.filter(path__startswith=OuterRef("path"), group__user=user))
         )
 
     def visible(self, user: User | None = None):

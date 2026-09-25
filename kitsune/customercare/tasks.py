@@ -1,6 +1,8 @@
 import logging
 from datetime import timedelta
+from functools import partial
 
+import waffle
 from celery import group, shared_task
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -13,10 +15,11 @@ from kitsune.customercare.utils import (
     process_zendesk_classification_result,
     sync_ticket_from_zendesk,
 )
-from kitsune.customercare.zendesk import ZendeskClient
+from kitsune.customercare.zendesk import CHAT_REVOKED_TAG, ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.support.classifiers import classify_zendesk_submission
 from kitsune.sumo.decorators import skip_if_read_only_mode
+from kitsune.users.models import Profile
 
 log = logging.getLogger("k.task")
 
@@ -77,6 +80,15 @@ def update_zendesk_user(user_id: int) -> None:
 
 
 @shared_task
+def create_zendesk_user(user_id: int) -> None:
+    """Give the user a Zendesk user, so later changes to their account reach Zendesk."""
+    user = User.objects.filter(pk=user_id).select_related("profile").first()
+    # Another run may have created it since this one was queued.
+    if user and not user.profile.zendesk_id:
+        ZendeskClient().create_user(user)
+
+
+@shared_task
 def update_zendesk_identity(user_id: int, email: str) -> None:
     user = User.objects.get(pk=user_id)
     zendesk_user_id = user.profile.zendesk_id
@@ -85,6 +97,38 @@ def update_zendesk_identity(user_id: int, email: str) -> None:
     if zendesk_user_id:
         zendesk = ZendeskClient()
         zendesk.update_primary_email(zendesk_user_id, email)
+
+
+@shared_task
+def tag_revoked_chat_tickets(zendesk_id: str) -> None:
+    """Tag a user's active live-chat tickets once the user has lost chat access.
+
+    Takes the Zendesk user id rather than the user, because once a user is deleted
+    we can no longer look up their Zendesk user id.
+    """
+    # Turning chat off for everyone doesn't call for tagging anyone's tickets.
+    if not waffle.switch_is_active("zendesk-chat"):
+        return
+
+    client = ZendeskClient()
+    for ticket in client.get_active_chat_tickets(zendesk_id):
+        client.add_ticket_tags(ticket.id, [CHAT_REVOKED_TAG])
+
+
+def revoke_chat_tickets(user) -> None:
+    """Queue tag_revoked_chat_tickets for once the current change is saved.
+
+    The Zendesk user id is read now, because deleting the user erases it before
+    the task runs.
+    """
+    try:
+        zendesk_id = user.profile.zendesk_id
+    except Profile.DoesNotExist:
+        return
+
+    if zendesk_id:
+        # Using robust prevents a queueing failure from ruining the commit.
+        transaction.on_commit(partial(tag_revoked_chat_tickets.delay, zendesk_id), robust=True)
 
 
 @shared_task

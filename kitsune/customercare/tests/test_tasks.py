@@ -1,16 +1,20 @@
-from unittest.mock import patch
+from unittest.mock import Mock, call, patch
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from waffle.testutils import override_switch
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import (
+    create_zendesk_user,
     process_failed_zendesk_tickets,
     process_zendesk_update,
     sync_active_support_tickets,
     sync_support_ticket,
+    tag_revoked_chat_tickets,
     zendesk_submission_classifier,
 )
+from kitsune.customercare.zendesk import CHAT_REVOKED_TAG
 from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.llm.support.classifiers import classify_zendesk_submission
 from kitsune.products.tests import (
@@ -21,6 +25,58 @@ from kitsune.products.tests import (
     ZendeskTopicFactory,
 )
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import UserFactory
+
+
+@override_switch("zendesk-chat", active=True)
+@patch("kitsune.customercare.tasks.ZendeskClient")
+class TagRevokedChatTicketsTests(TestCase):
+    def test_tags_every_active_chat(self, mock_client):
+        client = mock_client.return_value
+        client.get_active_chat_tickets.return_value = [Mock(id=46), Mock(id=15)]
+
+        tag_revoked_chat_tickets("789")
+
+        client.get_active_chat_tickets.assert_called_once_with("789")
+        self.assertEqual(
+            client.add_ticket_tags.call_args_list,
+            [call(46, [CHAT_REVOKED_TAG]), call(15, [CHAT_REVOKED_TAG])],
+        )
+
+    @override_switch("zendesk-chat", active=False)
+    def test_nothing_is_sent_when_chat_is_off_for_everyone(self, mock_client):
+        tag_revoked_chat_tickets("789")
+
+        mock_client.assert_not_called()
+
+
+@patch("kitsune.customercare.tasks.ZendeskClient")
+class CreateZendeskUserTests(TestCase):
+    def test_creates_a_zendesk_user_for_a_user_without_one(self, mock_client):
+        user = UserFactory()
+
+        create_zendesk_user(user.id)
+
+        mock_client.return_value.create_user.assert_called_once_with(user)
+
+    def test_a_user_who_already_has_one_is_left_alone(self, mock_client):
+        user = UserFactory()
+        # Saved on its own so the save signal doesn't call Zendesk.
+        user.profile.zendesk_id = "789"
+        user.profile.save(update_fields=["zendesk_id"])
+
+        create_zendesk_user(user.id)
+
+        mock_client.assert_not_called()
+
+    def test_a_deleted_user_is_skipped(self, mock_client):
+        user = UserFactory()
+        user_id = user.id
+        user.delete()
+
+        create_zendesk_user(user_id)
+
+        mock_client.assert_not_called()
 
 
 class ZendeskSubmissionClassifierTests(TestCase):

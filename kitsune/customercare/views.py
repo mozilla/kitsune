@@ -25,7 +25,7 @@ from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyExce
 
 from kitsune.customercare.forms import SupportTicketReplyForm
 from kitsune.customercare.models import SupportTicket
-from kitsune.customercare.tasks import process_zendesk_update
+from kitsune.customercare.tasks import create_zendesk_user, process_zendesk_update
 from kitsune.customercare.utils import (
     generate_classification_tags,
     resolve_chat_eligibility,
@@ -109,6 +109,10 @@ def chat_jwt(request, product_slug):
                     f"{eligibility.reason} for user #{user.id}, product {product_slug}: org {slug}",
                 )
         return HttpResponse(status=403)
+
+    # Once saved, the zendesk_id lets later account changes, like a new email, reach Zendesk.
+    if not user.profile.zendesk_id:
+        create_zendesk_user.delay(user.id)
 
     token = jwt.encode(
         {
