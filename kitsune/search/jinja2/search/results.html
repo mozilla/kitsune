@@ -24,15 +24,29 @@
       {% if num_results > 0 %}
         <p class="sumo-page-intro">
           {% if total_is_approximate %}
-            {# L10n: Hybrid search shows a bounded ranking; {n} approximates all potential matches, not pageable results. #}
-            {{ ngettext('Showing the most relevant result for <strong>{q}</strong> in <strong>{product}</strong> from about <strong>{n}</strong> potential match',
-                        'Showing the most relevant results for <strong>{q}</strong> in <strong>{product}</strong> from about <strong>{n}</strong> potential matches',
-                        num_results)|fe(n=num_results, q=q, product=product_titles) }}
+            {% if product_titles != _("All Products") %}
+              {# L10n: Hybrid search shows a bounded ranking; {n} approximates all potential matches, not pageable results. #}
+              {{ ngettext('Showing the most relevant result for ‘<strong>{q}</strong>’ in <strong>{product}</strong> from about <strong>{n}</strong> potential match',
+                          'Showing the most relevant results for ‘<strong>{q}</strong>’ in <strong>{product}</strong> from about <strong>{n}</strong> potential matches',
+                          num_results)|fe(n=num_results, q=q, product=product_titles) }}
+            {% else %}
+              {# L10n: Hybrid search shows a bounded ranking; {n} approximates all potential matches, not pageable results. #}
+              {{ ngettext('Showing the most relevant result for ‘<strong>{q}</strong>’ from about <strong>{n}</strong> potential match',
+                          'Showing the most relevant results for ‘<strong>{q}</strong>’ from about <strong>{n}</strong> potential matches',
+                          num_results)|fe(n=num_results, q=q) }}
+            {% endif %}
           {% else %}
-            {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
-            {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
-                        'Found <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
-                        num_results)|fe(n=num_results, q=q, product=product_titles) }}
+            {% if product_titles != _("All Products") %}
+              {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
+              {{ ngettext('Found <strong>{n}</strong> result for ‘<strong>{q}</strong>’ in <strong>{product}</strong>',
+                          'Found <strong>{n}</strong> results for ‘<strong>{q}</strong>’ in <strong>{product}</strong>',
+                          num_results)|fe(n=num_results, q=q, product=product_titles) }}
+            {% else %}
+              {# L10n: {n} is the number of search results, {q} is the search query. #}
+              {{ ngettext('Found <strong>{n}</strong> result for ‘<strong>{q}</strong>’',
+                          'Found <strong>{n}</strong> results for ‘<strong>{q}</strong>’',
+                          num_results)|fe(n=num_results, q=q, product=product_titles) }}
+            {% endif %}
           {% endif %}
         </p>
 
