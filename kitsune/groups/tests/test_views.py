@@ -554,6 +554,25 @@ class GroupTicketsViewTests(TestCase):
         self.assertContains(response, self.solved_ticket.subject)
         self.assertNotContains(response, self.open_ticket.subject)
 
+    def test_only_chats_are_badged_as_live_chats(self):
+        chat = SupportTicketFactory(
+            user=self.member,
+            product=self.open_ticket.product,
+            org_group=self.c1,
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+            zd_channel=SupportTicket.ZD_CHANNEL_MESSAGING,
+        )
+        self.client.force_login(self.member)
+        response = self.client.get(reverse("groups.tickets", args=[self.c1.slug]))
+
+        rows = pq(response.content)(".group-tickets--table tbody tr")
+        badged = [
+            pq(row)(".group-tickets--cell-subject a").text()
+            for row in rows
+            if pq(row)(".my-questions--channel-badge--live-chat")
+        ]
+        self.assertEqual([chat.subject], badged)
+
     def test_deleted_ticket_only_under_all(self):
         """A ticket deleted in Zendesk is excluded from active/solved but shown under all."""
         deleted = SupportTicketFactory(

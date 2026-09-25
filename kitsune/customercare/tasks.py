@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 from functools import partial
 
+import requests
 import waffle
 from celery import group, shared_task
 from django.contrib.auth.models import User
@@ -9,9 +10,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyException
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.utils import (
+    adopt_chat_ticket,
     process_zendesk_classification_result,
     sync_ticket_from_zendesk,
 )
@@ -41,8 +44,10 @@ DELETION_EVENT_TYPES = {
     "zen:event-type:ticket.permanently_deleted",
     UNDELETE_EVENT_TYPE,
 }
+# Zendesk webhook event that allows SUMO to collect tickets created via messaging.
+CREATED_EVENT_TYPE = "zen:event-type:ticket.created"
 
-HANDLED_EVENT_TYPES = RESYNC_EVENT_TYPES | DELETION_EVENT_TYPES
+HANDLED_EVENT_TYPES = RESYNC_EVENT_TYPES | DELETION_EVENT_TYPES | {CREATED_EVENT_TYPE}
 
 
 @shared_task_with_retry
@@ -79,7 +84,7 @@ def update_zendesk_user(user_id: int) -> None:
         zendesk.update_user(user)
 
 
-@shared_task
+@shared_task_with_retry
 def create_zendesk_user(user_id: int) -> None:
     """Give the user a Zendesk user, so later changes to their account reach Zendesk."""
     user = User.objects.filter(pk=user_id).select_related("profile").first()
@@ -200,6 +205,7 @@ def process_zendesk_update(payload: dict) -> None:
     webhook is only a notification trigger. The REST API is the source of truth.
     Deletion events are the exception. A deleted ticket no longer exists in Zendesk,
     so they only update the "zd_deleted_at" value and never touch the API.
+    Creation events matter only for live chats, which SUMO picks up as they start.
     """
     if not (detail := payload.get("detail")) or not (ticket_id := detail.get("id")):
         raise ValueError("Zendesk webhook payload missing detail.id.")
@@ -207,6 +213,17 @@ def process_zendesk_update(payload: dict) -> None:
     event_type = payload.get("type")
     if event_type not in HANDLED_EVENT_TYPES:
         log.warning(f"Unhandled Zendesk event type: {event_type or 'missing'}.")
+        return
+
+    if event_type == CREATED_EVENT_TYPE:
+        # Tickets sent from SUMO already have a SupportTicket, so only tickets created
+        # via messaging are handled here.
+        if (detail.get("via") or {}).get("channel") == SupportTicket.ZD_CHANNEL_MESSAGING:
+            try:
+                zd_ticket = ZendeskClient().get_ticket(ticket_id)
+            except RecordNotFoundException:
+                return
+            adopt_chat_ticket(zd_ticket)
         return
 
     qs = SupportTicket.objects.filter(zendesk_ticket_id=str(ticket_id))
@@ -266,3 +283,30 @@ def sync_active_support_tickets() -> None:
     result = group(sync_support_ticket.s(ticket_id) for ticket_id in ticket_ids).delay()
 
     log.info(f"Dispatched Zendesk sync for {len(result)} active tickets.")
+
+
+@shared_task
+@skip_if_read_only_mode
+def adopt_chat_tickets(lookback_days: int = 7) -> None:
+    """Pick-up recent live chats that SUMO hasn't yet collected.
+
+    Backup for the webhook, which picks up each chat as it starts. After an outage,
+    run it once by hand with a longer lookback_days to catch up.
+    """
+    created_after = (timezone.now() - timedelta(days=lookback_days)).date()
+    zd_tickets = list(ZendeskClient().search_chat_tickets(created_after))
+
+    known_ids = set(
+        SupportTicket.objects.filter(
+            zendesk_ticket_id__in=[str(zd_ticket.id) for zd_ticket in zd_tickets]
+        ).values_list("zendesk_ticket_id", flat=True)
+    )
+
+    for zd_ticket in zd_tickets:
+        if str(zd_ticket.id) in known_ids:
+            continue
+        try:
+            adopt_chat_ticket(zd_ticket)
+        except APIException, ZenpyException, requests.RequestException:
+            # Carry on, so one bad chat can't hold up the rest. The next run tries it again.
+            log.exception(f"Failed to pick up chat ticket {zd_ticket.id}.")

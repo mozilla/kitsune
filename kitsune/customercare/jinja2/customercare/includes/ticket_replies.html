@@ -68,6 +68,10 @@
   <div class="thread-detail--notice thread-detail--notice--info">
     {{ _('This ticket can no longer receive replies. Please open a new ticket if you still need help.') }}
   </div>
+{% elif ticket.is_chat %}
+  <div class="thread-detail--notice thread-detail--notice--info">
+    {{ _("This is a record of a live chat, so you can't reply here.") }}
+  </div>
 {% elif ticket.zd_status == ticket.ZD_STATUS_CLOSED %}
   <div class="thread-detail--notice thread-detail--notice--info">
     {{ _('This ticket is closed and can no longer receive replies. Please open a new ticket if you still need help.') }}

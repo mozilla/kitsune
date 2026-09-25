@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _lazy
 
-from kitsune.customercare.models import SupportTicket
 from kitsune.products import PRODUCT_SLUG_ALIASES
 from kitsune.products.models import ProductSupportConfig, ZendeskTopic, ZendeskTopicConfiguration
 
@@ -265,11 +264,11 @@ class ZendeskForm(forms.Form):
         if settings.STAGE:
             zendesk_tags.append("stage")
 
-        # circular import
-        from kitsune.customercare.tasks import zendesk_submission_classifier
-        from kitsune.customercare.utils import resolve_org_group
+        from kitsune.customercare.utils import create_support_ticket
 
-        submission = SupportTicket.objects.create(
+        return create_support_ticket(
+            user if (user and user.is_authenticated) else None,
+            product,
             subject=self.cleaned_data["subject"],
             description=self.cleaned_data["description"],
             category=self.cleaned_data.get("category", ""),
@@ -279,16 +278,8 @@ class ZendeskForm(forms.Form):
             update_channel=self.cleaned_data.get("update_channel", ""),
             policy_distribution=self.cleaned_data.get("policy_distribution", ""),
             urgency=self.cleaned_data.get("urgency", ""),
-            product=product,
-            user=user if (user and user.is_authenticated) else None,
-            org_group=resolve_org_group(user, product),
             zendesk_tags=zendesk_tags,
-            submission_status=SupportTicket.STATUS_PENDING,
         )
-
-        zendesk_submission_classifier.delay(submission.id)
-
-        return submission
 
 
 class SupportTicketReplyForm(forms.Form):

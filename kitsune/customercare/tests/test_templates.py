@@ -59,16 +59,18 @@ class ChatWidgetTemplateTests(TestCase):
         self.assertContains(response, f'data-zendesk-chat-user="{self.user.id}"')
 
     @override_settings(ZENDESK_CHAT_TAGS="stage other")
-    def test_the_page_carries_the_chat_tags(self):
+    def test_the_page_carries_the_chat_tags_and_the_product_tag(self):
         self.client.force_login(self.user)
 
-        self.assertContains(self._get(), 'data-zendesk-chat-tags="stage other"')
+        self.assertContains(
+            self._get(), 'data-zendesk-chat-tags="stage other product-firefox-enterprise"'
+        )
 
     @override_settings(ZENDESK_CHAT_TAGS="")
-    def test_no_tags_attribute_without_chat_tags(self):
+    def test_the_product_tag_is_there_without_chat_tags(self):
         self.client.force_login(self.user)
 
-        self.assertNotContains(self._get(), "data-zendesk-chat-tags")
+        self.assertContains(self._get(), 'data-zendesk-chat-tags="product-firefox-enterprise"')
 
     def test_locale_is_set_to_the_page_locale(self):
         self.client.force_login(self.user)

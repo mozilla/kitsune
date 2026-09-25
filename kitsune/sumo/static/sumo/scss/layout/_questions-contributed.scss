@@ -14,7 +14,8 @@
     color: var(--color-link);
   }
 
-  &--direct-support {
+  &--direct-support,
+  &--live-chat {
     background: rgba(c.color('green', '06'), 0.08);
     color: var(--color-success);
   }

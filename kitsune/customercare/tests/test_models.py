@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AnonymousUser, Group
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from kitsune.customercare.models import SupportTicket
@@ -301,6 +302,11 @@ class AccessibleToTests(TestCase):
         self.assertFalse(self.alice_ticket.can_reply(AnonymousUser()))
         self.assertFalse(self.alice_ticket.can_reply(None))
 
+    def test_not_even_the_owner_can_reply_to_a_chat(self):
+        """Replies never reach the widget, so a chat takes none at all."""
+        self.alice_ticket.zd_channel = SupportTicket.ZD_CHANNEL_MESSAGING
+        self.assertFalse(self.alice_ticket.can_reply(self.alice))
+
 
 class IsSyncableTests(TestCase):
     """is_syncable is True only with a usable Zendesk id and no deletion."""
@@ -320,6 +326,22 @@ class IsSyncableTests(TestCase):
     def test_not_syncable_with_blank_id(self):
         ticket = SupportTicketFactory(zendesk_ticket_id="")
         self.assertFalse(ticket.is_syncable)
+
+
+class ZendeskTicketIdTests(TestCase):
+    """Only one SupportTicket may point at a given Zendesk ticket."""
+
+    def test_two_tickets_cannot_share_a_zendesk_ticket(self):
+        SupportTicketFactory(zendesk_ticket_id="555")
+
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            SupportTicketFactory(zendesk_ticket_id="555")
+
+    def test_tickets_not_yet_sent_to_zendesk_can_share_an_empty_id(self):
+        for zendesk_ticket_id in (None, None, "", ""):
+            SupportTicketFactory(zendesk_ticket_id=zendesk_ticket_id)
+
+        self.assertEqual(4, SupportTicket.objects.count())
 
 
 class StatusLabelTests(TestCase):
