@@ -97,13 +97,27 @@
   <span class="status-label status-label--{{ ticket.status_variant }}{{ _size_class }}" title="{{ ticket.status_tip }}">{{ ticket.status_label }}</span>
 {% endmacro %}
 
+{# Badge for a ticket that started as a live chat. Shared by state_badges and the
+   group tickets table. #}
+{% macro live_chat_badge() %}
+  <span class="my-questions--channel-badge my-questions--channel-badge--live-chat"
+        title="{{ _('This was a live chat with our support team') }}">
+    {# L10n: A label for a support conversation that took place in live chat, rather than by submitting a ticket. #}
+    {{ _("Live Chat") }}
+  </span>
+{% endmacro %}
+
 {% macro state_badges(obj) %}
   {% if obj.channel == "direct_support" %}
-    <span class="my-questions--channel-badge my-questions--channel-badge--direct-support"
-          title="{{ _('This question was submitted via Direct Support') }}">
-      {# L10n: A label/tab for questions that are Premium support tickets handled by paid support agents. #}
-      {{ _("Direct Support") }}
-    </span>
+    {% if obj.is_chat %}
+      {{ live_chat_badge() }}
+    {% else %}
+      <span class="my-questions--channel-badge my-questions--channel-badge--direct-support"
+            title="{{ _('This question was submitted via Direct Support') }}">
+        {# L10n: A label/tab for questions that are Premium support tickets handled by paid support agents. #}
+        {{ _("Direct Support") }}
+      </span>
+    {% endif %}
     {{ zd_status_badge(obj) }}
   {% else %}
     {% if obj.solution_id %}

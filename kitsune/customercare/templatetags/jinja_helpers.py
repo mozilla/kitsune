@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from django.conf import settings
 from django_jinja import library
 
-from kitsune.customercare.utils import resolve_chat_eligibility
+from kitsune.customercare.utils import get_chat_product_tag, resolve_chat_eligibility
 
 if TYPE_CHECKING:
     from kitsune.products.models import Product
@@ -20,6 +20,14 @@ def chat_is_available(request, product: Product | None) -> bool:
     request._show_chat = eligibility.eligible
 
     return eligibility.eligible
+
+
+@library.global_function
+def chat_conversation_tags(product: Product) -> str:
+    """Space-separated tags the widget puts on a new chat conversation."""
+    tags = settings.ZENDESK_CHAT_TAGS.split()
+    tags.append(get_chat_product_tag(product))
+    return " ".join(tags)
 
 
 @library.global_function

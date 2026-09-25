@@ -1016,6 +1016,12 @@ body:has(#group-tickets) {
       }
     }
 
+    // Sized to match the large status pill beside it.
+    .my-questions--channel-badge {
+      padding: p.$spacing-xs p.$spacing-md;
+      @include c.text-body-md;
+    }
+
     // On phones a 4-column table is unreadable, so each ticket collapses into
     // an inbox-style card: the subject is a full-width headline above a single
     // muted meta line (submitter · last update) with the status pill pushed to
