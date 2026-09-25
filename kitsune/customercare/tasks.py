@@ -12,7 +12,6 @@ from django.utils.dateparse import parse_datetime
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.utils import (
-    has_chat_access,
     process_zendesk_classification_result,
     sync_ticket_from_zendesk,
 )
@@ -101,18 +100,14 @@ def update_zendesk_identity(user_id: int, email: str) -> None:
 
 
 @shared_task
-def tag_revoked_chat_tickets(zendesk_id: str, user_id: int) -> None:
+def tag_revoked_chat_tickets(zendesk_id: str) -> None:
     """Tag a user's active live-chat tickets once the user has lost chat access.
 
-    Run after anything that might have cost a user chat access. Takes the Zendesk
-    user id as well as the user id, because once a user is deleted we can no longer
-    look up their Zendesk user id.
+    Takes the Zendesk user id rather than the user, because once a user is deleted
+    we can no longer look up their Zendesk user id.
     """
     # Turning chat off for everyone doesn't call for tagging anyone's tickets.
     if not waffle.switch_is_active("zendesk-chat"):
-        return
-
-    if has_chat_access(User.objects.filter(pk=user_id).first()):
         return
 
     client = ZendeskClient()
@@ -120,7 +115,7 @@ def tag_revoked_chat_tickets(zendesk_id: str, user_id: int) -> None:
         client.add_ticket_tags(ticket.id, [CHAT_REVOKED_TAG])
 
 
-def tag_chat_tickets_if_revoked(user) -> None:
+def revoke_chat_tickets(user) -> None:
     """Queue tag_revoked_chat_tickets for once the current change is saved.
 
     The Zendesk user id is read now, because deleting the user erases it before
@@ -130,11 +125,10 @@ def tag_chat_tickets_if_revoked(user) -> None:
         zendesk_id = user.profile.zendesk_id
     except Profile.DoesNotExist:
         return
+
     if zendesk_id:
-        # robust: a queueing failure is logged rather than failing the change that saved.
-        transaction.on_commit(
-            partial(tag_revoked_chat_tickets.delay, zendesk_id, user.id), robust=True
-        )
+        # Using robust prevents a queueing failure from ruining the commit.
+        transaction.on_commit(partial(tag_revoked_chat_tickets.delay, zendesk_id), robust=True)
 
 
 @shared_task

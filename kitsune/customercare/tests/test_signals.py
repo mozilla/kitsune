@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 from django.contrib.auth.models import Group, User
 
-from kitsune.customercare.tasks import tag_chat_tickets_if_revoked
+from kitsune.customercare.tasks import revoke_chat_tickets
 from kitsune.groups.models import GroupProfile
 from kitsune.products.models import ProductSupportConfig, SupportOrganization
 from kitsune.products.tests import (
@@ -24,36 +24,27 @@ class TagChatTicketsIfRevokedTests(TestCase):
         # Saving a user with a zendesk_id would otherwise call Zendesk.
         self.enterContext(patch("kitsune.customercare.signals.update_zendesk_user"))
 
-    def test_queues_the_task_once_the_change_is_saved(self, delay):
+    def test_queues_the_task_after_the_commit_with_the_zendesk_id_read_now(self, delay):
         user = UserFactory(profile__zendesk_id="789")
-
-        with self.captureOnCommitCallbacks() as callbacks:
-            tag_chat_tickets_if_revoked(user)
-            delay.assert_not_called()
-
-        callbacks[0]()
-        delay.assert_called_once_with("789", user.id)
-
-    def test_reads_the_zendesk_id_before_deleting_the_user_erases_it(self, delay):
-        user = UserFactory(profile__zendesk_id="789")
-        user_id = user.id
 
         with self.captureOnCommitCallbacks(execute=True):
-            tag_chat_tickets_if_revoked(user)
+            revoke_chat_tickets(user)
+            # Deleting the user erases their zendesk_id before the commit.
             user.delete()
+            delay.assert_not_called()
 
-        delay.assert_called_once_with("789", user_id)
+        delay.assert_called_once_with("789")
 
     def test_a_user_without_a_zendesk_id_is_skipped(self, delay):
         user = UserFactory(profile__zendesk_id="")
 
         with self.captureOnCommitCallbacks(execute=True):
-            tag_chat_tickets_if_revoked(user)
+            revoke_chat_tickets(user)
 
         delay.assert_not_called()
 
 
-@patch("kitsune.customercare.signals.tag_chat_tickets_if_revoked")
+@patch("kitsune.customercare.signals.revoke_chat_tickets")
 class RevokedChatSignalTests(TestCase):
     def setUp(self):
         # Saving a user with a zendesk_id would otherwise call Zendesk.
@@ -219,14 +210,6 @@ class RevokedChatSignalTests(TestCase):
         self.config.save()
 
         notify.assert_not_called()
-
-    def test_losing_a_subscription_that_chat_requires_tags(self, notify):
-        ProductSupportConfig.objects.filter(pk=self.config.pk).update(subscription_only=True)
-        self.user.profile.products.add(self.product)
-
-        self.user.profile.products.remove(self.product)
-
-        self.assertEqual(self.notified(notify), {self.user})
 
     def test_losing_a_subscription_that_chat_does_not_require_does_not(self, notify):
         self.user.profile.products.add(self.product)

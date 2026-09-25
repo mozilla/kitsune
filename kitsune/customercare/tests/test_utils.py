@@ -12,7 +12,6 @@ from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.customercare.utils import (
     generate_classification_tags,
-    has_chat_access,
     process_zendesk_classification_result,
     resolve_chat_eligibility,
     resolve_org_group,
@@ -579,52 +578,6 @@ class ResolveOrgGroupTests(TestCase):
     def test_no_config_returns_none(self):
         product2 = ProductFactory()
         self.assertIsNone(resolve_org_group(self.it_user, product2))
-
-
-@override_switch("zendesk-chat", active=True)
-@override_settings(
-    ZENDESK_CHAT_WIDGET_KEY="test-widget-key",
-    ZENDESK_CHAT_SIGNING_SECRET="test-signing-secret",
-    ZENDESK_CHAT_SIGNING_KEY_ID="test-key-id",
-)
-class HasChatAccessTests(TestCase):
-    def setUp(self):
-        config = ProductSupportConfigFactory(
-            product=ProductFactory(), zendesk_config=ZendeskConfigFactory()
-        )
-        self.group = GroupProfile.add_root(
-            group=Group.objects.create(name="company"), slug="company"
-        ).group
-        self.org = SupportOrganizationFactory(
-            config=config, group=self.group, include_live_chat=True
-        )
-        # A product that has never offered chat, which the user can't chat about.
-        ProductFactory()
-        self.user = UserFactory()
-        self.user.groups.add(self.group)
-
-    def test_a_member_of_a_live_chat_organization_has_access(self):
-        self.assertTrue(has_chat_access(self.user))
-
-    def test_leaving_the_organization_loses_access(self):
-        self.user.groups.clear()
-
-        self.assertFalse(has_chat_access(self.user))
-
-    def test_the_organization_dropping_live_chat_loses_access(self):
-        self.org.include_live_chat = False
-        self.org.save()
-
-        self.assertFalse(has_chat_access(self.user))
-
-    def test_a_deactivated_user_has_no_access(self):
-        self.user.is_active = False
-        self.user.save()
-
-        self.assertFalse(has_chat_access(self.user))
-
-    def test_a_deleted_user_has_no_access(self):
-        self.assertFalse(has_chat_access(None))
 
 
 @override_switch("zendesk-chat", active=True)

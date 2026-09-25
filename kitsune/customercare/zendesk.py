@@ -301,9 +301,6 @@ class ZendeskClient:
         Takes a Zendesk user id rather than a Django user, so it still works after the
         user has been deleted.
         """
-        if not zendesk_id:
-            return []
-
         active = SupportTicket.statuses_in_group(SupportTicket.ZD_GROUP_ACTIVE)
         return [
             ticket

@@ -9,21 +9,19 @@ class GroupProfileManager(MP_NodeManager):
         """All GroupProfiles whose group is configured as a support organization."""
         return self.filter(group__support_organizations__isnull=False).distinct()
 
-    def _containing(self, **members):
-        """Groups that are, or sit above, the groups matching these filters."""
-        return self.filter(
-            Exists(self.model.objects.filter(path__startswith=OuterRef("path"), **members))
-        )
-
     def containing_groups(self, groups):
         """These groups and every group above them."""
-        return self._containing(group__in=groups)
+        return self.filter(
+            Exists(self.model.objects.filter(path__startswith=OuterRef("path"), group__in=groups))
+        )
 
     def containing(self, user):
         """Groups containing the user directly or through a subgroup, excluding leadership."""
         if not (user and user.is_authenticated):
             return self.none()
-        return self._containing(group__user=user)
+        return self.filter(
+            Exists(self.model.objects.filter(path__startswith=OuterRef("path"), group__user=user))
+        )
 
     def visible(self, user: User | None = None):
         """

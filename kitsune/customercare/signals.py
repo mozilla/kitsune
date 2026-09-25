@@ -3,7 +3,7 @@ from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_sav
 from django.dispatch import receiver
 from zenpy.lib.exception import ZenpyException
 
-from kitsune.customercare.tasks import tag_chat_tickets_if_revoked, update_zendesk_user
+from kitsune.customercare.tasks import revoke_chat_tickets, update_zendesk_user
 from kitsune.groups.models import GroupProfile
 from kitsune.products.models import ProductSupportConfig, SupportOrganization
 from kitsune.users.models import Profile
@@ -55,14 +55,14 @@ def tag_chat_tickets_of_org_members(org):
         .distinct()
     )
     for user in members:
-        tag_chat_tickets_if_revoked(user)
+        revoke_chat_tickets(user)
 
 
 @receiver(pre_delete, sender=User, dispatch_uid="customercare.signals.on_user_deletion.User")
 def on_user_deletion(sender, instance, **kwargs):
     # Django sends this inside the delete's transaction, before the profile is gone.
     if grants_chat(GroupProfile.objects.containing(instance)):
-        tag_chat_tickets_if_revoked(instance)
+        revoke_chat_tickets(instance)
 
 
 @receiver(pre_save, sender=User, dispatch_uid="customercare.signals.check_deactivation.User")
@@ -82,7 +82,7 @@ def on_deactivation(sender, instance, **kwargs):
     if getattr(instance, "_is_being_deactivated", False) and grants_chat(
         GroupProfile.objects.containing(instance)
     ):
-        tag_chat_tickets_if_revoked(instance)
+        revoke_chat_tickets(instance)
 
 
 @receiver(
@@ -111,7 +111,7 @@ def on_group_removal(sender, instance, action, reverse, pk_set, **kwargs):
         return
 
     for user in users:
-        tag_chat_tickets_if_revoked(user)
+        revoke_chat_tickets(user)
 
 
 @receiver(pre_delete, sender=Group, dispatch_uid="customercare.signals.on_group_deletion.Group")
@@ -122,7 +122,7 @@ def on_group_deletion(sender, instance, **kwargs):
         return
     if grants_chat(GroupProfile.objects.containing_groups([instance.pk])):
         for user in instance.user_set.select_related("profile"):
-            tag_chat_tickets_if_revoked(user)
+            revoke_chat_tickets(user)
 
 
 @receiver(
@@ -222,4 +222,4 @@ def on_subscription_removal(sender, instance, action, reverse, pk_set, **kwargs)
         subscription_only=True,
         support_organizations__include_live_chat=True,
     ).exists():
-        tag_chat_tickets_if_revoked(instance.user)
+        revoke_chat_tickets(instance.user)

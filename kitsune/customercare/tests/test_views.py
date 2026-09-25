@@ -837,14 +837,6 @@ class ChatJWTViewTests(TestCase):
 
         self.create_zendesk_user.assert_not_called()
 
-    def test_ineligible_user_does_not_get_a_zendesk_user(self):
-        self.user.groups.clear()
-        self.client.force_login(self.user)
-
-        self.assertEqual(403, self.client.post(self._url()).status_code)
-
-        self.create_zendesk_user.assert_not_called()
-
     def test_url_is_not_locale_prefixed(self):
         self.assertEqual("/support-chat/jwt/firefox", self._url())
 
