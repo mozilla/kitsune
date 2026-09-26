@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Substr
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
 
@@ -116,6 +117,9 @@ class SupportTicket(ModelBase):
     ZD_GROUP_ACTIVE = "active"
     ZD_GROUP_SOLVED = "solved"
 
+    # The Zendesk channel given to tickets that started in the messaging widget.
+    ZD_CHANNEL_MESSAGING = "native_messaging"
+
     # Per-status metadata. The group is the active/solved bucket for the status,
     # and defines the single source of truth for the split (no second hardcoded
     # list in the querysets). The variant selects the appropriate CSS variant,
@@ -191,6 +195,12 @@ class SupportTicket(ModelBase):
     )
     zendesk_ticket_id = models.CharField(max_length=255, null=True, blank=True)
     zd_status = models.CharField(max_length=20, choices=ZD_STATUS_CHOICES, null=True, blank=True)
+    zd_channel = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="Zendesk channel the ticket was created via (e.g., native_messaging)",
+    )
     zd_updated_at = models.DateTimeField(null=True, blank=True)
     last_synced_at = models.DateTimeField(null=True, blank=True)
     zd_deleted_at = models.DateTimeField(
@@ -200,12 +210,21 @@ class SupportTicket(ModelBase):
     )
     comments = models.JSONField(default=list, blank=True)
     internal_zd_tags = models.JSONField(default=list, blank=True)
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
 
     objects = SupportTicketQuerySet.as_manager()
 
     class Meta:
         ordering = ["-created"]
+        constraints = [
+            # One SupportTicket per Zendesk ticket. Tickets not yet sent to Zendesk
+            # have no id, so they're left out.
+            models.UniqueConstraint(
+                fields=["zendesk_ticket_id"],
+                condition=Q(zendesk_ticket_id__isnull=False) & ~Q(zendesk_ticket_id=""),
+                name="unique_zendesk_ticket_id",
+            ),
+        ]
 
     def __str__(self):
         return f"Support Ticket: {self.subject} ({self.submission_status})"
@@ -227,6 +246,11 @@ class SupportTicket(ModelBase):
         """True if the ticket can be synced with Zendesk."""
         return bool(self.zendesk_ticket_id and not self.zd_deleted_at)
 
+    @property
+    def is_chat(self):
+        """True if the ticket started as a live chat in the messaging widget."""
+        return self.zd_channel == self.ZD_CHANNEL_MESSAGING
+
     def get_absolute_url(self):
         if not self.user:
             return None
@@ -236,6 +260,8 @@ class SupportTicket(ModelBase):
         """Only the ticket owner may reply. Teammates who can view (see
         SupportTicketManager.accessible_to) must not, and a non-owner reply would
         also be misattributed to the owner in Zendesk."""
+        if self.is_chat:
+            return False
         return bool(user and user.is_authenticated and self.user_id == user.id)
 
     @property

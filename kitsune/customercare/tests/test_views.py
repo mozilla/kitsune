@@ -271,6 +271,44 @@ class TicketDetailViewTests(TestCase):
         # Hero status pill reads "Inactive" rather than the stale zd_status.
         self.assertContains(response, "Inactive")
 
+    def test_owner_of_a_chat_sees_note_not_form(self):
+        """A chat takes no replies, and its owner isn't told only the creator can reply."""
+        self.ticket.update(zd_channel=SupportTicket.ZD_CHANNEL_MESSAGING)
+        self.client.force_login(self.owner)
+        response = self.client.get(
+            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, "question-reply-form")
+        self.assertContains(response, "This is a record of a live chat")
+        self.assertNotContains(response, "Only the ticket creator can reply")
+        pills = pq(response.content)("#thread-detail--pill-cluster").text()
+        self.assertIn("Live Chat", pills)
+        self.assertNotIn("Direct Support", pills)
+
+    def test_pending_chat_does_not_ask_for_a_reply(self):
+        self.ticket.update(
+            zd_channel=SupportTicket.ZD_CHANNEL_MESSAGING,
+            zd_status=SupportTicket.ZD_STATUS_PENDING,
+        )
+        self.client.force_login(self.owner)
+        response = self.client.get(
+            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+        )
+
+        self.assertNotContains(response, "waiting for your response")
+
+    def test_owner_cannot_post_a_reply_to_a_chat(self):
+        self.ticket.update(zd_channel=SupportTicket.ZD_CHANNEL_MESSAGING)
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id]),
+            {"body": "Hello again"},
+        )
+
+        self.assertEqual(403, response.status_code)
+
     def test_get_absolute_url(self):
         expected = reverse(
             "customercare.ticket_detail", args=[self.owner.username, self.ticket.id]

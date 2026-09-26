@@ -1,4 +1,4 @@
-{% from "sumo/includes/question_entry.html" import zd_status_badge %}
+{% from "sumo/includes/question_entry.html" import live_chat_badge, zd_status_badge %}
 {% set base_url = url('groups.tickets', profile.slug) %}
 
 <div id="tickets-content" class="group-tickets" aria-live="polite">
@@ -66,6 +66,7 @@
             </td>
             <td class="group-tickets--cell-status">
               {{ zd_status_badge(t, size="lg") }}
+              {% if t.is_chat %}{{ live_chat_badge() }}{% endif %}
             </td>
             <td class="group-tickets--cell-updated">{{ (t.zd_updated_at or t.created)|timesince }}</td>
           </tr>

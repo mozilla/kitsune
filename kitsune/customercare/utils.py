@@ -1,11 +1,14 @@
+import logging
 from dataclasses import dataclass
 from typing import Any
 
 import waffle
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
@@ -23,6 +26,13 @@ from kitsune.products.models import (
 )
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
+
+log = logging.getLogger("k.customercare")
+
+
+def get_chat_product_tag(product: Product) -> str:
+    """The tag recording which product a live chat is about."""
+    return f"{settings.ZENDESK_CHAT_PRODUCT_TAG_PREFIX}{product.slug}"
 
 
 @dataclass(frozen=True)
@@ -113,7 +123,7 @@ def apply_zendesk_ticket_data(ticket: SupportTicket, zd_ticket, zd_comments) -> 
     """Apply fetched Zendesk data to a SupportTicket and save."""
     ticket.zd_status = zd_ticket.status.lower()
     ticket.zd_updated_at = zd_ticket.updated_at
-    ticket.subject = zd_ticket.subject
+    ticket.subject = zd_ticket.subject[:255]
     ticket.description = zd_ticket.description
     ticket.comments = [
         {
@@ -168,6 +178,73 @@ def sync_ticket_from_zendesk(ticket: SupportTicket) -> SupportTicket:
             ticket.zd_deleted_at = timezone.now()
             ticket.save(update_fields=["zd_deleted_at"])
         else:
+            apply_zendesk_ticket_data(ticket, zd_ticket, zd_comments)
+
+    return ticket
+
+
+def get_user_by_zendesk_id(zendesk_id) -> User | None:
+    """Find the SUMO user associated with the given Zendesk user id.
+
+    Uses the SUMO user profile's fxa_uid rather than zendesk_id because
+    only the fxa_uid is guaranteed to be unique.
+    """
+    try:
+        zd_user = ZendeskClient().get_user(zendesk_id)
+    except RecordNotFoundException:
+        return None
+
+    if not zd_user.external_id:
+        return None
+
+    return User.objects.filter(profile__fxa_uid=zd_user.external_id).first()
+
+
+def get_product_from_chat_tags(tags) -> Product | None:
+    """Find the product from the chat's product tag."""
+    prefix = settings.ZENDESK_CHAT_PRODUCT_TAG_PREFIX
+    for tag in tags:
+        if tag.startswith(prefix):
+            return Product.objects.filter(slug=tag.removeprefix(prefix)).first()
+    return None
+
+
+def adopt_chat_ticket(zd_ticket) -> SupportTicket | None:
+    """Create the SupportTicket for a live chat that started in Zendesk.
+
+    Returns None if the Zendesk ticket was not created via the SupportTicket.ZD_CHANNEL_MESSAGING
+    channel, or we can't find the user who requested the ticket, or we can't find the ticket's
+    associated product. Calling it again for the same chat returns the ticket that was already
+    created.
+    """
+    if zd_ticket.via.channel != SupportTicket.ZD_CHANNEL_MESSAGING:
+        return None
+
+    product = get_product_from_chat_tags(zd_ticket.tags)
+    if product is None:
+        return None
+
+    user = get_user_by_zendesk_id(zd_ticket.requester_id)
+    if user is None:
+        log.warning(f"No SUMO user for the requester of chat ticket {zd_ticket.id}.")
+        return None
+
+    zd_comments = ZendeskClient().get_ticket_comments(zd_ticket.id)
+
+    with transaction.atomic():
+        ticket, created = SupportTicket.objects.get_or_create(
+            zendesk_ticket_id=str(zd_ticket.id),
+            defaults={
+                "user": user,
+                "email": user.email,
+                "product": product,
+                "org_group": resolve_org_group(user, product),
+                "zd_channel": SupportTicket.ZD_CHANNEL_MESSAGING,
+                "submission_status": SupportTicket.STATUS_SENT,
+                "created": parse_datetime(zd_ticket.created_at),
+            },
+        )
+        if created:
             apply_zendesk_ticket_data(ticket, zd_ticket, zd_comments)
 
     return ticket

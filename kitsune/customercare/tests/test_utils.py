@@ -5,13 +5,17 @@ from django.contrib.auth.models import AnonymousUser, Group
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.customercare.utils import (
+    adopt_chat_ticket,
     generate_classification_tags,
+    get_product_from_chat_tags,
+    get_user_by_zendesk_id,
     process_zendesk_classification_result,
     resolve_chat_eligibility,
     resolve_org_group,
@@ -33,6 +37,7 @@ from kitsune.products.tests import (
 )
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
 
 
@@ -462,6 +467,22 @@ class SyncTicketFromZendeskTests(TestCase):
         self.assertEqual(self.ticket.subject, "A renamed ticket")
 
     @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_truncates_long_subject(self, mock_client_cls):
+        mock_client = mock_client_cls.return_value
+        mock_client.get_ticket_comments.return_value = []
+        mock_client.get_ticket.return_value = MagicMock(
+            status="open",
+            updated_at=timezone.now(),
+            subject="Conversation with " + "x" * 255,
+            description=self.ticket.description,
+        )
+
+        sync_ticket_from_zendesk(self.ticket)
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.subject, ("Conversation with " + "x" * 255)[:255])
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
     def test_updates_description(self, mock_client_cls):
         mock_client = mock_client_cls.return_value
         mock_client.get_ticket_comments.return_value = []
@@ -781,3 +802,164 @@ class ResolveUserOrgGroupTests(TestCase):
 
     def test_non_member_returns_none(self):
         self.assertIsNone(resolve_user_org_group(self.stranger))
+
+
+def set_up_live_chat(product):
+    """Offer live chat on the product through an org, and return the org's group."""
+    config = ProductSupportConfigFactory(product=product, zendesk_config=ZendeskConfigFactory())
+    root = GroupProfile.add_root(group=Group.objects.create(name="chat"), slug="chat")
+    company = root.add_child(group=Group.objects.create(name="company"), slug="company")
+    SupportOrganizationFactory(config=config, group=company.group, include_live_chat=True)
+    return company
+
+
+def chatter(org, fxa_uid="fxa-123"):
+    """A member of the org whose Zendesk user carries the given fxa_uid."""
+    user = UserFactory()
+    user.groups.add(org.group)
+    # Saved without signals, so nothing reaches out to Zendesk.
+    Profile.objects.filter(user=user).update(fxa_uid=fxa_uid)
+    return user
+
+
+@patch("kitsune.customercare.utils.ZendeskClient")
+class GetUserByZendeskIdTests(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        Profile.objects.filter(user=self.user).update(fxa_uid="fxa-123")
+
+    def test_finds_the_user_by_the_zendesk_users_fxa_uid(self, mock_client):
+        mock_client.return_value.get_user.return_value = Mock(external_id="fxa-123")
+
+        self.assertEqual(self.user, get_user_by_zendesk_id("789"))
+        mock_client.return_value.get_user.assert_called_once_with("789")
+
+    def test_ignores_zendesk_ids_saved_on_profiles(self, mock_client):
+        """A saved Zendesk id can be shared or stale, so it never decides the match."""
+        someone_else = UserFactory()
+        Profile.objects.filter(user=someone_else).update(zendesk_id="789", fxa_uid="fxa-456")
+        mock_client.return_value.get_user.return_value = Mock(external_id="fxa-123")
+
+        self.assertEqual(self.user, get_user_by_zendesk_id("789"))
+
+    def test_zendesk_user_without_an_external_id(self, mock_client):
+        """For example, someone who only ever filed a ticket without signing in."""
+        mock_client.return_value.get_user.return_value = Mock(external_id=None)
+
+        self.assertIsNone(get_user_by_zendesk_id("789"))
+
+    def test_no_sumo_user_has_that_fxa_uid(self, mock_client):
+        mock_client.return_value.get_user.return_value = Mock(external_id="fxa-unknown")
+
+        self.assertIsNone(get_user_by_zendesk_id("789"))
+
+    def test_zendesk_user_not_found(self, mock_client):
+        mock_client.return_value.get_user.side_effect = RecordNotFoundException
+
+        self.assertIsNone(get_user_by_zendesk_id("789"))
+
+
+class GetProductFromChatTagsTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory(slug="firefox-enterprise")
+
+    def test_the_product_tag_names_the_product(self):
+        tags = ["stage", "product-firefox-enterprise"]
+
+        self.assertEqual(self.product, get_product_from_chat_tags(tags))
+
+    def test_a_chat_without_a_product_tag_gets_no_product(self):
+        """No tag means it started before we tagged chats."""
+        self.assertIsNone(get_product_from_chat_tags(["stage"]))
+
+    def test_a_tag_naming_no_product_gets_no_product(self):
+        self.assertIsNone(get_product_from_chat_tags(["product-gone"]))
+
+
+@patch("kitsune.customercare.utils.ZendeskClient")
+class AdoptChatTicketTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory(slug="firefox-enterprise")
+        self.org = set_up_live_chat(self.product)
+        self.user = chatter(self.org)
+
+    def _zd_ticket(self, **overrides):
+        attrs = {
+            "id": 555,
+            "via": Mock(channel=SupportTicket.ZD_CHANNEL_MESSAGING),
+            "requester_id": 789,
+            "tags": ["product-firefox-enterprise"],
+            "created_at": "2026-09-20T10:00:00Z",
+            "updated_at": "2026-09-20T10:05:00Z",
+            "status": "open",
+            "subject": "Conversation with Ringo",
+            "description": "My printer is on fire",
+        }
+        attrs.update(overrides)
+        return Mock(**attrs)
+
+    def _comment(self, id, body):
+        comment = MagicMock(id=id, html_body=f"<p>{body}</p>", public=True)
+        comment.created_at = "2026-09-20T10:00:00Z"
+        comment.author.name = "Ringo"
+        comment.author.id = 789
+        return comment
+
+    def _mock_zendesk(self, mock_client, external_id="fxa-123"):
+        client = mock_client.return_value
+        client.get_user.return_value = Mock(external_id=external_id)
+        client.get_ticket_comments.return_value = [
+            self._comment(1, "My printer is on fire"),
+            self._comment(2, "Have you tried water?"),
+        ]
+        return client
+
+    def test_creates_the_ticket(self, mock_client):
+        self._mock_zendesk(mock_client)
+
+        ticket = adopt_chat_ticket(self._zd_ticket())
+
+        ticket.refresh_from_db()
+        self.assertEqual("555", ticket.zendesk_ticket_id)
+        self.assertEqual(self.user, ticket.user)
+        self.assertEqual(self.user.email, ticket.email)
+        self.assertEqual(self.product, ticket.product)
+        self.assertEqual(self.org, ticket.org_group)
+        self.assertTrue(ticket.is_chat)
+        self.assertEqual(SupportTicket.STATUS_SENT, ticket.submission_status)
+        self.assertEqual(parse_datetime("2026-09-20T10:00:00Z"), ticket.created)
+        self.assertEqual("Conversation with Ringo", ticket.subject)
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, ticket.zd_status)
+        self.assertEqual(2, len(ticket.comments))
+        self.assertIsNotNone(ticket.last_synced_at)
+
+    def test_adopting_the_same_chat_again_returns_the_same_ticket(self, mock_client):
+        self._mock_zendesk(mock_client)
+
+        first = adopt_chat_ticket(self._zd_ticket())
+        second = adopt_chat_ticket(self._zd_ticket())
+
+        self.assertEqual(first.id, second.id)
+        self.assertEqual(1, SupportTicket.objects.count())
+
+    def test_a_ticket_that_is_not_a_chat_is_left_alone(self, mock_client):
+        self._mock_zendesk(mock_client)
+
+        self.assertIsNone(adopt_chat_ticket(self._zd_ticket(via=Mock(channel="email"))))
+        self.assertFalse(SupportTicket.objects.exists())
+        mock_client.return_value.get_user.assert_not_called()
+
+    def test_a_chat_from_someone_we_cannot_find_is_left_alone(self, mock_client):
+        self._mock_zendesk(mock_client, external_id="fxa-unknown")
+
+        with self.assertLogs("k.customercare", level="WARNING"):
+            self.assertIsNone(adopt_chat_ticket(self._zd_ticket()))
+        self.assertFalse(SupportTicket.objects.exists())
+
+    def test_a_chat_without_a_product_tag_is_left_alone(self, mock_client):
+        self._mock_zendesk(mock_client)
+
+        self.assertIsNone(adopt_chat_ticket(self._zd_ticket(tags=["stage"])))
+        self.assertFalse(SupportTicket.objects.exists())
+        # Checked before the user lookup, so these chats cost the sweep nothing.
+        mock_client.return_value.get_user.assert_not_called()
