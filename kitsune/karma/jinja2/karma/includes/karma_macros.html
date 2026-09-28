@@ -3,7 +3,7 @@
   {% if titles %}
     <ul class="karma-titles">
       {% for title in titles %}
-        <li>{{ pgettext('DB: karma.Title.name', title.name) }}</li>
+        <li>{{ pgettext('DB: karma.Title.name', title.name)|forceescape }}</li>
       {% endfor %}
     </ul>
   {% endif %}

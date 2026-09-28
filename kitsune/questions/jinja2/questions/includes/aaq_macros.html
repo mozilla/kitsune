@@ -12,7 +12,7 @@
         {% for product in products %}
           <div class="card card--product zoom-on-hover">
           <img src="{{ product.image_alternate_url }}"
-              alt="{{ pgettext('DB: products.Product.title', product.title) }}"
+              alt="{{ pgettext('DB: products.Product.title', product.title)|forceescape }}"
               class="card--icon">
 
             <div class="card--details">
@@ -24,10 +24,10 @@
                     "link_name": "aaq-step-2",
                     "link_detail": "{{ product.slug }}"
                   }'>
-                  {{ pgettext('DB: products.Product.title', product.title) }}
+                  {{ pgettext('DB: products.Product.title', product.title)|forceescape }}
                 </a>
               </h3>
-              <p class="card--desc">{{ pgettext('DB: products.Product.description', product.description) }}</p>
+              <p class="card--desc">{{ pgettext('DB: products.Product.description', product.description)|forceescape }}</p>
             </div>
           </div>
         {% endfor %}

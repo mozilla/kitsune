@@ -134,12 +134,17 @@ L10n comments need to be Jinja2 comments:
 <h1>{{ _('Heading') }}</h1>
 ```
 
-Note that Jinja2 escapes all content output through `{{ }}` by default.
-To put HTML in a string, you'll need to add the `|safe` filter:
+Jinja2 escapes ordinary values output through `{{ }}` by default. In this
+project, newstyle gettext already marks localized strings as safe HTML, so
+intentional markup in a localized string renders without `|safe`:
 
 ```jinja
-<h1>{{ _('Firefox <span>Help</span>')|safe }}</h1>
+<h1>{{ _('Firefox <span>Help</span>') }}</h1>
 ```
+
+Only use HTML in translations that are meant to contain markup. Plain-text
+translations rendered directly need `|forceescape`; `|escape` does nothing to
+values gettext has already marked safe.
 
 To interpolate, you should use one of two Jinja2 filters: `|f()` or, in
 some cases, `|fe()`. `|f()` has exactly the same arguments as
@@ -149,9 +154,11 @@ some cases, `|fe()`. `|f()` has exactly the same arguments as
 {{ _('Welcome, {name}!')|f(name=request.user.username) }}
 ```
 
-The `|fe()` is exactly like the `|f()` filter, but escapes its arguments
+The `|fe()` filter is like `|f()`, but escapes ordinary string arguments
 before interpolating, then returns a "safe" object. Use it when the
-localized string contains HTML:
+localized string intentionally contains HTML. Arguments already marked
+safe, including newstyle gettext results, must first be `|forceescape`d
+if they represent plain text:
 
 ```jinja
 {{ _('Found <strong>{0}</strong> results.')|fe(num_results) }}
@@ -344,6 +351,26 @@ command.*
 By default, this will write all the strings to
 [kitsune/sumo/db_strings.py]{.title-ref} and they will get picked up
 during the normal string extraction (see below).
+
+When displaying a plain-text database field through `pgettext()` in a
+Jinja2 template, use `|forceescape` on direct output. Newstyle gettext
+marks even the untranslated database value safe, so ordinary autoescaping
+and `|escape` would leave HTML in that value untouched:
+
+```jinja
+{{ pgettext('DB: karma.Title.name', title.name)|forceescape }}
+```
+
+When passing such a value to `|fe`, force-escape the argument before
+interpolation. Do not pre-escape values passed only to `|f`: its plain
+string result is autoescaped when output.
+
+For example, when interpolating a translated product title into intended
+markup, escape the title before passing it to `|fe`:
+
+```jinja
+{{ _('<strong>{product}</strong> Community Forum')|fe(product=pgettext('DB: products.Product.title', product.title)|forceescape) }}
+```
 
 ## Strings in Email Templates
 

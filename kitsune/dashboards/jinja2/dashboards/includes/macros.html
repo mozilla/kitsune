@@ -176,7 +176,7 @@
       <option value="">{{ _('All Products') }}</option>
       {% for p in products %}
         <option value="{{ p.slug }}" {% if current == p %}selected="selected"{% endif %}>
-          {{ pgettext('DB: products.Product.title', p.title) }}
+          {{ pgettext('DB: products.Product.title', p.title)|forceescape }}
         </option>
       {% endfor %}
     </select>
@@ -191,7 +191,7 @@
     {{ _('All Products') }}
     {% else %}
     <img src="{{ current.image_url }}" class="icon-md" alt="{{ current.title }} logo" />
-    {{ pgettext('DB: products.Product.title', current.title) }}
+    {{ pgettext('DB: products.Product.title', current.title)|forceescape }}
     {% endif %}
   </h3>
   <ul class="mzp-c-menu-list-list">
@@ -206,7 +206,7 @@
     <li class="mzp-c-menu-list-item {% if current == p %}is-selected{% endif %}">
       <a class="has-icon" href="{{ url_|urlparams(product=p.slug, category=category) }}">
         <img src="{{ p.image_url }}" class="icon-md" alt="" />
-        <span>{{ pgettext('DB: products.Product.title', p.title) }}</span>
+        <span>{{ pgettext('DB: products.Product.title', p.title)|forceescape }}</span>
       </a>
     </li>
     {% endfor %}
@@ -220,7 +220,7 @@
       <option value="">{{ _('All Topics') }}</option>
       {% for t in topics %}
         <option value="{{ t.slug }}" {% if current == t %}selected="selected"{% endif %}>
-          {{ pgettext('DB: products.Topic.title', t.title) }}
+          {{ pgettext('DB: products.Topic.title', t.title)|forceescape }}
         </option>
       {% endfor %}
     </select>

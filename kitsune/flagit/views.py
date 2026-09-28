@@ -21,6 +21,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import pgettext
 from django.views.decorators.http import require_http_methods, require_POST
+from markupsafe import Markup
 
 from kitsune.access.decorators import group_required, login_required, permission_required
 from kitsune.customercare.models import SupportTicket
@@ -240,11 +241,14 @@ def get_hierarchical_topics(product, cache_timeout=3600):
         # in pgettext (as this will lead to a new string
         # creation), so we have to preset it.
         raw_topic_title = topic["title"]
-        result.append({
-            "id": topic["id"],
-            "title": "&nbsp;" * (topic["level"] * 4)
-            + pgettext("DB: products.Topic.title", raw_topic_title),
-        })
+        result.append(
+            {
+                "id": topic["id"],
+                # The indentation is trusted markup; adding a plain Django translation escapes it.
+                "title": Markup("&nbsp;" * (topic["level"] * 4))
+                + pgettext("DB: products.Topic.title", raw_topic_title),
+            }
+        )
     return result
 
 

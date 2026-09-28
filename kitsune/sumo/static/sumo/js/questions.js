@@ -176,10 +176,9 @@ export function initEditDetails() {
         var t = data.topics[i];
         var opt = document.createElement('option');
         opt.value = t.id;
-        // Titles arrive with &nbsp; entities for nested-topic indentation (built
-        // server-side in get_hierarchical_topics). Render as HTML so the
-        // entities decode to non-breaking spaces, matching the server-rendered
-        // dropdowns which output the same title via `{{ title|safe }}`.
+        // Nested-topic indentation arrives as &nbsp; entities. The server
+        // escapes the title text before combining it with those entities, so
+        // parsing this HTML decodes the spaces without interpreting title markup.
         opt.innerHTML = t.title;
         if (topic) {
           topic.appendChild(opt);

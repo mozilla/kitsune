@@ -3,7 +3,7 @@
   <div class="scroll-wrap">
     {% for product in products %}
       <div class="card card--product zoom-on-hover">
-          <img class="card--icon" src="{{ product.image_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}" />
+          <img class="card--icon" src="{{ product.image_url }}" alt="{{ pgettext('DB: products.Product.title', product.title)|forceescape }}" />
           <div class="card--details">
             <h3 class="card--title">
               <a class="expand-this-link" href="{{ url('products.product', slug=product.slug) }}"
@@ -12,10 +12,10 @@
                    "link_name": "product-home",
                    "link_detail": "{{ product.slug }}"
                  }'>
-                {{ pgettext('DB: products.Product.title', product.title) }}
+                {{ pgettext('DB: products.Product.title', product.title)|forceescape }}
               </a>
             </h3>
-            <p class="card--desc">{{ pgettext('DB: products.Product.description', product.description) }}</p>
+            <p class="card--desc">{{ pgettext('DB: products.Product.description', product.description)|forceescape }}</p>
           </div>
       </div>
     {% endfor %}
@@ -36,7 +36,7 @@
         {% for product in products %}
           <option value="{{ url('products.topic_product_documents', topic_slug=topic.slug, product_slug=product.slug) }}" 
                   {% if selected_product == product %}selected{% endif %}>
-            {{ pgettext('DB: products.Product.title', product.title) }}
+            {{ pgettext('DB: products.Product.title', product.title)|forceescape }}
           </option>
         {% endfor %}
       </select>

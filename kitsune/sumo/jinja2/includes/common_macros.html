@@ -83,7 +83,7 @@
                 "link_name": "{{ link_name }}",
                 "link_detail": "{{ slugs[i][j] }}"
               }'>
-            {{ pgettext("DB: products.Topic.title", slugs[i][j]|slug_to_title) }}
+            {{ pgettext("DB: products.Topic.title", slugs[i][j]|slug_to_title)|forceescape }}
           </a>
         </li>
       {% endfor %}

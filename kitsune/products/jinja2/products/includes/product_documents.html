@@ -12,15 +12,15 @@
     {% if subtopic %}
       <h2 class="sumo-card-heading is-subtopic">
         <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
-          {{ pgettext('DB: products.Topic.title', topic.title) }}
+          {{ pgettext('DB: products.Topic.title', topic.title)|forceescape }}
         </a>
       </h2>
       <h1 class="topic-title is-subtopic sumo-page-heading">
-        {{ pgettext('DB: products.Topic.title', subtopic.title) }}
+        {{ pgettext('DB: products.Topic.title', subtopic.title)|forceescape }}
       </h1>
     {% else %}
       <h1 class="topic-title sumo-page-heading">
-        {{ pgettext('DB: products.Topic.title', topic.title) }}
+        {{ pgettext('DB: products.Topic.title', topic.title)|forceescape }}
       </h1>
     {% endif %}
 
@@ -28,9 +28,9 @@
     {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
       <p class="topic-description sumo-page-intro mb-0">
         {% if subtopic %}
-          {{ pgettext('DB: products.Topic.description', subtopic.description) }}
+          {{ pgettext('DB: products.Topic.description', subtopic.description)|forceescape }}
         {% else %}
-          {{ pgettext('DB: products.Topic.description', topic.description) }}
+          {{ pgettext('DB: products.Topic.description', topic.description)|forceescape }}
         {% endif %}
       </p>
     {% endif %}

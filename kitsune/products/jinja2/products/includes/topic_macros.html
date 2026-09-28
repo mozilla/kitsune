@@ -15,12 +15,12 @@
         <img
           class="card--icon"
           src="{{ topic_data.image_url }}"
-          alt="{{ pgettext('DB: products.Topic.title', topic_data.title) }} icon"
+          alt="{{ pgettext('DB: products.Topic.title', topic_data.title)|forceescape }} icon"
           loading="lazy"
         />
           <h3 class="card--title">
             <a href="{{ topic_data.topic_url }}">
-              {{ pgettext('DB: products.Topic.title', topic_data.title) }}
+              {{ pgettext('DB: products.Topic.title', topic_data.title)|forceescape }}
             </a>
           </h3>
       </div>
@@ -128,7 +128,7 @@
                 "link_name": "sidebar.product-and-topic-home",
                 "link_detail": "{{ link_detail }}"
               }'>
-              {{ pgettext('DB: products.Topic.title', topic.title) }}
+              {{ pgettext('DB: products.Topic.title', topic.title)|forceescape }}
             </a>
 
             {% if selected_topic == topic %}
@@ -142,7 +142,7 @@
                       "link_name": "sidebar.product-and-topic-and-subtopic-home",
                       "link_detail": "{{ product.slug + '/' + topic.slug + '/' + subtopic.slug }}"
                     }'>
-                    {{ pgettext('DB: products.Topic.title', subtopic.title) }}
+                    {{ pgettext('DB: products.Topic.title', subtopic.title)|forceescape }}
                   </a>
                 </li>
               {% endfor %}
@@ -184,7 +184,7 @@
             "link_name": "tab.product-and-topic-and-subtopic-home",
             "link_detail": "{{ product.slug + '/' + topic.slug + '/' + subtopic.slug }}"
           }'>
-          <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
+          <span>{{ pgettext('DB: products.Topic.title', subtopic.title)|forceescape }}</span>
         </a>
       </li>
     {% endfor %}
