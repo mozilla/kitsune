@@ -1,6 +1,6 @@
 const { mergeWithRules } = require("webpack-merge");
 const path = require("path");
-const sveltePreprocess = require("svelte-preprocess");
+const svelteScssPreprocess = require("./webpack/svelte-scss-preprocess");
 const SveltePreRenderPlugin = require("./webpack/svelte-pre-render-plugin");
 
 const common = require("./webpack.common.js");
@@ -36,7 +36,7 @@ module.exports = mergeWithRules({
           loader: "svelte-loader",
           options: {
             emitCss: false,
-            preprocess: sveltePreprocess(),
+            preprocess: svelteScssPreprocess,
             compilerOptions: {
               generate: "server",
             },

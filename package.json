@@ -6,7 +6,7 @@
     "url": "git://github.com/mozilla/kitsune.git"
   },
   "engines": {
-    "node": ">=22.13.0",
+    "node": "^22.18.0 || >=24.11.0",
     "npm": ">=10.0.0"
   },
   "scripts": {
@@ -35,7 +35,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@alpinejs/csp": "^3.15.8",
-    "@babel/runtime": "^7.29.7",
+    "@babel/runtime": "^8.0.5",
     "@mozmeao/dnt-helper": "^1.0.0",
     "@urql/svelte": "^4.0.0",
     "chart.js": "^4.5.1",
@@ -49,9 +49,9 @@
     "underscore": "^1.13.8"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
-    "@babel/plugin-transform-runtime": "^7.29.0",
-    "@babel/preset-env": "^7.29.0",
+    "@babel/core": "^8.0.5",
+    "@babel/plugin-transform-runtime": "^8.0.5",
+    "@babel/preset-env": "^8.0.5",
     "@mozilla-protocol/core": "22.0.0",
     "@stylistic/stylelint-plugin": "^5.3.0",
     "@types/underscore": "^1.13.0",
@@ -98,7 +98,6 @@
     "stylelint-order": "^8.1.1",
     "stylelint-scss": "^7.2.0",
     "svelte-loader": "^3.2.4",
-    "svelte-preprocess": "^5.0.1",
     "webpack": "^5.108.4",
     "webpack-bundle-analyzer": "^5.3.1",
     "webpack-cli": "^5.1.4",
