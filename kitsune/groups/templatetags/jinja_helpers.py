@@ -37,7 +37,7 @@ def group_breadcrumbs(group_profile, include_self=True):
     the group itself is the current (unlinked) leaf.
     """
     crumbs = [(reverse("groups.list"), _("Groups"))]
-    for ancestor in group_profile.get_ancestors():
+    for ancestor in GroupProfile.objects.get_ancestors(group_profile):
         crumbs.append((reverse("groups.profile", args=[ancestor.slug]), ancestor.group.name))
     if include_self:
         crumbs.append(

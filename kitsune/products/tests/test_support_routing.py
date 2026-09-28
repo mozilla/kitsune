@@ -317,11 +317,21 @@ class SubtreeSupportRoutingTests(TestCase):
             group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
             is_active=True,
         )
-        self.root = GroupProfile.add_root(group=GroupFactory(), slug="firefox-enterprise")
-        self.parent = self.root.add_child(group=GroupFactory(), slug="division")
-        self.company = self.parent.add_child(group=GroupFactory(), slug="company")
-        team = self.company.add_child(group=GroupFactory(), slug="team")
-        self.descendant = team.add_child(group=GroupFactory(), slug="subteam")
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={"group": GroupFactory(), "slug": "firefox-enterprise"}
+        )
+        self.parent = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": GroupFactory(), "slug": "division"}
+        )
+        self.company = GroupProfile.objects.add_child(
+            self.parent, create_kwargs={"group": GroupFactory(), "slug": "company"}
+        )
+        team = GroupProfile.objects.add_child(
+            self.company, create_kwargs={"group": GroupFactory(), "slug": "team"}
+        )
+        self.descendant = GroupProfile.objects.add_child(
+            team, create_kwargs={"group": GroupFactory(), "slug": "subteam"}
+        )
         SupportOrganizationFactory(config=config, group=self.company.group)
 
     def test_deep_descendant_uses_group_default(self):
@@ -345,8 +355,12 @@ class SubtreeSupportRoutingTests(TestCase):
         )
 
     def test_members_outside_company_cannot_use_organization_support(self):
-        sibling = self.parent.add_child(group=GroupFactory(), slug="unmapped-company")
-        unrelated = GroupProfile.add_root(group=GroupFactory(), slug="unrelated")
+        sibling = GroupProfile.objects.add_child(
+            self.parent, create_kwargs={"group": GroupFactory(), "slug": "unmapped-company"}
+        )
+        unrelated = GroupProfile.objects.add_root(
+            create_kwargs={"group": GroupFactory(), "slug": "unrelated"}
+        )
         for profile in (self.root, self.parent, sibling, unrelated):
             with self.subTest(group=profile.slug):
                 self.user.groups.set([profile.group])

@@ -20,7 +20,7 @@ class TreeModelBase(MP_Node, ModelBase):
     Combines treebeard's MP_Node with ModelBase
 
     Provides:
-    - Tree operations: get_parent(), get_children(), add_child(), etc.
+    - Tree operations through the model manager
     - ModelBase methods: objects_range(), update()
     """
 
@@ -100,7 +100,7 @@ class GroupProfile(TreeModelBase):
                 pass
 
         if len(self.path) > self.steplen:
-            parent = self.get_parent()
+            parent = self.__class__.objects.get_parent(self)
             if parent:
                 self.visibility = parent.visibility
                 self._needs_visible_to_groups_sync = True
@@ -109,7 +109,7 @@ class GroupProfile(TreeModelBase):
 
         # Propagate visibility changes to all descendants
         if old_visibility is not None and old_visibility != self.visibility:
-            self.get_descendants().update(visibility=self.visibility)
+            self.__class__.objects.get_descendants(self).update(visibility=self.visibility)
 
     def update_visibility(self, new_visibility, propagate=True):
         """
@@ -123,7 +123,7 @@ class GroupProfile(TreeModelBase):
         self.save(update_fields=["visibility"])
 
         if propagate:
-            self.get_descendants().update(visibility=new_visibility)
+            self.__class__.objects.get_descendants(self).update(visibility=new_visibility)
 
     def can_moderate_group(self, user):
         """
@@ -146,7 +146,7 @@ class GroupProfile(TreeModelBase):
             return True
 
         if not self.is_root():
-            root = self.get_root()
+            root = self.__class__.objects.get_root(self)
             if root.leaders.filter(pk=user.pk).exists():
                 return True
 
@@ -173,7 +173,7 @@ class GroupProfile(TreeModelBase):
         if user.is_superuser:
             return True
 
-        root = self.get_root()
+        root = self.__class__.objects.get_root(self)
         return root.leaders.filter(pk=user.pk).exists()
 
     def can_view(self, user):
@@ -190,12 +190,12 @@ class GroupProfile(TreeModelBase):
             return True
         if self.can_moderate_group(user):
             return True
-        subtree = self.__class__.objects.filter(pk=self.pk) | self.get_descendants()
+        subtree = self.__class__.objects.get_descendants(self, include_self=True)
         return subtree.filter(group__user=user).exists()
 
     def get_visible_children(self, user):
         """Return child groups visible to this user."""
-        children = self.get_children()
+        children = self.__class__.objects.get_children(self)
         return self.__class__.objects.visible(user).filter(pk__in=children)
 
     def can_view_inactive_members(self, user):

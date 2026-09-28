@@ -882,9 +882,13 @@ class QuestionsContributedSidebarTests(TestCase):
             product=product, zendesk_config=ZendeskConfigFactory(name="zd")
         )
         root_group = Group.objects.create(name="enterprise")
-        root = GroupProfile.add_root(group=root_group, slug="enterprise")
+        root = GroupProfile.objects.add_root(
+            create_kwargs={"group": root_group, "slug": "enterprise"}
+        )
         c1_group = Group.objects.create(name="company1")
-        self.c1 = root.add_child(group=c1_group, slug="company1")
+        self.c1 = GroupProfile.objects.add_child(
+            root, create_kwargs={"group": c1_group, "slug": "company1"}
+        )
         SupportOrganizationFactory(config=config, group=c1_group)
 
         self.member = UserFactory(username="member")

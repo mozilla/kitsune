@@ -31,16 +31,30 @@ class GroupListSubgroupCountTests(TestCase):
     def setUp(self):
         super().setUp()
         # Build: root_a (private, isolated) -> [sub_b, sub_d] -> sub_d -> [sub_e, sub_f]
-        self.root_a = GroupProfile.add_root(
-            group=Group.objects.create(name="Root A"),
-            slug="root-a",
-            visibility=GroupProfile.Visibility.PRIVATE,
-            isolation_enabled=True,
+        self.root_a = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": Group.objects.create(name="Root A"),
+                "slug": "root-a",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+                "isolation_enabled": True,
+            }
         )
-        self.sub_b = self.root_a.add_child(group=Group.objects.create(name="Sub B"), slug="sub-b")
-        self.sub_d = self.root_a.add_child(group=Group.objects.create(name="Sub D"), slug="sub-d")
-        self.sub_e = self.sub_d.add_child(group=Group.objects.create(name="Sub E"), slug="sub-e")
-        self.sub_f = self.sub_d.add_child(group=Group.objects.create(name="Sub F"), slug="sub-f")
+        self.sub_b = GroupProfile.objects.add_child(
+            self.root_a,
+            create_kwargs={"group": Group.objects.create(name="Sub B"), "slug": "sub-b"},
+        )
+        self.sub_d = GroupProfile.objects.add_child(
+            self.root_a,
+            create_kwargs={"group": Group.objects.create(name="Sub D"), "slug": "sub-d"},
+        )
+        self.sub_e = GroupProfile.objects.add_child(
+            self.sub_d,
+            create_kwargs={"group": Group.objects.create(name="Sub E"), "slug": "sub-e"},
+        )
+        self.sub_f = GroupProfile.objects.add_child(
+            self.sub_d,
+            create_kwargs={"group": Group.objects.create(name="Sub F"), "slug": "sub-f"},
+        )
 
         self.member = UserFactory()
         self.member.groups.add(self.sub_e.group)
@@ -249,7 +263,10 @@ class AddRemoveLeaderTests(TestCase):
 
     def test_can_remove_leader_from_subgroup(self):
         """Can remove the only leader from a subgroup."""
-        sub_profile = self.group_profile.add_child(group=self.group_profile.group, slug="subgroup")
+        sub_profile = GroupProfile.objects.add_child(
+            self.group_profile,
+            create_kwargs={"group": self.group_profile.group, "slug": "subgroup"},
+        )
         sub_leader = UserFactory()
         sub_profile.leaders.add(sub_leader)
 
@@ -491,17 +508,23 @@ class GroupTicketsViewTests(TestCase):
         )
 
         root_group = Group.objects.create(name="firefox-enterprise")
-        self.root = GroupProfile.add_root(
-            group=root_group,
-            slug="firefox-enterprise",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": root_group,
+                "slug": "firefox-enterprise",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            }
         )
         self.c1_group = Group.objects.create(name="company1")
-        self.c1 = self.root.add_child(group=self.c1_group, slug="company1")
+        self.c1 = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": self.c1_group, "slug": "company1"}
+        )
         SupportOrganizationFactory(config=config, group=self.c1_group)
 
         self.c2_group = Group.objects.create(name="company2")
-        self.c2 = self.root.add_child(group=self.c2_group, slug="company2")
+        self.c2 = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": self.c2_group, "slug": "company2"}
+        )
 
         self.member = UserFactory(username="member")
         self.member.groups.add(self.c1_group)

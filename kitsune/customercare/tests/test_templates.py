@@ -33,8 +33,12 @@ class ChatWidgetTemplateTests(TestCase):
         config = ProductSupportConfigFactory(
             product=self.product, zendesk_config=ZendeskConfigFactory()
         )
-        root = GroupProfile.add_root(group=Group.objects.create(name="chat"), slug="chat")
-        company = root.add_child(group=Group.objects.create(name="company"), slug="company")
+        root = GroupProfile.objects.add_root(
+            create_kwargs={"group": Group.objects.create(name="chat"), "slug": "chat"}
+        )
+        company = GroupProfile.objects.add_child(
+            root, create_kwargs={"group": Group.objects.create(name="company"), "slug": "company"}
+        )
         SupportOrganizationFactory(config=config, group=company.group, include_live_chat=True)
         self.user = UserFactory()
         self.user.groups.add(company.group)

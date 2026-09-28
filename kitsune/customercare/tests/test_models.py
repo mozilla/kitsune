@@ -178,23 +178,35 @@ class AccessibleToTests(TestCase):
         )
 
         root_group = Group.objects.create(name="firefox-enterprise")
-        self.root = GroupProfile.add_root(group=root_group, slug="firefox-enterprise")
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={"group": root_group, "slug": "firefox-enterprise"}
+        )
 
         c1_group = Group.objects.create(name="company1")
-        self.c1 = self.root.add_child(group=c1_group, slug="company1")
+        self.c1 = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": c1_group, "slug": "company1"}
+        )
         SupportOrganizationFactory(config=self.support_config, group=c1_group)
 
         c2_group = Group.objects.create(name="company2")
-        self.c2 = self.root.add_child(group=c2_group, slug="company2")
+        self.c2 = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": c2_group, "slug": "company2"}
+        )
         SupportOrganizationFactory(config=self.support_config, group=c2_group)
 
         c3_group = Group.objects.create(name="company3")
-        self.c3 = self.root.add_child(group=c3_group, slug="company3")
+        self.c3 = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": c3_group, "slug": "company3"}
+        )
 
         it_group = Group.objects.create(name="company1.IT")
-        self.c1_it = self.c1.add_child(group=it_group, slug="company1-it")
+        self.c1_it = GroupProfile.objects.add_child(
+            self.c1, create_kwargs={"group": it_group, "slug": "company1-it"}
+        )
         mkt_group = Group.objects.create(name="company1.marketing")
-        self.c1_mkt = self.c1.add_child(group=mkt_group, slug="company1-marketing")
+        self.c1_mkt = GroupProfile.objects.add_child(
+            self.c1, create_kwargs={"group": mkt_group, "slug": "company1-marketing"}
+        )
 
         self.alice = UserFactory(username="alice")  # in company1.IT
         self.alice.groups.add(it_group)
@@ -273,7 +285,9 @@ class AccessibleToTests(TestCase):
 
     def test_root_moderator_sees_only_orgs_in_own_tree(self):
         other_group = Group.objects.create(name="other-enterprise")
-        other_root = GroupProfile.add_root(group=other_group, slug="other-enterprise")
+        other_root = GroupProfile.objects.add_root(
+            create_kwargs={"group": other_group, "slug": "other-enterprise"}
+        )
         SupportOrganizationFactory(config=self.support_config, group=other_group)
         SupportTicketFactory(user=self.dave, product=self.product, org_group=other_root)
 

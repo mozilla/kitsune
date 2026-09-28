@@ -50,8 +50,12 @@ def _make_viewable_by_teammate(owner, ticket):
         product=ticket.product, zendesk_config=ZendeskConfigFactory(name="zd")
     )
     company_group = Group.objects.create(name="company1")
-    root = GroupProfile.add_root(group=Group.objects.create(name="enterprise"), slug="enterprise")
-    company = root.add_child(group=company_group, slug="company1")
+    root = GroupProfile.objects.add_root(
+        create_kwargs={"group": Group.objects.create(name="enterprise"), "slug": "enterprise"}
+    )
+    company = GroupProfile.objects.add_child(
+        root, create_kwargs={"group": company_group, "slug": "company1"}
+    )
     SupportOrganizationFactory(config=config, group=company_group)
     owner.groups.add(company_group)
     ticket.org_group = company
@@ -227,8 +231,12 @@ class TicketDetailViewTests(TestCase):
         )
         c1_group = Group.objects.create(name="company1")
         root_group = Group.objects.create(name="enterprise")
-        root = GroupProfile.add_root(group=root_group, slug="enterprise")
-        c1 = root.add_child(group=c1_group, slug="company1")
+        root = GroupProfile.objects.add_root(
+            create_kwargs={"group": root_group, "slug": "enterprise"}
+        )
+        c1 = GroupProfile.objects.add_child(
+            root, create_kwargs={"group": c1_group, "slug": "company1"}
+        )
         SupportOrganizationFactory(config=config, group=c1_group)
 
         self.owner.groups.add(c1_group)
@@ -806,9 +814,15 @@ class ChatJWTViewTests(TestCase):
         self.config = ProductSupportConfigFactory(
             product=self.product, zendesk_config=ZendeskConfigFactory()
         )
-        self.root = GroupProfile.add_root(group=Group.objects.create(name="chat"), slug="chat")
-        company = self.root.add_child(
-            group=Group.objects.create(name="chat-company"), slug="chat-company"
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={"group": Group.objects.create(name="chat"), "slug": "chat"}
+        )
+        company = GroupProfile.objects.add_child(
+            self.root,
+            create_kwargs={
+                "group": Group.objects.create(name="chat-company"),
+                "slug": "chat-company",
+            },
         )
         self.organization = SupportOrganizationFactory(
             config=self.config, group=company.group, include_live_chat=True
@@ -918,7 +932,9 @@ class ChatJWTViewTests(TestCase):
             ("without-chat", False),
         ):
             slug = name.ljust(80, "x")
-            company = self.root.add_child(group=Group.objects.create(name=name), slug=slug)
+            company = GroupProfile.objects.add_child(
+                self.root, create_kwargs={"group": Group.objects.create(name=name), "slug": slug}
+            )
             SupportOrganizationFactory(
                 config=self.config, group=company.group, include_live_chat=include_live_chat
             )

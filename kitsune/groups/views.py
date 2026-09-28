@@ -102,7 +102,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
     user_can_moderate = prof.can_moderate_group(request.user)
 
     # Fetch hierarchy data in view for better performance
-    parent = prof.get_parent()
+    parent = GroupProfile.objects.get_parent(prof)
     children = prof.get_visible_children(request.user)
 
     return render(

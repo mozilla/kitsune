@@ -50,7 +50,7 @@ def tag_chat_tickets_of_org_members(org):
     if group_profile is None:
         return
     members = (
-        User.objects.filter(groups__profile__in=GroupProfile.get_tree(group_profile))
+        User.objects.filter(groups__profile__in=GroupProfile.objects.get_tree(group_profile))
         .select_related("profile")
         .distinct()
     )

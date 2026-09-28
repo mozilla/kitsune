@@ -28,35 +28,46 @@ class ModerationHierarchyTests(TestCase):
         """
         # Create root
         root_group = Group.objects.create(name="Root")
-        self.root = GroupProfile.add_root(
-            group=root_group,
-            slug="root",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": root_group,
+                "slug": "root",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            }
         )
         self.mike = UserFactory(username="mike")
         self.root.leaders.add(self.mike)
 
         # Create SubA with moderator
         suba_group = Group.objects.create(name="SubA")
-        self.sub_a = self.root.add_child(
-            group=suba_group,
-            slug="sub-a",
+        self.sub_a = GroupProfile.objects.add_child(
+            self.root,
+            create_kwargs={
+                "group": suba_group,
+                "slug": "sub-a",
+            },
         )
         self.alice = UserFactory(username="alice")
         self.sub_a.leaders.add(self.alice)
 
         # Create SubSubA without moderator
         subsuba_group = Group.objects.create(name="SubSubA")
-        self.subsub_a = self.sub_a.add_child(
-            group=subsuba_group,
-            slug="subsub-a",
+        self.subsub_a = GroupProfile.objects.add_child(
+            self.sub_a,
+            create_kwargs={
+                "group": subsuba_group,
+                "slug": "subsub-a",
+            },
         )
 
         # Create SubB without moderator
         subb_group = Group.objects.create(name="SubB")
-        self.sub_b = self.root.add_child(
-            group=subb_group,
-            slug="sub-b",
+        self.sub_b = GroupProfile.objects.add_child(
+            self.root,
+            create_kwargs={
+                "group": subb_group,
+                "slug": "sub-b",
+            },
         )
 
     def test_root_moderator_manages_entire_tree(self):
@@ -131,11 +142,13 @@ class VisibilityWithIsolationTests(TestCase):
         """
         # Create root
         root_group = Group.objects.create(name="Root")
-        self.root = GroupProfile.add_root(
-            group=root_group,
-            slug="root",
-            visibility=GroupProfile.Visibility.PRIVATE,
-            isolation_enabled=True,
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": root_group,
+                "slug": "root",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+                "isolation_enabled": True,
+            }
         )
 
         self.mike = UserFactory(username="mike")
@@ -155,17 +168,23 @@ class VisibilityWithIsolationTests(TestCase):
 
         # Create SubA
         suba_group = Group.objects.create(name="SubA")
-        self.sub_a = self.root.add_child(
-            group=suba_group,
-            slug="sub-a",
+        self.sub_a = GroupProfile.objects.add_child(
+            self.root,
+            create_kwargs={
+                "group": suba_group,
+                "slug": "sub-a",
+            },
         )
         self.sub_a.group.user_set.add(self.alice, self.charlie)
 
         # Create SubB
         subb_group = Group.objects.create(name="SubB")
-        self.sub_b = self.root.add_child(
-            group=subb_group,
-            slug="sub-b",
+        self.sub_b = GroupProfile.objects.add_child(
+            self.root,
+            create_kwargs={
+                "group": subb_group,
+                "slug": "sub-b",
+            },
         )
         self.sub_b.group.user_set.add(self.bob)
 
@@ -223,16 +242,21 @@ class PublicGroupsNoIsolationTests(TestCase):
     def setUp(self):
         """Create PUBLIC hierarchy."""
         root_group = Group.objects.create(name="PublicRoot")
-        self.root = GroupProfile.add_root(
-            group=root_group,
-            slug="public-root",
-            visibility=GroupProfile.Visibility.PUBLIC,
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": root_group,
+                "slug": "public-root",
+                "visibility": GroupProfile.Visibility.PUBLIC,
+            }
         )
 
         child_group = Group.objects.create(name="PublicChild")
-        self.child = self.root.add_child(
-            group=child_group,
-            slug="public-child",
+        self.child = GroupProfile.objects.add_child(
+            self.root,
+            create_kwargs={
+                "group": child_group,
+                "slug": "public-child",
+            },
         )
 
     def test_anonymous_sees_public_groups(self):
@@ -261,11 +285,13 @@ class ModeratedGroupsTests(TestCase):
     def setUp(self):
         """Create MODERATED hierarchy."""
         root_group = Group.objects.create(name="ModeratedRoot")
-        self.root = GroupProfile.add_root(
-            group=root_group,
-            slug="moderated-root",
-            visibility=GroupProfile.Visibility.MODERATED,
-            isolation_enabled=True,
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": root_group,
+                "slug": "moderated-root",
+                "visibility": GroupProfile.Visibility.MODERATED,
+                "isolation_enabled": True,
+            }
         )
 
         self.mike = UserFactory(username="mike")
@@ -275,9 +301,12 @@ class ModeratedGroupsTests(TestCase):
         self.root.group.user_set.add(self.alice)
 
         child_group = Group.objects.create(name="ModeratedChild")
-        self.child = self.root.add_child(
-            group=child_group,
-            slug="moderated-child",
+        self.child = GroupProfile.objects.add_child(
+            self.root,
+            create_kwargs={
+                "group": child_group,
+                "slug": "moderated-child",
+            },
         )
 
     def test_moderated_follows_same_rules_as_private(self):
@@ -296,10 +325,12 @@ class ModeratedGroupsTests(TestCase):
         """visible_to_groups provides cross-hierarchy view access."""
         # Create external audit group
         audit_django_group = Group.objects.create(name="AuditTeam")
-        GroupProfile.add_root(
-            group=audit_django_group,
-            slug="audit-team",
-            visibility=GroupProfile.Visibility.PUBLIC,
+        GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": audit_django_group,
+                "slug": "audit-team",
+                "visibility": GroupProfile.Visibility.PUBLIC,
+            }
         )
         auditor = UserFactory(username="auditor")
         audit_django_group.user_set.add(auditor)
@@ -324,11 +355,13 @@ class IsolationDisabledTests(TestCase):
     def setUp(self):
         """Create PRIVATE hierarchy with isolation disabled."""
         root_group = Group.objects.create(name="Root")
-        self.root = GroupProfile.add_root(
-            group=root_group,
-            slug="root",
-            visibility=GroupProfile.Visibility.PRIVATE,
-            isolation_enabled=False,
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": root_group,
+                "slug": "root",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+                "isolation_enabled": False,
+            }
         )
 
         self.alice = UserFactory(username="alice")
@@ -336,17 +369,23 @@ class IsolationDisabledTests(TestCase):
 
         # SubA
         suba_group = Group.objects.create(name="SubA")
-        self.sub_a = self.root.add_child(
-            group=suba_group,
-            slug="sub-a",
+        self.sub_a = GroupProfile.objects.add_child(
+            self.root,
+            create_kwargs={
+                "group": suba_group,
+                "slug": "sub-a",
+            },
         )
         self.sub_a.group.user_set.add(self.alice)
 
         # SubB
         subb_group = Group.objects.create(name="SubB")
-        self.sub_b = self.root.add_child(
-            group=subb_group,
-            slug="sub-b",
+        self.sub_b = GroupProfile.objects.add_child(
+            self.root,
+            create_kwargs={
+                "group": subb_group,
+                "slug": "sub-b",
+            },
         )
         self.sub_b.group.user_set.add(self.bob)
 
@@ -373,23 +412,31 @@ class SiblingIsolationTests(TestCase):
         """
         # Create parent group as PRIVATE so children inherit PRIVATE
         parent_group = Group.objects.create(name="ParentA")
-        self.parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent-a",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        self.parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent-a",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            }
         )
 
         # Create two sibling subgroups (inherit PRIVATE from parent)
         subgroup_b_group = Group.objects.create(name="SubgroupB")
-        self.subgroup_b = self.parent.add_child(
-            group=subgroup_b_group,
-            slug="subgroup-b",
+        self.subgroup_b = GroupProfile.objects.add_child(
+            self.parent,
+            create_kwargs={
+                "group": subgroup_b_group,
+                "slug": "subgroup-b",
+            },
         )
 
         subgroup_c_group = Group.objects.create(name="SubgroupC")
-        self.subgroup_c = self.parent.add_child(
-            group=subgroup_c_group,
-            slug="subgroup-c",
+        self.subgroup_c = GroupProfile.objects.add_child(
+            self.parent,
+            create_kwargs={
+                "group": subgroup_c_group,
+                "slug": "subgroup-c",
+            },
         )
 
         # Create users
@@ -461,10 +508,13 @@ class SiblingIsolationTests(TestCase):
         """Test PRIVATE group isolation in a three-level hierarchy."""
         # Add grandchild to SubgroupB
         grandchild_group = Group.objects.create(name="GrandchildD")
-        grandchild = self.subgroup_b.add_child(
-            group=grandchild_group,
-            slug="grandchild-d",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        grandchild = GroupProfile.objects.add_child(
+            self.subgroup_b,
+            create_kwargs={
+                "group": grandchild_group,
+                "slug": "grandchild-d",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            },
         )
 
         user_in_grandchild = UserFactory()
@@ -497,42 +547,58 @@ class VisibilityEdgeCaseTests(TestCase):
         """
         # First hierarchy - all PUBLIC
         parent_a_group = Group.objects.create(name="ParentA")
-        self.parent_a = GroupProfile.add_root(
-            group=parent_a_group,
-            slug="parent-a",
-            visibility=GroupProfile.Visibility.PUBLIC,
+        self.parent_a = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_a_group,
+                "slug": "parent-a",
+                "visibility": GroupProfile.Visibility.PUBLIC,
+            }
         )
 
         sub_b_group = Group.objects.create(name="SubB")
-        self.sub_b = self.parent_a.add_child(
-            group=sub_b_group,
-            slug="sub-b",
+        self.sub_b = GroupProfile.objects.add_child(
+            self.parent_a,
+            create_kwargs={
+                "group": sub_b_group,
+                "slug": "sub-b",
+            },
         )
 
         grandchild_d_group = Group.objects.create(name="GrandchildD")
-        self.grandchild_d = self.sub_b.add_child(
-            group=grandchild_d_group,
-            slug="grandchild-d",
+        self.grandchild_d = GroupProfile.objects.add_child(
+            self.sub_b,
+            create_kwargs={
+                "group": grandchild_d_group,
+                "slug": "grandchild-d",
+            },
         )
 
         sub_c_group = Group.objects.create(name="SubC")
-        self.sub_c = self.parent_a.add_child(
-            group=sub_c_group,
-            slug="sub-c",
+        self.sub_c = GroupProfile.objects.add_child(
+            self.parent_a,
+            create_kwargs={
+                "group": sub_c_group,
+                "slug": "sub-c",
+            },
         )
 
         # Second hierarchy - all PRIVATE
         parent_e_group = Group.objects.create(name="ParentE")
-        self.parent_e = GroupProfile.add_root(
-            group=parent_e_group,
-            slug="parent-e",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        self.parent_e = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_e_group,
+                "slug": "parent-e",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            }
         )
 
         sub_f_group = Group.objects.create(name="SubF")
-        self.sub_f = self.parent_e.add_child(
-            group=sub_f_group,
-            slug="sub-f",
+        self.sub_f = GroupProfile.objects.add_child(
+            self.parent_e,
+            create_kwargs={
+                "group": sub_f_group,
+                "slug": "sub-f",
+            },
         )
 
     def test_user_in_multiple_sibling_groups(self):
@@ -616,9 +682,12 @@ class VisibilityEdgeCaseTests(TestCase):
         """Test visibility in a four-level deep PUBLIC hierarchy."""
         # Add great-grandchild (inherits PUBLIC from ancestors)
         great_grandchild_group = Group.objects.create(name="GreatGrandchildG")
-        great_grandchild = self.grandchild_d.add_child(
-            group=great_grandchild_group,
-            slug="great-grandchild-g",
+        great_grandchild = GroupProfile.objects.add_child(
+            self.grandchild_d,
+            create_kwargs={
+                "group": great_grandchild_group,
+                "slug": "great-grandchild-g",
+            },
         )
 
         user = UserFactory()
@@ -672,51 +741,68 @@ class GetVisibleChildrenTests(TestCase):
         """
         # PUBLIC tree
         public_parent_group = Group.objects.create(name="PublicParent")
-        self.public_parent = GroupProfile.add_root(
-            group=public_parent_group,
-            slug="public-parent",
-            visibility=GroupProfile.Visibility.PUBLIC,
+        self.public_parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": public_parent_group,
+                "slug": "public-parent",
+                "visibility": GroupProfile.Visibility.PUBLIC,
+            }
         )
 
         child1_group = Group.objects.create(name="Child1")
-        self.child1 = self.public_parent.add_child(
-            group=child1_group,
-            slug="child1",
+        self.child1 = GroupProfile.objects.add_child(
+            self.public_parent,
+            create_kwargs={
+                "group": child1_group,
+                "slug": "child1",
+            },
         )
 
         # PRIVATE tree
         private_parent_group = Group.objects.create(name="PrivateParent")
-        self.private_parent = GroupProfile.add_root(
-            group=private_parent_group,
-            slug="private-parent",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        self.private_parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": private_parent_group,
+                "slug": "private-parent",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            }
         )
 
         child2_group = Group.objects.create(name="Child2")
-        self.child2 = self.private_parent.add_child(
-            group=child2_group,
-            slug="child2",
+        self.child2 = GroupProfile.objects.add_child(
+            self.private_parent,
+            create_kwargs={
+                "group": child2_group,
+                "slug": "child2",
+            },
         )
 
         # MODERATED tree
         moderated_parent_group = Group.objects.create(name="ModeratedParent")
-        self.moderated_parent = GroupProfile.add_root(
-            group=moderated_parent_group,
-            slug="moderated-parent",
-            visibility=GroupProfile.Visibility.MODERATED,
+        self.moderated_parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": moderated_parent_group,
+                "slug": "moderated-parent",
+                "visibility": GroupProfile.Visibility.MODERATED,
+            }
         )
 
         child3_group = Group.objects.create(name="Child3")
-        self.child3 = self.moderated_parent.add_child(
-            group=child3_group,
-            slug="child3",
+        self.child3 = GroupProfile.objects.add_child(
+            self.moderated_parent,
+            create_kwargs={
+                "group": child3_group,
+                "slug": "child3",
+            },
         )
 
         moderator_group = Group.objects.create(name="Moderators")
-        self.moderator_group_profile = GroupProfile.add_root(
-            group=moderator_group,
-            slug="moderators",
-            visibility=GroupProfile.Visibility.PUBLIC,
+        self.moderator_group_profile = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": moderator_group,
+                "slug": "moderators",
+                "visibility": GroupProfile.Visibility.PUBLIC,
+            }
         )
         self.moderated_parent.visible_to_groups.add(moderator_group)
         self.child3.visible_to_groups.add(moderator_group)
@@ -760,16 +846,21 @@ class LeadershipVisibilityTests(TestCase):
     def setUp(self):
         """Create PRIVATE hierarchy with leaders for testing isolation."""
         parent_group = Group.objects.create(name="Parent")
-        self.parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        self.parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            }
         )
 
         child_group = Group.objects.create(name="Child")
-        self.child = self.parent.add_child(
-            group=child_group,
-            slug="child",
+        self.child = GroupProfile.objects.add_child(
+            self.parent,
+            create_kwargs={
+                "group": child_group,
+                "slug": "child",
+            },
         )
 
         self.parent_leader = UserFactory()
@@ -800,9 +891,12 @@ class LeadershipVisibilityTests(TestCase):
     def test_leader_of_sibling_cannot_see_other_sibling(self):
         """Leader of one sibling cannot see other PRIVATE sibling."""
         sibling_group = Group.objects.create(name="Sibling")
-        sibling = self.parent.add_child(
-            group=sibling_group,
-            slug="sibling",
+        sibling = GroupProfile.objects.add_child(
+            self.parent,
+            create_kwargs={
+                "group": sibling_group,
+                "slug": "sibling",
+            },
         )
 
         visible = GroupProfile.objects.visible(self.child_leader)
@@ -817,17 +911,23 @@ class LeadershipVisibilityTests(TestCase):
         """Leader of root group can see all descendants (full tree access)."""
         # Create deeper hierarchy
         grandchild_group = Group.objects.create(name="Grandchild")
-        grandchild = self.child.add_child(
-            group=grandchild_group,
-            slug="grandchild",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        grandchild = GroupProfile.objects.add_child(
+            self.child,
+            create_kwargs={
+                "group": grandchild_group,
+                "slug": "grandchild",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            },
         )
 
         sibling_group = Group.objects.create(name="Sibling")
-        sibling = self.parent.add_child(
-            group=sibling_group,
-            slug="sibling",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        sibling = GroupProfile.objects.add_child(
+            self.parent,
+            create_kwargs={
+                "group": sibling_group,
+                "slug": "sibling",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            },
         )
 
         visible = GroupProfile.objects.visible(self.parent_leader)
@@ -845,17 +945,22 @@ class VisibilityInheritanceTests(TestCase):
     def test_child_inherits_parent_visibility_on_create(self):
         """Child automatically gets parent's visibility when created."""
         parent_group = Group.objects.create(name="Parent")
-        parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            }
         )
 
         child_group = Group.objects.create(name="Child")
-        child = parent.add_child(
-            group=child_group,
-            slug="child",
-            visibility=GroupProfile.Visibility.PUBLIC,  # Try to set PUBLIC
+        child = GroupProfile.objects.add_child(
+            parent,
+            create_kwargs={
+                "group": child_group,
+                "slug": "child",
+                "visibility": GroupProfile.Visibility.PUBLIC,  # Try to set PUBLIC
+            },
         )
 
         # Refresh from DB
@@ -867,22 +972,30 @@ class VisibilityInheritanceTests(TestCase):
     def test_updating_root_propagates_to_descendants(self):
         """Changing root visibility updates all descendants."""
         parent_group = Group.objects.create(name="Parent")
-        parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent",
-            visibility=GroupProfile.Visibility.PUBLIC,
+        parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent",
+                "visibility": GroupProfile.Visibility.PUBLIC,
+            }
         )
 
         child_group = Group.objects.create(name="Child")
-        child = parent.add_child(
-            group=child_group,
-            slug="child",
+        child = GroupProfile.objects.add_child(
+            parent,
+            create_kwargs={
+                "group": child_group,
+                "slug": "child",
+            },
         )
 
         grandchild_group = Group.objects.create(name="Grandchild")
-        grandchild = child.add_child(
-            group=grandchild_group,
-            slug="grandchild",
+        grandchild = GroupProfile.objects.add_child(
+            child,
+            create_kwargs={
+                "group": grandchild_group,
+                "slug": "grandchild",
+            },
         )
 
         # All should be PUBLIC initially
@@ -906,22 +1019,30 @@ class VisibilityInheritanceTests(TestCase):
     def test_save_propagates_visibility_to_descendants(self):
         """Changing visibility via save() (as in admin) propagates to descendants."""
         parent_group = Group.objects.create(name="Parent")
-        parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent",
-            visibility=GroupProfile.Visibility.PUBLIC,
+        parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent",
+                "visibility": GroupProfile.Visibility.PUBLIC,
+            }
         )
 
         child_group = Group.objects.create(name="Child")
-        child = parent.add_child(
-            group=child_group,
-            slug="child",
+        child = GroupProfile.objects.add_child(
+            parent,
+            create_kwargs={
+                "group": child_group,
+                "slug": "child",
+            },
         )
 
         grandchild_group = Group.objects.create(name="Grandchild")
-        grandchild = child.add_child(
-            group=grandchild_group,
-            slug="grandchild",
+        grandchild = GroupProfile.objects.add_child(
+            child,
+            create_kwargs={
+                "group": grandchild_group,
+                "slug": "grandchild",
+            },
         )
 
         # All should be PUBLIC initially
@@ -946,16 +1067,21 @@ class VisibilityInheritanceTests(TestCase):
     def test_cannot_change_subgroup_visibility(self):
         """Attempting to change subgroup visibility is overridden by parent."""
         parent_group = Group.objects.create(name="Parent")
-        parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent",
-            visibility=GroupProfile.Visibility.PRIVATE,
+        parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent",
+                "visibility": GroupProfile.Visibility.PRIVATE,
+            }
         )
 
         child_group = Group.objects.create(name="Child")
-        child = parent.add_child(
-            group=child_group,
-            slug="child",
+        child = GroupProfile.objects.add_child(
+            parent,
+            create_kwargs={
+                "group": child_group,
+                "slug": "child",
+            },
         )
 
         # Verify child is PRIVATE (inherited)
@@ -972,9 +1098,12 @@ class VisibilityInheritanceTests(TestCase):
 
         # Verify descendants also remain PRIVATE
         grandchild_group = Group.objects.create(name="Grandchild")
-        grandchild = child.add_child(
-            group=grandchild_group,
-            slug="grandchild",
+        grandchild = GroupProfile.objects.add_child(
+            child,
+            create_kwargs={
+                "group": grandchild_group,
+                "slug": "grandchild",
+            },
         )
         grandchild.refresh_from_db()
         self.assertEqual(grandchild.visibility, GroupProfile.Visibility.PRIVATE)
@@ -986,23 +1115,30 @@ class ModeratedVisibilityTests(TestCase):
     def setUp(self):
         """Create MODERATED hierarchy for testing dual access model."""
         parent_group = Group.objects.create(name="Parent")
-        self.parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent",
-            visibility=GroupProfile.Visibility.MODERATED,
+        self.parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent",
+                "visibility": GroupProfile.Visibility.MODERATED,
+            }
         )
 
         moderated_child_group = Group.objects.create(name="ModeratedChild")
-        self.moderated_child = self.parent.add_child(
-            group=moderated_child_group,
-            slug="moderated-child",
+        self.moderated_child = GroupProfile.objects.add_child(
+            self.parent,
+            create_kwargs={
+                "group": moderated_child_group,
+                "slug": "moderated-child",
+            },
         )
 
         moderator_group = Group.objects.create(name="Moderators")
-        self.moderator_group_profile = GroupProfile.add_root(
-            group=moderator_group,
-            slug="moderators",
-            visibility=GroupProfile.Visibility.PUBLIC,
+        self.moderator_group_profile = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": moderator_group,
+                "slug": "moderators",
+                "visibility": GroupProfile.Visibility.PUBLIC,
+            }
         )
         # Add moderator group to both parent and child
         self.parent.visible_to_groups.add(moderator_group)
@@ -1048,23 +1184,29 @@ class VisibleToGroupsInheritanceTests(TestCase):
     def test_child_inherits_visible_to_groups_on_create(self):
         """Child automatically inherits parent's visible_to_groups when created."""
         parent_group = Group.objects.create(name="Parent")
-        parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent",
-            visibility=GroupProfile.Visibility.MODERATED,
+        parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent",
+                "visibility": GroupProfile.Visibility.MODERATED,
+            }
         )
 
         audit_group = Group.objects.create(name="AuditTeam")
-        GroupProfile.add_root(
-            group=audit_group,
-            slug="audit-team",
-            visibility=GroupProfile.Visibility.PUBLIC,
+        GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": audit_group,
+                "slug": "audit-team",
+                "visibility": GroupProfile.Visibility.PUBLIC,
+            }
         )
 
         parent.visible_to_groups.add(audit_group)
 
         child_group = Group.objects.create(name="Child")
-        child = parent.add_child(group=child_group, slug="child")
+        child = GroupProfile.objects.add_child(
+            parent, create_kwargs={"group": child_group, "slug": "child"}
+        )
         child.refresh_from_db()
 
         self.assertEqual(set(child.visible_to_groups.all()), set(parent.visible_to_groups.all()))
@@ -1072,17 +1214,23 @@ class VisibleToGroupsInheritanceTests(TestCase):
     def test_adding_to_parent_propagates_to_descendants(self):
         """Adding group to parent's visible_to_groups propagates to descendants."""
         parent_group = Group.objects.create(name="Parent")
-        parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent",
-            visibility=GroupProfile.Visibility.MODERATED,
+        parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent",
+                "visibility": GroupProfile.Visibility.MODERATED,
+            }
         )
 
         child_group = Group.objects.create(name="Child")
-        child = parent.add_child(group=child_group, slug="child")
+        child = GroupProfile.objects.add_child(
+            parent, create_kwargs={"group": child_group, "slug": "child"}
+        )
 
         grandchild_group = Group.objects.create(name="Grandchild")
-        grandchild = child.add_child(group=grandchild_group, slug="grandchild")
+        grandchild = GroupProfile.objects.add_child(
+            child, create_kwargs={"group": grandchild_group, "slug": "grandchild"}
+        )
 
         audit_group = Group.objects.create(name="AuditTeam")
         parent.visible_to_groups.add(audit_group)
@@ -1097,17 +1245,21 @@ class VisibleToGroupsInheritanceTests(TestCase):
     def test_removing_from_parent_propagates_to_descendants(self):
         """Removing group from parent's visible_to_groups propagates to descendants."""
         parent_group = Group.objects.create(name="Parent")
-        parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent",
-            visibility=GroupProfile.Visibility.MODERATED,
+        parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent",
+                "visibility": GroupProfile.Visibility.MODERATED,
+            }
         )
 
         audit_group = Group.objects.create(name="AuditTeam")
         parent.visible_to_groups.add(audit_group)
 
         child_group = Group.objects.create(name="Child")
-        child = parent.add_child(group=child_group, slug="child")
+        child = GroupProfile.objects.add_child(
+            parent, create_kwargs={"group": child_group, "slug": "child"}
+        )
         child.refresh_from_db()
 
         self.assertIn(audit_group, child.visible_to_groups.all())
@@ -1120,10 +1272,12 @@ class VisibleToGroupsInheritanceTests(TestCase):
     def test_clearing_parent_propagates_to_descendants(self):
         """Clearing parent's visible_to_groups propagates to descendants."""
         parent_group = Group.objects.create(name="Parent")
-        parent = GroupProfile.add_root(
-            group=parent_group,
-            slug="parent",
-            visibility=GroupProfile.Visibility.MODERATED,
+        parent = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": parent_group,
+                "slug": "parent",
+                "visibility": GroupProfile.Visibility.MODERATED,
+            }
         )
 
         audit1 = Group.objects.create(name="Audit1")
@@ -1131,7 +1285,9 @@ class VisibleToGroupsInheritanceTests(TestCase):
         parent.visible_to_groups.add(audit1, audit2)
 
         child_group = Group.objects.create(name="Child")
-        child = parent.add_child(group=child_group, slug="child")
+        child = GroupProfile.objects.add_child(
+            parent, create_kwargs={"group": child_group, "slug": "child"}
+        )
         child.refresh_from_db()
 
         self.assertEqual(child.visible_to_groups.count(), 2)
@@ -1144,16 +1300,22 @@ class VisibleToGroupsInheritanceTests(TestCase):
     def test_deep_hierarchy_propagation(self):
         """visible_to_groups propagates through deep hierarchies."""
         root_group = Group.objects.create(name="Root")
-        root = GroupProfile.add_root(group=root_group, slug="root")
+        root = GroupProfile.objects.add_root(create_kwargs={"group": root_group, "slug": "root"})
 
         level1_group = Group.objects.create(name="Level1")
-        level1 = root.add_child(group=level1_group, slug="level1")
+        level1 = GroupProfile.objects.add_child(
+            root, create_kwargs={"group": level1_group, "slug": "level1"}
+        )
 
         level2_group = Group.objects.create(name="Level2")
-        level2 = level1.add_child(group=level2_group, slug="level2")
+        level2 = GroupProfile.objects.add_child(
+            level1, create_kwargs={"group": level2_group, "slug": "level2"}
+        )
 
         level3_group = Group.objects.create(name="Level3")
-        level3 = level2.add_child(group=level3_group, slug="level3")
+        level3 = GroupProfile.objects.add_child(
+            level2, create_kwargs={"group": level3_group, "slug": "level3"}
+        )
 
         audit_group = Group.objects.create(name="AuditTeam")
         root.visible_to_groups.add(audit_group)
@@ -1174,7 +1336,7 @@ class LeaderRemovalValidationTests(TestCase):
     def test_can_remove_leader_from_root_with_multiple_leaders(self):
         """Root groups with multiple leaders can have a leader removed."""
         root_group = Group.objects.create(name="Root")
-        root = GroupProfile.add_root(group=root_group, slug="root")
+        root = GroupProfile.objects.add_root(create_kwargs={"group": root_group, "slug": "root"})
 
         leader1 = UserFactory()
         leader2 = UserFactory()
@@ -1186,7 +1348,7 @@ class LeaderRemovalValidationTests(TestCase):
     def test_cannot_remove_last_leader_from_root(self):
         """Root groups cannot have their last leader removed."""
         root_group = Group.objects.create(name="Root")
-        root = GroupProfile.add_root(group=root_group, slug="root")
+        root = GroupProfile.objects.add_root(create_kwargs={"group": root_group, "slug": "root"})
 
         leader = UserFactory()
         root.leaders.add(leader)
@@ -1196,12 +1358,14 @@ class LeaderRemovalValidationTests(TestCase):
     def test_can_remove_leader_from_subgroup(self):
         """Subgroups can have their only leader removed."""
         root_group = Group.objects.create(name="Root")
-        root = GroupProfile.add_root(group=root_group, slug="root")
+        root = GroupProfile.objects.add_root(create_kwargs={"group": root_group, "slug": "root"})
         root_leader = UserFactory()
         root.leaders.add(root_leader)
 
         sub_group = Group.objects.create(name="Sub")
-        sub = root.add_child(group=sub_group, slug="sub")
+        sub = GroupProfile.objects.add_child(
+            root, create_kwargs={"group": sub_group, "slug": "sub"}
+        )
         sub_leader = UserFactory()
         sub.leaders.add(sub_leader)
 
@@ -1210,12 +1374,14 @@ class LeaderRemovalValidationTests(TestCase):
     def test_can_remove_leader_from_subgroup_with_no_leaders(self):
         """Subgroups with no leaders can still pass validation."""
         root_group = Group.objects.create(name="Root")
-        root = GroupProfile.add_root(group=root_group, slug="root")
+        root = GroupProfile.objects.add_root(create_kwargs={"group": root_group, "slug": "root"})
         root_leader = UserFactory()
         root.leaders.add(root_leader)
 
         sub_group = Group.objects.create(name="Sub")
-        sub = root.add_child(group=sub_group, slug="sub")
+        sub = GroupProfile.objects.add_child(
+            root, create_kwargs={"group": sub_group, "slug": "sub"}
+        )
 
         self.assertTrue(sub.can_remove_leader())
 
@@ -1225,7 +1391,9 @@ class CanViewInactiveMembersTests(TestCase):
 
     def setUp(self):
         self.root = GroupProfileFactory(visibility=GroupProfile.Visibility.PUBLIC)
-        self.child = self.root.add_child(group=GroupFactory())
+        self.child = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": GroupFactory()}
+        )
 
         self.leader = UserFactory()
         self.root.leaders.add(self.leader)
@@ -1272,17 +1440,25 @@ class CanViewInactiveMembersTests(TestCase):
 class OrgRootTests(TestCase):
     def setUp(self):
         root_group = Group.objects.create(name="firefox-enterprise")
-        self.root = GroupProfile.add_root(group=root_group, slug="firefox-enterprise")
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={"group": root_group, "slug": "firefox-enterprise"}
+        )
         self.root_leader = UserFactory(username="root-leader")
         self.root.leaders.add(self.root_leader)
 
         c1_group = Group.objects.create(name="company1")
-        self.c1 = self.root.add_child(group=c1_group, slug="company1")
+        self.c1 = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": c1_group, "slug": "company1"}
+        )
         c2_group = Group.objects.create(name="company2")
-        self.c2 = self.root.add_child(group=c2_group, slug="company2")
+        self.c2 = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": c2_group, "slug": "company2"}
+        )
 
         it_group = Group.objects.create(name="company1.IT")
-        self.c1_it = self.c1.add_child(group=it_group, slug="company1-it")
+        self.c1_it = GroupProfile.objects.add_child(
+            self.c1, create_kwargs={"group": it_group, "slug": "company1-it"}
+        )
 
         product = ProductFactory()
         zd = ZendeskConfigFactory(name="zd")

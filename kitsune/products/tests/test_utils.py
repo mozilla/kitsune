@@ -548,8 +548,12 @@ class IsEnterpriseUserTests(TestCase):
         self.root = GroupProfileFactory(
             slug="firefox-enterprise", visibility=GroupProfile.Visibility.MODERATED
         )
-        self.company = self.root.add_child(group=GroupFactory(), slug="company3")
-        self.team = self.company.add_child(group=GroupFactory(), slug="company3-team")
+        self.company = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": GroupFactory(), "slug": "company3"}
+        )
+        self.team = GroupProfile.objects.add_child(
+            self.company, create_kwargs={"group": GroupFactory(), "slug": "company3-team"}
+        )
         self.user = UserFactory(groups=[self.team.group])
 
     def test_root_membership_is_enterprise(self):
@@ -566,7 +570,9 @@ class IsEnterpriseUserTests(TestCase):
 
     def test_unrelated_tree_is_not_enterprise(self):
         other_root = GroupProfileFactory()
-        other_team = other_root.add_child(group=GroupFactory(), slug="other-team")
+        other_team = GroupProfile.objects.add_child(
+            other_root, create_kwargs={"group": GroupFactory(), "slug": "other-team"}
+        )
         user = UserFactory(groups=[other_team.group])
 
         self.assertFalse(is_enterprise_user(user))
@@ -584,7 +590,9 @@ class IsEnterpriseUserTests(TestCase):
     @override_settings(ENTERPRISE_GROUP_SLUG="partner-support")
     def test_configured_enterprise_tree_overrides_default(self):
         root = GroupProfileFactory(slug="partner-support")
-        team = root.add_child(group=GroupFactory(), slug="partner-team")
+        team = GroupProfile.objects.add_child(
+            root, create_kwargs={"group": GroupFactory(), "slug": "partner-team"}
+        )
         user = UserFactory(groups=[team.group])
 
         self.assertTrue(is_enterprise_user(user))
@@ -610,8 +618,12 @@ class EnterpriseBannerCacheInvalidationTests(TestCase):
     def setUp(self):
         super().setUp()
         self.root = GroupProfileFactory(slug="firefox-enterprise")
-        self.company = self.root.add_child(group=GroupFactory(), slug="company3")
-        self.team = self.company.add_child(group=GroupFactory(), slug="company3-team")
+        self.company = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": GroupFactory(), "slug": "company3"}
+        )
+        self.team = GroupProfile.objects.add_child(
+            self.company, create_kwargs={"group": GroupFactory(), "slug": "company3-team"}
+        )
         self.user = UserFactory(groups=[self.team.group])
         self.product = ProductFactory(slug="firefox-enterprise")
         self.config = ProductSupportConfigFactory(
@@ -668,13 +680,13 @@ class EnterpriseBannerCacheInvalidationTests(TestCase):
         other_root = GroupProfileFactory()
         self.assertTrue(should_show_enterprise_banner(self.user))
 
-        self.company.move(other_root, "last-child")
+        GroupProfile.objects.move(self.company, other_root, "last-child")
         self.assertFalse(is_enterprise_user(self.user))
         self.assertFalse(should_show_enterprise_banner(self.user))
 
         self.company.refresh_from_db()
         self.root.refresh_from_db()
-        self.company.move(self.root, "last-child")
+        GroupProfile.objects.move(self.company, self.root, "last-child")
         self.assertTrue(is_enterprise_user(self.user))
         self.assertTrue(should_show_enterprise_banner(self.user))
 
