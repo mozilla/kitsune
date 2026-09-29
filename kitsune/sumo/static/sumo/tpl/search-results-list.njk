@@ -3,12 +3,19 @@
 <h2 class="sumo-card-heading search-results-heading mb-0">
   {% if num_results > 0 %}
     {% if total_is_approximate %}
-      {# L10n: Hybrid search shows a bounded ranking; {n} approximates all potential matches, not pageable results. #}
-      {{ ngettext('Showing the most relevant result for ‘<span>%(q)s</span>’ in ‘<span>%(product)s</span>’ from about %(n)s potential match',
-                  'Showing the most relevant results for ‘<span>%(q)s</span>’ in ‘<span>%(product)s</span>’ from about %(n)s potential matches',
-                  num_results)
-          | f({n: num_results, q: q, product: product_titles}, true)
-          | safe }}
+      {% if num_results == 1 %}
+        {# L10n: {q} is the search query, {product} is a product name or the translated “All Products”. #}
+        {{ _('Showing the only result for ‘<span>%(q)s</span>’ in ‘<span>%(product)s</span>’')
+            | f({q: q, product: product_titles}, true)
+            | safe }}
+      {% else %}
+        {# L10n: {n} is the total match count, always 2 or more here — a “one” plural form applies to 21, 31, … never to a single result. #}
+        {{ ngettext('Showing the most relevant results for ‘<span>%(q)s</span>’ in ‘<span>%(product)s</span>’ from %(n)s potential match',
+                    'Showing the most relevant results for ‘<span>%(q)s</span>’ in ‘<span>%(product)s</span>’ from %(n)s potential matches',
+                    num_results)
+            | f({n: num_results, q: q, product: product_titles}, true)
+            | safe }}
+      {% endif %}
     {% else %}
       {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
       {{ ngettext('Found %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
