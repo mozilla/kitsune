@@ -12,4 +12,4 @@ class GroupProfileFactory(factory.django.DjangoModelFactory):
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
-        return model_class.add_root(**kwargs)
+        return model_class.objects.add_root(create_kwargs=kwargs)

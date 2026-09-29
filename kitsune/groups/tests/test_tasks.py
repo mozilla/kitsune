@@ -130,10 +130,13 @@ class RemoveInactiveUsersTests(TestCase):
 
     def test_subgroup_only_leader_is_removed(self):
         """The only leader of a subgroup IS removed (subgroups can be leaderless)."""
-        subgroup_profile = self.group_profile.add_child(
-            group=GroupFactory(),
-            slug="sub-group",
-            visibility=GroupProfile.Visibility.PUBLIC,
+        subgroup_profile = GroupProfile.objects.add_child(
+            self.group_profile,
+            create_kwargs={
+                "group": GroupFactory(),
+                "slug": "sub-group",
+                "visibility": GroupProfile.Visibility.PUBLIC,
+            },
         )
 
         user = UserFactory()

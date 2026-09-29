@@ -147,13 +147,21 @@ class SupportOrganizationValidationTests(TestCase):
         )
 
         root_group = Group.objects.create(name="firefox-enterprise")
-        self.root = GroupProfile.add_root(group=root_group, slug="firefox-enterprise")
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={"group": root_group, "slug": "firefox-enterprise"}
+        )
         self.c1_group = Group.objects.create(name="company1")
-        self.c1 = self.root.add_child(group=self.c1_group, slug="company1")
+        self.c1 = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": self.c1_group, "slug": "company1"}
+        )
         self.c2_group = Group.objects.create(name="company2")
-        self.c2 = self.root.add_child(group=self.c2_group, slug="company2")
+        self.c2 = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": self.c2_group, "slug": "company2"}
+        )
         self.it_group = Group.objects.create(name="company1.IT")
-        self.c1_it = self.c1.add_child(group=self.it_group, slug="company1-it")
+        self.c1_it = GroupProfile.objects.add_child(
+            self.c1, create_kwargs={"group": self.it_group, "slug": "company1-it"}
+        )
 
     def _other_config(self):
         return ProductSupportConfigFactory(
@@ -213,15 +221,24 @@ class SupportOrganizationInlineFormSetTests(TestCase):
         self.config = ProductSupportConfigFactory(
             product=ProductFactory(), zendesk_config=ZendeskConfigFactory(name="zd")
         )
-        root = GroupProfile.add_root(
-            group=Group.objects.create(name="firefox-enterprise"), slug="firefox-enterprise"
+        root = GroupProfile.objects.add_root(
+            create_kwargs={
+                "group": Group.objects.create(name="firefox-enterprise"),
+                "slug": "firefox-enterprise",
+            }
         )
         self.c1_group = Group.objects.create(name="company1")
-        c1 = root.add_child(group=self.c1_group, slug="company1")
+        c1 = GroupProfile.objects.add_child(
+            root, create_kwargs={"group": self.c1_group, "slug": "company1"}
+        )
         self.c2_group = Group.objects.create(name="company2")
-        root.add_child(group=self.c2_group, slug="company2")
+        GroupProfile.objects.add_child(
+            root, create_kwargs={"group": self.c2_group, "slug": "company2"}
+        )
         self.it_group = Group.objects.create(name="company1.IT")
-        c1.add_child(group=self.it_group, slug="company1-it")
+        GroupProfile.objects.add_child(
+            c1, create_kwargs={"group": self.it_group, "slug": "company1-it"}
+        )
 
         self.FormSet = inlineformset_factory(
             ProductSupportConfig,

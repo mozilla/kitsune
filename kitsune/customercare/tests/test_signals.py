@@ -53,13 +53,19 @@ class RevokedChatSignalTests(TestCase):
         self.config = ProductSupportConfigFactory(
             product=self.product, zendesk_config=ZendeskConfigFactory()
         )
-        root = GroupProfile.add_root(group=Group.objects.create(name="chat"), slug="chat")
-        company = root.add_child(group=Group.objects.create(name="company"), slug="company")
+        root = GroupProfile.objects.add_root(
+            create_kwargs={"group": Group.objects.create(name="chat"), "slug": "chat"}
+        )
+        company = GroupProfile.objects.add_child(
+            root, create_kwargs={"group": Group.objects.create(name="company"), "slug": "company"}
+        )
         self.org = SupportOrganizationFactory(
             config=self.config, group=company.group, include_live_chat=True
         )
         # Membership of a subgroup counts for the organization above it.
-        self.team = company.add_child(group=Group.objects.create(name="team"), slug="team").group
+        self.team = GroupProfile.objects.add_child(
+            company, create_kwargs={"group": Group.objects.create(name="team"), "slug": "team"}
+        ).group
         self.unrelated = Group.objects.create(name="unrelated")
 
         self.user = UserFactory(profile__zendesk_id="789")

@@ -19,7 +19,7 @@ def propagate_visible_to_groups(sender, instance, action, **kwargs):
     if action not in ["post_add", "post_remove", "post_clear"]:
         return
 
-    descendants = instance.get_descendants()
+    descendants = GroupProfile.objects.get_descendants(instance)
 
     if not descendants.exists():
         return
@@ -46,7 +46,7 @@ def sync_visible_to_groups_on_create(sender, instance, **kwargs):
         return
 
     if len(instance.path) > instance.steplen:
-        parent = instance.get_parent()
+        parent = GroupProfile.objects.get_parent(instance)
         if parent:
             instance.visible_to_groups.set(parent.visible_to_groups.all())
 

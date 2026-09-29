@@ -36,7 +36,9 @@ class GroupProfileAdminTests(TestCase):
     def test_leader_added_as_member_via_admin(self):
         """Ensure leaders added via admin are automatically added as members."""
         group = Group.objects.create(name="Test Group")
-        profile = GroupProfile.add_root(group=group, slug="test-group")
+        profile = GroupProfile.objects.add_root(
+            create_kwargs={"group": group, "slug": "test-group"}
+        )
 
         user = UserFactory()
         self.assertFalse(user.groups.filter(pk=group.pk).exists())
@@ -53,7 +55,9 @@ class GroupProfileAdminTests(TestCase):
     def test_existing_member_stays_member(self):
         """Ensure existing members who become leaders remain members."""
         group = Group.objects.create(name="Test Group 2")
-        profile = GroupProfile.add_root(group=group, slug="test-group-2")
+        profile = GroupProfile.objects.add_root(
+            create_kwargs={"group": group, "slug": "test-group-2"}
+        )
 
         user = UserFactory()
         user.groups.add(group)
@@ -72,7 +76,9 @@ class GroupProfileAdminTests(TestCase):
     def test_root_group_requires_leader(self):
         """Ensure root groups cannot be saved without at least one leader."""
         group = Group.objects.create(name="Test Root Group")
-        profile = GroupProfile.add_root(group=group, slug="test-root-group")
+        profile = GroupProfile.objects.add_root(
+            create_kwargs={"group": group, "slug": "test-root-group"}
+        )
 
         mock_request = self.factory.post("/admin/groups/groupprofile/")
         mock_form = MockForm(profile)
@@ -85,12 +91,16 @@ class GroupProfileAdminTests(TestCase):
     def test_subgroup_can_have_no_leaders(self):
         """Ensure subgroups can be saved without leaders."""
         root_group = Group.objects.create(name="Root Group")
-        root_profile = GroupProfile.add_root(group=root_group, slug="root-group")
+        root_profile = GroupProfile.objects.add_root(
+            create_kwargs={"group": root_group, "slug": "root-group"}
+        )
         root_leader = UserFactory()
         root_profile.leaders.add(root_leader)
 
         sub_group = Group.objects.create(name="Sub Group")
-        sub_profile = root_profile.add_child(group=sub_group, slug="sub-group")
+        sub_profile = GroupProfile.objects.add_child(
+            root_profile, create_kwargs={"group": sub_group, "slug": "sub-group"}
+        )
 
         mock_request = self.factory.post("/admin/groups/groupprofile/")
         mock_form = MockForm(sub_profile)
@@ -107,7 +117,9 @@ class GroupProfileAdminTests(TestCase):
         with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
             avatar = SimpleUploadedFile("test.jpg", f.read(), content_type="image/jpeg")
         group = Group.objects.create(name="Avatar Test Group")
-        profile = GroupProfile.add_root(group=group, slug="avatar-test-group")
+        profile = GroupProfile.objects.add_root(
+            create_kwargs={"group": group, "slug": "avatar-test-group"}
+        )
 
         form = GroupProfileAdminForm(
             data={"group": group.pk, "slug": "avatar-test-group"},
@@ -126,7 +138,9 @@ class GroupProfileAdminTests(TestCase):
         with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
             avatar = SimpleUploadedFile("test.jpg", f.read(), content_type="image/jpeg")
         group = Group.objects.create(name="Size Test Group")
-        profile = GroupProfile.add_root(group=group, slug="size-test-group")
+        profile = GroupProfile.objects.add_root(
+            create_kwargs={"group": group, "slug": "size-test-group"}
+        )
 
         form = GroupProfileAdminForm(
             data={"group": group.pk, "slug": "size-test-group"},

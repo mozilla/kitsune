@@ -515,9 +515,10 @@ class SupportOrganization(ModelBase):
                 }
             )
 
-        chain_group_ids = (profile.get_ancestors() | profile.get_descendants()).values_list(
-            "group_id", flat=True
-        )
+        chain_group_ids = (
+            GroupProfile.objects.get_ancestors(profile)
+            | GroupProfile.objects.get_descendants(profile)
+        ).values_list("group_id", flat=True)
 
         same_config = SupportOrganization.objects.filter(
             config_id=config.pk, group_id__in=chain_group_ids
