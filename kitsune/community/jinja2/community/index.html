@@ -99,7 +99,7 @@
               {% if not product %}
                 {{ _('Filter by Product') }}
               {% else %}
-                {{ pgettext('DB: products.Product.title', product.title) }}
+                {{ pgettext('DB: products.Product.title', product.title)|forceescape }}
               {% endif %}
             </p>
             <ul class="mzp-c-menu-list-list">
@@ -115,7 +115,7 @@
               {% for p in products %}
                 <li class="mzp-c-menu-list-item {% if p == product %}is-selected{% endif %}">
                   <a href="{{ base_url|urlparams(product=p.slug) }}">
-                    <span>{{ pgettext('DB: products.Product.title', p.title) }}</span>
+                    <span>{{ pgettext('DB: products.Product.title', p.title)|forceescape }}</span>
                   </a>
                 </li>
               {% endfor %}

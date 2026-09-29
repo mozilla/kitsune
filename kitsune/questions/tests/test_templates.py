@@ -5,7 +5,7 @@ from string import ascii_letters
 from unittest import mock
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.core import mail
 from django.core.cache import cache
 from django.http import HttpResponse
@@ -15,6 +15,7 @@ from django.utils import timezone
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 
+from kitsune.karma.models import Title
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -1386,6 +1387,75 @@ class QuestionsTemplateTestCase(TestCase):
         self.assertNotIn("Firefox Focus", meta)
         self.assertIn("Akkulaufzeit", meta)
         self.assertNotIn("Battery life", meta)
+
+    def test_question_entry_escapes_localized_labels_and_tooltips(self):
+        product = ProductFactory(title="Firefox Focus", slug="focus")
+        topic = TopicFactory(title="Battery life", slug="battery-life", products=[product])
+        QuestionFactory(product=product, topic=topic)
+        product_title = "<img src=x onerror=alert(1)> & Focus"
+        topic_title = 'Battery "life" & <em>help</em>'
+
+        with translated_db_strings(
+            "de",
+            {
+                ("DB: products.Product.title", "Firefox Focus"): product_title,
+                ("DB: products.Topic.title", "Battery life"): topic_title,
+            },
+        ):
+            response = self.client.get(reverse("questions.list", args=["all"], locale="de"))
+
+        self.assertEqual(200, response.status_code)
+        meta = pq(response.content)(".question-entry--meta-primary")
+        links = meta.find("a.question-entry--meta-item")
+        self.assertEqual(product_title, links.eq(0).text())
+        self.assertEqual(topic_title, links.eq(1).text())
+        self.assertIn(product_title, links.eq(0).attr("title"))
+        self.assertIn(topic_title, links.eq(1).attr("title"))
+        self.assertEqual(0, len(meta.find("img, em")))
+
+    def test_question_topic_dropdown_renders_nested_title_as_text(self):
+        product = ProductFactory()
+        parent = TopicFactory(title="Parent", products=[product])
+        title = "<img src=x onerror=alert(1)> & recovery"
+        topic = TopicFactory(title=title, parent=parent, products=[product])
+        question = QuestionFactory(product=product, topic=topic)
+        editor = UserFactory()
+        add_permission(editor, Question, "change_question")
+        staff_group, _ = Group.objects.get_or_create(name=settings.STAFF_GROUP)
+        editor.groups.add(staff_group)
+        self.client.login(username=editor.username, password="testpass")
+
+        response = get(self.client, "questions.details", args=[question.id])
+
+        self.assertEqual(200, response.status_code)
+        option = pq(response.content)(f'#details-topic option[value="{topic.id}"]')
+        self.assertEqual(title, option.text().strip())
+        self.assertEqual(0, len(option.find("img")))
+        self.assertIn(b"&nbsp;&nbsp;&nbsp;&nbsp;&lt;img src=x", response.content)
+
+    def test_question_answer_escapes_karma_title_with_and_without_translation(self):
+        answer = AnswerFactory()
+        raw_title = "<img src=x onerror=alert(1)> & helper"
+        title = Title.objects.create(name=raw_title)
+        title.users.add(answer.creator)
+
+        response = get(self.client, "questions.details", args=[answer.question.id])
+        self.assertEqual(200, response.status_code)
+        label = pq(response.content)(".answer .karma-titles li")
+        self.assertEqual(raw_title, label.text())
+        self.assertEqual(0, len(label.find("img")))
+
+        translated_title = "<svg onload=alert(1)> & Helfer"
+        with translated_db_strings("de", {("DB: karma.Title.name", raw_title): translated_title}):
+            response = self.client.get(
+                reverse("questions.details", args=[answer.question.id], locale="de"),
+                follow=True,
+            )
+
+        self.assertEqual(200, response.status_code)
+        label = pq(response.content)(".answer .karma-titles li")
+        self.assertEqual(translated_title, label.text())
+        self.assertEqual(0, len(label.find("svg")))
 
     def test_topic_notification_absent_without_filter(self):
         response = self.client.get(reverse("questions.list", args=["all"]))

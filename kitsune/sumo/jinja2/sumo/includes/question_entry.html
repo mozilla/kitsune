@@ -206,7 +206,7 @@
               <rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/>
               <rect x="2" y="14" width="7" height="7"/><rect x="15" y="14" width="7" height="7"/>
             </svg>
-            {{ _product_title }}
+            {{ _product_title|forceescape }}
           </a>
           {% if question.channel != "direct_support" and user_is_contributor and question.product_version %}
            {{ question.product_version }}
@@ -232,7 +232,7 @@
                aria-hidden="true">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
           </svg>
-          {{ _topic_title }}
+          {{ _topic_title|forceescape }}
         </a>
       {% endif %}
       <span class="question-entry--meta-item">

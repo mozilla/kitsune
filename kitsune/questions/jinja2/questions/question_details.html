@@ -22,7 +22,7 @@
 {% set title = _('{q} | {product} Support Forum')|f(q=question.title, product=product_title) %}
 
 {% set crumbs = [(url('questions.home'), _('Support Forums')),
-                 (url('questions.list', question.product_slug), product_title),
+                 (url('questions.list', question.product_slug), product_title|forceescape if product else product_title),
                  (None, question.title)] %}
 
 {% set canonical_url = canonicalize(model_url=question.get_absolute_url()) %}
@@ -95,7 +95,7 @@
 {# ── Product logo ────────────────────────────────────────────────────────── #}
 {% block thread_product_logo %}
   {% if logo %}
-    <img class="page-heading--logo" src="{{ logo }}" alt="{{ product_title }} logo" />
+    <img class="page-heading--logo" src="{{ logo }}" alt="{{ product_title|forceescape }} logo" />
   {% endif %}
 {% endblock %}
 
@@ -415,7 +415,7 @@
                     <div class="sidebox tight condensed">
                       <span class="title">{{ _('Product') }}:</span>
                       {% if product %}
-                        <span class="detail">{{ pgettext('DB: products.Product.title', product.title) }}</span>
+                        <span class="detail">{{ pgettext('DB: products.Product.title', product.title)|forceescape }}</span>
                       {% endif %}
                       {% if user and user.has_perm('questions.change_question') %}
                         <select id="details-product" name="product">
@@ -435,14 +435,14 @@
                     <div class="sidebox tight condensed">
                       <span class="title">{{ _('Topic') }}:</span>
                       {% if topic %}
-                        <span class="detail">{{ pgettext('DB: products.Topic.title', topic.title) }}</span>
+                        <span class="detail">{{ pgettext('DB: products.Topic.title', topic.title)|forceescape }}</span>
                       {% endif %}
                       {% if user and user.has_perm('questions.change_question') %}
                         <select id="details-topic" name="topic">
                           {% for t in all_topics %}
                             <option {% if topic and t.id == topic.id %}selected="selected"{% endif %}
                                     value="{{ t.id }}">
-                              {{ t.title|safe }}
+                              {{ t.title }}
                             </option>
                           {% endfor %}
                         </select>

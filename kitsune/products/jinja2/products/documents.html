@@ -7,23 +7,23 @@
 
 {% if product %}
   {% set announcement_product = product %}
-  {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
+  {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title)|forceescape)] %}
   {% if subtopic %}
     {% set ga_content_group = "product-and-topic-and-subtopic-home" %}
-    {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title)), (None, pgettext('DB: products.Topic.title', subtopic.title))] %}
+    {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title)|forceescape), (None, pgettext('DB: products.Topic.title', subtopic.title)|forceescape)] %}
     {% set canonical_url = canonicalize(model_url=subtopic.get_absolute_url(product.slug)) %}
   {% else %}
     {% set ga_content_group = "product-and-topic-home" %}
-    {% set crumbs = crumbs + [(None, pgettext('DB: products.Topic.title', topic.title))] %}
+    {% set crumbs = crumbs + [(None, pgettext('DB: products.Topic.title', topic.title)|forceescape)] %}
     {% set canonical_url = canonicalize(model_url=topic.get_absolute_url(product.slug)) %}
   {% endif %}
   {% set search_params = {'product': product.slug} %}
   {% set ga_products = "/" + product.slug + "/" %}
-  {% set page_title = pgettext('DB: products.Topic.title', topic.title) + ' | ' +  _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) %}
+  {% set page_title = pgettext('DB: products.Topic.title', topic.title)|forceescape + ' | ' +  _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) %}
 {% else %}
-  {% set crumbs = [(url('products.topic_documents', topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title))] %}
+  {% set crumbs = [(url('products.topic_documents', topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title)|forceescape)] %}
   {% set search_params = {'topic': topic.slug} %}
-  {% set page_title = pgettext('DB: products.Topic.title', topic.title) %}
+  {% set page_title = pgettext('DB: products.Topic.title', topic.title)|forceescape %}
     {% set ga_content_group = "topic-home" %}
 {% endif %}
 {% block title %}{{ page_title }}{% endblock %}

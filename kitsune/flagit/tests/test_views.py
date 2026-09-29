@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.utils import translation
+from jinja2 import Environment
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.tests import TestCaseBase
@@ -353,3 +354,33 @@ class GetHierarchicalTopicsTestCase(TestCaseBase):
             [topic["title"] for topic in topics],
             ["Settings", "&nbsp;" * 4 + "Extensions"],
         )
+
+    def test_translated_titles_render_as_text_with_hierarchical_indentation(self):
+        translations = {
+            ("DB: products.Topic.title", "Settings"): '<img src=x onerror="alert(1)">',
+            ("DB: products.Topic.title", "Extensions"): "Kids & <b>accounts</b>",
+        }
+        with translated_db_strings("de", translations), translation.override("de"):
+            topics = get_hierarchical_topics(self.product)
+
+        options = (
+            Environment(autoescape=True)
+            .from_string("{% for topic in topics %}<option>{{ topic.title }}</option>{% endfor %}")
+            .render(topics=topics)
+        )
+        self.assertIn("<option>&lt;img src=x onerror=&#34;alert(1)&#34;&gt;</option>", options)
+        self.assertIn(
+            "<option>&nbsp;&nbsp;&nbsp;&nbsp;Kids &amp; &lt;b&gt;accounts&lt;/b&gt;</option>",
+            options,
+        )
+
+    def test_untranslated_database_title_renders_as_text(self):
+        TopicFactory(title="<img src=x onerror=alert(1)>", products=[self.product])
+
+        topics = get_hierarchical_topics(self.product)
+        options = (
+            Environment(autoescape=True)
+            .from_string("{% for topic in topics %}<option>{{ topic.title }}</option>{% endfor %}")
+            .render(topics=topics)
+        )
+        self.assertIn("<option>&lt;img src=x onerror=alert(1)&gt;</option>", options)

@@ -19,7 +19,7 @@
 {# L10n: {title} will normally be the Product title, but sometimes can be 'All Products' or 'Multiple Products' #}
 {% set title = _('{title} Community Forum')|f(title=page_title) %}
 
-{% set crumbs = [(url('questions.home'), _('Community Forums')), (None, page_title)] %}
+{% set crumbs = [(url('questions.home'), _('Community Forums')), (None, page_title|forceescape if not (all_products or multiple_products) else page_title)] %}
 
 {% if topics %}
   {% set canonical_url = canonicalize(viewname='questions.list_by_topic', topic_slug=topics[0].slug)|urlparams(None, request.GET) %}
@@ -152,7 +152,7 @@
              hx-select="#questions-list"
              hx-select-oob="{{ filter_oob }}"
              hx-swap="outerHTML"
-             hx-push-url="true">{{ pgettext('DB: products.Topic.title', _active_topic.title) }}</a></li>
+             hx-push-url="true">{{ pgettext('DB: products.Topic.title', _active_topic.title)|forceescape }}</a></li>
     </ul>
     <a class="topic-notification--clear"
        href="{{ _clear_topic_url }}"
@@ -328,7 +328,7 @@
               <option value="{{ questions_url(topic=topic.slug) }}"
               {% endif %}
                 {% if selected_topic_slug == topic.slug %}selected{% endif %}>
-                {{ pgettext('DB: products.Topic.title', topic.title) }}
+                {{ pgettext('DB: products.Topic.title', topic.title)|forceescape }}
               </option>
             {% endfor %}
           </select>

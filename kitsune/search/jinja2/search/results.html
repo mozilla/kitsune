@@ -130,7 +130,7 @@
     {% for p in products %}
       <li {{ product|class_selected(p) }}>
         <a href="{{ base_product_url|urlparams(product=p.slug) }}">
-          {{ pgettext('DB: products.Product.title', p.title) }}
+          {{ pgettext('DB: products.Product.title', p.title)|forceescape }}
         </a>
       </li>
     {% endfor %}
