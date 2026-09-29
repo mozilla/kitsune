@@ -762,3 +762,176 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
         )
         self.assertEqual(result.candidates, ())
         self.assertEqual(result.mode, "lexical")
+
+    def test_locale_qualified_fields_match_requested_and_fallback_documents(self):
+        client = es_client().options(request_timeout=30)
+        now = datetime.now(UTC)
+        bulk(
+            client,
+            [
+                {
+                    "_index": ChunkDocument.Index.write_alias,
+                    "_id": f"{object_id}-{locale}-0",
+                    "_source": {
+                        "kind": "chunk",
+                        "content_type": "kb",
+                        "object_id": object_id,
+                        "family_id": family_id,
+                        "locale": locale,
+                        "position": 0,
+                        "heading_path": "Firefox",
+                        "scope": {"version": 1, "clauses": []},
+                        "visibility": "public",
+                        "access_group_ids": [],
+                        "product_ids": [],
+                        "topic_ids": [],
+                        "category": "10",
+                        "title": {locale: f"Firefox title {object_id}"},
+                        "summary": {locale: f"Firefox summary {object_id}"},
+                        "keywords": {locale: f"keyword{object_id}"},
+                        "slug": {locale: f"article-{object_id}"},
+                        # A fallback onto text fields must not satisfy an ID lookup.
+                        "content_text": {
+                            locale: f"Firefox body {object_id}. Document identifiers: 1 2 10 999"
+                        },
+                        "updated": now,
+                    },
+                }
+                for object_id, family_id, locale in (
+                    ("1", "kb:1", "en-US"),
+                    ("2", "kb:1", "fr"),
+                    ("10", "kb:10", "en-US"),
+                )
+            ],
+            refresh=True,
+        )
+
+        cases = []
+        for field, english_value, french_value in (
+            ("title", '"title 1"', '"title 2"'),
+            ("summary", '"summary 1"', '"summary 2"'),
+            ("keywords", "keyword1", "keyword2"),
+            ("slug", '"article-1"', '"article-2"'),
+            ("content", '"body 1"', '"body 2"'),
+            ("doc_id", "1", "2"),
+        ):
+            cases.extend(
+                (
+                    ("en-US", f"{field}.en-US", english_value, (("1", "en-US"),)),
+                    ("fr", f"{field}.fr", french_value, (("2", "fr"),)),
+                    ("fr", f"{field}.en-US", english_value, (("1", "en-US"),)),
+                    ("en-US", f"{field}.fr", french_value, ()),
+                    ("fr", f"{field}.en-US", french_value, ()),
+                )
+            )
+        cases.extend(
+            (
+                ("fr", "doc_id.fr", "1", ()),
+                ("en-US", "doc_id.en-US", "999", ()),
+                ("en-US", "doc_id", "1", ()),
+            )
+        )
+        for locale, field, value, expected in cases:
+            query = f"field:{field}:{value}"
+            with self.subTest(locale=locale, query=query):
+                result = _retrieve_unvalidated(
+                    query,
+                    kb_index=ChunkDocument.Index.read_alias,
+                    locale=locale,
+                    sources={"kb"},
+                    viewer_group_ids=(),
+                    product_id=None,
+                    query_vector=None,
+                    similarity_floor=None,
+                    semantic_k=2,
+                    num_candidates=4,
+                    rank_window_size=20,
+                    locale_composition="combined",
+                    page_size=10,
+                    offset=0,
+                    max_offset=10,
+                    strict=True,
+                )
+                self.assertEqual(
+                    tuple(
+                        (candidate.evidence.object_id, candidate.evidence.locale)
+                        for candidate in result.candidates
+                    ),
+                    expected,
+                )
+
+    def test_content_field_queries_preserve_phrase_and_field_boundaries(self):
+        client = es_client().options(request_timeout=30)
+        now = datetime.now(UTC)
+        bulk(
+            client,
+            [
+                {
+                    "_index": ChunkDocument.Index.write_alias,
+                    "_id": f"{object_id}-{locale}-0",
+                    "_source": {
+                        "kind": "chunk",
+                        "content_type": "kb",
+                        "object_id": object_id,
+                        "family_id": family_id,
+                        "locale": locale,
+                        "position": 0,
+                        "heading_path": "Firefox",
+                        "scope": {"version": 1, "clauses": []},
+                        "visibility": "public",
+                        "access_group_ids": [],
+                        "product_ids": [],
+                        "topic_ids": [],
+                        "category": "10",
+                        # Omit headings from synthetic text to detect cross-field fallback.
+                        "title": {locale: "purple platypus recovery"},
+                        "summary": {locale: "title only marker"},
+                        "content_text": {locale: content},
+                        "updated": now,
+                    },
+                }
+                for object_id, family_id, locale, content in (
+                    ("1", "kb:1", "en-US", "Firefox help with purple platypus recovery"),
+                    ("2", "kb:1", "fr", "Firefox aide avec renard violet rapide"),
+                    ("3", "kb:3", "en-US", "Firefox help with purple slow platypus recovery"),
+                    ("4", "kb:4", "en-US", "Unrelated body text"),
+                )
+            ],
+            refresh=True,
+        )
+
+        cases = (
+            ("en-US", "content.en-US", "purple platypus", (("1", "en-US"),)),
+            ("en-US", "content.en-US", "purple recovery", ()),
+            ("en-US", "content.en-US", "title only marker", ()),
+            ("en-US", "content", "purple platypus", (("1", "en-US"),)),
+            ("fr", "content", "renard violet", (("2", "fr"),)),
+        )
+        for locale, field, phrase, expected in cases:
+            query = f'field:{field}:"{phrase}"'
+            with self.subTest(locale=locale, query=query):
+                result = _retrieve_unvalidated(
+                    query,
+                    kb_index=ChunkDocument.Index.read_alias,
+                    locale=locale,
+                    sources={"kb"},
+                    viewer_group_ids=(),
+                    product_id=None,
+                    query_vector=None,
+                    similarity_floor=None,
+                    semantic_k=2,
+                    num_candidates=4,
+                    rank_window_size=20,
+                    locale_composition="combined",
+                    page_size=10,
+                    offset=0,
+                    max_offset=10,
+                    strict=True,
+                )
+                self.assertEqual(
+                    tuple(
+                        (candidate.evidence.object_id, candidate.evidence.locale)
+                        for candidate in result.candidates
+                    ),
+                    expected,
+                )
