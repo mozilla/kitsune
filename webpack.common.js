@@ -1,7 +1,7 @@
 const webpack = require("webpack");
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const sveltePreprocess = require("svelte-preprocess");
+const svelteScssPreprocess = require("./webpack/svelte-scss-preprocess");
 
 module.exports = {
   mode: "development",
@@ -25,12 +25,15 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
+            // Babel 8 defaults to Browserslist's "defaults" query. Keep Babel 7's
+            // all-browser target until we change browser support intentionally.
+            targets: ">= 0%",
             presets: ["@babel/preset-env"],
             plugins: [
               [
                 "@babel/plugin-transform-runtime",
                 {
-                  version: "^7.16.7",
+                  version: "^8.0.5",
                 },
               ],
             ],
@@ -49,7 +52,7 @@ module.exports = {
           loader: "svelte-loader",
           options: {
             emitCss: true,
-            preprocess: sveltePreprocess(),
+            preprocess: svelteScssPreprocess,
           },
         },
       },

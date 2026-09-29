@@ -8,7 +8,7 @@ as well as writing compiled-to-CSS languages like SASS within `<style lang="scss
 CSS written this way is automatically scoped to the component:
 [read more in the Svelte docs](https://svelte.dev/docs#component-format-style).
 
-This SASS to CSS compilation is handled by `svelte-preprocess`,
+This SASS to CSS compilation is handled by `webpack/svelte-scss-preprocess.js`,
 and the resulting CSS is handed to Wepback for further processing.
 Since Webpack isn't involved in SASS compilation within Svelte components,
 care must be taken in a few areas:
@@ -26,7 +26,7 @@ care must be taken in a few areas:
 ```scss
 @use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
 @use "../../kitsune/sumo/static/sumo/scss/config/typography-mixins";
-// ^ here we must use a full or relative path, as svelte-preprocess is resolving this
+// ^ here we must use a full or relative path, as the Svelte preprocessor is resolving this
 
 div {
     background: url("protocol/img/icons/reader-mode.svg");
@@ -40,10 +40,10 @@ div {
    any partials used in both our main CSS bundle,
    as well as a Svelte component (like the `typography-mixins` above)
    must not use Webpack aliases in their own imports,
-   otherwise `svelte-preprocess` won't be able to resolve them.
+   otherwise the Svelte preprocessor won't be able to resolve them.
 
 3. Partials should be careful to not accidentally include or import CSS blocks outside of mixin defintions.
-   This is because neither `svelte-preprocess` nor the Webpack `sass-loader` are able to chunk split `@import`s and `@use`s,
+   This is because neither the Svelte preprocessor nor the Webpack `sass-loader` are able to chunk split `@import`s and `@use`s,
    or even de-duplicate their use across Svelte components (due to the scoped nature of the CSS within).
    Not doing this will lead to unnecessarily duplicated code.
 
