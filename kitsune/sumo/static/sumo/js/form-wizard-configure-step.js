@@ -21,7 +21,7 @@ export class ConfigureStep extends BaseFormStep {
             <img class="not-syncing icon" src="${notSyncingImageURL}" aria-hidden="true"></img>
             <img class="syncing icon" src="${syncingImageURL}" aria-hidden="true"></img>
             <h3 class="not-syncing">${gettext("Update browser settings")}</h3>
-            <h3 class="syncing">${gettext("Data syncing...")}</h3>
+            <h3 class="syncing">${gettext("Data syncing…")}</h3>
           </div>
 
           <ul id="instructions">

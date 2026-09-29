@@ -248,7 +248,7 @@ var GalleryUpload = {
       filename = filename.substr(0, CONSTANTS.maxFilenameLength) + '...';
     }
     hideFade(form.querySelector('.upload-media.' + type));
-    var message = interpolate(gettext('Uploading "%s"...'), [filename]);
+    var message = interpolate(gettext('Uploading "%s"…'), [filename]);
     if (progress) {
       var msgEl = progress.querySelector('.progress-message');
       if (msgEl) {

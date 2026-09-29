@@ -115,7 +115,7 @@ class QuestionPage(BasePage):
         self.post_a_reply_textarea = page.locator("textarea#id_content")
         self.post_a_reply_textarea_bold_button = page.locator("button[title='Bold']")
         self.post_a_reply_textarea_italic_button = page.locator("button[title='Italic']")
-        self.post_a_reply_textarea_link_button = page.locator("button[title='Insert a link...']")
+        self.post_a_reply_textarea_link_button = page.locator("button[title='Insert a link…']")
         self.post_a_reply_textarea_numbered_list_button = page.locator(
             "button[title='Numbered List']")
         self.post_a_reply_textarea_bulleted_list_button = page.locator(
