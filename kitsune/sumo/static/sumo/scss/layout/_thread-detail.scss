@@ -39,6 +39,15 @@
   }
 }
 
+// Zendesk records a chat in batches, so back-to-back batches are joined into one transcript.
+.thread-post--transcript + .thread-post--transcript {
+  padding-top: 0;
+}
+
+.thread-post--transcript:has(+ .thread-post--transcript) {
+  padding-bottom: 0;
+}
+
 .thread-post--header {
   display: flex;
   align-items: center;

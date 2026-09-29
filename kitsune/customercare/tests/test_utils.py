@@ -449,6 +449,31 @@ class SyncTicketFromZendeskTests(TestCase):
         self.assertEqual(self.ticket.public_comments, [])
 
     @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_chat_transcript_comments_have_no_author(self, mock_client_cls):
+        """Zendesk records a live chat's messages in transcript comments, which have no author."""
+        mock_client = mock_client_cls.return_value
+        description_comment = self._make_mock_comment(id=1, body="Conversation with Ringo")
+        description_comment.via.channel = "native_messaging"
+        transcript = self._make_mock_comment(id=2, body="(13:44:37) Ringo: Hello?")
+        transcript.author = None
+        transcript.via.channel = "chat_transcript"
+        mock_client.get_ticket_comments.return_value = [description_comment, transcript]
+        mock_client.get_ticket.return_value = MagicMock(
+            status="open",
+            updated_at=timezone.now(),
+            subject=self.ticket.subject,
+            description=self.ticket.description,
+        )
+
+        sync_ticket_from_zendesk(self.ticket)
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(
+            [(False, {"name": "Agent", "id": 99}), (True, None)],
+            [(c["is_transcript"], c["author"]) for c in self.ticket.comments],
+        )
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
     def test_updates_subject(self, mock_client_cls):
         mock_client = mock_client_cls.return_value
         mock_client.get_ticket_comments.return_value = []

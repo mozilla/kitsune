@@ -27,14 +27,24 @@
 
 {% if total_count %}
   <h2 class="sumo-card-heading">
-    {% trans count=total_count %}
-      {{ count }} Reply
-    {% pluralize %}
-      {{ count }} Replies
-    {% endtrans %}
+    {% if ticket.is_chat %}
+      {{ _("Chat Transcript") }}
+    {% else %}
+      {% trans count=total_count %}
+        {{ count }} Reply
+      {% pluralize %}
+        {{ count }} Replies
+      {% endtrans %}
+    {% endif %}
   </h2>
   {% for comment in comments %}
-    {% set _author = comment.get("author", {}) %}
+    {% if comment.get("is_transcript") %}
+    {# Each line of a transcript already carries its own time and speaker. #}
+    <div class="thread-post thread-post--transcript" id="comment-{{ comment.get('id', loop.index) }}">
+      {{ post_body(comment.get("body", "") | sanitize_external_html) }}
+    </div>
+    {% else %}
+    {% set _author = comment.get("author") or {} %}
     {% set _created_str = comment.get("created_at", "") %}
     {% set _created_dt = _created_str | parse_datetime %}
     <div class="thread-post" id="comment-{{ comment.get('id', loop.index) }}">
@@ -59,6 +69,7 @@
       </div>
       {{ post_body(comment.get("body", "") | sanitize_external_html) }}
     </div>
+    {% endif %}
   {% endfor %}
 {% else %}
   <p class="thread-comments--empty">{{ _("No replies yet.") }}</p>

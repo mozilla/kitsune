@@ -279,6 +279,60 @@ class TicketDetailViewTests(TestCase):
         # Hero status pill reads "Inactive" rather than the stale zd_status.
         self.assertContains(response, "Inactive")
 
+    def test_chat_shows_its_transcript_without_authors(self):
+        """Transcript batches show only their text, since each line names its speaker, while
+        any other reply, such as one after an email handoff, keeps its author."""
+        self.ticket.update(
+            zd_channel=SupportTicket.ZD_CHANNEL_MESSAGING,
+            comments=[
+                {
+                    "id": 1,
+                    "body": "Conversation with Ringo",
+                    "created_at": "2026-10-01T13:44:00Z",
+                    "public": True,
+                    "is_transcript": False,
+                    "author": {"name": "Ringo", "id": 789},
+                },
+                {
+                    "id": 2,
+                    "body": "<p>(13:44:37) Ringo: Hello?</p>",
+                    "created_at": "2026-10-01T13:55:00Z",
+                    "public": True,
+                    "is_transcript": True,
+                    "author": None,
+                },
+                {
+                    "id": 3,
+                    "body": "<p>(15:06:12) Ringo: Still there?</p>",
+                    "created_at": "2026-10-01T15:16:00Z",
+                    "public": True,
+                    "is_transcript": True,
+                    "author": None,
+                },
+                {
+                    "id": 4,
+                    "body": "<p>Following up by email.</p>",
+                    "created_at": "2026-10-01T16:00:00Z",
+                    "public": True,
+                    "is_transcript": False,
+                    "author": {"name": "Agent Paul", "id": 42},
+                },
+            ],
+        )
+        self.client.force_login(self.owner)
+        response = self.client.get(
+            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+        )
+
+        replies = pq(response.content)("#thread-replies")
+        self.assertEqual("Chat Transcript", replies("h2").text())
+        transcripts = replies(".thread-post--transcript")
+        self.assertEqual(2, len(transcripts))
+        self.assertEqual(0, len(transcripts.find(".thread-post--author-name")))
+        self.assertEqual(
+            ["Agent Paul"], [pq(n).text() for n in replies(".thread-post--author-name")]
+        )
+
     def test_owner_of_a_chat_sees_note_not_form(self):
         """A chat takes no replies, and its owner isn't told only the creator can reply."""
         self.ticket.update(zd_channel=SupportTicket.ZD_CHANNEL_MESSAGING)
