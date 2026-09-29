@@ -401,6 +401,13 @@ class ProcessZendeskUpdateTests(TestCase):
         self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
 
     @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_chat_message_added_triggers_resync(self, mock_sync):
+        process_zendesk_update(self._payload("zen:event-type:messaging_ticket.message_added"))
+
+        mock_sync.assert_called_once()
+        self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
     def test_unhandled_event_type_is_noop(self, mock_sync):
         process_zendesk_update(self._payload("zen:event-type:ticket.priority_changed"))
 

@@ -36,6 +36,8 @@ RESYNC_EVENT_TYPES = {
     "zen:event-type:ticket.subject_changed",
     "zen:event-type:ticket.description_changed",
     "zen:event-type:ticket.comment_added",
+    # Live chats send this for each new message, rather than ticket.comment_added.
+    "zen:event-type:messaging_ticket.message_added",
 }
 # Zendesk webhook events that only update the local deletion state of the support ticket.
 UNDELETE_EVENT_TYPE = "zen:event-type:ticket.undeleted"
