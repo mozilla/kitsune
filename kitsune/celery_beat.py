@@ -69,6 +69,11 @@ PERIODIC_TASKS_ALL = {
         "task": "kitsune.customercare.tasks.sync_active_support_tickets",
         "schedule": crontab(minute="15"),
     },
+    # Every hour at 45 minutes past. Backup to the webhook for picking up live chats.
+    "adopt_chat_tickets": {
+        "task": "kitsune.customercare.tasks.adopt_chat_tickets",
+        "schedule": crontab(minute="45"),
+    },
     # Questions Periodic Tasks
     # Daily at 04:00.
     "auto_archive_old_questions": {

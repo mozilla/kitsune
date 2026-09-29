@@ -1,11 +1,14 @@
+import logging
 from dataclasses import dataclass
 from typing import Any
 
 import waffle
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
@@ -23,6 +26,8 @@ from kitsune.products.models import (
 )
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
+
+log = logging.getLogger("k.customercare")
 
 
 @dataclass(frozen=True)
@@ -113,7 +118,7 @@ def apply_zendesk_ticket_data(ticket: SupportTicket, zd_ticket, zd_comments) -> 
     """Apply fetched Zendesk data to a SupportTicket and save."""
     ticket.zd_status = zd_ticket.status.lower()
     ticket.zd_updated_at = zd_ticket.updated_at
-    ticket.subject = zd_ticket.subject
+    ticket.subject = zd_ticket.subject[:255]
     ticket.description = zd_ticket.description
     ticket.comments = [
         {
@@ -171,6 +176,103 @@ def sync_ticket_from_zendesk(ticket: SupportTicket) -> SupportTicket:
             apply_zendesk_ticket_data(ticket, zd_ticket, zd_comments)
 
     return ticket
+
+
+def create_support_ticket(user, product: Product, *, zd_ticket=None, **fields) -> SupportTicket:
+    """Create a SupportTicket.
+
+    Without zd_ticket, it's created, saved as pending, and classified, after which it's
+    sent to Zendesk. With zd_ticket, since Zendesk already has the ticket, we create a
+    copy of it. Calling again with the same zd_ticket returns that copy.
+    """
+    from kitsune.customercare.tasks import zendesk_submission_classifier
+
+    if "email" not in fields:
+        fields["email"] = user.email
+
+    if zd_ticket is None:
+        org_group = resolve_org_group(user, product)
+    else:
+        # The organization that let the person chat, if they still can.
+        org = resolve_chat_eligibility(user, product).org
+        org_group = GroupProfile.objects.filter(group_id=org.group_id).first() if org else None
+
+    fields.update(user=user, product=product, org_group=org_group)
+
+    if zd_ticket is None:
+        ticket = SupportTicket.objects.create(
+            **fields, submission_status=SupportTicket.STATUS_PENDING
+        )
+        zendesk_submission_classifier.delay(ticket.id)
+        return ticket
+
+    zd_comments = ZendeskClient().get_ticket_comments(zd_ticket.id)
+
+    with transaction.atomic():
+        ticket, created = SupportTicket.objects.get_or_create(
+            zendesk_ticket_id=str(zd_ticket.id),
+            defaults={
+                **fields,
+                "zd_channel": zd_ticket.via.channel,
+                "submission_status": SupportTicket.STATUS_SENT,
+                "created": parse_datetime(zd_ticket.created_at),
+            },
+        )
+        if created:
+            apply_zendesk_ticket_data(ticket, zd_ticket, zd_comments)
+
+    return ticket
+
+
+def adopt_chat_ticket(zd_ticket) -> SupportTicket | None:
+    """Create the SupportTicket for a live chat that started in Zendesk.
+
+    Returns None if the Zendesk ticket was not created via the SupportTicket.ZD_CHANNEL_MESSAGING
+    channel, or we can't find the user who requested the ticket, or the ticket's associated
+    product. Calling it again for the same chat returns the ticket that was already created.
+    """
+    if zd_ticket.via.channel != SupportTicket.ZD_CHANNEL_MESSAGING:
+        return None
+
+    # Find the product from the chat's product tag.
+    product = None
+    prefix = settings.ZENDESK_CHAT_PRODUCT_TAG_PREFIX
+    for tag in zd_ticket.tags:
+        if tag.startswith(prefix):
+            slug = tag.removeprefix(prefix)
+            product = Product.objects.filter(slug=slug).first()
+            if not product:
+                log.error(
+                    f"Chat ticket {zd_ticket.id} has a tag for product {slug!r}, "
+                    "which doesn't exist."
+                )
+            break
+
+    if not product:
+        return None
+
+    # Find the SUMO user associated with the given Zendesk user id.
+    try:
+        zd_user = ZendeskClient().get_user(zd_ticket.requester_id)
+    except RecordNotFoundException:
+        log.error(
+            f"Zendesk user {zd_ticket.requester_id} for chat ticket {zd_ticket.id} doesn't exist."
+        )
+        return None
+
+    if not zd_user.external_id:
+        log.error(
+            f"Zendesk user {zd_ticket.requester_id} for chat ticket {zd_ticket.id} has no external_id."
+        )
+        return None
+
+    user = User.objects.filter(profile__fxa_uid=zd_user.external_id).first()
+
+    if user is None:
+        log.error(f"No SUMO user for the requester of chat ticket {zd_ticket.id}.")
+        return None
+
+    return create_support_ticket(user, product, zd_ticket=zd_ticket)
 
 
 def generate_classification_tags(submission: SupportTicket, result: dict[str, Any]) -> list[str]:

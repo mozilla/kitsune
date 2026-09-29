@@ -870,6 +870,14 @@ class QuestionsContributedTests(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertNotContains(response, self.ticket.subject)
 
+    def test_a_chat_is_badged_as_a_live_chat(self):
+        SupportTicketFactory(user=self.owner, zd_channel=SupportTicket.ZD_CHANNEL_MESSAGING)
+        response = self._get(user=self.owner, channel="direct_support")
+
+        doc = pq(response.content)
+        self.assertEqual(1, len(doc(".my-questions--channel-badge--live-chat")))
+        self.assertEqual(1, len(doc(".my-questions--channel-badge--direct-support")))
+
 
 class QuestionsContributedSidebarTests(TestCase):
     """The 'Your company' sidebar widget on the user's own questions page."""

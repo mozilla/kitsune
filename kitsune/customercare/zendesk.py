@@ -16,8 +16,6 @@ from kitsune.customercare.models import SupportTicket
 NO_RESPONSE = "No response provided."
 LOGINLESS_TAG = "loginless_ticket"
 CHAT_REVOKED_TAG = "chat-access-revoked"
-# The channel Zendesk gives tickets that started life in the messaging widget.
-MESSAGING_CHANNEL = "native_messaging"
 OAUTH_SCOPES = "read users:write tickets:write"
 OAUTH_EXPIRY_MARGIN = 60
 
@@ -138,6 +136,10 @@ class ZendeskClient:
             user_found = user
 
         return user_found
+
+    def get_user(self, zendesk_id):
+        """Fetch a single Zendesk user by ID."""
+        return self.client.users(id=int(zendesk_id))
 
     def create_user(self, user, email=""):
         """Given a Django user, create a user in Zendesk."""
@@ -305,8 +307,18 @@ class ZendeskClient:
         return [
             ticket
             for ticket in self.client.users.requested(int(zendesk_id))
-            if ticket.via.channel == MESSAGING_CHANNEL and ticket.status in active
+            if ticket.via.channel == SupportTicket.ZD_CHANNEL_MESSAGING and ticket.status in active
         ]
+
+    def search_chat_tickets(self, created_after):
+        """Return the live-chat tickets created after the given date.
+
+        Uses the export search, which pages with a cursor and so, unlike the regular
+        search, never stops at 1000 results.
+        """
+        return self.client.search_export(
+            type="ticket", via=SupportTicket.ZD_CHANNEL_MESSAGING, created_after=created_after
+        )
 
     def add_ticket_tags(self, ticket_id, tags):
         """Add tags to a ticket, keeping the tags it already has."""

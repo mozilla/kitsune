@@ -10,16 +10,16 @@ from django.test import SimpleTestCase, override_settings
 from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.checks import check_zendesk_oauth_configuration
+from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.zendesk import (
     LOGINLESS_TAG,
-    MESSAGING_CHANNEL,
     ZendeskClient,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
 
-def chat_ticket(id, status="open", channel=MESSAGING_CHANNEL):
+def chat_ticket(id, status="open", channel=SupportTicket.ZD_CHANNEL_MESSAGING):
     return Mock(id=id, status=status, via=Mock(channel=channel))
 
 

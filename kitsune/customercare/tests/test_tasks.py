@@ -1,11 +1,14 @@
+from datetime import UTC, date, datetime
 from unittest.mock import Mock, call, patch
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from waffle.testutils import override_switch
+from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import (
+    adopt_chat_tickets,
     create_zendesk_user,
     process_failed_zendesk_tickets,
     process_zendesk_update,
@@ -14,6 +17,7 @@ from kitsune.customercare.tasks import (
     tag_revoked_chat_tickets,
     zendesk_submission_classifier,
 )
+from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.customercare.zendesk import CHAT_REVOKED_TAG
 from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.llm.support.classifiers import classify_zendesk_submission
@@ -456,6 +460,41 @@ class ProcessZendeskUpdateTests(TestCase):
                 }
             )
 
+    def _created_payload(self, channel, ticket_id="777"):
+        payload = self._payload("zen:event-type:ticket.created", ticket_id=ticket_id)
+        payload["detail"]["via"] = {"channel": channel}
+        return payload
+
+    @patch("kitsune.customercare.tasks.adopt_chat_ticket")
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_a_new_chat_is_picked_up(self, mock_client, mock_adopt):
+        process_zendesk_update(self._created_payload(SupportTicket.ZD_CHANNEL_MESSAGING))
+
+        mock_client.return_value.get_ticket.assert_called_once_with("777")
+        mock_adopt.assert_called_once_with(mock_client.return_value.get_ticket.return_value)
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    @patch("kitsune.customercare.tasks.adopt_chat_ticket")
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_a_new_ticket_that_is_not_a_chat_costs_nothing(
+        self, mock_client, mock_adopt, mock_sync
+    ):
+        """Includes tickets sent from SUMO, which arrive as created events too."""
+        process_zendesk_update(self._created_payload("api", ticket_id="12345"))
+
+        mock_client.assert_not_called()
+        mock_adopt.assert_not_called()
+        mock_sync.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.adopt_chat_ticket")
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_a_new_chat_deleted_before_we_fetch_it(self, mock_client, mock_adopt):
+        mock_client.return_value.get_ticket.side_effect = RecordNotFoundException
+
+        process_zendesk_update(self._created_payload(SupportTicket.ZD_CHANNEL_MESSAGING))
+
+        mock_adopt.assert_not_called()
+
 
 class SyncSupportTicketTests(TestCase):
     """Tests for the sync_support_ticket per-ticket task."""
@@ -524,8 +563,13 @@ class SyncActiveSupportTicketsTests(TestCase):
 
     def setUp(self):
         self.product = ProductFactory(slug="firefox", title="Firefox")
+        self.last_zendesk_ticket_id = 12344
 
-    def _make_ticket(self, zd_status, zendesk_ticket_id="12345"):
+    def _make_ticket(self, zd_status, zendesk_ticket_id=None):
+        # Each ticket gets its own Zendesk id unless told otherwise.
+        if zendesk_ticket_id is None:
+            self.last_zendesk_ticket_id += 1
+            zendesk_ticket_id = str(self.last_zendesk_ticket_id)
         return SupportTicket.objects.create(
             product=self.product,
             zendesk_ticket_id=zendesk_ticket_id,
@@ -572,3 +616,39 @@ class SyncActiveSupportTicketsTests(TestCase):
 
         dispatched_ids = {call.args[0].id for call in mock_sync.call_args_list}
         self.assertEqual(dispatched_ids, {active.id})
+
+
+@patch("kitsune.customercare.tasks.adopt_chat_ticket")
+@patch("kitsune.customercare.tasks.ZendeskClient")
+class AdoptChatTicketsTests(TestCase):
+    """Tests for the periodic task that picks up chats the webhook missed."""
+
+    def _search_returns(self, mock_client, zd_tickets):
+        mock_client.return_value.search_chat_tickets.return_value = iter(zd_tickets)
+
+    @patch("django.utils.timezone.now", return_value=datetime(2026, 9, 25, 23, 59, 59, tzinfo=UTC))
+    def test_looks_back_a_week_by_default(self, mock_now, mock_client, mock_adopt):
+        self._search_returns(mock_client, [])
+
+        adopt_chat_tickets()
+
+        mock_client.return_value.search_chat_tickets.assert_called_once_with(date(2026, 9, 18))
+
+    def test_only_chats_sumo_does_not_have_are_picked_up(self, mock_client, mock_adopt):
+        SupportTicketFactory(zendesk_ticket_id="1")
+        known, new = Mock(id=1), Mock(id=2)
+        self._search_returns(mock_client, [known, new])
+
+        adopt_chat_tickets()
+
+        mock_adopt.assert_called_once_with(new)
+
+    def test_one_failing_chat_does_not_stop_the_rest(self, mock_client, mock_adopt):
+        first, second = Mock(id=1), Mock(id=2)
+        self._search_returns(mock_client, [first, second])
+        mock_adopt.side_effect = [APIException("Zendesk is down"), None]
+
+        with self.assertLogs("k.task", level="ERROR"):
+            adopt_chat_tickets()
+
+        self.assertEqual([call(first), call(second)], mock_adopt.call_args_list)

@@ -23,6 +23,14 @@ def chat_is_available(request, product: Product | None) -> bool:
 
 
 @library.global_function
+def chat_conversation_tags(product: Product) -> str:
+    """Space-separated tags the widget puts on a new chat conversation."""
+    tags = settings.ZENDESK_CHAT_TAGS.split()
+    tags.append(f"{settings.ZENDESK_CHAT_PRODUCT_TAG_PREFIX}{product.slug}")
+    return " ".join(tags)
+
+
+@library.global_function
 def select_zendesk_locale(locale: str) -> str:
     """Select the Zendesk locale for the given SUMO locale."""
     return (
