@@ -29,6 +29,9 @@ from kitsune.users.models import Profile
 
 log = logging.getLogger("k.customercare")
 
+# The channel of comments in which Zendesk records a live chat's messages, in batches.
+CHAT_TRANSCRIPT_CHANNEL = "chat_transcript"
+
 
 @dataclass(frozen=True)
 class ChatEligibility:
@@ -126,7 +129,9 @@ def apply_zendesk_ticket_data(ticket: SupportTicket, zd_ticket, zd_comments) -> 
             "body": c.html_body,
             "created_at": c.created_at,
             "public": c.public,
-            "author": {"name": c.author.name, "id": c.author.id},
+            "is_transcript": c.via.channel == CHAT_TRANSCRIPT_CHANNEL,
+            # A live chat's transcript comments have no author.
+            "author": {"name": c.author.name, "id": c.author.id} if c.author else None,
         }
         for c in zd_comments
     ]
