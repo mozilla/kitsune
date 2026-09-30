@@ -171,6 +171,8 @@ def _kb_clause(
     search = WikiSearch(locale=locale)
     settings = search.get_settings()
     settings["field_mappings"]["content"] = f"content_text.{locale}"
+    settings["field_mappings"][f"content.{locale}"] = f"content_text.{locale}"
+    settings["field_mappings"][f"doc_id.{locale}"] = "object_id"
     lexical_query = _render(
         parsed,
         fields=[

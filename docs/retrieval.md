@@ -178,6 +178,16 @@ source-specific lexical mappings: hybrid search never embeds them, never reads o
 query-vector cache, and never charges the embedding rate limit
 ([mozilla/sumo#3307](https://github.com/mozilla/sumo/issues/3307)).
 
+KB `content` and `content.<locale>` fields map to `content_text.<locale>` within the corresponding
+locale clause. For example, `field:content.en-US:"Firefox Sync"` searches English chunk text as a
+phrase. Unlike legacy `content`, which indexes the article body, chunk text prefixes each passage
+with the article title and section heading path, so those are searchable through `content` too.
+
+KB document-ID searches retain the `field:doc_id.<locale>:<document_id>` syntax. Retrieval maps
+that locale-qualified field to `object_id` within the corresponding locale clause. The ID
+identifies one localized document, not its translation family; English fallback uses the
+English document's ID.
+
 The database check is the authorization boundary. Elasticsearch access filters reduce exposure
 and preserve useful recall, but asynchronous index metadata is not authoritative. Code outside
 `retrieval.access` must not return `_retrieve_unvalidated()` results to a user or place their text
