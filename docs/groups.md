@@ -160,6 +160,57 @@ SubSubSubA: Moderated by Mike (root), NOT Alice (grandparent)
 - Enforced by `save()` method - children automatically match parent's visibility
 - Changing root visibility propagates to all descendants
 
+## Enterprise company setup
+
+The enterprise root's group page has a separate **Enterprise onboarding** card.
+**Create company** creates a direct child of that root and configures its support;
+direct company children expose **Support settings**. Existing username-based
+member and leader controls are unchanged.
+
+Creation and settings share `/groups/<group_slug>/settings` (named
+`groups.manage_company`), `EnterpriseCompanyForm`, the `manage_company` view, and
+`groups/company_form.html`. The configured enterprise root opens company creation;
+its direct company children open their support settings. Other roots and
+departments are rejected. The resolved group selects the mode; request data cannot
+switch it. Creation requires a company name, while settings omit it and cannot
+rename the company. The create and configure service functions remain separate so
+each operation retains its own transaction and validation behavior.
+The view checks staff authorization, profile visibility, and root/company scope
+directly before handling the form.
+
+Operators must be active Django staff and leaders of the enterprise root, or
+staff superusers. Company leadership alone does not grant onboarding access.
+Creating a company does not make the operator a member or leader of it.
+
+Deployment prerequisites:
+
+- `ENTERPRISE_GROUP_SLUG` (default `firefox-enterprise`) identifies both the product
+  and its depth-1 root group; their slugs must match. The root must have PRIVATE or
+  MODERATED visibility and sibling isolation enabled. The product must be
+  nonarchived, with an active support configuration that enables Zendesk, has a
+  positive numeric ticket form ID, and does not require a product subscription.
+- Optional live chat requires the `zendesk-chat` switch,
+  `ZENDESK_CHAT_WIDGET_KEY`, `ZENDESK_CHAT_SIGNING_KEY_ID`, and
+  `ZENDESK_CHAT_SIGNING_SECRET`. The form does not change these deployment settings.
+
+Company names and generated URL slugs must be available; collisions are rejected
+without adding a suffix. Creation resolves and locks the configured root in one
+query to serialize competing creations. The Django group, inherited group profile,
+support organization, and durable Zendesk mapping are saved atomically.
+Settings on an existing company preserve its identity and other product support
+configurations. Neither action changes membership or leadership.
+
+An optional existing Zendesk organization ID is verified remotely before linking.
+The canonical ID can belong to only one company, and a saved link cannot be
+reassigned. Names are never used to adopt a remote organization. Leaving the ID
+blank creates only a local mapping, not a remote organization or user.
+Replaying a link with another spelling of the same canonical numeric ID preserves
+the existing mapping.
+
+Missing prerequisites and conflicts leave the operation unchanged and display a
+form error. Read-only mode refuses both mutations. Department groups and companies
+outside the configured root cannot be targeted.
+
 ## Security
 
 ### Critical: Always Use `.visible()`

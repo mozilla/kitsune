@@ -94,6 +94,10 @@
       </div>
     </div>
   {% endif %}
+
+  {% if enterprise_is_root or enterprise_is_company %}
+    {% include "groups/includes/enterprise_onboarding.html" %}
+  {% endif %}
 {% endblock %}
 
 {% block content %}

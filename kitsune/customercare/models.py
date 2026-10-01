@@ -1,3 +1,4 @@
+import uuid
 from dataclasses import dataclass
 
 from django.contrib.auth.models import User
@@ -12,6 +13,16 @@ from django.utils.translation import pgettext_lazy
 from kitsune.groups.models import GroupProfile
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.models import ModelBase
+
+
+class ZendeskOrganization(ModelBase):
+    """Company-wide identity shared by its product support configurations."""
+
+    group_profile = models.OneToOneField(
+        GroupProfile, on_delete=models.CASCADE, related_name="zendesk_organization"
+    )
+    external_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    zendesk_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
 
 
 @dataclass(frozen=True)
