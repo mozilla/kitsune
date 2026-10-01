@@ -37,7 +37,10 @@ export default class AAQSystemInfo {
       return;
     }
 
-    this.form.querySelector('input[name="os"]').value = platform.toString();
+    let osField = this.form.querySelector('input[name="os"]');
+    if (osField) {
+      osField.value = platform.toString();
+    }
 
     let ffVersionField = this.form.querySelector('input[name="ff_version"]');
     if (ffVersionField) {
