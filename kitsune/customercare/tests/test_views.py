@@ -391,6 +391,20 @@ class TicketDetailViewTests(TestCase):
         )
         self.assertContains(response, self.ticket.description)
 
+    def test_template_hides_the_description_of_a_chat(self):
+        """A chat's description only repeats its subject, so it isn't shown."""
+        self.ticket.update(
+            zd_channel=SupportTicket.ZD_CHANNEL_MESSAGING,
+            subject="Chat about printing",
+            description="Conversation with Ringo Starr",
+        )
+        self.client.force_login(self.owner)
+        response = self.client.get(
+            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+        )
+        self.assertContains(response, "Chat about printing")
+        self.assertNotContains(response, "Conversation with Ringo Starr")
+
     def test_template_shows_status_badge(self):
         self.client.force_login(self.owner)
         response = self.client.get(

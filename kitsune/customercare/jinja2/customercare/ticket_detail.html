@@ -21,7 +21,10 @@
 {% block thread_meta %}{{ thread_meta_rows(ticket) }}{% endblock %}
 
 {% block thread_post_body %}
-  {{ ticket.description | e | replace('\n', '<br>') | safe }}
+  {# A chat's description only repeats its subject, "Conversation with <name>". #}
+  {% if not ticket.is_chat %}
+    {{ ticket.description | e | replace('\n', '<br>') | safe }}
+  {% endif %}
 {% endblock %}
 
 {% block thread_replies %}
