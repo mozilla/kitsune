@@ -1482,7 +1482,8 @@ if DEBUG:
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"].remove(NONCE)
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"].append(UNSAFE_INLINE)
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].remove(NONCE)
-    CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].extend([UNSAFE_INLINE, UNSAFE_EVAL])
+    # Without the nonce, SELF is what lets our own scripts load from localhost.
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].extend([SELF, UNSAFE_INLINE, UNSAFE_EVAL])
     # GraphiQL (DEBUG-only) loads from jsDelivr; restrict to /npm/ so arbitrary
     # /gh/ repo scripts can't be loaded.
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].append("https://cdn.jsdelivr.net/npm/")
