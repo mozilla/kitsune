@@ -16,6 +16,10 @@ class UserConfig(AppConfig):
 
         from kitsune.users.managers import RegularUserManager
 
+        # Registry rebuilds reuse the User model and its already-installed managers.
+        if isinstance(User.objects, RegularUserManager):
+            return
+
         User.all_users = User.objects
 
         # Create and initialize the new manager

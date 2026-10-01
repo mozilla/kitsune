@@ -3,7 +3,7 @@ from collections import Counter
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group, User
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.storage import default_storage
 from django.db.models import Value
 from django.db.models.functions import Coalesce, Lower, NullIf
@@ -13,9 +13,22 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
-from kitsune.customercare.models import SupportTicket
-from kitsune.groups.forms import AddUserForm, GroupAvatarForm, GroupProfileForm
+from kitsune.customercare.models import SupportTicket, ZendeskOrganization
+from kitsune.groups.forms import (
+    AddUserForm,
+    EnterpriseCompanyForm,
+    GroupAvatarForm,
+    GroupProfileForm,
+)
 from kitsune.groups.models import GroupProfile
+from kitsune.groups.onboarding import (
+    can_onboard_enterprise,
+    configure_enterprise_company,
+    create_enterprise_company,
+    get_enterprise_company,
+    get_enterprise_root,
+)
+from kitsune.products.models import SupportOrganization
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate
 from kitsune.upload.utils import create_image_thumbnail
@@ -104,6 +117,14 @@ def profile(request, group_slug, member_form=None, leader_form=None):
     # Fetch hierarchy data in view for better performance
     parent = GroupProfile.objects.get_parent(prof)
     children = prof.get_visible_children(request.user)
+    enterprise_root = None
+    if request.user.is_authenticated and request.user.is_staff:
+        enterprise_root = GroupProfile.objects.filter(
+            slug=settings.ENTERPRISE_GROUP_SLUG, depth=1
+        ).first()
+    can_onboard = enterprise_root is not None and can_onboard_enterprise(
+        request.user, enterprise_root
+    )
 
     return render(
         request,
@@ -118,7 +139,71 @@ def profile(request, group_slug, member_form=None, leader_form=None):
             "leader_form": leader_form or AddUserForm(),
             "parent": parent,
             "children": children,
+            "enterprise_is_root": can_onboard and prof.pk == enterprise_root.pk,
+            "enterprise_is_company": (
+                can_onboard and prof.depth == 2 and parent.pk == enterprise_root.pk
+            ),
         },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def manage_company(request, group_slug):
+    try:
+        root = get_enterprise_root()
+    except ValidationError:
+        raise Http404 from None
+    if not can_onboard_enterprise(request.user, root):
+        raise PermissionDenied
+    creating = group_slug == root.slug
+    prof = root if creating else get_enterprise_company(root, viewer=request.user, slug=group_slug)
+    company = None if creating else prof
+    support = None
+    linked_id = None
+    if company is not None:
+        support = SupportOrganization.objects.filter(
+            group=company.group,
+            config__product__slug=settings.ENTERPRISE_GROUP_SLUG,
+            config__is_active=True,
+        ).first()
+        linked_id = (
+            ZendeskOrganization.objects.filter(group_profile=company)
+            .values_list("zendesk_id", flat=True)
+            .first()
+        )
+    form = EnterpriseCompanyForm(
+        request.POST or None,
+        company=company,
+        initial={"include_live_chat": support.include_live_chat if support else False},
+        linked_organization_id=linked_id,
+    )
+    if form.is_valid():
+        try:
+            if creating:
+                company = create_enterprise_company(actor=request.user, **form.cleaned_data)
+            else:
+                configure_enterprise_company(
+                    actor=request.user, company=company, **form.cleaned_data
+                )
+        except ValidationError as error:
+            if hasattr(error, "error_dict"):
+                for field, errors in error.error_dict.items():
+                    form.add_error(field if field in form.fields else None, errors)
+            else:
+                form.add_error(None, error)
+        else:
+            messages.success(
+                request,
+                _("Company created successfully.")
+                if creating
+                else _("Company support settings updated successfully."),
+            )
+            return HttpResponseRedirect(company.get_absolute_url())
+    return render(
+        request,
+        "groups/company_form.html",
+        {"profile": prof, "form": form, "creating": creating},
     )
 
 

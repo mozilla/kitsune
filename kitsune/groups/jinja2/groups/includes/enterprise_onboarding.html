@@ -1,0 +1,14 @@
+<div class="card elevation-01 group-actions-card" id="enterprise-onboarding">
+  <h3 class="card--title">{{ _('Enterprise onboarding') }}</h3>
+  <div class="card--actions">
+    {% if enterprise_is_root %}
+      <a href="{{ url('groups.manage_company', profile.slug) }}" class="sumo-button secondary-button button-sm button-full-width">
+        {{ _('Create company') }}
+      </a>
+    {% elif enterprise_is_company %}
+      <a href="{{ url('groups.manage_company', profile.slug) }}" class="sumo-button secondary-button button-sm button-full-width">
+        {{ _('Support settings') }}
+      </a>
+    {% endif %}
+  </div>
+</div>

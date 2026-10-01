@@ -1,0 +1,30 @@
+{% extends "groups/base.html" %}
+{% from "includes/common_macros.html" import field, checkbox with context %}
+{% set title = _('Create company') if creating else _('Support settings | {group}')|f(group=profile.group.name) %}
+{% set crumbs = group_breadcrumbs(profile) + [(None, _('Create company') if creating else _('Support settings'))] %}
+
+{% block content %}
+  <article id="enterprise-company-form">
+    <h1 class="sumo-page-heading">{{ title }}</h1>
+    {% if creating %}
+      <p>{{ _('The company will be created directly under {group}.')|f(group=profile.group.name) }}</p>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      {% for error in form.non_field_errors() %}
+        <p class="form-error is-visible" role="alert">{{ error }}</p>
+      {% endfor %}
+      {% if creating %}
+        {{ field(form.name) }}
+      {% endif %}
+      {{ checkbox(form.include_live_chat) }}
+      {{ field(form.zendesk_organization_id) }}
+      <div class="form-actions">
+        <button type="submit" class="sumo-button primary-button">
+          {{ _('Create company') if creating else _('Save support settings') }}
+        </button>
+        <a href="{{ profile.get_absolute_url() }}" class="sumo-button secondary-button">{{ _('Cancel') }}</a>
+      </div>
+    </form>
+  </article>
+{% endblock %}
