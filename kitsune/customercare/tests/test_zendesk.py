@@ -7,13 +7,14 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
 from django.core.checks import Warning
 from django.test import SimpleTestCase, override_settings
-from zenpy.lib.exception import APIException, ZenpyException
+from zenpy.lib.exception import APIException, RatelimitBudgetExceeded, ZenpyException
 
 from kitsune.customercare.checks import check_zendesk_oauth_configuration
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.zendesk import (
     LOGINLESS_TAG,
     ZendeskClient,
+    ZendeskProvisioningConflict,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
@@ -630,6 +631,11 @@ class ZendeskOAuthTests(SimpleTestCase):
         self.api_requests = []
         self.token_status = 200
         self.api_status = 200
+        self.api_error = "invalid_token"
+        self.api_headers = {}
+        self.api_exception = None
+        self.api_timeouts = []
+        self.organization_data = {"id": 123, "name": "Existing company"}
         clock_patch = patch("time.time", return_value=1_800_000_000)
         self.clock = clock_patch.start()
         self.addCleanup(clock_patch.stop)
@@ -652,12 +658,17 @@ class ZendeskOAuthTests(SimpleTestCase):
             }
         else:
             self.api_requests.append(request)
+            self.api_timeouts.append(kwargs.get("timeout"))
+            if self.api_exception is not None:
+                raise self.api_exception
             response.status_code = self.api_status
-            data = (
-                {"ticket": {"id": 123, "subject": "Support request"}}
-                if self.api_status == 200
-                else {"error": "invalid_token"}
-            )
+            response.headers.update(self.api_headers)
+            if self.api_status != 200:
+                data = {"error": self.api_error}
+            elif "/organizations/" in request.url:
+                data = {"organization": self.organization_data}
+            else:
+                data = {"ticket": {"id": 123, "subject": "Support request"}}
         response._content = json.dumps(data).encode()
         return response
 
@@ -675,7 +686,7 @@ class ZendeskOAuthTests(SimpleTestCase):
                 "grant_type": "client_credentials",
                 "client_id": "sumo",
                 "client_secret": "test-client-secret",
-                "scope": "read users:write tickets:write",
+                "scope": "read users:write tickets:write organizations:write",
             },
         )
         self.assertEqual(
@@ -767,6 +778,20 @@ class ZendeskOAuthTests(SimpleTestCase):
             json.loads(self.token_requests[-1].body)["client_secret"], "replacement-secret"
         )
 
+    def test_changed_scopes_do_not_reuse_a_narrower_cached_token(self):
+        with patch("kitsune.customercare.zendesk.OAUTH_SCOPES", "read users:write tickets:write"):
+            ZendeskClient().get_ticket(123)
+        ZendeskClient().get_ticket(123)
+
+        self.assertEqual(
+            [request.headers["Authorization"] for request in self.api_requests],
+            ["Bearer access-token-1", "Bearer access-token-2"],
+        )
+        self.assertEqual(
+            json.loads(self.token_requests[-1].body)["scope"],
+            "read users:write tickets:write organizations:write",
+        )
+
     def test_other_account_does_not_reuse_cached_token(self):
         ZendeskClient().get_ticket(123)
         with self.settings(ZENDESK_SUBDOMAIN="other-account"):
@@ -787,6 +812,75 @@ class ZendeskOAuthTests(SimpleTestCase):
         self.token_status = 200
         self.assertEqual(client.get_ticket(123).subject, "Support request")
         self.assertEqual(self.api_requests[-1].headers["Authorization"], "Bearer access-token-2")
+
+    @override_settings(ZENDESK_SYNC_TIMEOUT=7)
+    def test_organization_link_uses_a_fresh_canonical_id_without_remote_writes(self):
+        client = ZendeskClient(disable_cache=True, ratelimit_budget=0)
+        self.assertEqual(client.validate_organization("00123"), "123")
+        self.api_status = 404
+        self.api_error = "RecordNotFound"
+
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            client.validate_organization("123")
+
+        self.assertEqual(error.exception.code, "resource_missing")
+        self.assertEqual(
+            [(request.method, request.url) for request in self.api_requests],
+            [
+                ("GET", "https://oauth-test.zendesk.com/api/v2/organizations/123.json"),
+                ("GET", "https://oauth-test.zendesk.com/api/v2/organizations/123.json"),
+            ],
+        )
+        self.assertEqual(self.api_timeouts, [7, 7])
+
+    def test_invalid_organization_id_fails_before_any_request(self):
+        for organization_id in ("", "0", "-1", "+123", "1.5", "１２３", "123/456", "1" * 256):
+            with self.subTest(organization_id=organization_id):
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    ZendeskClient().validate_organization(organization_id)
+                self.assertEqual(error.exception.code, "zendesk_conflict")
+        self.assertEqual(self.token_requests, [])
+        self.assertEqual(self.api_requests, [])
+
+    def test_invalid_remote_organization_cannot_be_linked(self):
+        for organization_id in (None, 0, -1, "invalid", True, 123.5, 456):
+            with self.subTest(organization_id=organization_id):
+                self.organization_data = {"id": organization_id}
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    ZendeskClient(disable_cache=True).validate_organization("123")
+                self.assertEqual(error.exception.code, "zendesk_conflict")
+
+    def test_missing_organization_is_a_safe_permanent_conflict(self):
+        self.api_status = 404
+        for api_error in ("RecordNotFound", "NotFound"):
+            with self.subTest(api_error=api_error):
+                self.api_error = api_error
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    ZendeskClient(disable_cache=True).validate_organization("123")
+                self.assertEqual(error.exception.code, "resource_missing")
+                self.assertNotIn(api_error, str(error.exception))
+
+    def test_organization_api_failures_remain_available_for_service_classification(self):
+        for status in (401, 403, 503):
+            with self.subTest(status=status):
+                self.api_status = status
+                with self.assertRaises(APIException) as error:
+                    ZendeskClient(disable_cache=True).validate_organization("123")
+                self.assertEqual(error.exception.response.status_code, status)
+
+    def test_organization_timeout_propagates_without_a_mapping(self):
+        self.api_exception = requests.Timeout("Provider request timed out")
+        with self.assertRaises(requests.Timeout):
+            ZendeskClient(disable_cache=True).validate_organization("123")
+
+    @patch("zenpy.lib.api.sleep")
+    def test_organization_rate_limit_exits_without_sleep(self, sleep):
+        self.api_status = 429
+        self.api_headers = {"Retry-After": "60"}
+        with self.assertRaises(RatelimitBudgetExceeded):
+            ZendeskClient(disable_cache=True, ratelimit_budget=0).validate_organization("123")
+        sleep.assert_not_called()
+        self.assertEqual(len(self.api_requests), 1)
 
 
 class ZendeskConfigurationChecksTests(SimpleTestCase):

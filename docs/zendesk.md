@@ -36,7 +36,7 @@ cache; configure `CACHE_URL` to use their shared Redis cache.
 In Zendesk Admin Center, under **Apps and integrations > APIs > OAuth clients**:
 
 1. Create a **confidential** client for this integration and environment.
-2. Set its allowed scopes to `read users:write tickets:write`.
+2. Set its allowed scopes to `read users:write tickets:write organizations:write`.
 3. Store its **Identifier** and **Secret** in the deployment's secret configuration:
 
    ```text
@@ -46,9 +46,13 @@ In Zendesk Admin Center, under **Apps and integrations > APIs > OAuth clients**:
    ```
 
 Client-credentials tokens act as the OAuth client's creator. Use the intended
-integration account, with the permissions required to read tickets and users,
-update users and email identities, and create or update tickets. No browser
-callback or refresh token is needed.
+integration account, with the permissions required to read tickets, users, and
+organizations, update users and email identities, and create or update tickets
+and organizations. No browser callback or refresh token is needed.
+
+Token cache keys include the requested scopes. When deploying expanded scopes,
+update the OAuth client's allowed scopes first; narrower cached tokens will not
+be reused.
 
 ### Rollout and rollback
 
