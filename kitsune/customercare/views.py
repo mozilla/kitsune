@@ -21,6 +21,7 @@ from django.utils.translation import pgettext
 from django.views import View
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods, require_POST
+from waffle.decorators import waffle_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyException
 
 from kitsune.customercare.forms import SupportTicketReplyForm
@@ -74,8 +75,9 @@ def chat_jwt_is_ratelimited(request):
     return limited
 
 
-@require_POST
 @never_cache
+@waffle_switch("zendesk-chat")
+@require_POST
 def chat_jwt(request, product_slug):
     """Sign a short-lived chat identity token. POST enforces CSRF protection."""
 

@@ -961,12 +961,18 @@ class ChatJWTViewTests(TestCase):
         self.assertEqual("/support-chat/jwt/firefox", self._url())
 
     @override_switch("zendesk-chat", active=False)
-    def test_disabled_chat_is_refused_without_a_journal_entry(self):
+    def test_disabled_chat_looks_like_a_missing_page(self):
+        anonymous = Client()
         self.client.force_login(self.user)
-        response = self.client.post(self._url())
 
-        self.assertEqual(403, response.status_code)
+        for response in (
+            self.client.post(self._url()),
+            self.client.get(self._url()),
+            anonymous.post(self._url()),
+        ):
+            self.assertEqual(404, response.status_code)
         self.assertFalse(Record.objects.exists())
+        self.create_zendesk_user.assert_not_called()
 
     def test_anonymous_gets_uncacheable_401(self):
         with patch("kitsune.customercare.views.is_ratelimited", return_value=True):
