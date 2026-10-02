@@ -171,3 +171,78 @@ describe('instant search', () => {
     });
   });
 });
+
+describe('instant search on a KB article page', () => {
+  let clock;
+  let cxhrMock;
+  let originalMatchMedia;
+
+  function loadArticlePage(sidebarItems) {
+    document.body.className = 'document';
+    document.body.innerHTML = `
+      <div>
+        <div id="main-content">
+          <aside id="aside">
+            <nav id="doc-tools">
+              <ul class="sidebar-nav sidebar-folding">
+                <li id="editing-tools-sidebar">
+                  <span class="details-heading"></span>
+                  <ul class="sidebar-nav--list">${sidebarItems}</ul>
+                </li>
+              </ul>
+            </nav>
+          </aside>
+        </div>
+        <form data-instant-search="form" action="" method="get" class="simple-search-form">
+          <input type="search" name="q" class="searchbox" id="search-q">
+        </form>
+      </div>`;
+  }
+
+  function searchFor(query) {
+    const searchInput = document.getElementById('search-q');
+    searchInput.value = query;
+    fireInput(searchInput);
+    clock.tick(600);
+    cxhrMock.firstCall.args[1].success({
+      num_results: 0,
+      q: query,
+      products: [{ slug: 'firefox', title: 'Firefox' }],
+    });
+  }
+
+  function filterHeadingText() {
+    return document.querySelector('#instant-search-content .details-heading button').textContent.trim();
+  }
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+    cxhrMock = sinon.fake();
+    sinon.replace(CachedXHR.prototype, "request", cxhrMock);
+    originalMatchMedia = global.matchMedia;
+    global.matchMedia = () => ({ matches: true, addListener() {} });
+  });
+
+  afterEach(() => {
+    clock.restore();
+    sinon.restore();
+    global.matchMedia = originalMatchMedia;
+    document.body.className = '';
+    document.body.innerHTML = '';
+  });
+
+  it('labels the product filter heading with the selected product', () => {
+    loadArticlePage('<li><a href="/kb/article">Article</a></li>');
+    searchFor('reader view');
+
+    expect(filterHeadingText()).to.equal('All Products');
+  });
+
+  it('labels the product filter heading while hiding the empty article sidebar', () => {
+    loadArticlePage('');
+    searchFor('private browsing');
+
+    expect(document.getElementById('aside').hidden).to.equal(true);
+    expect(filterHeadingText()).to.equal('All Products');
+  });
+});
