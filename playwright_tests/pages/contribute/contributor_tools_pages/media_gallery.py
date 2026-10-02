@@ -212,7 +212,7 @@ class MediaGallery(BasePage):
     """Actions against the 'Insert Image...' kb panel."""
     def fill_search_modal_gallery_searchbox_input_field(self, text: str):
         """
-        Fill data inside search box available inside the 'Insert image...' panel.
+        Fill data inside search box available inside the 'Insert image…' panel.
         Args:
             text(): Search string.
         """
@@ -220,29 +220,29 @@ class MediaGallery(BasePage):
 
     def click_on_search_modal_gallery_search_button(self):
         """
-        Click on the search button next to the search box available inside the 'Insert image...'
+        Click on the search button next to the search box available inside the 'Insert image…'
         panel.
         """
         self._click(self.search_gallery_search_button_modal)
 
     def click_on_cancel_media_insert(self):
-        """Click on the 'Cancel' button from the 'Insert image...' modal."""
+        """Click on the 'Cancel' button from the 'Insert image…' modal."""
         self._click(self.insert_media_button)
 
     def click_on_insert_media_button(self):
-        """Click on the 'Insert Image' button from the 'Insert image...' modal."""
+        """Click on the 'Insert Image' button from the 'Insert image…' modal."""
         self._click(self.insert_media_button)
 
     def click_on_upload_media_button(self):
-        """Click on the 'Upload Image' button from the 'Insert image...' modal."""
+        """Click on the 'Upload Image' button from the 'Insert image…' modal."""
         self._click(self.upload_media_button)
 
     def select_media_file_from_list(self, media_file_name: str, is_modal=False):
         """
-        Select a media item from the 'Insert image...' modal.
+        Select a media item from the 'Insert image…' modal.
         Args:
             media_file_name (str): The name of the media item to be selected.
-            is_modal (bool): If (True) we are targeting the 'Insert image...'kb article panel. If
+            is_modal (bool): If (True) we are targeting the 'Insert image…'kb article panel. If
             (False) we are targeting the search box available inside the 'Image Gallery' page.
         """
         if is_modal:

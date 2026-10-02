@@ -11,7 +11,7 @@
       {% csrf_token %}
       <input type="hidden" name="vote_id" value="{{ vote_id }}" />
       <input type="hidden" name="revision_id" value="{{ revision_id }}" />
-      <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
+      <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait…') }}" />
       <h3 class="sumo-card-heading text-center">
         {{ survey_heading }}
       </h3>
