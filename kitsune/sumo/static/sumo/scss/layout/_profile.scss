@@ -1,6 +1,416 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
+$identity-sidebar-width: 365px;
+
+body:has(.entity-card) {
+  @media #{p.$mq-lg} {
+    .sumo-l-two-col--sidebar {
+      width: c.col-width(3.1, 8);
+      max-width: $identity-sidebar-width;
+    }
+
+    .sumo-l-two-col--main {
+      flex: 1;
+      width: auto;
+    }
+  }
+
+  @media #{p.$mq-xl} {
+    .sumo-l-two-col--sidebar {
+      width: c.col-width(3.1, 10);
+    }
+
+    .sumo-l-two-col--main {
+      width: c.col-width(6.9, 10);
+    }
+  }
+}
+
+// "Report Abuse" (from the shared flag_form() macro, which only ever
+// renders a bare <a data-sumo-modal="...">) sits in the entity card's
+// action slot alongside the private-message button, so it needs a quieter
+// treatment than the button next to it — matching the mockup's .link-quiet.
+// Targeted by the modal-trigger attribute rather than a class, since
+// flag_form() doesn't accept one and stays untouched.
+.entity-card--action a[data-sumo-modal] {
+  display: block;
+  margin-top: p.$spacing-xs;
+  text-align: center;
+  @include c.text-body-xs;
+  color: var(--color-marketing-gray-06);
+
+  &:hover {
+    color: var(--color-error);
+  }
+}
+
+// Generic accent-rule heading, used to wrap a heading that's free to move
+// outside its section (About/Badges). Groups keeps its own heading inside
+// section.groups for a locator that requires it there — styled separately
+// below via #profile .card section.groups > h2.
+#profile {
+  // Padding, radius, and shadow come from the shared .card/.elevation-01/
+  // .lg-pad classes applied alongside this one in markup — only the
+  // page-specific stacking gap and background live here.
+  .card {
+    margin-bottom: p.$spacing-lg;
+    background: white;
+  }
+
+  // Shown instead of the About/Badges/Groups cards when all three (and
+  // contact info) are unset, so the main column isn't just blank space next
+  // to the identity card. Dashed border + no elevation distinguishes it from
+  // real content cards at a glance, reusing the same .card shell otherwise.
+  .card--empty {
+    box-shadow: none;
+    border: 1px dashed var(--color-marketing-gray-04);
+    text-align: center;
+
+    &-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      margin: 0 auto p.$spacing-md;
+      border-radius: 50%;
+      background: var(--color-marketing-gray-01);
+      color: var(--color-marketing-gray-06);
+
+      svg {
+        width: 22px;
+        height: 22px;
+      }
+    }
+
+    h2 {
+      margin: 0 0 p.$spacing-sm;
+    }
+
+    p {
+      margin: 0 auto p.$spacing-lg;
+      max-width: 42ch;
+      color: var(--color-text-light);
+    }
+  }
+
+  .card-heading {
+    margin: 0 0 p.$spacing-lg;
+    padding-bottom: p.$spacing-md;
+    border-bottom: 2px solid var(--color-marketing-gray-03);
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  .card > section.groups > h2 {
+    margin: 0 0 p.$spacing-lg;
+    padding-bottom: p.$spacing-md;
+    border-bottom: 2px solid var(--color-marketing-gray-03);
+  }
+
+  .card-heading h2,
+  .card > section.groups > h2 {
+    @include c.sumo-callout-heading;
+    position: relative;
+    padding-left: p.$spacing-md;
+    // "About {user}" / "{user}'s Groups" interpolate the display name —
+    // same unwrappable-long-name overflow as .entity-card--name, but here
+    // it blows out the main column and the whole page horizontally rather
+    // than just the sidebar card.
+    overflow-wrap: anywhere;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--color-link);
+      border-radius: p.$border-radius-sm;
+    }
+  }
+
+  // Group membership as pill chips instead of a bare bulleted list. The
+  // group_link() helper still renders a plain <a> (or plain text for groups
+  // without a GroupProfile) — the chip look is applied to the existing <li>
+  // wrapper so section.groups > ul > li stays intact for the Playwright
+  // groups_list_items locator.
+  section.groups ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: p.$spacing-sm;
+  }
+
+  section.groups li {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: p.$spacing-xs;
+    padding: p.$spacing-xs p.$spacing-md;
+    background: var(--color-marketing-gray-01);
+    border: 1px solid var(--color-marketing-gray-03);
+    border-radius: p.$border-radius-lg;
+    @include c.text-body-sm;
+    font-weight: 600;
+
+    svg {
+      flex-shrink: 0;
+      width: p.$spacing-md;
+      height: p.$spacing-md;
+      color: var(--color-link);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+
+      // group_link() only wraps the group name in <a> — the icon and the
+      // pill's own padding sit outside it, so without this the chip looks
+      // like one clickable unit but only the text responds. Stretching the
+      // link over the whole <li> (rather than moving the icon inside the
+      // <a>) needs no template/helper change.
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+      }
+    }
+
+    &:hover {
+      border-color: var(--color-link);
+
+      a {
+        color: var(--color-link);
+      }
+    }
+  }
+
+  // The FxA-migrated "Your Account" callout — same left-accent-gradient
+  // treatment #group-profile already gives .card--callout.
+  .card--callout {
+    padding: p.$spacing-xl;
+    background: linear-gradient(135deg, var(--color-marketing-gray-01) 0%, white 100%);
+    border-left: 4px solid var(--color-link);
+    overflow-wrap: anywhere;
+
+    .sumo-page-heading {
+      margin-top: 0;
+    }
+  }
+
+  // About card: bio prose, then a divider, then the contact-details list —
+  // only when both are present, via the adjacent-sibling combinator so no
+  // extra Jinja conditional is needed for the divider itself.
+  .bio + .avatar-group--in-card {
+    margin-top: p.$spacing-lg;
+    padding-top: p.$spacing-lg;
+    border-top: 1px solid var(--color-marketing-gray-03);
+  }
+
+  .avatar-group--details-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: var(--color-marketing-gray-06);
+    margin-right: p.$spacing-xs;
+
+    svg {
+      width: p.$spacing-md;
+      height: p.$spacing-md;
+    }
+  }
+
+  .avatar-group--in-card .avatar-group--details {
+    margin: 0;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .avatar-group--in-card .avatar-group--details-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: p.$spacing-sm p.$spacing-xl;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    @media #{p.$mq-sm} {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .avatar-group--in-card .avatar-group--details-item {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    min-width: 0;
+    overflow-wrap: anywhere;
+
+    > * {
+      min-width: 0;
+    }
+  }
+
+  .avatar-group--in-card .avatar-group--details-label {
+    margin-right: p.$spacing-xs;
+    width: auto;
+    font-weight: 600;
+  }
+
+  .profile-privacy-hint {
+    @include c.text-body-sm;
+    color: var(--color-text-light);
+  }
+
+  .card.lg-pad,
+  .card--callout {
+    padding: p.$spacing-lg;
+
+    @media #{p.$mq-lg} {
+      padding: p.$spacing-xl;
+    }
+  }
+}
+
+// Sidebar cards
+.sumo-l-two-col--sidebar .card {
+  @include c.card;
+  @include c.elevation-01;
+  padding: p.$spacing-lg;
+  margin-bottom: p.$spacing-lg;
+  background: white;
+}
+
+// Wraps the shared .sidebar-nav ("My Account" links, or the other user's
+// name when viewing someone else's profile) so it visually belongs with the
+// other sidebar cards. Rendered by users/base.html's side_top block, so this
+// applies to every "My Account" page (edit profile, settings, etc.), not
+// just profile.html — .sidebar-nav itself is untouched since it's also
+// reused outside this section (e.g. the KB editor tools sidebar).
+.sidebar-account-nav-card .sidebar-nav {
+  margin-bottom: 0;
+}
+
+// Contribution stat rows, folded into the entity card's .stat-list (see
+// entity_card()'s {% call %} usage in profile.html) so avatar, name, and
+// contribution counts read as one card instead of two stacked ones.
+.entity-card section.contributions {
+  h2 {
+    @include c.text-body-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-marketing-gray-06);
+    margin: 0 0 p.$spacing-sm;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: p.$spacing-sm;
+  }
+
+  li {
+    padding: p.$spacing-sm p.$spacing-md;
+    background: var(--color-marketing-gray-01);
+    border-radius: p.$border-radius-sm;
+    border-left: 3px solid var(--color-link);
+    @include c.text-body-sm;
+
+    a {
+      color: var(--color-heading);
+      font-weight: 700;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  // "Involved with Mozilla since …" reads as a quiet footer line below the
+  // stat rows (matching the identity-card mockup) rather than another stat
+  // row. It has to stay first in the DOM — the Playwright page object's
+  // contributed_from_info locator finds it by list position — so it's
+  // pushed to the end visually with flex order instead of being moved.
+  li.contributions--since {
+    order: 1;
+    margin-top: p.$spacing-xs;
+    padding: p.$spacing-xs p.$spacing-md 0;
+    background: none;
+    border-left: none;
+    @include c.text-body-xs;
+    color: var(--color-marketing-gray-06);
+  }
+}
+
+.sidebar-moderator-card {
+  &--title {
+    @include c.text-body-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-marketing-gray-06);
+    margin: 0 0 p.$spacing-md;
+  }
+
+  #admin-actions {
+    margin-bottom: p.$spacing-sm;
+  }
+
+  &--danger-zone {
+    padding-top: p.$spacing-sm;
+    border-top: 1px dashed var(--color-error);
+    display: flex;
+    flex-direction: column;
+    gap: p.$spacing-xs;
+
+    .deactivate {
+      margin: 0;
+    }
+
+    // <button>, not <input type="submit">: the spam label is longer than this
+    // 365px sidebar and an input can never wrap its value, so it clipped.
+    // These get a real outlined-danger-button treatment instead of an
+    // unstyled OS control with just its text tinted red.
+    button[type="submit"] {
+      appearance: none;
+      display: block;
+      white-space: normal;
+      width: 100%;
+      padding: p.$spacing-sm p.$spacing-sm;
+      background: transparent;
+      border: 1.5px solid var(--color-error);
+      border-radius: p.$border-radius-sm;
+      color: var(--color-error);
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      @include c.text-body-xs;
+      cursor: pointer;
+      transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+
+      &:hover {
+        background: var(--color-error);
+        border-color: var(--color-error);
+        color: white;
+      }
+
+      &:active {
+        background: var(--color-error-hover);
+        border-color: var(--color-error-hover);
+      }
+    }
+  }
+}
+
 .awards-table {
   table-layout: fixed;
   width: 100%;
