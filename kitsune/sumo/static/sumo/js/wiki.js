@@ -711,7 +711,7 @@ export function initDraft() {
   document.querySelectorAll('.btn-draft').forEach(function (draftButton) {
     var url = draftButton.dataset.draftUrl;
     draftButton.addEventListener('click', function () {
-    var message = gettext('<strong>Draft is saving...</strong>');
+    var message = gettext('<strong>Draft is saving…</strong>');
     var image = `<img src="${spinnerImg}">`;
     // Merge the fields of all three forms by name (the old code used
     // $.extend on serializeArray() arrays, which merged by index and dropped
