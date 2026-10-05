@@ -16,45 +16,47 @@ export default function detailsInit() {
   'use strict';
   var _mqWide = matchMedia('(max-width: 1055px)');
 
-  var sidebarList = document.querySelector('.details-heading');
-
-  function swapMobileSubnavText(){
-    var button = document.querySelector('.details-heading button');
-    var activeLink = document.querySelector('.sidebar-nav .selected a') ||
-      document.querySelector('.sidebar-nav a.selected') ||
-      document.querySelector('.sidebar-nav .sidebar-subheading');
-
-    if (activeLink) {
-      var mobileButtonText = activeLink.innerHTML;
-    } else {
-      var mobileButtonText = 'Sidebar';
+  function swapMobileSubnavText(heading) {
+    var button = heading.querySelector('button');
+    if (!button) {
+      return;
     }
+    var sidebar = heading.closest('.sidebar-nav') || heading.parentNode;
+    var activeLink = sidebar.querySelector('.selected a') ||
+      sidebar.querySelector('a.selected') ||
+      sidebar.querySelector('select option:checked') ||
+      sidebar.querySelector('.sidebar-subheading');
 
-    button.innerHTML = mobileButtonText;
+    button.innerHTML = activeLink ? activeLink.innerHTML : 'Sidebar';
   }
 
   function initializeMobileDetails() {
+    var sidebarHeadings = document.querySelectorAll('.details-heading');
+    if (!sidebarHeadings.length) {
+      return;
+    }
     Details.init('.details-heading');
-    if (document.body.classList.contains('document')
-      && (document.querySelector('#doc-tools')?.textContent ?? "").trim() === "") {
+    var aside = document.querySelector('#aside');
+    var hideAside = aside && document.body.classList.contains('document')
+      && (document.querySelector('#doc-tools')?.textContent ?? "").trim() === "";
+    if (hideAside) {
       // The only potential section of a mobile article sidebar is empty, so there's no sense in displaying the sidebar.
       // This isn't relevant for the large version, where the sidebar will always include the helpfulness survey at least.
       // Note that we can't check #aside directly, since the helpfulness survey has not been moved from it yet.
-      let aside = document.querySelector('#aside');
-      if (aside) {
-        aside.hidden = true;
+      aside.hidden = true;
+    }
+    sidebarHeadings.forEach(function(heading) {
+      if (!(hideAside && aside.contains(heading))) {
+        swapMobileSubnavText(heading);
       }
-    }
-    else {
-      swapMobileSubnavText();
-    }
+    });
   }
 
-  if (sidebarList && _mqWide.matches) {
+  if (_mqWide.matches) {
     initializeMobileDetails();
   }
   _mqWide.addListener(function(mq) {
-    if (sidebarList && mq.matches) {
+    if (mq.matches) {
       initializeMobileDetails();
     } else {
       Details.destroy('.details-heading');
