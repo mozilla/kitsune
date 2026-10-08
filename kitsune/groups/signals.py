@@ -1,7 +1,26 @@
+from django.contrib.auth.models import User
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
+from kitsune.groups.membership import guard_enterprise_memberships
 from kitsune.groups.models import GroupProfile
+
+
+@receiver(
+    m2m_changed,
+    sender=User.groups.through,
+    dispatch_uid="groups.guard_enterprise_memberships",
+)
+def guard_company_memberships(sender, instance, action, reverse, pk_set, using, **kwargs):
+    if action != "pre_add" or not pk_set:
+        return
+
+    user_ids = pk_set if reverse else (instance.pk,)
+    group_ids = (instance.pk,) if reverse else pk_set
+    # Django's M2M mutation is already atomic. These transaction-scoped locks
+    # remain held after pre_add returns, through the insertion and outer commit.
+    with guard_enterprise_memberships(user_ids, group_ids, using=using):
+        pass
 
 
 @receiver(

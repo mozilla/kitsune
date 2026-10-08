@@ -1050,7 +1050,8 @@ class ChatJWTViewTests(TestCase):
             SupportOrganizationFactory(
                 config=self.config, group=company.group, include_live_chat=include_live_chat
             )
-            self.user.groups.add(company.group)
+            # Legacy conflicts must deny chat even though new memberships are guarded.
+            self.user.groups.through.objects.create(user=self.user, group=company.group)
             if include_live_chat:
                 conflicts.append(slug)
         self.client.force_login(self.user)

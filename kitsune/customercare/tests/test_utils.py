@@ -600,7 +600,8 @@ class ResolveOrgGroupTests(TestCase):
             create_kwargs={"group": Group.objects.create(name="company0"), "slug": "company0"},
         )
         SupportOrganizationFactory(config=self.config, group=company.group)
-        self.it_user.groups.add(company.group)
+        # Legacy conflicting memberships must still resolve predictably.
+        self.it_user.groups.through.objects.create(user=self.it_user, group=company.group)
 
         self.assertEqual(resolve_org_group(self.it_user, self.product), company)
         self.assertEqual(resolve_user_org_group(self.it_user), company)
