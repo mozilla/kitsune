@@ -3,8 +3,38 @@ from django.db.models import Exists, OuterRef, Q
 from django.db.models.functions import Length, Substr
 from treebeard.mp_tree import MP_NodeManager
 
+from kitsune.groups.membership import (
+    guard_enterprise_group_move,
+    lock_enterprise_hierarchy,
+    validate_enterprise_group_memberships,
+)
+
 
 class GroupProfileManager(MP_NodeManager):
+    def add_root(self, create_kwargs=None, *, instance=None):
+        with lock_enterprise_hierarchy(using=self.db, exclusive=True):
+            node = super().add_root(create_kwargs, instance=instance)
+            validate_enterprise_group_memberships(node, using=self.db)
+            return node
+
+    def add_child(self, target, create_kwargs=None, *, instance=None):
+        with lock_enterprise_hierarchy(using=self.db, exclusive=True):
+            target.refresh_from_db(using=self.db)
+            node = super().add_child(target, create_kwargs, instance=instance)
+            validate_enterprise_group_memberships(node, using=self.db)
+            return node
+
+    def add_sibling(self, target, pos=None, create_kwargs=None, *, instance=None):
+        with lock_enterprise_hierarchy(using=self.db, exclusive=True):
+            target.refresh_from_db(using=self.db)
+            node = super().add_sibling(target, pos, create_kwargs, instance=instance)
+            validate_enterprise_group_memberships(node, using=self.db)
+            return node
+
+    def move(self, node, target, pos=None):
+        with guard_enterprise_group_move(node, target, using=self.db):
+            return super().move(node, target, pos)
+
     def org_roots(self):
         """All GroupProfiles whose group is configured as a support organization."""
         return self.filter(group__support_organizations__isnull=False).distinct()

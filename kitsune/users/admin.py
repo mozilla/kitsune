@@ -1,16 +1,36 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import User
 from django.db.models import Q
 
+from kitsune.groups.membership import lock_enterprise_hierarchy, validate_enterprise_memberships
 from kitsune.products.models import Product
 from kitsune.users import monkeypatch
 from kitsune.users.models import AccountEvent, Profile
 
 
+class SumoUserChangeForm(UserChangeForm):
+    def clean_groups(self):
+        groups = self.cleaned_data["groups"]
+        validate_enterprise_memberships(
+            [self.instance.pk], [group.pk for group in groups], replace=True
+        )
+        return groups
+
+
 class SumoUserAdmin(UserAdmin):
     list_display = (*UserAdmin.list_display, "last_login")
+    form = SumoUserChangeForm
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        if request.method == "POST":
+            with lock_enterprise_hierarchy():
+                if object_id and object_id.isdecimal():
+                    User.all_users.select_for_update().filter(pk=object_id).first()
+                return super().changeform_view(request, object_id, form_url, extra_context)
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
 
 class ProfileAdminForm(forms.ModelForm):
