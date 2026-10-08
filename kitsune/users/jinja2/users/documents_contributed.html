@@ -1,6 +1,12 @@
 {% extends "users/base.html" %}
+{% from "users/includes/macros.html" import viewed_user_nav %}
 {% set title = _("{user} | Documents")|f(user=display_name(profile.user)) %}
 {% set canonical_url = canonicalize(viewname="users.documents", username=profile.user.username) %}
+
+{% block side_top %}
+  {{ viewed_user_nav(profile, request.user) }}
+  {{ super() }}
+{% endblock %}
 
 {% block content %}
   <article id="profile">

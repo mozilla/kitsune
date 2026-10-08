@@ -16,6 +16,25 @@
   </nav>
 {%- endmacro %}
 
+{# Sidebar identity nav for pages showing another user's contributions. The
+   profile page itself doesn't use this — its entity card already names the
+   user and this would duplicate it — so it's called from the contribution
+   and edit pages rather than from users/base.html's side_top. Renders
+   nothing when the viewer is the profile owner, who gets personal_tabs
+   instead. #}
+{% macro viewed_user_nav(profile, viewer) -%}
+  {% if profile and not profile.is_system_account and profile.user != viewer %}
+  <div class="card sidebar-account-nav-card">
+    <nav class="sidebar-nav">
+      <span class="details-heading">{{ display_name(profile.user) }}</span>
+      <ul id="user-nav" class="sidebar-nav--list">
+        <li class="sidebar-nav--item"><a rel="nofollow" href="{{ profile_url(profile.user) }}" class="sidebar-nav--link">{{ _('View profile') }}</a></li>
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+{%- endmacro %}
+
 {% macro user_labels(user, show_question_owner=False, question_creator=None) %}
   {% if show_question_owner and question_creator and user == question_creator %}
     <span class="user-title">{{_('Question owner')}}</span>
