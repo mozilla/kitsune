@@ -12,6 +12,7 @@ group_patterns = [
     re_path(r"^add-leader$", views.add_leader, name="groups.add_leader"),
     re_path(r"^remove-leader/(?P<user_id>\d+)$", views.remove_leader, name="groups.remove_leader"),
     re_path(r"^tickets$", views.tickets, name="groups.tickets"),
+    re_path(r"^settings$", views.manage_company, name="groups.manage_company"),
 ]
 
 urlpatterns = [

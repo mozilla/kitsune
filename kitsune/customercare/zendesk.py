@@ -9,15 +9,23 @@ from zenpy.lib.api_objects import Comment as ZendeskComment
 from zenpy.lib.api_objects import Identity as ZendeskIdentity
 from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
-from zenpy.lib.exception import ZenpyException
+from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyException
 
 from kitsune.customercare.models import SupportTicket
 
 NO_RESPONSE = "No response provided."
 LOGINLESS_TAG = "loginless_ticket"
 CHAT_REVOKED_TAG = "chat-access-revoked"
-OAUTH_SCOPES = "read users:write tickets:write"
+OAUTH_SCOPES = "read users:write tickets:write organizations:write"
 OAUTH_EXPIRY_MARGIN = 60
+
+
+class ZendeskProvisioningConflict(Exception):
+    """A permanent provisioning conflict described by a safe error code."""
+
+    def __init__(self, code):
+        self.code = code
+        super().__init__(code)
 
 
 def get_oauth_token():
@@ -28,8 +36,10 @@ def get_oauth_token():
     if not all((subdomain, client_id, client_secret)):
         raise ZenpyException("Zendesk OAuth requires a subdomain, client ID, and client secret.")
 
-    # Isolate accounts and invalidate cached credentials when the secret rotates.
-    identity = sha256(f"{subdomain}:{client_id}:{client_secret}".encode()).hexdigest()
+    # Invalidate cached credentials when the account, secret, or permissions change.
+    identity = sha256(
+        f"{subdomain}:{client_id}:{client_secret}:{OAUTH_SCOPES}".encode()
+    ).hexdigest()
     cache_key = f"customercare:zendesk:oauth:{identity}"
     if token := cache.get(cache_key):
         return token
@@ -82,6 +92,28 @@ class ZendeskClient:
             }
         creds["subdomain"] = settings.ZENDESK_SUBDOMAIN
         return Zenpy(**(creds | self._kwargs))
+
+    def validate_organization(self, zendesk_id: str) -> str:
+        """Fetch an existing organization and return its canonical numeric ID."""
+        organization_id_text = str(zendesk_id)
+        if not (
+            organization_id_text.isascii()
+            and organization_id_text.isdecimal()
+            and len(organization_id_text) <= 255
+        ):
+            raise ZendeskProvisioningConflict("zendesk_conflict")
+        organization_id = int(organization_id_text)
+        if organization_id <= 0:
+            raise ZendeskProvisioningConflict("zendesk_conflict")
+        try:
+            self.client.organizations(id=organization_id)
+        except (APIException, requests.HTTPError) as exc:
+            if isinstance(exc, RecordNotFoundException) or (
+                exc.response is not None and exc.response.status_code == 404
+            ):
+                raise ZendeskProvisioningConflict("resource_missing") from exc
+            raise
+        return str(organization_id)
 
     def _user_to_zendesk_user(self, user, email):
         """Given a Django user, return a Zendesk user."""

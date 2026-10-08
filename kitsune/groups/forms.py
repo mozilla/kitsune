@@ -1,5 +1,6 @@
 from django import forms
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
@@ -57,3 +58,40 @@ class AddUserForm(forms.Form):
             attrs={"placeholder": USERS_PLACEHOLDER, "class": "user-autocomplete"}
         )
     )
+
+
+class EnterpriseCompanyForm(forms.Form):
+    name = forms.CharField(
+        label=_lazy("Company name"),
+        max_length=Group._meta.get_field("name").max_length,
+    )
+    include_live_chat = forms.BooleanField(
+        label=_lazy("Include live chat"),
+        required=False,
+        help_text=_lazy("Requires live chat to be enabled and configured for this site."),
+    )
+    zendesk_organization_id = forms.RegexField(
+        label=_lazy("Existing Zendesk organization ID"),
+        regex=r"^[0-9]+$",
+        max_length=255,
+        required=False,
+        help_text=_lazy(
+            "Optional. Link an existing organization by ID. Once linked, it cannot be changed."
+        ),
+        error_messages={"invalid": _lazy("Enter a positive numeric organization ID.")},
+    )
+
+    def __init__(self, *args, company=None, linked_organization_id=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if company is not None:
+            del self.fields["name"]
+        if linked_organization_id:
+            field = self.fields["zendesk_organization_id"]
+            field.initial = linked_organization_id
+            field.disabled = True
+
+    def clean_zendesk_organization_id(self):
+        value = self.cleaned_data["zendesk_organization_id"]
+        if value and int(value) <= 0:
+            raise forms.ValidationError(_("Enter a positive numeric organization ID."))
+        return value or None
