@@ -162,28 +162,17 @@ SubSubSubA: Moderated by Mike (root), NOT Alice (grandparent)
 
 ## Enterprise company setup
 
-The enterprise root's group page has a separate **Enterprise onboarding** card.
-**Create company** creates a direct child of that root and configures its support;
-direct company children expose **Support settings**. Existing username-based
-member and leader controls are unchanged.
+The enterprise root's group page has an **Enterprise onboarding** card.
+**Create company** creates a direct child of that root and configures its support.
+Each company's **Support settings** can update its support configuration, but
+cannot rename the company. These actions are available only for the configured
+enterprise root and its direct company children, not departments or other
+hierarchies. Existing username-based member and leader controls remain available,
+subject to the company-membership boundary below.
 
-Creation and settings share `/groups/<group_slug>/settings` (named
-`groups.manage_company`), `EnterpriseCompanyForm`, the `manage_company` view, and
-`groups/company_form.html`. The configured enterprise root opens company creation;
-its direct company children open their support settings. Other roots and
-departments are rejected. The resolved group selects the mode; request data cannot
-switch it. Creation requires a company name, while settings omit it and cannot
-rename the company. The create and configure service functions remain separate so
-each operation retains its own transaction and validation behavior.
-The view authorizes access to the root before resolving a company within it.
-Creation reuses that loaded root; company lookup includes `.visible(user)`, parent
-scope, and group data in one query. Mutations independently reauthorize and reload
-the rows they lock, so direct service callers and stale form submissions receive
-the same checks.
-
-Operators must be active Django staff and leaders of the enterprise root, or
-staff superusers. Company leadership alone does not grant onboarding access.
-Creating a company does not make the operator a member or leader of it.
+Operators must be active Django staff who either lead the enterprise root or are
+superusers. Company leadership alone does not grant onboarding access. Creating
+a company does not make the operator a member or leader of it.
 
 Deployment prerequisites:
 
@@ -197,23 +186,96 @@ Deployment prerequisites:
   `ZENDESK_CHAT_SIGNING_SECRET`. The form does not change these deployment settings.
 
 Company names and generated URL slugs must be available; collisions are rejected
-without adding a suffix. Creation resolves and locks the configured root in one
-query to serialize competing creations. The Django group, inherited group profile,
-support organization, and durable Zendesk mapping are saved atomically.
-Settings on an existing company preserve its identity and other product support
-configurations. Neither action changes membership or leadership.
+without adding a suffix. New companies inherit the root's visibility. Updating
+support settings preserves the company's identity and support configurations for
+other products. Neither action changes membership or leadership.
 
 An optional existing Zendesk organization ID is verified remotely before linking.
-The canonical ID can belong to only one company, enforced by the database's unique
-constraint, and a saved link cannot be reassigned. Names are never used to adopt a
-remote organization. Leaving the ID blank creates only a local mapping, not a remote
-organization or user.
-Replaying a link with another spelling of the same canonical numeric ID preserves
-the existing mapping.
+A Zendesk organization can belong to only one company, and a saved link cannot be
+reassigned. Equivalent spellings of the same numeric ID retain the existing link.
+Names are never used to adopt a remote organization. Leaving the ID blank records
+only local support settings; it does not create a remote organization or user.
 
 Missing prerequisites and conflicts leave the operation unchanged and display a
 form error. Read-only mode refuses both mutations. Department groups and companies
 outside the configured root cannot be targeted.
+
+## Enterprise account preparation
+
+Account preparation is a service-only intake operation that prepares a SUMO
+account and records invitation progress. There is no invitation form or HTTP
+action. It requires the same operator permissions and company/support prerequisites
+as company setup and is unavailable in read-only mode.
+
+Preparation does not provision Zendesk users or organizations, grant company
+membership, activate accounts, or send email. Prepared accounts are not ready for
+ordinary sign-in, and there is no invitation delivery or acceptance flow.
+
+### Required information and account eligibility
+
+- Each request accepts one valid email address and requires both first and last
+  names. Email matching ignores case and surrounding whitespace. Names are trimmed
+  but retain Unicode, case, and internal spacing.
+- New accounts are inactive, have unusable passwords, keep their email private,
+  and are not linked to a Mozilla account. Supplied names are saved only on new
+  accounts and are not copied into the public profile display name.
+- Existing active, regular accounts linked to a Mozilla account can be reused,
+  provided they are neither staff nor superusers. Their names, identity,
+  subscriptions, and support history are preserved.
+- Hidden system accounts, legacy accounts not linked to a Mozilla account,
+  inactive accounts not prepared by this invitation, and case-insensitive duplicate
+  email addresses require administrator resolution. Accounts already belonging to
+  another company or conflicting support organization are refused. Intake does not
+  merge accounts, move memberships, or resolve conflicts automatically.
+
+### Repeating intake and configuration requirements
+
+Only one unfinished invitation is allowed per email address, ignoring case.
+Repeating intake for the same company preserves the prepared account and invitation
+progress; an unfinished invitation to another company is refused. If an accepted
+invitation's user still belongs to that company, the accepted record is reused.
+An eligible former member can receive a new invitation record without deleting
+accepted history.
+
+Repeated intake refuses an unlinked, invitation-created account if it has been
+activated, given a usable password, migrated to Mozilla accounts, or used to sign
+in.
+
+If a prepared account has been removed or its invitation's support configuration
+has changed, intake reports an error rather than recreating the account or
+silently choosing different support settings. Failed intake leaves no partial
+account preparation.
+
+Intake also validates these deployment settings:
+
+- `ENTERPRISE_INVITATION_MAX_AGE` is a duration in seconds, defaulting to seven days
+  (`604800`). It must be a positive integer.
+- `ENTERPRISE_ONBOARDING_LANDING_PATH` may be empty. When set, it must be a local
+  path starting with a single slash, not a full URL, and contain neither backslashes
+  nor control characters.
+
+These settings do not make preparation send expiring links or redirect invitees.
+See [Users](users.md#enterprise-account-preparation) for the sign-in restrictions
+on prepared accounts.
+
+## Enterprise company membership
+
+A user may belong to only one direct company child of `ENTERPRISE_GROUP_SLUG`.
+Membership in any descendant counts toward that company. Multiple departments
+within the same company are allowed; company/root membership is not added
+implicitly. Root operator membership and unrelated hierarchies are unchanged.
+Staff and superusers have no exception to the company-membership boundary.
+
+Member and leader controls and Django admin membership changes enforce this
+boundary, including membership granted when assigning a group leader. A conflicting
+batch of changes is rejected as a whole. Moving groups or changing their associated
+Django groups is also refused if it would leave a user in more than one company.
+Errors do not disclose the name of another private company.
+
+Existing conflicts are not repaired automatically. Membership removals remain
+available so an administrator can resolve them before retrying an addition.
+Use the normal group-management paths for membership changes; direct writes to
+membership tables bypass these safeguards.
 
 ## Security
 

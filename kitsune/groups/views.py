@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.storage import default_storage
+from django.db import transaction
 from django.db.models import Value
 from django.db.models.functions import Coalesce, Lower, NullIf
 from django.http import Http404, HttpResponseRedirect
@@ -20,6 +21,7 @@ from kitsune.groups.forms import (
     GroupAvatarForm,
     GroupProfileForm,
 )
+from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.onboarding import (
     can_onboard_enterprise,
@@ -96,7 +98,7 @@ def list(request):
     return render(request, "groups/list.html", {"groups": groups})
 
 
-def profile(request, group_slug, member_form=None, leader_form=None):
+def profile(request, group_slug, user_form=None):
     prof = _get_group_profile_or_404(request.user, group_slug)
     leaders = prof.leaders.all().select_related("profile").order_by(DISPLAY_NAME_ORDER, "username")
     members_qs = (
@@ -135,8 +137,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
             "members": members,
             "user_can_edit": user_can_edit,
             "user_can_moderate": user_can_moderate,
-            "member_form": member_form or AddUserForm(),
-            "leader_form": leader_form or AddUserForm(),
+            "user_form": user_form or AddUserForm(),
             "parent": parent,
             "children": children,
             "enterprise_is_root": can_onboard and prof.pk == enterprise_root.pk,
@@ -281,6 +282,7 @@ def delete_avatar(request, group_slug):
 
 @login_required
 @require_POST
+@lock_enterprise_hierarchy()
 def add_member(request, group_slug):
     """Add a member to the group."""
     prof = _get_group_profile_or_404(request.user, group_slug)
@@ -288,17 +290,23 @@ def add_member(request, group_slug):
     if not prof.can_edit(request.user):
         raise PermissionDenied
 
-    form = AddUserForm(request.POST)
+    form = AddUserForm(request.POST, group=prof.group)
     if form.is_valid():
-        for user in form.cleaned_data["users"]:
-            user.groups.add(prof.group)
-        msg = _("{users} added to the group successfully!").format(users=request.POST.get("users"))
-        messages.add_message(request, messages.SUCCESS, msg)
-        return HttpResponseRedirect(prof.get_absolute_url())
+        try:
+            with transaction.atomic():
+                prof.group.user_set.add(*form.cleaned_data["users"])
+        except ValidationError as error:
+            form.add_error("users", error)
+        else:
+            msg = _("{users} added to the group successfully!").format(
+                users=request.POST.get("users")
+            )
+            messages.add_message(request, messages.SUCCESS, msg)
+            return HttpResponseRedirect(prof.get_absolute_url())
 
     msg = _("There were errors adding members to the group, see below.")
     messages.add_message(request, messages.ERROR, msg)
-    return profile(request, group_slug, member_form=form)
+    return profile(request, group_slug, user_form=form)
 
 
 @login_required
@@ -322,6 +330,7 @@ def remove_member(request, group_slug, user_id):
 
 @login_required
 @require_POST
+@lock_enterprise_hierarchy()
 def add_leader(request, group_slug):
     """Add a leader to the group."""
     prof = _get_group_profile_or_404(request.user, group_slug)
@@ -329,22 +338,25 @@ def add_leader(request, group_slug):
     if not prof.can_moderate_group(request.user):
         raise PermissionDenied
 
-    form = AddUserForm(request.POST)
+    form = AddUserForm(request.POST, group=prof.group)
     if form.is_valid():
-        for user in form.cleaned_data["users"]:
-            if not user.groups.filter(pk=prof.group.pk).exists():
-                # If user isn't a member of group, add to members
-                user.groups.add(prof.group)
-            prof.leaders.add(user)
-        msg = _("{users} added to the group leaders successfully!").format(
-            users=request.POST.get("users")
-        )
-        messages.add_message(request, messages.SUCCESS, msg)
-        return HttpResponseRedirect(prof.get_absolute_url())
+        try:
+            with transaction.atomic():
+                users = form.cleaned_data["users"]
+                prof.group.user_set.add(*users)
+                prof.leaders.add(*users)
+        except ValidationError as error:
+            form.add_error("users", error)
+        else:
+            msg = _("{users} added to the group leaders successfully!").format(
+                users=request.POST.get("users")
+            )
+            messages.add_message(request, messages.SUCCESS, msg)
+            return HttpResponseRedirect(prof.get_absolute_url())
 
     msg = _("There were errors adding leaders to the group, see below.")
     messages.add_message(request, messages.ERROR, msg)
-    return profile(request, group_slug, leader_form=form)
+    return profile(request, group_slug, user_form=form)
 
 
 @login_required

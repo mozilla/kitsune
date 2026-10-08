@@ -169,9 +169,18 @@ class EnterpriseCompanyTests(TestCase):
         company = self._child()
         sibling = self._child()
         member = UserFactory(groups=[company.group])
-        self.assertEqual(get_enterprise_company(self.root, viewer=member, pk=company.pk), company)
-        with self.assertRaises(Http404):
-            get_enterprise_company(self.root, viewer=member, pk=sibling.pk)
+        for for_update in (False, True):
+            with self.subTest(for_update=for_update):
+                self.assertEqual(
+                    get_enterprise_company(
+                        self.root, viewer=member, pk=company.pk, for_update=for_update
+                    ),
+                    company,
+                )
+                with self.assertRaises(Http404):
+                    get_enterprise_company(
+                        self.root, viewer=member, pk=sibling.pk, for_update=for_update
+                    )
 
     def test_missing_and_nested_root_configuration_refused(self):
         nested = self._child(slug="nested-root")

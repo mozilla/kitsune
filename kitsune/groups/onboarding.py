@@ -1,8 +1,9 @@
 import requests
 import waffle
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -12,8 +13,12 @@ from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.customercare.zendesk import ZendeskClient, ZendeskProvisioningConflict
-from kitsune.groups.models import GroupProfile
+from kitsune.groups.membership import lock_enterprise_hierarchy, validate_enterprise_memberships
+from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.products.models import Product, ProductSupportConfig, SupportOrganization
+from kitsune.users.identity import lock_account_email
+from kitsune.users.models import Profile
+from kitsune.users.utils import normalize_username, suggest_username
 
 
 def get_enterprise_root(*, for_update=False) -> GroupProfile:
@@ -43,10 +48,12 @@ def get_enterprise_company(root, *, viewer=None, for_update=False, **lookup) -> 
     """Resolve a direct company child, optionally filtering by the viewer's visibility."""
     if root.depth != 1:
         raise Http404
-    profiles = (
-        GroupProfile.objects.visible(viewer) if viewer is not None else GroupProfile.objects.all()
+    profiles = GroupProfile.objects.select_related("group").filter(
+        depth=2, path__startswith=root.path
     )
-    profiles = profiles.select_related("group").filter(depth=2, path__startswith=root.path)
+    if viewer is not None:
+        # Keep DISTINCT in the visibility subquery so the outer query can lock rows.
+        profiles = profiles.filter(pk__in=GroupProfile.objects.visible(viewer).values("pk"))
     if for_update:
         profiles = profiles.select_for_update(of=("self",))
     return get_object_or_404(profiles, **lookup)
@@ -257,6 +264,7 @@ def _link_zendesk_organization(company, zendesk_organization_id):
 
 
 @transaction.atomic
+@lock_enterprise_hierarchy(exclusive=True)
 def create_enterprise_company(
     *, actor, name: str, include_live_chat: bool, zendesk_organization_id: str | None = None
 ) -> GroupProfile:
@@ -300,6 +308,7 @@ def create_enterprise_company(
 
 
 @transaction.atomic
+@lock_enterprise_hierarchy()
 def configure_enterprise_company(
     *, actor, company, include_live_chat: bool, zendesk_organization_id: str | None = None
 ) -> SupportOrganization:
@@ -310,3 +319,220 @@ def configure_enterprise_company(
     organization = _save_support_organization(company, config, include_live_chat)
     _link_zendesk_organization(company, zendesk_organization_id)
     return organization
+
+
+def invite_enterprise_user(
+    *, actor, company, email: str, first_name: str, last_name: str
+) -> EnterpriseInvitation:
+    email = email.strip().casefold()
+    first_name, last_name = first_name.strip(), last_name.strip()
+    try:
+        validate_email(email)
+        if len(email) > 254:
+            raise ValidationError(_("Enter a valid email address."), code="invalid")
+    except ValidationError as error:
+        raise ValidationError({"email": error}) from None
+    for field, value in (("first_name", first_name), ("last_name", last_name)):
+        if not value or len(value) > User._meta.get_field(field).max_length:
+            raise ValidationError(
+                {
+                    field: ValidationError(
+                        _("Enter a name within the allowed length."), code="invalid"
+                    )
+                }
+            )
+
+    landing_path = settings.ENTERPRISE_ONBOARDING_LANDING_PATH
+    invalid_landing_path = landing_path and (
+        not landing_path.startswith("/")
+        or landing_path.startswith("//")
+        or "\\" in landing_path
+        or any(ord(char) < 32 or ord(char) == 127 for char in landing_path)
+    )
+    if (
+        invalid_landing_path
+        or not isinstance(settings.ENTERPRISE_INVITATION_MAX_AGE, int)
+        or settings.ENTERPRISE_INVITATION_MAX_AGE <= 0
+    ):
+        raise ValidationError(
+            _(
+                "Ask an administrator to configure a valid enterprise invitation destination and expiry."
+            ),
+            code="configuration_error",
+        )
+
+    with lock_account_email(email):
+        invitation = (
+            EnterpriseInvitation.objects.select_for_update()
+            .filter(email__iexact=email)
+            .exclude(status=EnterpriseInvitation.Status.ACCEPTED)
+            .first()
+        )
+        with lock_enterprise_hierarchy():
+            root = get_enterprise_root()
+            _require_onboarding_allowed(actor, root)
+            company = get_enterprise_company(root, pk=company.pk, for_update=True)
+            if invitation and invitation.company_id != company.pk:
+                raise ValidationError(
+                    _("This email already has an invitation to another company."),
+                    code="company_conflict",
+                )
+            support = (
+                SupportOrganization.objects.select_for_update()
+                .filter(
+                    group=company.group,
+                    config__is_active=True,
+                    config__product__slug=settings.ENTERPRISE_GROUP_SLUG,
+                )
+                .first()
+            )
+            config = get_enterprise_support_config(
+                include_live_chat=bool(support and support.include_live_chat)
+            )
+            mapping = (
+                ZendeskOrganization.objects.select_for_update()
+                .filter(group_profile=company)
+                .first()
+            )
+            if invitation and (
+                invitation.support_config_id != config.pk or support is None or mapping is None
+            ):
+                raise ValidationError(
+                    _(
+                        "This invitation's support configuration changed. Contact an administrator."
+                    ),
+                    code="configuration_error",
+                )
+            if invitation and invitation.user_id is None:
+                raise ValidationError(
+                    _("The account prepared for this invitation no longer exists."),
+                    code="resource_missing",
+                )
+
+            users = list(
+                User.all_users.select_for_update().filter(email__iexact=email).order_by("pk")[:2]
+            )
+            if len(users) > 1 or (invitation and (not users or users[0].pk != invitation.user_id)):
+                raise ValidationError(
+                    _(
+                        "This email cannot be invited automatically. Ask an administrator to resolve the account."
+                    ),
+                    code="account_conflict",
+                )
+            user = users[0] if users else None
+            if user is not None:
+                profile = Profile.all_profiles.select_for_update().filter(user=user).first()
+                if (
+                    profile is None
+                    or profile.account_type != Profile.AccountType.REGULAR
+                    or user.is_staff
+                    or user.is_superuser
+                ):
+                    eligible = False
+                elif (
+                    invitation
+                    and invitation.created_user
+                    and invitation.accepted_at is None
+                    and not profile.fxa_uid
+                ):
+                    # A prepared account is reusable only while it remains unused and unclaimed.
+                    eligible = not (
+                        user.is_active
+                        or user.has_usable_password()
+                        or profile.is_fxa_migrated
+                        or user.last_login is not None
+                    )
+                else:
+                    eligible = user.is_active and bool(profile.fxa_uid)
+                if not eligible:
+                    raise ValidationError(
+                        _(
+                            "This account cannot be invited automatically. Contact an administrator."
+                        ),
+                        code="account_conflict",
+                    )
+                validate_enterprise_memberships([user.pk], [company.group_id])
+                user_groups = GroupProfile.objects.containing(user)
+                if (
+                    user_groups.filter(group__support_organizations__config=config)
+                    .exclude(group_id=company.group_id)
+                    .exists()
+                ):
+                    raise ValidationError(
+                        _("This account already belongs to another support organization."),
+                        code="company_conflict",
+                    )
+                if invitation:
+                    return invitation
+                if user_groups.filter(pk=company.pk).exists():
+                    accepted = (
+                        EnterpriseInvitation.objects.filter(
+                            company=company, user=user, status=EnterpriseInvitation.Status.ACCEPTED
+                        )
+                        .order_by("-accepted_at", "-pk")
+                        .first()
+                    )
+                    if accepted:
+                        return accepted
+
+            if support is None:
+                _save_support_organization(company, config, False)
+            if mapping is None:
+                ZendeskOrganization.objects.create(group_profile=company)
+
+            created_user = user is None
+            if created_user:
+                username_email = (
+                    email
+                    if normalize_username(email.split("@", 1)[0])
+                    else "enterprise-user@example.invalid"
+                )
+                while True:
+                    username = suggest_username(username_email)
+                    user = User(
+                        username=username,
+                        email=email,
+                        first_name=first_name,
+                        last_name=last_name,
+                        is_active=False,
+                    )
+                    user.set_unusable_password()
+                    try:
+                        with transaction.atomic():
+                            user.save(force_insert=True)
+                            Profile.objects.create(
+                                user=user,
+                                account_type=Profile.AccountType.REGULAR,
+                                name="",
+                                public_email=False,
+                                is_fxa_migrated=False,
+                                fxa_uid=None,
+                            )
+                    except IntegrityError:
+                        if User.all_users.filter(username=username).exists():
+                            continue
+                        raise
+                    break
+
+            try:
+                with transaction.atomic():
+                    return EnterpriseInvitation.objects.create(
+                        company=company,
+                        support_config=config,
+                        email=email,
+                        user=user,
+                        created_by=actor,
+                        created_user=created_user,
+                        completed_actions=["sumo_account"],
+                    )
+            except IntegrityError:
+                if (
+                    EnterpriseInvitation.objects.filter(email__iexact=email)
+                    .exclude(status=EnterpriseInvitation.Status.ACCEPTED)
+                    .exists()
+                ):
+                    raise ValidationError(
+                        _("This email already has an unfinished enterprise invitation."),
+                        code="company_conflict",
+                    ) from None
+                raise

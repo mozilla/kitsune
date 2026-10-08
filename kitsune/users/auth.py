@@ -1,10 +1,12 @@
 import logging
+from functools import partial
 
 import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
 from django.urls import reverse as django_reverse
 from django.utils.translation import activate
@@ -12,8 +14,10 @@ from django.utils.translation import gettext as _
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from kitsune.customercare.tasks import update_zendesk_identity
+from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.identity import lock_account_email
 from kitsune.users.models import Profile
 from kitsune.users.utils import add_to_contributors, get_oidc_fxa_setting
 
@@ -95,78 +99,87 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             del request.session["contributor"]
 
     def create_user(self, claims):
-        """Override create user method to mark the profile as migrated."""
+        """Recheck identity after locking; another signup or invitation may have won."""
+        email = claims.get("email")
+        with (
+            lock_account_email(email) if email else transaction.atomic(),
+            lock_enterprise_hierarchy(),
+        ):
+            users = self.filter_users_by_claims(claims)
+            if len(users) == 1:
+                return self._update_user(users[0], claims)
+            if users:
+                raise SuspiciousOperation("Multiple users returned")
+            user = super().create_user(claims)
+            # Create a user profile for the user and populate it with data from
+            # Mozilla accounts
+            profile, _created = Profile.objects.get_or_create(user=user)
+            profile.is_fxa_migrated = True
+            profile.fxa_uid = claims.get("uid")
+            profile.fxa_avatar = claims.get("avatar", "")
+            profile.name = claims.get("displayName", "")
+            subscriptions = claims.get("subscriptions", [])
 
-        user = super().create_user(claims)
-        # Create a user profile for the user and populate it with data from
-        # Mozilla accounts
-        profile, _created = Profile.objects.get_or_create(user=user)
-        profile.is_fxa_migrated = True
-        profile.fxa_uid = claims.get("uid")
-        profile.fxa_avatar = claims.get("avatar", "")
-        profile.name = claims.get("displayName", "")
-        subscriptions = claims.get("subscriptions", [])
+            if email := claims.get("email"):
+                profile.is_mozilla_staff = is_mozilla_domain_email(email)
 
-        if email := claims.get("email"):
-            profile.is_mozilla_staff = is_mozilla_domain_email(email)
+            # Let's get the first element even if it's an empty string
+            # A few assertions return a locale of None so we need to default to empty string
+            fxa_locale = (claims.get("locale", "") or "").split(",")[0]
+            if fxa_locale in settings.SUMO_LANGUAGES:
+                profile.locale = fxa_locale
+            else:
+                profile.locale = self.request.session.get("login_locale", settings.LANGUAGE_CODE)
+            activate(profile.locale)
 
-        # Let's get the first element even if it's an empty string
-        # A few assertions return a locale of None so we need to default to empty string
-        fxa_locale = (claims.get("locale", "") or "").split(",")[0]
-        if fxa_locale in settings.SUMO_LANGUAGES:
-            profile.locale = fxa_locale
-        else:
-            profile.locale = self.request.session.get("login_locale", settings.LANGUAGE_CODE)
-        activate(profile.locale)
+            # If there is a refresh token, store it
+            if self.refresh_token:
+                profile.fxa_refresh_token = self.refresh_token
+            profile.save()
+            # User subscription information
+            products = Product.active.filter(codename__in=subscriptions)
+            profile.products.set(products)
 
-        # If there is a refresh token, store it
-        if self.refresh_token:
-            profile.fxa_refresh_token = self.refresh_token
-        profile.save()
-        # User subscription information
-        products = Product.active.filter(codename__in=subscriptions)
-        profile.products.set(products)
+            # This is a new sumo profile, show edit profile message
+            messages.success(
+                self.request,
+                _(
+                    "<strong>Welcome!</strong> You are now signed in using your Mozilla account. "
+                    + "{a_profile}Edit your profile.{a_close}<br>"
+                    + "Already have a different Mozilla Support Account? "
+                    + "{a_more}Read more.{a_close}"
+                ).format(
+                    a_profile='<a href="'
+                    + reverse("users.edit_my_profile")
+                    + '" target="_blank">',
+                    a_more='<a href="'
+                    + reverse("wiki.document", args=["firefox-accounts-mozilla-support-faq"])
+                    + '" target="_blank">',
+                    a_close="</a>",
+                ),
+                extra_tags="safe",
+            )
 
-        # This is a new sumo profile, show edit profile message
-        messages.success(
-            self.request,
-            _(
-                "<strong>Welcome!</strong> You are now signed in using your Mozilla account. "
-                + "{a_profile}Edit your profile.{a_close}<br>"
-                + "Already have a different Mozilla Support Account? "
-                + "{a_more}Read more.{a_close}"
-            ).format(
-                a_profile='<a href="' + reverse("users.edit_my_profile") + '" target="_blank">',
-                a_more='<a href="'
-                + reverse("wiki.document", args=["firefox-accounts-mozilla-support-faq"])
-                + '" target="_blank">',
-                a_close="</a>",
-            ),
-            extra_tags="safe",
-        )
+            # update contributor status
+            self.update_contributor_status(profile)
 
-        # update contributor status
-        self.update_contributor_status(profile)
-
-        return user
+            return user
 
     def filter_users_by_claims(self, claims):
         """Match users by FxA uid or email."""
         fxa_uid = claims.get("uid")
         user_model = get_user_model()
-        users = user_model.objects.none()
+        users = user_model.all_users.none()
 
-        # something went terribly wrong. Return None
-        if not fxa_uid:
+        if fxa_uid:
+            users = user_model.all_users.filter(profile__fxa_uid=fxa_uid)
+        else:
             log.warning("Failed to get Mozilla account UID.")
-            return users
-
-        users = user_model.objects.filter(profile__fxa_uid=fxa_uid)
 
         if not users:
-            # We did not match any users so far. Let's call the super method
-            # which will try to match users based on email
-            users = super().filter_users_by_claims(claims)
+            email = claims.get("email")
+            if email:
+                users = user_model.all_users.filter(email__iexact=email.strip())
         return users
 
     def get_userinfo(self, access_token, id_token, payload):
@@ -193,19 +206,45 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         return user_info
 
     def update_user(self, user, claims):
-        """Update existing user with new claims, if necessary save, and return user"""
+        """Serialize destination-email updates, including background profile events."""
+        email = claims.get("email")
+        with (
+            lock_account_email(email) if email else transaction.atomic(),
+            lock_enterprise_hierarchy(),
+        ):
+            return self._update_user(user, claims)
+
+    def _update_user(self, user, claims):
+        # Lookup may predate the email lock; also discard any cached profile.
+        user.refresh_from_db(from_queryset=User.all_users.select_for_update())
         profile = user.profile
+        if profile.account_type == Profile.AccountType.SYSTEM:
+            raise SuspiciousOperation("System accounts cannot sign in with Mozilla accounts")
+        request = getattr(self, "request", None)
+        if (
+            not profile.fxa_uid
+            and user.enterprise_invitations.filter(
+                created_user=True, accepted_at__isnull=True
+            ).exists()
+        ):
+            if request:
+                messages.error(
+                    request,
+                    _(
+                        "This account was prepared through an enterprise invitation. "
+                        "Use your invitation to sign in."
+                    ),
+                )
+            raise SuspiciousOperation("Enterprise invitation required")
+
         email = claims.get("email")
         user_attr_changed = False
         # Check if the user has active subscriptions
         subscriptions = claims.get("subscriptions", [])
 
-        request = getattr(self, "request", None)
-
-        # There is a change in the email in Mozilla accounts. Let's update user's email
-        # unless we have a superuser
-        if email and (email != user.email) and not user.profile.in_staff_group:
-            if User.objects.exclude(id=user.id).filter(email=email).exists():
+        # Staff-group accounts retain their local email when Mozilla's address changes.
+        if email and (email != user.email) and not profile.in_staff_group:
+            if User.all_users.exclude(pk=user.pk).filter(email__iexact=email.strip()).exists():
                 if request:
                     msg = _(
                         "The e-mail address used with this Mozilla account is already "
@@ -235,16 +274,13 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         profile.is_mozilla_staff = is_mozilla_domain_email(email)
 
-        with transaction.atomic():
-            if user_attr_changed:
-                user.save()
-            profile.save()
-
-        # If we have an updated email, let's update Zendesk too
-        # the check is repeated for now but it will save a few
-        # API calls if we trigger the task only when we know that we have new emails
         if user_attr_changed:
-            update_zendesk_identity.delay(user.id, email)
+            user.save()
+        profile.save()
+
+        # The task must see the committed address, never a rolled-back change.
+        if user_attr_changed:
+            transaction.on_commit(partial(update_zendesk_identity.delay, user.pk, email))
 
         return user
 

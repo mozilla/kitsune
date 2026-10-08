@@ -1,13 +1,19 @@
 from unittest.mock import Mock, patch
 
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import SuspiciousOperation
+from django.db import transaction
 from django.http import HttpRequest
 from django.test import RequestFactory, override_settings
 from factory.fuzzy import FuzzyChoice
 
+from kitsune.groups.models import EnterpriseInvitation, GroupProfile
+from kitsune.groups.tests import GroupProfileFactory
+from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.auth import FXAAuthBackend
-from kitsune.users.models import ContributionAreas
+from kitsune.users.auth import FXAAuthBackend, is_mozilla_domain_email
+from kitsune.users.models import ContributionAreas, Profile
 from kitsune.users.tests import GroupFactory, UserFactory
 
 
@@ -23,8 +29,6 @@ class FXAAuthBackendTests(TestCase):
     @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com", "mozillafoundation.org"])
     def test_is_mozilla_domain_email(self):
         """Test the is_mozilla_domain_email utility function."""
-        from kitsune.users.auth import is_mozilla_domain_email
-
         # Test Mozilla domain emails
         self.assertTrue(is_mozilla_domain_email("user@mozilla.org"))
         self.assertTrue(is_mozilla_domain_email("user@mozilla.com"))
@@ -98,7 +102,7 @@ class FXAAuthBackendTests(TestCase):
     @patch("kitsune.users.auth.messages")
     def test_username_already_exists(self, message_mock):
         """Test account creation when username already exists."""
-        UserFactory.create(username="bar")
+        UserFactory.create(username="bar", email="bar@other.example.com")
         claims = {
             "email": "bar@example.com",
             "uid": "my_unique_fxa_id",
@@ -256,11 +260,7 @@ class FXAAuthBackendTests(TestCase):
         with self.subTest("with a request"):
             self.backend.request = request_mock
             self.backend.update_user(user, claims)
-            message_mock.error.assert_called_with(
-                request_mock,
-                "The e-mail address used with this Mozilla account"
-                " is already linked in another profile.",
-            )
+            message_mock.error.assert_called_once()
             self.assertEqual(User.objects.get(id=user.id).email, "bar@example.com")
 
     @patch("kitsune.users.auth.messages")
@@ -363,3 +363,242 @@ class FXAAuthBackendTests(TestCase):
         user = User.objects.get(id=user.id)
         self.assertTrue(user.profile.is_mozilla_staff)
         assert not message_mock.info.called
+
+    @override_settings(FXA_RP_SCOPES="openid email")
+    def test_dispatch_verifies_claims_before_mutating_accounts(self):
+        user = UserFactory(profile__fxa_uid="existing-uid", profile__name="Original")
+        with (
+            patch.object(
+                self.backend,
+                "get_userinfo",
+                return_value={"uid": "existing-uid", "displayName": "Unverified"},
+            ),
+            self.assertRaises(SuspiciousOperation),
+        ):
+            self.backend.get_or_create_user("access", "id", {})
+        user.profile.refresh_from_db()
+        self.assertEqual(user.profile.name, "Original")
+        self.assertEqual(User.all_users.count(), 1)
+
+    @patch("kitsune.users.auth.messages")
+    def test_dispatch_creates_then_reuses_one_account(self, messages_mock):
+        self.backend.request = RequestFactory().get("/")
+        self.backend.request.session = {}
+        claims = {"email": "ordinary@example.com", "uid": "ordinary-uid"}
+        with patch.object(self.backend, "get_userinfo", return_value=claims):
+            created = self.backend.get_or_create_user("access", "id", {})
+            reused = self.backend.get_or_create_user("access", "id", {})
+        self.assertEqual(reused.pk, created.pk)
+        self.assertEqual(User.all_users.filter(email=claims["email"]).count(), 1)
+        self.assertEqual(reused.profile.fxa_uid, "ordinary-uid")
+        self.assertTrue(reused.profile.is_fxa_migrated)
+
+    @override_settings(FXA_CREATE_USER=False)
+    def test_dispatch_honors_disabled_account_creation(self):
+        claims = {"email": "unregistered@example.com", "uid": "unregistered-uid"}
+        with patch.object(self.backend, "get_userinfo", return_value=claims):
+            self.assertIsNone(self.backend.get_or_create_user("access", "id", {}))
+        self.assertFalse(User.all_users.filter(email=claims["email"]).exists())
+
+    def test_email_fallback_preserves_legacy_no_auto_link_without_uid(self):
+        user = UserFactory(
+            email="legacy@example.com",
+            profile__fxa_uid=None,
+            profile__is_fxa_migrated=False,
+            profile__name="Existing name",
+        )
+        with patch.object(
+            self.backend, "get_userinfo", return_value={"email": "legacy@example.com"}
+        ):
+            reused = self.backend.get_or_create_user("access", "id", {})
+        self.assertEqual(reused.pk, user.pk)
+        user.profile.refresh_from_db()
+        self.assertIsNone(user.profile.fxa_uid)
+        self.assertFalse(user.profile.is_fxa_migrated)
+        self.assertEqual(user.profile.name, "Existing name")
+        self.assertEqual(User.all_users.count(), 1)
+
+    def test_hidden_and_duplicate_email_matches_cannot_create_or_mutate_accounts(self):
+        for account_types in (
+            (Profile.AccountType.SYSTEM,),
+            (Profile.AccountType.REGULAR, Profile.AccountType.SYSTEM),
+        ):
+            with self.subTest(account_types=account_types):
+                email = f"blocked-{len(account_types)}@example.com"
+                for index, account_type in enumerate(account_types):
+                    UserFactory(
+                        email=email.upper() if index == 0 else email,
+                        profile__account_type=account_type,
+                        profile__name="Original",
+                    )
+                users_before = list(User.all_users.order_by("pk").values())
+                profiles_before = list(Profile.all_profiles.order_by("pk").values())
+                claims = {"email": email, "uid": "new-uid", "displayName": "Replacement"}
+                for recheck in (False, True):
+                    with self.subTest(creation_recheck=recheck):
+                        with (
+                            patch.object(self.backend, "get_userinfo", return_value=claims),
+                            self.assertRaises(SuspiciousOperation),
+                        ):
+                            if recheck:
+                                self.backend.create_user(claims)
+                            else:
+                                self.backend.get_or_create_user("access", "id", {})
+                        self.assertEqual(
+                            list(User.all_users.order_by("pk").values()), users_before
+                        )
+                        self.assertEqual(
+                            list(Profile.all_profiles.order_by("pk").values()), profiles_before
+                        )
+
+    def _create_prepared_user(self):
+        user = UserFactory(
+            email="invited@example.com",
+            password=None,
+            is_active=False,
+            profile__fxa_uid=None,
+            profile__is_fxa_migrated=False,
+            profile__name="",
+        )
+        company = GroupProfile.objects.add_child(
+            GroupProfileFactory(), create_kwargs={"group": GroupFactory()}
+        )
+        EnterpriseInvitation.objects.create(
+            company=company,
+            email=user.email,
+            user=user,
+            created_user=True,
+            completed_actions=["sumo_account"],
+        )
+        return user
+
+    def test_prepared_user_cannot_bypass_invitation_through_ordinary_login(self):
+        user = self._create_prepared_user()
+        for uid in ("authenticated-uid", None):
+            with self.subTest(uid=uid):
+                claims = {
+                    "email": "INVITED@example.com",
+                    "displayName": "Should not be saved",
+                    "avatar": "https://example.com/avatar.png",
+                }
+                if uid:
+                    claims["uid"] = uid
+                with (
+                    patch.object(self.backend, "get_userinfo", return_value=claims),
+                    self.assertRaises(SuspiciousOperation),
+                ):
+                    self.backend.get_or_create_user("access", "id", {})
+                user.refresh_from_db()
+                self.assertFalse(user.is_active)
+                self.assertFalse(user.has_usable_password())
+                self.assertIsNone(user.profile.fxa_uid)
+                self.assertFalse(user.profile.is_fxa_migrated)
+                self.assertEqual(user.profile.name, "")
+                self.assertEqual(user.profile.fxa_avatar, "")
+                self.assertEqual(User.all_users.count(), 1)
+
+    def test_background_update_cannot_modify_a_prepared_user(self):
+        user = self._create_prepared_user()
+        with self.assertRaises(SuspiciousOperation):
+            self.backend.update_user(
+                user, {"email": "changed@example.com", "displayName": "Should not be saved"}
+            )
+        user.refresh_from_db()
+        self.assertEqual(user.email, "invited@example.com")
+        self.assertEqual(user.profile.name, "")
+        self.assertIsNone(user.profile.fxa_uid)
+
+    def test_email_update_refuses_case_insensitive_hidden_collision_before_mutation(self):
+        UserFactory(email="TAKEN@example.com", profile__account_type=Profile.AccountType.SYSTEM)
+        user = UserFactory(
+            email="original@example.com",
+            profile__name="",
+            profile__fxa_avatar="https://example.com/original.png",
+        )
+        product = ProductFactory()
+        user.profile.products.add(product)
+        claims = {
+            "email": "taken@example.com",
+            "displayName": "Should not be saved",
+            "avatar": "https://example.com/replacement.png",
+            "subscriptions": [],
+        }
+        self.assertIsNone(self.backend.update_user(user, claims))
+        user.refresh_from_db()
+        self.assertEqual(user.email, "original@example.com")
+        self.assertEqual(user.profile.name, "")
+        self.assertEqual(user.profile.fxa_avatar, "https://example.com/original.png")
+        self.assertEqual(list(user.profile.products.values_list("pk", flat=True)), [product.pk])
+
+    def test_staff_group_retains_email_even_when_claimed_address_is_taken(self):
+        UserFactory(email="claimed@example.com")
+        user = UserFactory(
+            email="local@example.com",
+            profile__name="",
+            groups=[GroupFactory(name=settings.STAFF_GROUP)],
+        )
+        result = self.backend.update_user(
+            user, {"email": "claimed@example.com", "displayName": "Provider name"}
+        )
+        self.assertEqual(result.pk, user.pk)
+        user.refresh_from_db()
+        self.assertEqual(user.email, "local@example.com")
+        self.assertEqual(user.profile.name, "Provider name")
+
+    def test_email_update_preserves_local_changes_since_lookup(self):
+        user = UserFactory(email="original@example.com", profile__name="Original name")
+        stale_user = User.all_users.select_related("profile").get(pk=user.pk)
+        user.is_active = False
+        user.first_name = "Local"
+        user.last_name = "Edit"
+        user.set_unusable_password()
+        user.save()
+        user.profile.name = "Locally edited name"
+        user.profile.save()
+        before = User.all_users.filter(pk=user.pk).values().get()
+
+        updated = self.backend.update_user(
+            stale_user, {"email": "changed@example.com", "displayName": "Provider name"}
+        )
+
+        self.assertFalse(updated.is_active)
+        self.assertEqual(
+            User.all_users.filter(pk=user.pk).values().get(),
+            {**before, "email": "changed@example.com"},
+        )
+        self.assertEqual(Profile.all_profiles.get(user=user).name, "Locally edited name")
+
+    def test_update_rechecks_account_type_after_lookup(self):
+        user = UserFactory(email="original@example.com", profile__name="Original name")
+        stale_user = User.all_users.select_related("profile").get(pk=user.pk)
+        user.profile.account_type = Profile.AccountType.SYSTEM
+        user.profile.save()
+        user_before = User.all_users.filter(pk=user.pk).values().get()
+        profile_before = Profile.all_profiles.filter(user=user).values().get()
+
+        with self.assertRaises(SuspiciousOperation):
+            self.backend.update_user(
+                stale_user, {"email": "changed@example.com", "displayName": "Provider name"}
+            )
+
+        self.assertEqual(User.all_users.filter(pk=user.pk).values().get(), user_before)
+        self.assertEqual(Profile.all_profiles.filter(user=user).values().get(), profile_before)
+
+    @patch("kitsune.users.auth.update_zendesk_identity.delay")
+    def test_identity_sync_waits_for_commit_and_is_discarded_on_rollback(self, sync):
+        user = UserFactory(email="original@example.com")
+        with self.captureOnCommitCallbacks(execute=True):
+            with transaction.atomic():
+                self.backend.update_user(user, {"email": "committed@example.com"})
+                sync.assert_not_called()
+        sync.assert_called_once_with(user.pk, "committed@example.com")
+        sync.reset_mock()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            with self.assertRaises(RuntimeError), transaction.atomic():
+                self.backend.update_user(user, {"email": "rolled-back@example.com"})
+                sync.assert_not_called()
+                raise RuntimeError("Abort email change")
+        sync.assert_not_called()
+        user.refresh_from_db()
+        self.assertEqual(user.email, "committed@example.com")

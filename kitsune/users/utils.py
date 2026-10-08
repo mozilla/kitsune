@@ -30,7 +30,7 @@ from kitsune.wiki.utils import generate_short_url
 log = logging.getLogger("k.users")
 
 
-def get_community_team_member_info(email_type='contributor'):
+def get_community_team_member_info(email_type="contributor"):
     """Get a random member from the Community Team who has logged in within 30 days."""
     thirty_days_ago = timezone.now() - timedelta(days=30)
 
@@ -41,8 +41,7 @@ def get_community_team_member_info(email_type='contributor'):
 
     if community_team:
         active_members = community_team.user_set.filter(
-            is_active=True,
-            last_login__gte=thirty_days_ago
+            is_active=True, last_login__gte=thirty_days_ago
         )
 
         if active_members.exists():
@@ -51,27 +50,23 @@ def get_community_team_member_info(email_type='contributor'):
 
             # Build the PM URL
             campaign_map = {
-                'contributor': 'new-contributor',
-                'first_answer': 'first-answer',
-                'first_l10n': 'first-revision'
+                "contributor": "new-contributor",
+                "first_answer": "first-answer",
+                "first_l10n": "first-revision",
             }
-            campaign = campaign_map.get(email_type, 'new-contributor')
+            campaign = campaign_map.get(email_type, "new-contributor")
 
             pm_url = f"https://support.mozilla.org/messages/new?to={username}&utm_campaign={campaign}&utm_medium=bitly&utm_source=email"
             pm_link = generate_short_url(pm_url) or pm_url
 
             return {
-                'username': username,
-                'name': member.first_name or username,
-                'pm_link': pm_link
+                "username": username,
+                "name": member.first_name or username,
+                "pm_link": pm_link,
             }
 
     # Default fallback - return generic Community Team info without PM link
-    return {
-        'username': 'Community Team',
-        'name': 'Community Team',
-        'pm_link': None
-    }
+    return {"username": "Community Team", "name": "Community Team", "pm_link": None}
 
 
 def add_to_contributors(user, language_code, contribution_area=""):
@@ -133,7 +128,7 @@ def suggest_username(email):
     username = normalize_username(email.split("@", 1)[0])
 
     username_regex = r"^{}[0-9]*$".format(escape(username))
-    users = User.objects.filter(username__iregex=username_regex)
+    users = User.all_users.filter(username__iregex=username_regex)
 
     if users.count() > 0:
         ids = []
