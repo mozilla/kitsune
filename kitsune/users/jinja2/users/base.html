@@ -15,17 +15,9 @@
   {% if not profile and user.is_authenticated %}
     {% set profile = get_profile(user) %}
   {% endif %}
-  {% if profile and not profile.is_system_account %}
-    {% if request.user == profile.user %}
+  {% if profile and not profile.is_system_account and request.user == profile.user %}
+    <div class="card sidebar-account-nav-card">
       {{ personal_tabs(request.user, active) }}
-    {% else %}
-      {# If we are viewing another user's profile, don't show the personal tabs #}
-      <nav class="sidebar-nav">
-        <span class="details-heading">{{ display_name(profile.user) }}</span>
-        <ul id="user-nav" class="sidebar-nav--list">
-          <li class="sidebar-nav--item"><a rel="nofollow" href="{{ profile_url(profile.user) }}" class="sidebar-nav--link selected">{{ display_name(profile.user) }}</a></li>
-        </ul>
-      </nav>
-    {% endif %}
+    </div>
   {% endif %}
 {% endblock %}

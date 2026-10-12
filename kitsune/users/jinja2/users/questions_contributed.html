@@ -1,11 +1,13 @@
 {% extends "users/base.html" %}
 {% from "sumo/includes/question_entry.html" import question_entry %}
+{% from "users/includes/macros.html" import viewed_user_nav %}
 {% set title = _("{user} | Questions")|f(user=display_name(profile.user)) %}
 {% set canonical_url = canonicalize(viewname="users.questions", username=profile.user.username) %}
 {% set active = "user-questions" %}
 
 {% block side_top %}
   {% include "users/_company_tickets_widget.html" %}
+  {{ viewed_user_nav(profile, request.user) }}
   {{ super() }}
 {% endblock %}
 
