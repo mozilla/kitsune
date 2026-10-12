@@ -145,6 +145,30 @@ class TestNewQuestionForm(TestCase):
         actual = form.cleaned_metadata
         self.assertDictEqual(actual, expected)
 
+    def test_non_object_troubleshooting(self):
+        """Non-object troubleshooting data is accepted and stored as-is.
+
+        Users may paste raw troubleshooting information copied from about:support,
+        not just the JSON that the JS code submits.
+        """
+        topic = TopicFactory(slug="cookies", products=[self.product], in_aaq=True)
+        base_data = {
+            "title": "Test question",
+            "content": "Test question content",
+            "email": "t@t.com",
+            "category": topic.id,
+        }
+
+        for troubleshooting in ("[1,2,3]", "123", "true", '"hello"', "not json"):
+            with self.subTest(troubleshooting=troubleshooting):
+                form = NewQuestionForm(
+                    product=self.product,
+                    data={**base_data, "troubleshooting": troubleshooting},
+                )
+
+                self.assertTrue(form.is_valid())
+                self.assertEqual(troubleshooting, form.cleaned_metadata["troubleshooting"])
+
     def test_clean_content_with_html_entities(self):
         """Test that content with only HTML entities is rejected."""
         topic = TopicFactory(slug="cookies", products=[self.product], in_aaq=True)
