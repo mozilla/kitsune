@@ -602,7 +602,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
     # No short_title; the Contributors dash lacks an Overview readout
     # L10n: Unused. A link to be displayed under the Most Visited overview table,
     # which redirects users to the full Most Visited table (https://support.mozilla.org/contributors/most-visited).
-    details_link_text = _lazy("All knowledge base articles...")
+    details_link_text = _lazy("All knowledge base articles…")
     slug = "most-visited"
     # L10n: This is a table column header that refers to article visit count.
     column3_label = _lazy("Visits")
@@ -759,7 +759,7 @@ class TemplateReadout(CategoryReadout):
     # L10n: This is a link displayed under the Templates overview table
     # (https://support.mozilla.org/localization#template-translations for non-en-US locales),
     # which redirects users to the full Templates table (https://support.mozilla.org/localization/template-translations).
-    details_link_text = _lazy("All templates...")
+    details_link_text = _lazy("All templates…")
     filter_kwargs = {"is_template": True}
 
 
@@ -770,7 +770,7 @@ class HowToContributeReadout(CategoryReadout):
     slug = "how-to-contribute"
     # L10n: Unused. A link to be displayed under the How To Contribute overview table,
     # which redirects users to the full How To Contribute table.
-    details_link_text = _lazy("All How To Contribute articles...")
+    details_link_text = _lazy("All How To Contribute articles…")
     filter_kwargs = {"category": HOW_TO_CONTRIBUTE_CATEGORY}
 
 
@@ -781,7 +781,7 @@ class AdministrationReadout(CategoryReadout):
     slug = "administration"
     # L10n: Unused. A link to be displayed under the Administration overview table,
     # which redirects users to the full Administration table.
-    details_link_text = _lazy("All Administration articles...")
+    details_link_text = _lazy("All Administration articles…")
     filter_kwargs = {"category": ADMINISTRATION_CATEGORY}
 
 
@@ -803,7 +803,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     # (https://support.mozilla.org/uk/localization#most-visited-translations for non-en-US locales),
     # which redirects users to the full Most Visited table
     # (https://support.mozilla.org/localization/most-visited-translations for non-en-US locales).
-    details_link_text = _lazy("All translations...")
+    details_link_text = _lazy("All translations…")
 
     def get_queryset(self, max=None):
         if self.mode in {m[0] for m in self.modes}:
@@ -900,7 +900,7 @@ class TemplateTranslationsReadout(Readout):
     # L10n: This is a link displayed under the Templates overview table
     # (https://support.mozilla.org/localization#template-translations for non-en-US locales),
     # which redirects users to the full Templates table (https://support.mozilla.org/localization/template-translations).
-    details_link_text = _lazy("All templates...")
+    details_link_text = _lazy("All templates…")
     column3_label = ""
     modes = []
     default_mode = None
@@ -975,7 +975,7 @@ class UnreviewedReadout(Readout):
     # L10n: This is a link displayed under the Unreviewed Changes overview table
     # (https://support.mozilla.org/localization#unreviewed for non-en-US locales),
     # which redirects users to the full Unreviewed Changes table (https://support.mozilla.org/localization/unreviewed).
-    details_link_text = _lazy("All articles requiring review...")
+    details_link_text = _lazy("All articles requiring review…")
     slug = "unreviewed"
     # L10n: This is a column header for the Unreviewed Changes table, displayed on
     # https://support.mozilla.org/localization#unreviewed (for non-en-US locales)
@@ -1051,7 +1051,7 @@ class UnhelpfulReadout(Readout):
     short_title = pgettext_lazy("document", "Unhelpful")
     # L10n: Unused. This is a link to be displayed under the Unhelpful Documents overview table,
     # which redirects users to the full Unhelpful Documents table (https://support.mozilla.org/contributors/unhelpful).
-    details_link_text = _lazy("All unhelpful articles...")
+    details_link_text = _lazy("All unhelpful articles…")
     slug = "unhelpful"
     # L10n: This is a column header for the Unhelpful Documents table, displayed on
     # https://support.mozilla.org/contributors/unhelpful.
@@ -1128,7 +1128,7 @@ class UnreadyForLocalizationReadout(Readout):
     # No short_title; the Contributors dash lacks an Overview readout
     # L10n: Unused. This is a link to be displayed under the Changes Not Ready For Localization overview table,
     # which redirects users to the full Changes Not Ready For Localization table (https://support.mozilla.org/contributors/unready).
-    details_link_text = _lazy("All articles with changes not ready for localization...")
+    details_link_text = _lazy("All articles with changes not ready for localization…")
     slug = "unready"
     # L10n: This refers to article revisions.
     column4_label = _lazy("Approved")
@@ -1207,7 +1207,7 @@ class NeedsChangesReadout(Readout):
     # No short_title; the Contributors dash lacks an Overview readout
     # L10n: Unused. This is a link to be displayed under the Need Changes overview table,
     # which redirects users to the full Need Changes table (https://support.mozilla.org/contributors/need-changes).
-    details_link_text = _lazy("All articles that require changes...")
+    details_link_text = _lazy("All articles that require changes…")
     slug = "need-changes"
     # L10n: A noun. There are comments for articles in general (on https://support.mozilla.org/contributors/need-changes) and every article revision.
     column4_label = _lazy("Comment")
@@ -1254,7 +1254,7 @@ class CannedResponsesReadout(Readout):
     slug = "canned-responses"
     # L10n: Unused. This is a link to be displayed under the Canned Responses overview table,
     # which redirects users to the full Canned Responses table.
-    details_link_text = _lazy("All canned responses articles...")
+    details_link_text = _lazy("All canned responses articles…")
 
     @classmethod
     def should_show_to(cls, request):

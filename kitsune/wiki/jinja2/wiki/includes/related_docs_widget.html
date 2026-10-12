@@ -1,4 +1,4 @@
-<select id="search-related" class="tom-select-related-docs" placeholder="{{ _('Search for documents...') }}">
+<select id="search-related" class="tom-select-related-docs" placeholder="{{ _('Search for documents…') }}">
   {% if related_documents %}
     {% for doc in related_documents %}
       <option value="{{ doc.pk }}" selected>{{ doc.title }}</option>

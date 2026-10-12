@@ -514,7 +514,7 @@ Marky.Separator.prototype = {
   * The link helper.
   */
 Marky.LinkButton = function () {
-  this.name = gettext("Insert a link...");
+  this.name = gettext("Insert a link…");
   this.classes = "btn-link";
   this.openTag = "[http://example.com ";
   this.closeTag = "]";
@@ -759,7 +759,7 @@ Marky.LinkButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
   * The media helper.
   */
 Marky.MediaButton = function () {
-  this.name = gettext("Insert image...");
+  this.name = gettext("Insert image…");
   this.classes = "btn-media";
   this.openTag = "";
   this.closeTag = "";
@@ -967,7 +967,7 @@ Marky.CannedResponsesButton.prototype = Object.assign({}, Marky.SimpleButton.pro
         '<div id="responses-area">' +
         '<h2 class="heading-label">' + gettext("Categories") + "</h2>" +
         '<ul class="category-list">' +
-        '<li class="status-indicator busy">' + gettext("Loading...") + "</li>" +
+        '<li class="status-indicator busy">' + gettext("Loading…") + "</li>" +
         "</ul></div>" +
         '<div id="response-list-area">' +
         '<h2 class="heading-label">' + gettext("Responses") + "</h2>" +
@@ -1288,7 +1288,7 @@ Marky.CannedResponsesButton.prototype = Object.assign({}, Marky.SimpleButton.pro
   * The quote button helper
   */
 Marky.QuoteButton = function () {
-  var name = gettext("Quote previous message...");
+  var name = gettext("Quote previous message…");
   var readMessage = document.getElementById("read-message");
   var previousContent = readMessage ? readMessage.getAttribute("data-message-content") : "";
   var fromLink = document.querySelector(".from a");

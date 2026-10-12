@@ -29,7 +29,7 @@ function init() {
   // Hide reply button and shrink the textarea.
   var area = document.querySelector('#read-message textarea#id_message');
   if (area) {
-    area.setAttribute('placeholder', gettext('Reply...'));
+    area.setAttribute('placeholder', gettext('Reply…'));
     hideAll('#read-message .editor-tools');
     hideAll('#read-message input[type=submit]');
 

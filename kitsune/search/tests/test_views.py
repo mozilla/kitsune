@@ -238,7 +238,7 @@ class TestHybridSearchSwitch(TestCase):
         doc = pq(response.content)
         self.assertIn(
             "Showing the most relevant results for firefox in All Products "
-            "from about 23 potential matches",
+            "from 23 potential matches",
             doc(".sumo-page-intro").text(),
         )
         self.assertEqual(doc(".pagination a").length, 2)
@@ -250,6 +250,16 @@ class TestHybridSearchSwitch(TestCase):
         self.assertEqual(event["search_result_source"], "kb")
         self.assertEqual(event["search_result_rank"], 11)
         self.assertNotIn("score", event)
+
+    @override_switch("retrieval-hybrid-search", active=True)
+    def test_html_does_not_approximate_a_lone_result(self):
+        url = reverse("search", locale="en-US")
+        with mock.patch("kitsune.search.views.run_hybrid_search", return_value=HYBRID_RESULT):
+            response = self.client.get(f"{url}?q=firefox")
+
+        heading = pq(response.content)(".sumo-page-intro").text()
+        self.assertIn("Showing the only result for firefox in All Products", heading)
+        self.assertNotIn("potential match", heading)
 
     @override_settings(RETRIEVAL_MAX_PAGE_OFFSET=20)
     @override_switch("retrieval-hybrid-search", active=True)

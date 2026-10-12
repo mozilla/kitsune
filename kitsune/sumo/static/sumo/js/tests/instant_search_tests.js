@@ -158,7 +158,7 @@ describe('instant search', () => {
       expect(document.querySelector('.search-results-heading').textContent)
         .to.include('Showing the most relevant results');
       expect(document.querySelector('.search-results-heading').textContent)
-        .to.include('about 23 potential matches');
+        .to.include('23 potential matches');
       expect(document.querySelector('.topic-article--text strong').textContent).to.equal('Matched');
       expect(document.querySelectorAll('.pagination a')).to.have.length(2);
 
@@ -168,6 +168,41 @@ describe('instant search', () => {
       expect(event.search_result_source).to.equal('kb');
       expect(event.search_result_rank).to.equal(11);
       expect(event).not.to.have.property('score');
+    });
+
+    it('renders a dedicated heading for a lone approximate result', () => {
+      const searchInput = document.getElementById('search-q');
+      searchInput.value = 'sole match';
+      fireInput(searchInput);
+
+      clock.tick(600);
+      cxhrMock.firstCall.args[1].success({
+        num_results: 1,
+        total_is_approximate: true,
+        q: 'sole match',
+        product_titles: 'All Products',
+        products: [],
+        w: 3,
+        results: [{
+          type: 'document',
+          url: '/kb/article',
+          title: 'Article',
+          search_summary: 'summary',
+          rank: 1,
+          evidence_locale: 'en-US',
+          display_locale: 'en-US',
+          locale_fallback: false,
+        }],
+        pagination: {
+          number: 1,
+          has_previous: false,
+          has_next: false,
+        },
+      });
+
+      const heading = document.querySelector('.search-results-heading').textContent;
+      expect(heading).to.include('Showing the only result');
+      expect(heading).not.to.include('potential match');
     });
   });
 });

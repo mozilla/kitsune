@@ -38,7 +38,7 @@ FREQUENCY_CHOICES = [
     ("EVERY_TIME", _lazy("Every time Firefox opened")),
 ]
 # L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
-STARTED_LABEL = _lazy("This started when...")
+STARTED_LABEL = _lazy("This started when…")
 # L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 PLUGINS_LABEL = _lazy("Installed plugins")
 # L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
@@ -252,7 +252,7 @@ class NewQuestionForm(EditQuestionForm):
         label=CATEGORY_LABEL,
         queryset=Topic.objects.none(),
         # L10n: A default option for dropdown menus (displayed when none of the actual options is selected).
-        empty_label=_lazy("Please select..."),
+        empty_label=_lazy("Please select…"),
         required=True,
     )
 

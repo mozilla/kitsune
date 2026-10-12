@@ -61,7 +61,7 @@ export function init() {
           opts.add.style.display = "none";
         }
         if (opts.adding) {
-          opts.adding.textContent = interpolate(gettext('Uploading "%s"...'), [opts.filename]);
+          opts.adding.textContent = interpolate(gettext('Uploading "%s"…'), [opts.filename]);
           opts.adding.style.display = "";
         }
         if (opts.loading) {
