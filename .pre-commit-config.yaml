@@ -10,7 +10,7 @@ repos:
       - id: check-merge-conflict
       - id: debug-statements
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.9
+    rev: v0.16.10
     hooks:
       - id: ruff-check
         files: "^kitsune/"
@@ -37,25 +37,25 @@ repos:
         language: system
         pass_filenames: false
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.3.1
+    rev: v2.4.0
     hooks:
       - id: mypy
         additional_dependencies:
-          - boto3-stubs==1.43.105
+          - boto3-stubs==1.43.108
           - types-redis==4.6.0.20241004
-          - types-requests==2.33.0.20260906
+          - types-requests==2.33.0.20261006
           - types-python-dateutil==2.9.0.20260807
-          - types-simplejson==4.1.0.20260724
+          - types-simplejson==4.2.0.20261006
           - types-PyYAML==6.0.12.20260906
-          - types-Markdown==3.10.2.20260712
+          - types-Markdown==3.10.2.20261007
         files: "^kitsune/"
         exclude: "/migrations/"
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v10.11.0
+    rev: v10.12.0
     hooks:
       - id: eslint
         files: "^(svelte/|webpack/).*\\.(js|ts|jsx|tsx)$"
         exclude: "webpack/.*|webpack\\..*\\.js"
         additional_dependencies:
-          - eslint@10.11.0
+          - eslint@10.12.0
           - eslint-plugin-import-x@4.17.1
