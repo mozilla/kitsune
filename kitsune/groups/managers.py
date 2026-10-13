@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db.models import Exists, OuterRef, Q
 from django.db.models.functions import Length, Substr
-from treebeard.mp_tree import MP_NodeManager
+from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
 
 from kitsune.groups.membership import (
     guard_enterprise_group_move,
@@ -10,7 +10,18 @@ from kitsune.groups.membership import (
 )
 
 
+class GroupProfileQuerySet(MP_NodeQuerySet):
+    def delete(self, *args, **kwargs):
+        # Treebeard reads paths in one query and deletes by path in another, so a
+        # move in between could make it delete the wrong subtree.
+        with lock_enterprise_hierarchy(using=self.db, exclusive=True):
+            return super().delete(*args, **kwargs)
+
+
 class GroupProfileManager(MP_NodeManager):
+    def get_queryset(self):
+        return GroupProfileQuerySet(self.model, using=self._db).order_by("path")
+
     def add_root(self, create_kwargs=None, *, instance=None):
         with lock_enterprise_hierarchy(using=self.db, exclusive=True):
             node = super().add_root(create_kwargs, instance=instance)

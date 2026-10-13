@@ -1,8 +1,13 @@
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
+from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
+from django.db.models import Exists, OuterRef
+from django.db.models.functions import Length, Substr
 from django.http import HttpResponseBadRequest
+from django.utils.text import capfirst
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
@@ -154,4 +159,34 @@ class GroupProfileAdmin(TreeAdmin):
         form.instance.group.user_set.add(*form.instance.leaders.all())
 
 
+class GroupAdmin(DjangoGroupAdmin):
+    def get_deleted_objects(self, objs, request):
+        """
+        Add the profiles that go with the groups to the delete confirmation page.
+
+        GroupProfile.group doesn't cascade (see groups.signals.delete_group_profiles),
+        so Django can't see that the profiles, and their subgroups' profiles, get
+        deleted too. Without this, the page wouldn't list them, and staff could delete
+        them without permission to delete group profiles.
+        """
+        to_delete, model_count, perms_needed, protected = super().get_deleted_objects(
+            objs, request
+        )
+        own_profile_at_or_above = GroupProfile.objects.filter(
+            group__in=objs, path=Substr(OuterRef("path"), 1, Length("path"))
+        )
+        # The groups' profiles and every profile below them, each once, in tree order.
+        if profiles := list(GroupProfile.objects.filter(Exists(own_profile_at_or_above))):
+            opts = GroupProfile._meta
+            to_delete.extend(
+                f"{capfirst(opts.verbose_name)}: {profile.slug}" for profile in profiles
+            )
+            model_count[opts.verbose_name_plural] = len(profiles)
+            if not request.user.has_perm(f"{opts.app_label}.delete_{opts.model_name}"):
+                perms_needed.add(opts.verbose_name)
+        return to_delete, model_count, perms_needed, protected
+
+
 admin.site.register(GroupProfile, GroupProfileAdmin)
+admin.site.unregister(Group)
+admin.site.register(Group, GroupAdmin)
