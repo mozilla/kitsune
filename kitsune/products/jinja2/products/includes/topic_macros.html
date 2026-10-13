@@ -65,6 +65,7 @@
           {% if is_enterprise and is_ticketed %}
             {{ _('Partner Support') }}
           {% elif is_enterprise and not user.is_authenticated %}
+            {# L10n: A header, displayed for enterprise users when asking a new question or as a title of the Still Need Help banner. Attention: This is a brand name that should not be tranlsated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
             {{ _('Firefox Professional Support') }}
           {% else %}
             {{ _('Still need help?') }}
@@ -74,6 +75,7 @@
           {% if is_enterprise and is_ticketed %}
             {{ _("Get dedicated technical assistance and deployment guidance from our team, with expert support tailored to your organization's needs.") }}
           {% elif is_enterprise and not user.is_authenticated %}
+            {# L10n: Displayed for non-uthenticated enterprise users. Attention: Firefox Professional Support is a brand name that should not be tranlsated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
             {{ _("Dedicated technical assistance and deployment guidance are available to Firefox Professional Support customers.") }}
           {% elif is_ticketed %}
             {{ _("We're here for you! If you haven't found a solution after exploring our help articles, you can get in touch with our support team.") }}
