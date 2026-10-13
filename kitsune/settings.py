@@ -726,6 +726,8 @@ AVATAR_SIZE = 200  # in pixels
 MAX_AVATAR_FILE_SIZE = 1310720  # 1MB, in bytes
 GROUP_AVATAR_PATH = "uploads/groupavatars/"
 ENTERPRISE_GROUP_SLUG = config("ENTERPRISE_GROUP_SLUG", default="firefox-enterprise")
+ENTERPRISE_ONBOARDING_LANDING_PATH = config("ENTERPRISE_ONBOARDING_LANDING_PATH", default="")
+ENTERPRISE_INVITATION_MAX_AGE = config("ENTERPRISE_INVITATION_MAX_AGE", default=604800, cast=int)
 
 # Informs django-guardian that we don't want to enable object-level
 # permissions for anonymous users.

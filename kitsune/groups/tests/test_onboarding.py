@@ -5,7 +5,7 @@ from unittest.mock import patch
 import requests
 from django.contrib.auth.models import AnonymousUser, Group
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, connections
+from django.db import IntegrityError, connections, transaction
 from django.http import Http404
 from django.test import TransactionTestCase, override_settings
 from pyquery import PyQuery as pq
@@ -14,6 +14,7 @@ from zenpy.lib.exception import APIException, RatelimitBudgetExceeded
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.customercare.zendesk import ZendeskProvisioningConflict
+from kitsune.groups import membership
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.onboarding import (
     can_onboard_enterprise,
@@ -169,9 +170,18 @@ class EnterpriseCompanyTests(TestCase):
         company = self._child()
         sibling = self._child()
         member = UserFactory(groups=[company.group])
-        self.assertEqual(get_enterprise_company(self.root, viewer=member, pk=company.pk), company)
-        with self.assertRaises(Http404):
-            get_enterprise_company(self.root, viewer=member, pk=sibling.pk)
+        for for_update in (False, True):
+            with self.subTest(for_update=for_update):
+                self.assertEqual(
+                    get_enterprise_company(
+                        self.root, viewer=member, pk=company.pk, for_update=for_update
+                    ),
+                    company,
+                )
+                with self.assertRaises(Http404):
+                    get_enterprise_company(
+                        self.root, viewer=member, pk=sibling.pk, for_update=for_update
+                    )
 
     def test_missing_and_nested_root_configuration_refused(self):
         nested = self._child(slug="nested-root")
@@ -410,6 +420,46 @@ class EnterpriseCompanyTests(TestCase):
         self.assertEqual(organization.group, company.group)
         self.assertTrue(organization.include_live_chat)
 
+    def test_creation_rechecks_authorization_after_remote_validation(self):
+        def validate_organization(_organization_id):
+            self.root.leaders.remove(self.actor)
+            return "123"
+
+        with patch(
+            "kitsune.groups.onboarding.ZendeskClient.validate_organization",
+            side_effect=validate_organization,
+        ):
+            self._assert_rejected_creation(PermissionDenied, zendesk_organization_id="123")
+        self.assertFalse(self.root.leaders.filter(pk=self.actor.pk).exists())
+
+    def test_settings_recheck_link_after_remote_validation(self):
+        company = self._child()
+        organization = SupportOrganizationFactory(config=self.config, group=company.group)
+        mapping = ZendeskOrganization.objects.create(group_profile=company)
+
+        def validate_organization(_organization_id):
+            ZendeskOrganization.objects.filter(pk=mapping.pk).update(zendesk_id="456")
+            return "123"
+
+        with patch(
+            "kitsune.groups.onboarding.ZendeskClient.validate_organization",
+            side_effect=validate_organization,
+        ):
+            with self.assertRaises(ValidationError) as raised:
+                configure_enterprise_company(
+                    actor=self.actor,
+                    company=company,
+                    include_live_chat=True,
+                    zendesk_organization_id="123",
+                )
+        self.assertEqual(
+            raised.exception.error_dict["zendesk_organization_id"][0].code, "company_conflict"
+        )
+        mapping.refresh_from_db()
+        organization.refresh_from_db()
+        self.assertEqual(mapping.zendesk_id, "456")
+        self.assertFalse(organization.include_live_chat)
+
     def test_remote_failures_are_safe_and_leave_no_partial_company(self):
         for error, code in (
             (ZendeskProvisioningConflict("resource_missing"), "resource_missing"),
@@ -473,6 +523,67 @@ class EnterpriseCompanyConcurrencyTests(TransactionTestCase):
             product=ProductFactory(slug=self.root.slug),
             zendesk_config=ZendeskConfigFactory(),
         )
+
+    def test_remote_validation_does_not_block_hierarchy_or_company_locks(self):
+        company = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": GroupFactory()}
+        )
+        mapping = ZendeskOrganization.objects.create(group_profile=company)
+
+        def can_lock_company():
+            try:
+                with transaction.atomic():
+                    with connections["default"].cursor() as cursor:
+                        cursor.execute(
+                            "SELECT pg_try_advisory_xact_lock(%s)",
+                            [membership._HIERARCHY_LOCK_KEY],
+                        )
+                        if not cursor.fetchone()[0]:
+                            return False
+                    list(
+                        GroupProfile.objects.select_for_update(nowait=True).filter(
+                            pk__in=(self.root.pk, company.pk)
+                        )
+                    )
+                    ZendeskOrganization.objects.select_for_update(nowait=True).get(pk=mapping.pk)
+                return True
+            finally:
+                connections.close_all()
+
+        with ThreadPoolExecutor(max_workers=1) as pool:
+
+            def validate_organization(organization_id):
+                self.assertTrue(pool.submit(can_lock_company).result(timeout=10))
+                return organization_id
+
+            with patch(
+                "kitsune.groups.onboarding.ZendeskClient.validate_organization",
+                side_effect=validate_organization,
+            ):
+                for action, organization_id in (("create", "123"), ("configure", "456")):
+                    with self.subTest(action=action):
+                        if action == "create":
+                            created = create_enterprise_company(
+                                actor=self.actor,
+                                name="Remotely Linked Company",
+                                include_live_chat=False,
+                                zendesk_organization_id=organization_id,
+                            )
+                            linked_company = created
+                        else:
+                            configure_enterprise_company(
+                                actor=self.actor,
+                                company=company,
+                                include_live_chat=False,
+                                zendesk_organization_id=organization_id,
+                            )
+                            linked_company = company
+                        self.assertEqual(
+                            ZendeskOrganization.objects.get(
+                                group_profile=linked_company
+                            ).zendesk_id,
+                            organization_id,
+                        )
 
     def test_simultaneous_case_insensitive_company_names_have_one_winner(self):
         barrier = Barrier(2, timeout=10)

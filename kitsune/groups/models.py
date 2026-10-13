@@ -3,7 +3,9 @@ from typing import override
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db import models
+from django.db.models.functions import Lower
 from django.template.defaultfilters import slugify
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _lazy
 from treebeard.mp_tree import MP_Node
 
@@ -222,3 +224,50 @@ class GroupProfile(TreeModelBase):
             return True
 
         return self.leaders.count() > 1
+
+
+class EnterpriseInvitation(ModelBase):
+    class Status(models.TextChoices):
+        PENDING = "pending", _lazy("Pending")
+        FAILED = "failed", _lazy("Failed")
+        READY = "ready", _lazy("Ready")
+        ACCEPTED = "accepted", _lazy("Accepted")
+
+    company = models.ForeignKey(
+        GroupProfile, on_delete=models.CASCADE, related_name="enterprise_invitations"
+    )
+    support_config = models.ForeignKey(
+        "products.ProductSupportConfig", null=True, on_delete=models.SET_NULL
+    )
+    email = models.EmailField(max_length=254)
+    user = models.ForeignKey(
+        User, null=True, on_delete=models.SET_NULL, related_name="enterprise_invitations"
+    )
+    created_by = models.ForeignKey(
+        User, null=True, on_delete=models.SET_NULL, related_name="enterprise_invitations_created"
+    )
+    created_user = models.BooleanField(default=False)
+    created = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)
+    completed_actions = models.JSONField(default=list)
+    failed_action = models.CharField(max_length=64, blank=True)
+    error_code = models.CharField(max_length=64, blank=True)
+    token_version = models.PositiveIntegerField(default=1)
+    expires_at = models.DateTimeField(null=True)
+    email_queued_at = models.DateTimeField(null=True)
+    accepted_at = models.DateTimeField(null=True)
+    welcome_email = models.ForeignKey(
+        "post_office.Email",
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="enterprise_invitations",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower("email"),
+                condition=~models.Q(status="accepted"),
+                name="unique_open_enterprise_invitation_email",
+            )
+        ]

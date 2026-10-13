@@ -72,7 +72,7 @@
       <h3 class="card--title">{{ _('Manage Group') }}</h3>
 
       <div class="quick-action">
-        <input type="checkbox" id="toggle-add-users" class="action-toggle" />
+        <input type="checkbox" id="toggle-add-users" class="action-toggle"{% if user_form.errors %} checked{% endif %} />
         <label for="toggle-add-users" class="action-button">
           <span class="action-icon">+</span>
           {{ _('Add Users') }}
@@ -80,7 +80,10 @@
         <div class="action-form">
           <form id="add-users-form" method="POST">
             {% csrf_token %}
-            {{ member_form.users|safe }}
+            {{ user_form.users|safe }}
+            {% for error in user_form.users.errors %}
+              <p class="form-error is-visible" role="alert">{{ error }}</p>
+            {% endfor %}
             <div class="action-buttons">
               <button type="submit" name="action" value="member" formaction="{{ url('groups.add_member', profile.slug) }}" class="sumo-button secondary-button button-sm">
                 {{ _('Add to Members') }}

@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
+from kitsune.groups.membership import validate_enterprise_memberships
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.form_fields import MultiUsernameField
 from kitsune.sumo.widgets import ImageWidget
@@ -58,6 +59,16 @@ class AddUserForm(forms.Form):
             attrs={"placeholder": USERS_PLACEHOLDER, "class": "user-autocomplete"}
         )
     )
+
+    def __init__(self, *args, group=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.group = group
+
+    def clean_users(self):
+        users = self.cleaned_data["users"]
+        if self.group is not None:
+            validate_enterprise_memberships([user.pk for user in users], [self.group.pk])
+        return users
 
 
 class EnterpriseCompanyForm(forms.Form):
