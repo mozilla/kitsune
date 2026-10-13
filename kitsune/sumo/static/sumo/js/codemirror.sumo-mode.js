@@ -167,7 +167,7 @@ import CodeMirror from "codemirror";
     fx_version_os_version: [
       {
         token: ['markup.italic'],
-        regex: /((?:,\s?)?(?:not\s)?(?:(?:win(?:xp|7|8)?|mac|linux|android|maemo)|=?(?:fx|tb|m)\d*))+/,
+        regex: /((?:,\s?)?(?:not\s)?(?:(?:win(?:xp|7|8|10|11)?|mac|linux|android|maemo)|=?(?:fx|tb|m|ios)\d*))+/,
         next: 'close_tag'
       },
       {
