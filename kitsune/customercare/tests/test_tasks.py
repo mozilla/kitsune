@@ -15,10 +15,12 @@ from kitsune.customercare.tasks import (
     sync_active_support_tickets,
     sync_support_ticket,
     tag_revoked_chat_tickets,
+    update_zendesk_user,
     zendesk_submission_classifier,
 )
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.customercare.zendesk import CHAT_REVOKED_TAG
+from kitsune.groups.tests import EnterpriseInvitationFactory
 from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.llm.support.classifiers import classify_zendesk_submission
 from kitsune.products.tests import (
@@ -81,6 +83,38 @@ class CreateZendeskUserTests(TestCase):
         create_zendesk_user(user_id)
 
         mock_client.assert_not_called()
+
+
+@patch("kitsune.customercare.tasks.ZendeskClient")
+class UpdateZendeskUserTests(TestCase):
+    def test_prepared_identity_is_not_synced_until_mozilla_account_claim(self, mock_client):
+        user = UserFactory(is_active=False, profile__fxa_uid=None, profile__name="")
+        EnterpriseInvitationFactory(user=user, created_user=True)
+        user.profile.zendesk_id = "789"
+        user.profile.save(update_fields=["zendesk_id"])
+
+        update_zendesk_user(user.pk)
+
+        mock_client.assert_not_called()
+
+        # Claim supplies the verified identity before the invitation is marked accepted.
+        user.profile.fxa_uid = "claimed-mozilla-account"
+        user.profile.save(update_fields=["fxa_uid"])
+        mock_client.reset_mock()
+        update_zendesk_user(user.pk)
+
+        synced_user = mock_client.return_value.update_user.call_args.args[0]
+        self.assertEqual(synced_user.profile.fxa_uid, "claimed-mozilla-account")
+        self.assertEqual(synced_user.profile.zendesk_id, "789")
+
+    def test_existing_accounts_without_invitations_keep_syncing(self, mock_client):
+        user = UserFactory(profile__fxa_uid=None)
+        user.profile.zendesk_id = "789"
+        user.profile.save(update_fields=["zendesk_id"])
+
+        update_zendesk_user(user.pk)
+
+        mock_client.return_value.update_user.assert_called_once_with(user)
 
 
 class ZendeskSubmissionClassifierTests(TestCase):

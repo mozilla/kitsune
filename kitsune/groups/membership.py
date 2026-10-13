@@ -86,15 +86,14 @@ def _validate_memberships(user_ids, group_ids, *, replace, using, check_existing
 def validate_enterprise_memberships(user_ids, group_ids, *, replace=False, using="default"):
     """Validate additions, or a complete replacement, without disclosing memberships.
 
-    This is early feedback only. Writers must use the M2M managers or hold
+    This read-only check takes no locks. Writers must use the M2M managers or hold
     guard_enterprise_memberships around both validation and persistence.
     """
     user_ids = tuple(set(user_ids))
     group_ids = tuple(set(group_ids))
     if not user_ids:
         return
-    with lock_enterprise_hierarchy(using=using):
-        _validate_memberships(user_ids, group_ids, replace=replace, using=using)
+    _validate_memberships(user_ids, group_ids, replace=replace, using=using)
 
 
 def _lock_users(user_ids, using):

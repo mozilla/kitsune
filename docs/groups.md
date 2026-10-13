@@ -196,6 +196,11 @@ reassigned. Equivalent spellings of the same numeric ID retain the existing link
 Names are never used to adopt a remote organization. Leaving the ID blank records
 only local support settings; it does not create a remote organization or user.
 
+For company creation and support settings, remote verification completes before
+acquiring hierarchy or company-row locks. The locked mutation rechecks operator
+permissions, company scope, support configuration, and link ownership before
+saving. An unchanged canonical organization link does not require a provider call.
+
 Missing prerequisites and conflicts leave the operation unchanged and display a
 form error. Read-only mode refuses both mutations. Department groups and companies
 outside the configured root cannot be targeted.
@@ -203,7 +208,7 @@ outside the configured root cannot be targeted.
 ## Enterprise account preparation
 
 Account preparation is a service-only intake operation that prepares a SUMO
-account and records invitation progress. There is no invitation form or HTTP
+account and records invitation state. There is no invitation form or HTTP
 action. It requires the same operator permissions and company/support prerequisites
 as company setup and is unavailable in read-only mode.
 
@@ -232,7 +237,7 @@ ordinary sign-in, and there is no invitation delivery or acceptance flow.
 
 Only one unfinished invitation is allowed per email address, ignoring case.
 Repeating intake for the same company preserves the prepared account and invitation
-progress; an unfinished invitation to another company is refused. If an accepted
+state; an unfinished invitation to another company is refused. If an accepted
 invitation's user still belongs to that company, the accepted record is reused.
 An eligible former member can receive a new invitation record without deleting
 accepted history.
@@ -241,10 +246,11 @@ Repeated intake refuses an unlinked, invitation-created account if it has been
 activated, given a usable password, migrated to Mozilla accounts, or used to sign
 in.
 
-If a prepared account has been removed or its invitation's support configuration
-has changed, intake reports an error rather than recreating the account or
-silently choosing different support settings. Failed intake leaves no partial
-account preparation.
+Intake and provisioning use the current active enterprise support configuration;
+invitations do not store a configuration snapshot. Replacing that configuration
+requires a matching company support organization. Missing prepared accounts,
+support organizations, or mappings are not recreated for an existing invitation.
+Failed intake leaves no partial account preparation.
 
 Intake also validates these deployment settings:
 
@@ -257,6 +263,53 @@ Intake also validates these deployment settings:
 These settings do not make preparation send expiring links or redirect invitees.
 See [Users](users.md#enterprise-account-preparation) for the sign-in restrictions
 on prepared accounts.
+
+## Enterprise Zendesk provisioning
+
+Call `kitsune.groups.provisioning.provision_enterprise_invitation(actor=..., invitation=...)`
+to create or link the Zendesk organization, user, and organization membership.
+Intake remains local; no endpoint or background task invokes this service.
+
+Provisioning rechecks current operator permissions, the prepared account, the
+current enterprise support configuration, and the company-membership boundary.
+It refuses read-only mode and does not recreate missing local resources. Accepted
+history returns before prepared-resource validation or hierarchy/row locking.
+
+Other Zendesk organization memberships and their defaults are preserved; they do
+not block adding the requested membership. Conflicting identities and Zendesk IDs
+owned by another SUMO profile require administrator resolution.
+
+Only the account-email lock is held during Zendesk requests. Preflight validation
+is read-only and takes no hierarchy or row locks. After the requests finish,
+provisioning takes the hierarchy and row locks, reloads the records, and validates
+again before saving IDs or status. A link changed in flight is accepted only when
+it matches a remote ID successfully resolved by this run. Conflicting company,
+account, mapping, or identity changes, or revoked permissions, stop stale local
+writes; remote work may already have succeeded and can be reconciled after staff
+correct the cause.
+
+### Status and manual recovery
+
+- Success returns `ready` with the organization/user IDs saved and the target
+  Zendesk membership established. This marks Zendesk preparation only.
+- Expected provider failures return `failed`, the failed operation, and a safe
+  error code—not raw provider responses. Successful returned IDs are retained only
+  after the final locked validation passes.
+- Unexpected failures are raised and roll back local changes. Remote writes may
+  already have succeeded and are reconciled on a later rerun.
+- Staff retry by calling the same service again. The fixed organization, user, and
+  membership sequence reruns using saved IDs; there is no per-step action journal
+  or automatic retry schedule. Ready invitations can also be revalidated.
+- Cleared local links can be recovered through the stable organization UUID or
+  user email. An explicitly linked organization with a different external key may
+  need manual correction. Missing saved remote resources fail rather than silently
+  replacing them.
+- Accepted history remains unchanged. Preflight authorization or configuration
+  failures raise before remote work; changes detected afterward stop local writes.
+
+Provisioning does not activate SUMO accounts, grant local memberships, send mail,
+or accept invitations. See [Zendesk provisioning](zendesk.md#enterprise-provisioning)
+for provider permissions, identity rules, and recovery limits.
 
 ## Enterprise company membership
 

@@ -236,9 +236,6 @@ class EnterpriseInvitation(ModelBase):
     company = models.ForeignKey(
         GroupProfile, on_delete=models.CASCADE, related_name="enterprise_invitations"
     )
-    support_config = models.ForeignKey(
-        "products.ProductSupportConfig", null=True, on_delete=models.SET_NULL
-    )
     email = models.EmailField(max_length=254)
     user = models.ForeignKey(
         User, null=True, on_delete=models.SET_NULL, related_name="enterprise_invitations"
@@ -249,7 +246,6 @@ class EnterpriseInvitation(ModelBase):
     created_user = models.BooleanField(default=False)
     created = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)
-    completed_actions = models.JSONField(default=list)
     failed_action = models.CharField(max_length=64, blank=True)
     error_code = models.CharField(max_length=64, blank=True)
     token_version = models.PositiveIntegerField(default=1)

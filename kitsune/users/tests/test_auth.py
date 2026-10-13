@@ -468,7 +468,6 @@ class FXAAuthBackendTests(TestCase):
             email=user.email,
             user=user,
             created_user=True,
-            completed_actions=["sumo_account"],
         )
         return user
 

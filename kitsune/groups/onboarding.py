@@ -114,7 +114,10 @@ def get_enterprise_support_config(*, include_live_chat=False) -> ProductSupportC
     return config
 
 
-def _require_onboarding_allowed(actor, root):
+def require_onboarding_allowed(actor, root):
+    actor = (
+        User.all_users.filter(pk=actor.pk).first() if actor and actor.is_authenticated else None
+    )
     if not can_onboard_enterprise(actor, root):
         raise PermissionDenied
     if settings.READ_ONLY:
@@ -138,7 +141,49 @@ def _require_onboarding_allowed(actor, root):
         )
 
 
-def _require_unique_name_and_slug(name, slug):
+def require_invitation_account(*, user, profile, company, config, invitation=None):
+    """Check account eligibility and company ownership without changing the account."""
+    if (
+        profile is None
+        or profile.account_type != Profile.AccountType.REGULAR
+        or user.is_staff
+        or user.is_superuser
+    ):
+        eligible = False
+    elif (
+        invitation
+        and invitation.created_user
+        and invitation.accepted_at is None
+        and not profile.fxa_uid
+    ):
+        # A prepared account is reusable only while it remains unused and unclaimed.
+        eligible = not (
+            user.is_active
+            or user.has_usable_password()
+            or profile.is_fxa_migrated
+            or user.last_login is not None
+        )
+    else:
+        eligible = user.is_active and bool(profile.fxa_uid)
+    if not eligible:
+        raise ValidationError(
+            _("This account cannot be invited automatically. Contact an administrator."),
+            code="account_conflict",
+        )
+    validate_enterprise_memberships([user.pk], [company.group_id])
+    if (
+        GroupProfile.objects.containing(user)
+        .filter(group__support_organizations__config=config)
+        .exclude(group_id=company.group_id)
+        .exists()
+    ):
+        raise ValidationError(
+            _("This account already belongs to another support organization."),
+            code="company_conflict",
+        )
+
+
+def require_unique_company_identity(name, slug):
     if Group.objects.filter(name__iexact=name).exists():
         raise ValidationError(
             {
@@ -159,7 +204,7 @@ def _require_unique_name_and_slug(name, slug):
         )
 
 
-def _save_support_organization(company, config, include_live_chat):
+def save_support_organization(company, config, include_live_chat):
     organization = (
         SupportOrganization.objects.select_for_update()
         .filter(config=config, group=company.group)
@@ -194,7 +239,7 @@ def _save_support_organization(company, config, include_live_chat):
     return organization
 
 
-def _validate_zendesk_organization_id(zendesk_organization_id, *, company=None):
+def validate_zendesk_organization_id(zendesk_organization_id, *, company=None):
     requested_id = (zendesk_organization_id or "").strip()
     if not requested_id:
         return None
@@ -235,7 +280,7 @@ def _validate_zendesk_organization_id(zendesk_organization_id, *, company=None):
         ) from None
 
 
-def _link_zendesk_organization(company, canonical_id):
+def link_zendesk_organization(company, canonical_id):
     mapping, _created = ZendeskOrganization.objects.select_for_update().get_or_create(
         group_profile=company
     )
@@ -276,7 +321,7 @@ def create_enterprise_company(
     *, actor, name: str, include_live_chat: bool, zendesk_organization_id: str | None = None
 ) -> GroupProfile:
     root = get_enterprise_root()
-    _require_onboarding_allowed(actor, root)
+    require_onboarding_allowed(actor, root)
     get_enterprise_support_config(include_live_chat=include_live_chat)
     name = name.strip()
     if not name or len(name) > Group._meta.get_field("name").max_length:
@@ -299,15 +344,15 @@ def create_enterprise_company(
                 )
             }
         )
-    _require_unique_name_and_slug(name, slug)
-    canonical_id = _validate_zendesk_organization_id(zendesk_organization_id)
+    require_unique_company_identity(name, slug)
+    canonical_id = validate_zendesk_organization_id(zendesk_organization_id)
 
     # Recheck mutable prerequisites after the remote lookup, before any writes.
     with lock_enterprise_hierarchy(exclusive=True):
         root = get_enterprise_root(for_update=True)
-        _require_onboarding_allowed(actor, root)
+        require_onboarding_allowed(actor, root)
         config = get_enterprise_support_config(include_live_chat=include_live_chat)
-        _require_unique_name_and_slug(name, slug)
+        require_unique_company_identity(name, slug)
         try:
             with transaction.atomic():
                 group = Group.objects.create(name=name)
@@ -315,10 +360,10 @@ def create_enterprise_company(
                     root, create_kwargs={"group": group, "slug": slug}
                 )
         except IntegrityError:
-            _require_unique_name_and_slug(name, slug)
+            require_unique_company_identity(name, slug)
             raise
-        _save_support_organization(company, config, include_live_chat)
-        _link_zendesk_organization(company, canonical_id)
+        save_support_organization(company, config, include_live_chat)
+        link_zendesk_organization(company, canonical_id)
         return company
 
 
@@ -326,18 +371,18 @@ def configure_enterprise_company(
     *, actor, company, include_live_chat: bool, zendesk_organization_id: str | None = None
 ) -> SupportOrganization:
     root = get_enterprise_root()
-    _require_onboarding_allowed(actor, root)
+    require_onboarding_allowed(actor, root)
     company = get_enterprise_company(root, pk=company.pk)
     get_enterprise_support_config(include_live_chat=include_live_chat)
-    canonical_id = _validate_zendesk_organization_id(zendesk_organization_id, company=company)
+    canonical_id = validate_zendesk_organization_id(zendesk_organization_id, company=company)
 
     with lock_enterprise_hierarchy():
         root = get_enterprise_root()
-        _require_onboarding_allowed(actor, root)
+        require_onboarding_allowed(actor, root)
         company = get_enterprise_company(root, pk=company.pk, for_update=True)
         config = get_enterprise_support_config(include_live_chat=include_live_chat)
-        organization = _save_support_organization(company, config, include_live_chat)
-        _link_zendesk_organization(company, canonical_id)
+        organization = save_support_organization(company, config, include_live_chat)
+        link_zendesk_organization(company, canonical_id)
         return organization
 
 
@@ -390,7 +435,7 @@ def invite_enterprise_user(
         )
         with lock_enterprise_hierarchy():
             root = get_enterprise_root()
-            _require_onboarding_allowed(actor, root)
+            require_onboarding_allowed(actor, root)
             company = get_enterprise_company(root, pk=company.pk, for_update=True)
             if invitation and invitation.company_id != company.pk:
                 raise ValidationError(
@@ -414,13 +459,9 @@ def invite_enterprise_user(
                 .filter(group_profile=company)
                 .first()
             )
-            if invitation and (
-                invitation.support_config_id != config.pk or support is None or mapping is None
-            ):
+            if invitation and (support is None or mapping is None):
                 raise ValidationError(
-                    _(
-                        "This invitation's support configuration changed. Contact an administrator."
-                    ),
+                    _("This company's support settings are incomplete. Contact an administrator."),
                     code="configuration_error",
                 )
             if invitation and invitation.user_id is None:
@@ -442,49 +483,16 @@ def invite_enterprise_user(
             user = users[0] if users else None
             if user is not None:
                 profile = Profile.all_profiles.select_for_update().filter(user=user).first()
-                if (
-                    profile is None
-                    or profile.account_type != Profile.AccountType.REGULAR
-                    or user.is_staff
-                    or user.is_superuser
-                ):
-                    eligible = False
-                elif (
-                    invitation
-                    and invitation.created_user
-                    and invitation.accepted_at is None
-                    and not profile.fxa_uid
-                ):
-                    # A prepared account is reusable only while it remains unused and unclaimed.
-                    eligible = not (
-                        user.is_active
-                        or user.has_usable_password()
-                        or profile.is_fxa_migrated
-                        or user.last_login is not None
-                    )
-                else:
-                    eligible = user.is_active and bool(profile.fxa_uid)
-                if not eligible:
-                    raise ValidationError(
-                        _(
-                            "This account cannot be invited automatically. Contact an administrator."
-                        ),
-                        code="account_conflict",
-                    )
-                validate_enterprise_memberships([user.pk], [company.group_id])
-                user_groups = GroupProfile.objects.containing(user)
-                if (
-                    user_groups.filter(group__support_organizations__config=config)
-                    .exclude(group_id=company.group_id)
-                    .exists()
-                ):
-                    raise ValidationError(
-                        _("This account already belongs to another support organization."),
-                        code="company_conflict",
-                    )
+                require_invitation_account(
+                    user=user,
+                    profile=profile,
+                    company=company,
+                    config=config,
+                    invitation=invitation,
+                )
                 if invitation:
                     return invitation
-                if user_groups.filter(pk=company.pk).exists():
+                if GroupProfile.objects.containing(user).filter(pk=company.pk).exists():
                     accepted = (
                         EnterpriseInvitation.objects.filter(
                             company=company, user=user, status=EnterpriseInvitation.Status.ACCEPTED
@@ -496,7 +504,7 @@ def invite_enterprise_user(
                         return accepted
 
             if support is None:
-                _save_support_organization(company, config, False)
+                save_support_organization(company, config, False)
             if mapping is None:
                 ZendeskOrganization.objects.create(group_profile=company)
 
@@ -538,12 +546,10 @@ def invite_enterprise_user(
                 with transaction.atomic():
                     return EnterpriseInvitation.objects.create(
                         company=company,
-                        support_config=config,
                         email=email,
                         user=user,
                         created_by=actor,
                         created_user=created_user,
-                        completed_actions=["sumo_account"],
                     )
             except IntegrityError:
                 if (
