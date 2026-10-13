@@ -634,28 +634,28 @@ class ForWikiTests(TestCase):
         """A {for} set off by itself or wrapping a block-level element should
         be a paragraph or other kind of block-level thing."""
         self.assertWikiHtmlEqual(
-            "Joe\n\n{for}Red{/for}\n\nBlow",
-            '<p>Joe</p><p><span class="for">Red</span></p><p>Blow</p>',
+            "Joe\n\n{for mac}Red{/for}\n\nBlow",
+            '<p>Joe</p><p><span class="for" data-for="mac">Red</span></p><p>Blow</p>',
         )
         self.assertWikiHtmlEqual(
-            "Joe\n\n{for}\n* Red\n{/for}\n\nBlow",
-            '<p>Joe</p><div class="for"><ul><li> Red</li></ul></div><p>Blow</p>',
+            "Joe\n\n{for mac}\n* Red\n{/for}\n\nBlow",
+            '<p>Joe</p><div class="for" data-for="mac"><ul><li> Red</li></ul></div><p>Blow</p>',
         )
 
     def test_inline(self):
         """A for not meeting the conditions in test_block should be inline."""
         self.assertWikiHtmlEqual(
-            "Joe\n\nRed {for}riding{/for} hood\n\nBlow",
-            '<p>Joe</p><p>Red <span class="for">riding</span> hood</p><p>Blow</p>',
+            "Joe\n\nRed {for mac}riding{/for} hood\n\nBlow",
+            '<p>Joe</p><p>Red <span class="for" data-for="mac">riding</span> hood</p><p>Blow</p>',
         )
 
     def test_nested(self):
         """{for} tags should be nestable."""
         self.assertWikiHtmlEqual(
-            "{for mac}\nJoe\n\nRed {for}{for}riding\n{/for} hood{/for}\n\nBlow\n{/for}",
+            "{for mac}\nJoe\n\nRed {for fx152}{for fx153}riding\n{/for} hood{/for}\n\nBlow\n{/for}",
             '<div data-for="mac" class="for">'
             "<p>Joe</p>"
-            '<p>Red <span class="for"><span class="for">riding'
+            '<p>Red <span data-for="fx152" class="for"><span data-for="fx153" class="for">riding'
             "</span> hood</span></p>"
             "<p>Blow</p>"
             "</div>",
@@ -672,7 +672,7 @@ class ForWikiTests(TestCase):
         """Make sure the parser closes the for tag at the right place when
         its closer is early."""
         self.assertWikiHtmlEqual(
-            "{for}\nOne\n\n*Fish{/for}", '<div class="for"><p>One</p><ul><li>Fish</li></ul></div>'
+            "{for mac}\nOne\n\n*Fish{/for}", '<div class="for" data-for="mac"><p>One</p><ul><li>Fish</li></ul></div>'
         )
 
     def test_late_close(self):
@@ -680,22 +680,22 @@ class ForWikiTests(TestCase):
         element of the opening for tag is closed, close the for tag
         just before the enclosing element."""
         self.assertWikiHtmlEqual(
-            "*{for}One\n*Fish\n\nTwo\n{/for}",
-            '<ul><li><span class="for">One</span></li><li>Fish</li></ul><p>Two</p>',
+            "*{for mac}One\n*Fish\n\nTwo\n{/for}",
+            '<ul><li><span class="for" data-for="mac">One</span></li><li>Fish</li></ul><p>Two</p>',
         )
 
     def test_missing_close(self):
         """If the closing for tag is missing, close the for tag just
         before the enclosing element."""
         self.assertWikiHtmlEqual(
-            "{for}One fish\n\nTwo fish", '<p><span class="for">One fish</span></p><p>Two fish</p>'
+            "{for mac}One fish\n\nTwo fish", '<p><span class="for" data-for="mac">One fish</span></p><p>Two fish</p>'
         )
 
     def test_unicode(self):
         """Make sure non-ASCII chars survive being wrapped in a for."""
         french = "Vous parl\u00e9 Fran\u00e7ais"
         self.assertWikiHtmlEqual(
-            "{for}" + french + "{/for}", '<p><span class="for">' + french + "</span></p>"
+            "{for mac}" + french + "{/for}", '<p><span class="for" data-for="mac">' + french + "</span></p>"
         )
 
     def test_boolean_attr(self):
@@ -728,7 +728,7 @@ class ForWikiTests(TestCase):
     def test_big_swath(self):
         """Enclose a big section containing many tags."""
         self.assertWikiHtmlEqual(
-            "{for}\n"
+            "{for mac}\n"
             "=H1=\n"
             "==H2==\n"
             "Llamas are fun:\n"
@@ -739,7 +739,7 @@ class ForWikiTests(TestCase):
             "\n"
             "They have high melting points.\n"
             "{/for}",
-            '<div class="for"><h1 id="w_h1">H1</h1>'
+            '<div class="for" data-for="mac"><h1 id="w_h1">H1</h1>'
             '<h2 id="w_h2">H2</h2><p>Llamas are fun:</p>'
             "<ul><li>Jumping</li><li>Rolling</li><li>Grazing</li></ul>"
             "<p>They have high melting points.</p></div>",
@@ -748,7 +748,7 @@ class ForWikiTests(TestCase):
     def test_block_level_section(self):
         """Make sure we recognize <section> as a block element."""
         p = WikiParser()
-        html = p.parse("{for}<section>hi</section>{/for}")
+        html = p.parse("{for mac}<section>hi</section>{/for}")
         assert "<div" in html, "Didn't detect <section> tag as block level"
 
 
@@ -837,18 +837,18 @@ class ForParserTests(TestCase):
             match = ForParser._FOR_OR_CLOSER.search(text)
             self.assertEqual(want, ForParser._on_own_line(match, match.groups(3)))
 
-        on_own_line_eq((True, True, True), "{for}")
-        on_own_line_eq((True, True, True), "{for} ")
-        on_own_line_eq((False, False, True), " {for}")
-        on_own_line_eq((True, False, True), "q\n{for}")
-        on_own_line_eq((False, True, False), "{for}q")
-        on_own_line_eq((True, False, False), "\n{for} \nq")
+        on_own_line_eq((True, True, True), "{for mac}")
+        on_own_line_eq((True, True, True), "{for mac} ")
+        on_own_line_eq((False, False, True), " {for mac}")
+        on_own_line_eq((True, False, True), "q\n{for mac}")
+        on_own_line_eq((False, True, False), "{for mac}q")
+        on_own_line_eq((True, False, False), "\n{for mac} \nq")
 
     def test_strip(self):
-        strip_eq("\x910\x91inline\x91/sf\x91", "{for}inline{/for}")
-        strip_eq("\x910\x91\n\nblock\n\n\x91/sf\x91", "{for}\nblock\n{/for}")
-        strip_eq("\x910\x91inline\n\n\x91/sf\x91", "{for}inline\n{/for}")
-        strip_eq("\x910\x91\n\nblock\x91/sf\x91", "{for}\nblock{/for}")
+        strip_eq("\x910\x91inline\x91/sf\x91", "{for mac}inline{/for}")
+        strip_eq("\x910\x91\n\nblock\n\n\x91/sf\x91", "{for mac}\nblock\n{/for}")
+        strip_eq("\x910\x91inline\n\n\x91/sf\x91", "{for mac}inline\n{/for}")
+        strip_eq("\x910\x91\n\nblock\x91/sf\x91", "{for mac}\nblock{/for}")
 
     def test_whitespace_lookbehind(self):
         """Assert strip_fors is aware of newlines preceding the current match.
@@ -861,7 +861,7 @@ class ForParserTests(TestCase):
         """
         strip_eq(
             "\x910\x91\n\n\x911\x91inline\x91/sf\x91\n\n\x91/sf\x91",
-            "{for}\n{for}inline{/for}\n{/for}",
+            "{for mac}\n{for fx 153}inline{/for}\n{/for}",
         )
 
     def test_matches_see_replacements(self):
