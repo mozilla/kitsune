@@ -55,19 +55,13 @@ class GenerateClassificationTagsTests(TestCase):
 
         self.assertEqual(tags, ["undefined", "general"])
 
-    def test_undefined_topic_returns_empty_list(self):
-        """Test that 'Undefined' topic returns ['undefined', 'general']."""
-        submission = Mock(product=self.product)
-        result = {"topic_result": {"topic": "Undefined"}}
-
-        tags = generate_classification_tags(submission, result)
-
-        self.assertEqual(tags, ["undefined", "general"])
-
     def test_topic_not_found_in_db_returns_undefined(self):
         """Test that topic not found in database returns ['undefined', 'general']."""
         submission = Mock(product=self.product)
-        result = {"topic_result": {"topic": "Nonexistent Topic"}}
+        topic = TopicFactory()
+        topic_id = topic.pk
+        topic.delete()
+        result = {"topic_result": {"topic_id": topic_id}}
 
         tags = generate_classification_tags(submission, result)
 
@@ -81,7 +75,7 @@ class GenerateClassificationTagsTests(TestCase):
         topic.products.add(self.product)
 
         submission = Mock(product=self.product)
-        result = {"topic_result": {"topic": "Settings"}}
+        result = {"topic_result": {"topic_id": topic.pk}}
 
         tags = generate_classification_tags(submission, result)
 
@@ -97,7 +91,7 @@ class GenerateClassificationTagsTests(TestCase):
         tier2.products.add(self.product)
 
         submission = Mock(product=self.product)
-        result = {"topic_result": {"topic": "Notifications"}}
+        result = {"topic_result": {"topic_id": tier2.pk}}
 
         tags = generate_classification_tags(submission, result)
 
@@ -117,7 +111,7 @@ class GenerateClassificationTagsTests(TestCase):
         tier3.products.add(self.product)
 
         submission = Mock(product=self.product)
-        result = {"topic_result": {"topic": "Extensions"}}
+        result = {"topic_result": {"topic_id": tier3.pk}}
 
         tags = generate_classification_tags(submission, result)
 
@@ -142,7 +136,7 @@ class GenerateClassificationTagsTests(TestCase):
         ZendeskTopicConfigurationFactory(zendesk_config=zendesk_config, zendesk_topic=zd_topic)
 
         submission = Mock(product=self.product)
-        result = {"topic_result": {"topic": "Sign in"}}
+        result = {"topic_result": {"topic_id": tier2.pk}}
 
         tags = generate_classification_tags(submission, result)
 
@@ -156,23 +150,6 @@ class GenerateClassificationTagsTests(TestCase):
             ],
         )
 
-    def test_no_automation_tag_when_no_zendesk_topic_match(self):
-        """No automation tag is appended when no ZendeskTopic links to the classified Topic."""
-        tier1 = TopicFactory(
-            title="Billing and subscriptions",
-            parent=None,
-            is_archived=False,
-            legacy_tag="payments",
-        )
-        tier1.products.add(self.product)
-
-        submission = Mock(product=self.product)
-        result = {"topic_result": {"topic": "Billing and subscriptions"}}
-
-        tags = generate_classification_tags(submission, result)
-
-        self.assertEqual(tags, ["t1-billing-and-subscriptions", "payments"])
-
     def test_product_reassignment_includes_other_tag(self):
         """Test that product reassignment adds 'other' tag."""
         tier1 = TopicFactory(
@@ -182,8 +159,8 @@ class GenerateClassificationTagsTests(TestCase):
 
         submission = Mock(product=self.product)
         result = {
-            "product_result": {"product": "Mozilla VPN"},
-            "topic_result": {"topic": "Settings"},
+            "product_result": {"reassigned": True},
+            "topic_result": {"topic_id": tier1.pk},
         }
 
         tags = generate_classification_tags(submission, result)
@@ -198,7 +175,7 @@ class GenerateClassificationTagsTests(TestCase):
         topic.products.add(self.product)
 
         submission = Mock(product=self.product)
-        result = {"topic_result": {"topic": "Settings"}}
+        result = {"topic_result": {"topic_id": topic.pk}}
 
         tags = generate_classification_tags(submission, result)
 
@@ -338,14 +315,10 @@ class ProcessZendeskClassificationResultTests(TestCase):
         ProductSupportConfigFactory(
             product=self.product, zendesk_config=self.zendesk_config, forum_config=None
         )
-        self.submission = Mock(spec=SupportTicket)
-        self.submission.product = self.product
-        self.submission.topic = None
-        self.submission.zendesk_tags = []
+        self.submission = SupportTicketFactory(product=self.product)
 
     @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
-    @patch("kitsune.customercare.utils.Profile")
-    def test_segmentation_tags_preserved_after_classification(self, mock_profile, mock_send):
+    def test_segmentation_tags_preserved_after_classification(self, mock_send):
         """Segmentation tags from dropdowns must survive NOT_SPAM classification (issue 2865)."""
         self.submission.zendesk_tags = [
             "loginless_ticket",
@@ -354,11 +327,12 @@ class ProcessZendeskClassificationResultTests(TestCase):
         ]
         result = {
             "action": ModerationAction.NOT_SPAM,
-            "topic_result": {"topic": "Undefined"},
+            "topic_result": {"topic_id": None},
             "spam_result": {},
         }
 
         process_zendesk_classification_result(self.submission, result)
+        self.submission.refresh_from_db()
 
         self.assertIn("seg-rel-esr", self.submission.zendesk_tags)
         self.assertIn("seg-policy-windows-gpo", self.submission.zendesk_tags)

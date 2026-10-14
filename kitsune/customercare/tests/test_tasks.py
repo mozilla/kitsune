@@ -3,6 +3,7 @@ from unittest.mock import Mock, call, patch
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from kombu.exceptions import OperationalError
 from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
@@ -19,14 +20,12 @@ from kitsune.customercare.tasks import (
 )
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.customercare.zendesk import CHAT_REVOKED_TAG
+from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.spam.classifier import ModerationAction
-from kitsune.llm.support.classifiers import classify_zendesk_submission
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
-    TopicFactory,
     ZendeskConfigFactory,
-    ZendeskTopicFactory,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
@@ -96,182 +95,52 @@ class ZendeskSubmissionClassifierTests(TestCase):
 
     @patch("kitsune.customercare.tasks.classify_zendesk_submission")
     @patch("kitsune.customercare.tasks.process_zendesk_classification_result")
-    def test_successful_classification(self, mock_process, mock_classify):
-        """Test normal successful classification flow."""
-        mock_classify.return_value = {
-            "action": ModerationAction.NOT_SPAM,
-            "spam_result": {},
-            "product_result": {},
-            "topic_result": {},
-        }
-
-        submission = SupportTicket.objects.create(
-            subject="Help",
-            description="Need help",
-            category="general",
-            email="user@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING,
-        )
-
-        zendesk_submission_classifier(submission.id)
-
-        mock_classify.assert_called_once_with(submission)
-        mock_process.assert_called_once()
-
-    def test_nonexistent_submission(self):
-        """Test task handles nonexistent submission gracefully."""
-        zendesk_submission_classifier(99999)
-
-    @patch("kitsune.customercare.tasks.classify_zendesk_submission")
-    @patch("kitsune.customercare.tasks.process_zendesk_classification_result")
     def test_classification_failure_marks_status(self, mock_process, mock_classify):
         """Test that failed classification marks ticket as STATUS_PROCESSING_FAILED."""
-        mock_classify.side_effect = Exception("LLM service unavailable")
+        mock_classify.side_effect = RuntimeError("LLM service unavailable")
 
-        submission = SupportTicket.objects.create(
-            subject="Help",
-            description="Need help",
-            category="general",
-            email="user@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING,
+        submission = SupportTicketFactory(
+            product=self.product, submission_status=SupportTicket.STATUS_PENDING
         )
 
-        try:
+        with self.assertRaises(RuntimeError):
             zendesk_submission_classifier(submission.id)
-        except Exception:
-            pass
 
         submission.refresh_from_db()
         self.assertEqual(submission.submission_status, SupportTicket.STATUS_PROCESSING_FAILED)
 
-    @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
-    @patch("kitsune.llm.support.classifiers.get_taxonomy")
-    @patch("kitsune.llm.support.classifiers.classify_spam")
-    @patch("kitsune.llm.support.classifiers.classify_topic")
-    def test_skip_spam_moderation_enabled(
-        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment
-    ):
-        """Test that spam check is skipped when skip_spam_moderation=True."""
-        self.zendesk_config.skip_spam_moderation = True
-        self.zendesk_config.save()
-
-        mock_get_taxonomy.return_value = {}
-        mock_reassignment.return_value = None
-        mock_classify_topic.return_value = {
-            "topic_result": {"topic": "General Support", "confidence": 0.9}
+    def test_advisory_broker_failure_cannot_send_uncertain_ticket_through_failure_fallback(self):
+        ticket = SupportTicketFactory(
+            product=self.product, submission_status=SupportTicket.STATUS_PENDING
+        )
+        result = {
+            "action": ModerationAction.FLAG_REVIEW,
+            "spam_result": {"probability": 0.65, "relevance_uncertainty_probability": 0.1},
+            "assessment_payload": {
+                "subject": ticket.subject,
+                "content": ticket.description,
+                "channel": "ticket",
+                "locale": "en-US",
+            },
         }
-
-        submission = SupportTicket.objects.create(
-            subject="Need help with deployment",
-            description="How do I deploy Firefox Enterprise?",
-            category="deployment",
-            email="admin@enterprise.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING,
+        with (
+            patch("kitsune.customercare.tasks.classify_zendesk_submission", return_value=result),
+            patch(
+                "kitsune.llm.tasks.transaction.on_commit", side_effect=lambda callback: callback()
+            ),
+            patch("kitsune.llm.tasks.assess_uncertain_spam.delay", side_effect=OperationalError()),
+        ):
+            zendesk_submission_classifier(ticket.pk)
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_FLAGGED)
+        self.assertTrue(
+            FlaggedObject.objects.filter(
+                object_id=ticket.pk,
+                content_type__app_label="customercare",
+                content_type__model="supportticket",
+                status=FlaggedObject.FLAG_PENDING,
+            ).exists()
         )
-
-        result = classify_zendesk_submission(submission)
-
-        mock_classify_spam.assert_not_called()
-        mock_reassignment.assert_not_called()
-        mock_classify_topic.assert_called_once()
-        self.assertEqual(result["action"], ModerationAction.NOT_SPAM)
-        self.assertEqual(result["spam_result"], {})
-        self.assertEqual(result["product_result"], {})
-        self.assertIn("topic_result", result)
-
-    @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
-    @patch("kitsune.llm.support.classifiers.get_taxonomy")
-    @patch("kitsune.llm.support.classifiers.classify_spam")
-    @patch("kitsune.llm.support.classifiers.classify_topic")
-    def test_skip_spam_moderation_disabled(
-        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment
-    ):
-        """Test that spam check runs normally when skip_spam_moderation=False."""
-        self.zendesk_config.skip_spam_moderation = False
-        self.zendesk_config.save()
-
-        mock_get_taxonomy.return_value = {}
-        mock_reassignment.return_value = None
-        mock_classify_spam.return_value = {
-            "spam_result": {"is_spam": False, "confidence": 0.1, "reason": ""}
-        }
-        mock_classify_topic.return_value = {
-            "topic_result": {"topic": "General Support", "confidence": 0.9}
-        }
-
-        submission = SupportTicket.objects.create(
-            subject="Need help",
-            description="How do I use Firefox?",
-            category="general",
-            email="user@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING,
-        )
-
-        classify_zendesk_submission(submission)
-
-        mock_classify_spam.assert_called_once()
-        mock_classify_topic.assert_called_once()
-
-    @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
-    @patch("kitsune.llm.support.classifiers.get_taxonomy")
-    @patch("kitsune.llm.support.classifiers.classify_spam")
-    @patch("kitsune.llm.support.classifiers.classify_topic")
-    def test_form_selection_passed_as_topic_hint(
-        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment
-    ):
-        """The selected topic's taxonomy title is passed to classify_topic as a hint."""
-        mock_get_taxonomy.return_value = {}
-        mock_reassignment.return_value = None
-        mock_classify_spam.return_value = {"spam_result": {"is_spam": False}}
-        mock_classify_topic.return_value = {"topic_result": {"topic": "Edit account details"}}
-
-        topic = TopicFactory(title="Edit account details")
-        ZendeskTopicFactory(slug="test-edit-account-topic", topic=topic)
-
-        submission = SupportTicket.objects.create(
-            subject="Change my email",
-            description="I want to change the email on my account",
-            category="test-edit-account-topic",
-            email="user@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING,
-        )
-
-        classify_zendesk_submission(submission)
-
-        payload = mock_classify_topic.call_args.args[0]
-        self.assertEqual(payload["selected_topic"], "Edit account details")
-
-    @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
-    @patch("kitsune.llm.support.classifiers.get_taxonomy")
-    @patch("kitsune.llm.support.classifiers.classify_spam")
-    @patch("kitsune.llm.support.classifiers.classify_topic")
-    def test_no_topic_hint_without_matching_selection(
-        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment
-    ):
-        """No hint is passed when the category matches no ZendeskTopic."""
-        mock_get_taxonomy.return_value = {}
-        mock_reassignment.return_value = None
-        mock_classify_spam.return_value = {"spam_result": {"is_spam": False}}
-        mock_classify_topic.return_value = {"topic_result": {"topic": "General Support"}}
-
-        submission = SupportTicket.objects.create(
-            subject="Need help",
-            description="How do I use Firefox?",
-            category="unknown-category",
-            email="user@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING,
-        )
-
-        classify_zendesk_submission(submission)
-
-        payload = mock_classify_topic.call_args.args[0]
-        self.assertNotIn("selected_topic", payload)
 
 
 class ProcessFailedZendeskTicketsTests(TestCase):

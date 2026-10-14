@@ -7,11 +7,14 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.base import SessionBase
 from django.db import models
-from sentry_sdk import capture_exception
+from django.utils import timezone
 
 from kitsune.community.utils import num_deleted_contributions
 from kitsune.flagit.models import FlaggedObject
+from kitsune.llm.categorization.classifiers import eligible_product
 from kitsune.llm.spam.classifier import ModerationAction
+from kitsune.llm.support.classifiers import classification_notes
+from kitsune.llm.tasks import queue_spam_assessment
 from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Answer, Question
 from kitsune.users.models import Profile
@@ -24,7 +27,6 @@ REGEX_WINDOWS_HOME_DIR = re.compile(
     r"(?P<home_dir_parent>\\(?:user|users|documents and settings|winnt\\profiles)\\)[^\\]+",
     re.IGNORECASE,
 )
-REGEX_TOPIC_HIERARCHY_SPLITTER = re.compile(r">|;|\s/\s|\.|\s\-\s|\||\:\:|\:")
 
 
 log = logging.getLogger("k.questions")
@@ -133,7 +135,7 @@ def flag_object(
     notes: str,
     status: int = FlaggedObject.FLAG_ACCEPTED,
     reason: str = FlaggedObject.REASON_SPAM,
-) -> None:
+) -> FlaggedObject:
     """Flag any object for moderation."""
     content_type = ContentType.objects.get_for_model(obj)
     flagged_object, created = FlaggedObject.objects.get_or_create(
@@ -150,7 +152,11 @@ def flag_object(
         flagged_object.reason = reason
         flagged_object.status = status
         flagged_object.notes = notes
+        if status == FlaggedObject.FLAG_PENDING:
+            flagged_object.handled_by = None
+            flagged_object.handled = timezone.now()
         flagged_object.save()
+    return flagged_object
 
 
 def flag_question(
@@ -159,114 +165,67 @@ def flag_question(
     notes: str,
     status: int = FlaggedObject.FLAG_ACCEPTED,
     reason: str = FlaggedObject.REASON_SPAM,
-) -> None:
+) -> FlaggedObject:
     """Flag a question for moderation."""
-    flag_object(question, by_user, notes, status, reason)
+    return flag_object(question, by_user, notes, status, reason)
 
 
-def get_most_specific(topic_title):
-    """
-    If the given topic_title is actually a hierachy of topic titles, this function attempts
-    to return the most-specific topic title. Otherwise, it returns the given topic_title
-    stripped of leading and trailing whitespace.
-
-    The following hierarchy separators are recognized, none of which are present in the
-    existing topic titles: ".", ">", " / ", " - ", ";", "::", ":", and "|".
-    """
-    return REGEX_TOPIC_HIERARCHY_SPLITTER.split(topic_title)[-1].strip()
-
-
-def get_object_by_title(model, title, manager=None):
-    try:
-        obj = (manager or model.objects).get(title=title)
-    except (model.DoesNotExist, getattr(model, "MultipleObjectsReturned", Exception)) as exc:
-        capture_exception(exc)
-    else:
-        return obj
-
-
-def update_question_fields_from_classification(question, result, sumo_bot):
-    product_result = result.get("product_result", {})
-    topic_result = result.get("topic_result", {})
-    new_product_title = product_result.get("product")
-    new_topic_title = topic_result.get("topic")
-
+def update_question_fields_from_classification(question, result):
+    product_id = result.get("product_result", {}).get("product_id", question.product_id)
+    product = question.product
     update_fields = {}
-
-    if new_product_title and question.product.title != new_product_title:
-        if new_product := get_object_by_title(
-            Product,
-            new_product_title,
-            manager=Product.active,
-        ):
-            update_fields["product"] = new_product
-
-    if new_topic_title and (
-        topic := get_object_by_title(
-            Topic,
-            get_most_specific(new_topic_title),
-            manager=Topic.active,
+    if product_id != question.product_id:
+        product = eligible_product(
+            {"channel": "forum", "locale": question.locale, "user": question.creator}, product_id
         )
-    ):
-        update_fields["topic"] = topic
+        if product is None:
+            raise ValueError("The classified product is no longer an eligible forum destination.")
+        update_fields.update(product=product, topic=None)
+
+    topic_id = result.get("topic_result", {}).get("topic_id")
+    if topic_id is not None:
+        topic = Topic.active.filter(pk=topic_id, products=product, visible=True).first()
+        if topic is None:
+            raise ValueError("The classified topic does not belong to the resolved product.")
+        if topic_id != question.topic_id or product_id != question.product_id:
+            update_fields["topic"] = topic
 
     if update_fields:
-        # Clear the existing auto tags.
         question.remove_auto_tags()
         for field, value in update_fields.items():
             setattr(question, field, value)
+        if "product" in update_fields:
+            question.__dict__.pop("_product_slug", None)
         question.save(update_fields=update_fields.keys())
         question.auto_tag()
 
 
-def process_classification_result(
-    question: Question,
-    result: dict[str, Any],
-) -> None:
-    """
-    Process the classification result from the LLM and take moderation action.
-    Handles spam, flag review, and updates to product and topic if suggested by the classifier.
-    """
+def process_classification_result(question: Question, result: dict[str, Any]) -> FlaggedObject:
+    """Apply a recorded decision, then queue advisory work for uncertain spam."""
     sumo_bot = Profile.get_sumo_bot()
     action = result.get("action")
     flag_kwargs = {
         "by_user": sumo_bot,
-        "notes": "",
+        "notes": classification_notes(result),
         "question": question,
     }
-
     match action:
         case ModerationAction.SPAM:
-            flag_kwargs.update(
-                {
-                    "notes": (
-                        f"LLM classified as spam, for the following reason:\n"
-                        f"{result.get('spam_result', {}).get('reason', '')}"
-                    ),
-                }
-            )
             question.mark_as_spam(sumo_bot)
         case ModerationAction.FLAG_REVIEW:
-            flag_kwargs.update(
-                {
-                    "status": FlaggedObject.FLAG_PENDING,
-                    "notes": (
-                        f"LLM flagged for manual review, for the following reason:\n"
-                        f"{result.get('spam_result', {}).get('reason', '')}"
-                    ),
-                }
-            )
+            flag_kwargs["status"] = FlaggedObject.FLAG_PENDING
+            flag_kwargs["reason"] = result.get("review_reason", FlaggedObject.REASON_SPAM)
+        case ModerationAction.NOT_SPAM:
+            flag_kwargs["reason"] = FlaggedObject.REASON_CONTENT_MODERATION
+            update_question_fields_from_classification(question, result)
         case _:
-            flag_kwargs.update(
-                {
-                    "reason": FlaggedObject.REASON_CONTENT_MODERATION,
-                    "notes": (
-                        f"LLM classified as {result.get('topic_result', {}).get('topic', '')}, "
-                        f"for the following reason:\n"
-                        f"{result.get('topic_result', {}).get('reason', '')}"
-                    ),
-                }
-            )
-            update_question_fields_from_classification(question, result, sumo_bot)
+            flag_kwargs["status"] = FlaggedObject.FLAG_PENDING
 
-    flag_question(**flag_kwargs)
+    flag = flag_question(**flag_kwargs)
+    flag.handled_by = sumo_bot
+    flag.handled = timezone.now()
+    FlaggedObject.objects.filter(pk=flag.pk).update(
+        handled_by=flag.handled_by, handled=flag.handled
+    )
+    queue_spam_assessment(flag, result)
+    return flag

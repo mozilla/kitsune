@@ -111,7 +111,9 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
     ).exclude(status=FlaggedObject.FLAG_DUPLICATE)
     default_kwargs = {"content_object": content_object, "reason": reason, "notes": notes}
     if reason == FlaggedObject.REASON_CONTENT_MODERATION:
-        moderation_flag_query.update(status=FlaggedObject.FLAG_PENDING)
+        moderation_flag_query.update(
+            status=FlaggedObject.FLAG_PENDING, handled_by=None, handled=Now()
+        )
         default_kwargs["status"] = FlaggedObject.FLAG_DUPLICATE
     elif request.user.has_perm("flagit.can_moderate"):
         moderation_flag_query.update(status=FlaggedObject.FLAG_DUPLICATE)
@@ -149,7 +151,7 @@ def flagged_queue(request):
     if content_type_id:
         try:
             content_types = [ContentType.objects.get(id=int(content_type_id))]
-        except (ValueError, ContentType.DoesNotExist):
+        except ValueError, ContentType.DoesNotExist:
             pass
 
     ct_support_ticket = ContentType.objects.get_for_model(SupportTicket)
@@ -334,7 +336,7 @@ def moderate_content(request):
     for obj in objects:
         if obj.content_type == ct_question:
             question = obj.content_object
-            obj.available_topics = product_topics_cache.get(question.product.id, [])
+            obj.available_topics = product_topics_cache.get(question.product_id, [])
             obj.available_tags = available_tags
             obj.saved_tags = {tag.id for tag in question.tags.all()}
         elif obj.content_type == ct_support_ticket:

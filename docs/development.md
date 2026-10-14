@@ -4,6 +4,18 @@ title: Development
 
 This covers loosely how we do big feature changes.
 
+# Linting in Docker
+
+Run `make lint` from the checkout. It builds the dedicated `lint` image and runs all pre-commit hooks, including the frontend hooks. Host prerequisites are Docker Compose, Make, and Git; Python, Node, npm, and the locked project dependencies are installed in the image.
+
+Linting does not start the web server, database, Elasticsearch, Redis, or Celery, and does not require a frontend build. The lint service uses the opt-in `tools` profile so it is not started by a normal `docker compose up`.
+
+The lint image inherits the dependency-only `python-base` stage, not the source-bearing `dev` stage. Source and documentation edits alone leave its image layers cached; Python/Node lockfile or base-image changes rebuild the relevant dependencies. The current checkout is supplied by the bind mount at runtime.
+
+Git worktrees are supported: the checkout is mounted at `/app`, and the target mounts the dynamically resolved shared Git directory read-only. No second checkout mount at its host path is needed. Hooks run from `/app`, where the image's Python and Node dependency volumes are available. The Git safe-directory setting is scoped to the lint container; host Git configuration is unchanged.
+
+If `.env` is missing, the existing Makefile rule copies `.env-dist`. An existing `.env` is not overwritten.
+
 # Changes that involve new Python dependencies
 
 !!! warning

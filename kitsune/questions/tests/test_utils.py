@@ -5,13 +5,11 @@ from parameterized import parameterized
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.spam.classifier import ModerationAction
-from kitsune.products.models import Topic
-from kitsune.products.tests import TopicFactory
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.questions.utils import (
     get_mobile_product_from_ua,
-    get_most_specific,
     mark_content_as_spam,
     num_answers,
     num_questions,
@@ -239,12 +237,34 @@ class PIIRemovalTests(TestCase):
 
 class ProcessClassificationResultTests(TestCase):
     def setUp(self):
-        self.topic1 = TopicFactory()
-        self.topic2 = TopicFactory()
+        self.product = ProductFactory()
+        self.topic1 = TopicFactory(products=[self.product])
+        self.topic2 = TopicFactory(products=[self.product])
         self.sumo_bot = Profile.get_sumo_bot()
 
+    @parameterized.expand([("new_flag", False), ("existing_flag", True)])
+    def test_system_account_classification_removes_content_and_flag(self, _, existing_flag):
+        question = QuestionFactory(creator=self.sumo_bot, product=self.product, topic=self.topic1)
+        question_id = question.pk
+        content_type = ContentType.objects.get_for_model(question)
+        if existing_flag:
+            FlaggedObject.objects.create(
+                content_type=content_type,
+                object_id=question_id,
+                creator=self.sumo_bot,
+                status=FlaggedObject.FLAG_PENDING,
+                reason=FlaggedObject.REASON_CONTENT_MODERATION,
+            )
+
+        process_classification_result(question, {"action": ModerationAction.NOT_SPAM})
+
+        self.assertFalse(Question.objects.filter(pk=question_id).exists())
+        self.assertFalse(
+            FlaggedObject.objects.filter(content_type=content_type, object_id=question_id).exists()
+        )
+
     def test_spam_result(self):
-        question = QuestionFactory(topic=self.topic1)
+        question = QuestionFactory(product=self.product, topic=self.topic1)
         classification_result = {
             "action": ModerationAction.SPAM,
         }
@@ -262,10 +282,10 @@ class ProcessClassificationResultTests(TestCase):
         self.assertEqual(question.marked_as_spam_by, self.sumo_bot)
 
     def test_flagged_result(self):
-        question = QuestionFactory(topic=self.topic1)
+        question = QuestionFactory(product=self.product, topic=self.topic1)
         classification_result = {
             "action": ModerationAction.FLAG_REVIEW,
-            "spam_result": {"reason": "I think it is spam?"},
+            "spam_result": {"probability": 0.65, "relevance_uncertainty_probability": 0.1},
         }
 
         q_ct = ContentType.objects.get_for_model(question)
@@ -289,17 +309,17 @@ class ProcessClassificationResultTests(TestCase):
                 creator=self.sumo_bot,
                 reason=FlaggedObject.REASON_SPAM,
                 status=FlaggedObject.FLAG_PENDING,
-                notes__contains="I think it is spam?",
             ).exists()
         )
 
     def test_topic_result_with_change(self):
-        question = QuestionFactory(topic=self.topic1, tags=[self.topic1.slug])
+        question = QuestionFactory(
+            product=self.product, topic=self.topic1, tags=[self.topic1.slug]
+        )
         classification_result = {
             "action": ModerationAction.NOT_SPAM,
             "topic_result": {
-                "topic": self.topic2.title,
-                "reason": "Dude, it is so topic2.",
+                "topic_id": self.topic2.pk,
             },
         }
 
@@ -318,7 +338,9 @@ class ProcessClassificationResultTests(TestCase):
 
         self.assertFalse(question.is_spam)
         self.assertEqual(question.topic, self.topic2)
-        self.assertEqual({tag.name for tag in question.tags.all()}, {self.topic2.slug})
+        self.assertEqual(
+            {tag.name for tag in question.tags.all()}, {self.product.slug, self.topic2.slug}
+        )
         self.assertTrue(
             FlaggedObject.objects.filter(
                 content_type=q_ct,
@@ -326,17 +348,15 @@ class ProcessClassificationResultTests(TestCase):
                 creator=self.sumo_bot,
                 status=FlaggedObject.FLAG_ACCEPTED,
                 reason=FlaggedObject.REASON_CONTENT_MODERATION,
-                notes__contains="Dude, it is so topic2.",
             ).exists()
         )
 
     def test_topic_result_with_no_initial_topic(self):
-        question = QuestionFactory(topic=None)
+        question = QuestionFactory(product=self.product, topic=None)
         classification_result = {
             "action": ModerationAction.NOT_SPAM,
             "topic_result": {
-                "topic": self.topic2.title,
-                "reason": "Dude, it is so topic2.",
+                "topic_id": self.topic2.pk,
             },
         }
 
@@ -355,7 +375,9 @@ class ProcessClassificationResultTests(TestCase):
 
         self.assertFalse(question.is_spam)
         self.assertEqual(question.topic, self.topic2)
-        self.assertEqual({tag.name for tag in question.tags.all()}, {self.topic2.slug})
+        self.assertEqual(
+            {tag.name for tag in question.tags.all()}, {self.product.slug, self.topic2.slug}
+        )
         self.assertTrue(
             FlaggedObject.objects.filter(
                 content_type=q_ct,
@@ -363,17 +385,17 @@ class ProcessClassificationResultTests(TestCase):
                 creator=self.sumo_bot,
                 status=FlaggedObject.FLAG_ACCEPTED,
                 reason=FlaggedObject.REASON_CONTENT_MODERATION,
-                notes__contains="Dude, it is so topic2.",
             ).exists()
         )
 
     def test_topic_result_with_no_change(self):
-        question = QuestionFactory(topic=self.topic1, tags=[self.topic1.slug])
+        question = QuestionFactory(
+            product=self.product, topic=self.topic1, tags=[self.topic1.slug]
+        )
         classification_result = {
             "action": ModerationAction.NOT_SPAM,
             "topic_result": {
-                "topic": self.topic1.title,
-                "reason": "Dude, it is so topic1.",
+                "topic_id": self.topic1.pk,
             },
         }
 
@@ -400,50 +422,5 @@ class ProcessClassificationResultTests(TestCase):
                 creator=self.sumo_bot,
                 status=FlaggedObject.FLAG_ACCEPTED,
                 reason=FlaggedObject.REASON_CONTENT_MODERATION,
-                notes__contains="Dude, it is so topic1.",
             ).exists()
         )
-
-
-class GetMostSpecificTests(TestCase):
-    def test_existing_topics(self):
-        """
-        Ensure that all existing topic titles are returned unharmed.
-        """
-        for topic in Topic.active.filter(visible=True):
-            with self.subTest(topic.title):
-                self.assertEqual(get_most_specific(topic.title), topic.title)
-
-    def test_hierarchical_topics(self):
-        """
-        Ensure that the most specific title is returned from hierarchical topic titles
-        using known separators.
-        """
-        hierachical_cases = [
-            ("Settings.Add-ons, extensions, and themes.Extensions", "Extensions"),
-            ("Settings>Add-ons, extensions, and themes>Extensions", "Extensions"),
-            ("Settings > Add-ons, extensions, and themes > Extensions", "Extensions"),
-            ("Settings - Add-ons, extensions, and themes - Extensions", "Extensions"),
-            ("Settings;Add-ons, extensions, and themes;Extensions", "Extensions"),
-            ("Settings ; Add-ons, extensions, and themes ; Extensions", "Extensions"),
-            ("Settings:Add-ons, extensions, and themes:Extensions", "Extensions"),
-            ("Settings : Add-ons, extensions, and themes : Extensions", "Extensions"),
-            ("Settings::Add-ons, extensions, and themes::Extensions", "Extensions"),
-            ("Settings :: Add-ons, extensions, and themes :: Extensions", "Extensions"),
-            (
-                "Performance and connectivity / Site breakages / Blocked application/service/website",
-                "Blocked application/service/website",
-            ),
-            (
-                "Performance and connectivity|Site breakages|Blocked application/service/website",
-                "Blocked application/service/website",
-            ),
-            (
-                "Performance and connectivity | Site breakages |  Blocked application/service/website ",
-                "Blocked application/service/website",
-            ),
-        ]
-
-        for hierarchical_title, expected in hierachical_cases:
-            with self.subTest(hierarchical_title):
-                self.assertEqual(get_most_specific(hierarchical_title), expected)

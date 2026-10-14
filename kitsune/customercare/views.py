@@ -345,7 +345,7 @@ def update_topic(request, ticket_id):
         tag for tag in ticket.zendesk_tags if tag in ["loginless_ticket", "stage", "other"]
     ]
     classification_tags = generate_classification_tags(
-        ticket, {"topic_result": {"topic": new_topic.title}}
+        ticket, {"topic_result": {"topic_id": new_topic.pk}}
     )
     ticket.zendesk_tags = system_tags + classification_tags
     ticket.save(update_fields=["zendesk_tags"])

@@ -21,6 +21,19 @@ services:
     ports:
       - "8000:8000"
 
+  lint:
+    build:
+      context: .
+      target: lint
+    command: pre-commit run --all-files
+    profiles:
+      - tools
+    volumes:
+      - ./:/app:delegated
+      - /app/.venv
+      - /app/node_modules
+    user: ${UID:-kitsune}
+
   node:
     image: node:22-bookworm
     working_dir: /app

@@ -1,212 +1,167 @@
-from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
+from django.conf import settings
+from django.utils.translation import gettext as _
+
+from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.categorization.classifiers import classify_product, classify_topic
 from kitsune.llm.spam.classifier import (
     ModerationAction,
     classify_spam,
     determine_action_from_spam_result,
 )
-from kitsune.products.models import Product, ProductSupportConfig, ZendeskTopic
-from kitsune.products.utils import get_taxonomy
+from kitsune.products.models import Product, ProductSupportConfig, Topic, ZendeskTopic
 
 if TYPE_CHECKING:
     from kitsune.customercare.models import SupportTicket
     from kitsune.questions.models import Question
 
 
-def _handle_product_reassignment(
-    payload: dict[str, Any],
-    product: Product,
-    only_with_forums: bool,
-    on_reassignment: Callable[[dict[str, Any], Product], dict[str, Any]],
-) -> dict[str, Any] | None:
-    """
-    Check for product reassignment and handle accordingly.
-
-    Args:
-        payload: Classification payload
-        product: Original product
-        only_with_forums: Whether to only consider products with forums
-        on_reassignment: Callback to handle reassignment, receives (product_result, new_product)
-            and returns a dict with action, product_result, and topic_result keys.
-
-    Returns:
-        Dict with classification results if reassignment detected, None otherwise.
-    """
-    product_result_dict = classify_product(
-        payload, only_with_forums=only_with_forums, current_product=product
-    )
-    product_result = product_result_dict["product_result"]
-    new_product_title = product_result.get("product")
-
-    if (
-        new_product_title
-        and new_product_title != product.title
-        and (new_product := Product.active.filter(title=new_product_title).first())
-    ):
-        return on_reassignment(product_result, new_product)
-    return None
-
-
-def classify_question(question: Question) -> dict[str, Any]:
-    """
-    Analyze a question for spam and, if not spam or low confidence, classify the topic.
-    Returns a dict with keys: action, spam_result, topic_result (optional).
-    """
-    product = question.product
-    payload: dict[str, Any] = {
-        "subject": question.title,
-        "content": question.content,
-        "product": product,
-        "topics": get_taxonomy(
-            product, include_metadata=["description", "examples"], output_format="JSON"
-        ),
-    }
-
-    # Pass the user's selected topic as a hint for topic classification.
-    if question.topic_id:
-        payload["selected_topic"] = question.topic.title
-
-    spam_result_dict = classify_spam(payload)
-    spam_result = spam_result_dict["spam_result"]
-    is_spam: bool = spam_result.get("is_spam", False)
-
-    base_result = {
-        "spam_result": spam_result,
-        "product_result": {},
-        "topic_result": {},
-    }
-
-    # If spam with maybe_misclassified flag, check for product reassignment
-    if is_spam:
-        action = determine_action_from_spam_result(spam_result)
-
-        if (action == ModerationAction.SPAM) and spam_result.get("maybe_misclassified"):
-
-            def on_reassignment(product_result: dict[str, Any], new_product: Product):
-                # Reassign payload product and run topic classification. Drop the selected
-                # topic hint — it belonged to the original product's taxonomy.
-                payload["product"] = new_product
-                payload.pop("topics", None)
-                payload.pop("selected_topic", None)
-                topic_result_dict = classify_topic(payload)
-                return {
-                    "action": ModerationAction.NOT_SPAM,
-                    "product_result": product_result,
-                    "topic_result": topic_result_dict["topic_result"],
-                }
-
-            result = _handle_product_reassignment(payload, product, True, on_reassignment)
-            if result:
-                return {**base_result, **result}
-            # No reassignment - it's spam
-            return {**base_result, "action": ModerationAction.SPAM, "product_result": {}}
-        # Other spam action (FLAG_REVIEW or already handled)
-        return {**base_result, "action": action, "product_result": {}}
-    # Not spam - classify topic
-    topic_result_dict = classify_topic(payload)
-    return {
-        **base_result,
+def _classify_support(payload: dict[str, Any], *, skip_spam: bool = False) -> dict[str, Any]:
+    """Screen spam before resolving the product and its topic."""
+    original_product = payload["product"]
+    result: dict[str, Any] = {
         "action": ModerationAction.NOT_SPAM,
-        "topic_result": topic_result_dict["topic_result"],
-    }
-
-
-def classify_zendesk_submission(submission: SupportTicket) -> dict[str, Any]:
-    """
-    Analyze a support ticket for spam, product classification, and topic classification.
-    Products configured to skip spam moderation also skip the product check.
-    Returns a dict with keys: action, spam_result, product_result, topic_result.
-    """
-    product = submission.product
-    payload: dict[str, Any] = {
-        "subject": submission.subject,
-        "content": submission.description,
-        "product": product,
-        "topics": get_taxonomy(
-            product, include_metadata=["description", "examples"], output_format="JSON"
-        ),
-    }
-
-    # Pass the user's form selection as a hint for topic classification. Only when the
-    # ZendeskTopic maps to a taxonomy topic, since the classifier picks from topic titles.
-    if submission.category:
-        zd_topic = (
-            ZendeskTopic.objects.filter(slug=submission.category).select_related("topic").first()
-        )
-        if zd_topic and zd_topic.topic_id:
-            payload["selected_topic"] = zd_topic.topic.title
-
-    # Check if spam moderation should be skipped for this product
-    skip_spam = False
-    try:
-        config = product.support_configs.get(is_active=True)
-        if config.zendesk_config and config.zendesk_config.skip_spam_moderation:
-            skip_spam = True
-    except ProductSupportConfig.DoesNotExist:
-        # If we can't determine config, fall back to normal spam checking
-        pass
-
-    base_result: dict[str, Any] = {
+        "submitted_product_id": original_product.pk if original_product else None,
         "spam_result": {},
         "product_result": {},
         "topic_result": {},
+        "assessment_payload": None,
     }
 
-    def zendesk_on_reassignment(product_result: dict[str, Any], new_product: Product):
-        """Handle product reassignment for Zendesk tickets."""
-        if product.has_ticketing_support:
-            # Original product has ticketing support - send to Zendesk with "other" tag, skip topic classification
-            return {
-                "action": ModerationAction.NOT_SPAM,
-                "product_result": product_result,
-                "topic_result": {},
-            }
-        # Original product doesn't have ticketing support - flag for review
-        return {
-            "action": ModerationAction.FLAG_REVIEW,
-            "product_result": product_result,
-            "topic_result": {},
-        }
-
-    # Skipping spam moderation also skips the product check: trust the product the user picked.
-    if skip_spam:
-        topic_result_dict = classify_topic(payload)
-        return {
-            **base_result,
-            "action": ModerationAction.NOT_SPAM,
-            "topic_result": topic_result_dict["topic_result"],
-        }
-
-    # Normal spam checking flow
-    spam_result_dict = classify_spam(payload)
-    spam_result = spam_result_dict["spam_result"]
-    is_spam: bool = spam_result.get("is_spam", False)
-
-    base_result["spam_result"] = spam_result
-
-    # If spam with maybe_misclassified flag, check for product reassignment
-    if is_spam:
+    if not skip_spam:
+        result.update(classify_spam(payload))
+        spam_result = result["spam_result"]
         action = determine_action_from_spam_result(spam_result)
+        result["action"] = action
+        if action != ModerationAction.NOT_SPAM:
+            if action == ModerationAction.FLAG_REVIEW and None not in (
+                spam_result.get("probability"),
+                spam_result.get("relevance_uncertainty_probability"),
+            ):
+                result["assessment_payload"] = {
+                    key: payload[key] for key in ("subject", "content", "channel", "locale")
+                }
+            return result
 
-        if (action == ModerationAction.SPAM) and spam_result.get("maybe_misclassified"):
-            result = _handle_product_reassignment(payload, product, False, zendesk_on_reassignment)
-            if result:
-                return {**base_result, **result}
-            # No reassignment - it's spam
-            return {**base_result, "action": ModerationAction.SPAM, "product_result": {}}
+    result.update(classify_product(payload))
+    resolved_product_id = result["product_result"]["product_id"]
+    if resolved_product_id is None:
+        result["action"] = ModerationAction.FLAG_REVIEW
+        result["review_reason"] = FlaggedObject.REASON_CONTENT_MODERATION
+        return result
+    if resolved_product_id != result["submitted_product_id"]:
+        payload["product"] = Product.active.get(pk=resolved_product_id)
+        payload.pop("selected_topic", None)
+    result.update(classify_topic(payload))
+    return result
 
-        # Other spam action (FLAG_REVIEW or already handled)
-        return {**base_result, "action": action, "product_result": {}}
 
-    if result := _handle_product_reassignment(payload, product, False, zendesk_on_reassignment):
-        return {**base_result, **result}
-
-    # No reassignment - classify topic normally
-    topic_result_dict = classify_topic(payload)
+def question_payload(question: Question) -> dict[str, str]:
+    """Build the shared, product-neutral content input for a public question."""
     return {
-        **base_result,
-        "action": ModerationAction.NOT_SPAM,
-        "topic_result": topic_result_dict["topic_result"],
+        "subject": question.title,
+        "content": question.content,
+        "channel": "forum",
+        "locale": question.locale,
     }
+
+
+def ticket_payload(submission: SupportTicket) -> dict[str, str]:
+    """Build the shared content input for a private support ticket."""
+    return {
+        "subject": submission.subject,
+        "content": submission.description,
+        "channel": "ticket",
+        "locale": settings.LANGUAGE_CODE,
+    }
+
+
+def classify_question(question: Question) -> dict[str, Any]:
+    """Classify an admitted question's product and then its resolved-product topic."""
+    payload: dict[str, Any] = question_payload(question)
+    payload.update(product=question.product, user=question.creator)
+    if question.topic_id:
+        payload["selected_topic"] = question.topic.title
+    return _classify_support(payload)
+
+
+def classify_zendesk_submission(submission: SupportTicket) -> dict[str, Any]:
+    """Keep private submissions in ticket-capable destinations after spam screening."""
+    payload: dict[str, Any] = ticket_payload(submission)
+    payload.update(product=submission.product, user=submission.user)
+    if submission.category:
+        selected = (
+            ZendeskTopic.objects.filter(slug=submission.category).select_related("topic").first()
+        )
+        if selected and selected.topic_id:
+            payload["selected_topic"] = selected.topic.title
+
+    try:
+        config = submission.product.support_configs.select_related("zendesk_config").get(
+            is_active=True
+        )
+    except ProductSupportConfig.DoesNotExist:
+        skip_spam = False
+    else:
+        skip_spam = bool(config.zendesk_config and config.zendesk_config.skip_spam_moderation)
+    return _classify_support(payload, skip_spam=skip_spam)
+
+
+def classification_notes(result: dict[str, Any]) -> str:
+    """Describe recorded decisions without inventing an explanation for the model."""
+    spam = result.get("spam_result", {})
+    product = result.get("product_result", {})
+    topic = result.get("topic_result", {})
+    lines = [
+        _("Classification model: {model}").format(model=settings.DECISIONS_MODEL),
+        _("Action: {action}").format(action=result.get("action")),
+    ]
+    if spam:
+        lines.extend(
+            [
+                _("Spam probability: {probability}").format(probability=spam.get("probability")),
+                _("Relevance-only uncertainty probability: {probability}").format(
+                    probability=spam.get("relevance_uncertainty_probability")
+                ),
+                _("Spam cutoffs: review {review}, reject {reject}").format(
+                    review=settings.SPAM_REVIEW_PROBABILITY,
+                    reject=settings.SPAM_REJECT_PROBABILITY,
+                ),
+            ]
+        )
+        if spam.get("reason"):
+            lines.append(spam["reason"])
+
+    product_ids = {
+        result.get("submitted_product_id"),
+        product.get("predicted_product_id"),
+        product.get("product_id"),
+    } - {None}
+    products = dict(Product.objects.filter(pk__in=product_ids).values_list("pk", "title"))
+    for label, product_id in (
+        (_("Submitted product"), result.get("submitted_product_id")),
+        (_("Predicted product"), product.get("predicted_product_id")),
+        (_("Resolved product"), product.get("product_id")),
+    ):
+        if product_id is not None:
+            lines.append(f"{label}: {products.get(product_id, product_id)}")
+    if product:
+        lines.append(
+            _("Product probability: {probability}").format(probability=product.get("probability"))
+        )
+        if product.get("reason"):
+            lines.append(product["reason"])
+    if topic:
+        topic_title = None
+        if (topic_id := topic.get("topic_id")) is not None:
+            topic_title = Topic.objects.filter(pk=topic_id).values_list("title", flat=True).first()
+        lines.append(_("Topic: {topic}").format(topic=topic_title or _("Undefined")))
+        lines.append(
+            _("Topic probability: {probability}").format(probability=topic.get("probability"))
+        )
+        if topic.get("reason"):
+            lines.append(topic["reason"])
+    if result.get("assessment_payload"):
+        lines.append(_("Advisory spam assessment requested."))
+    return "\n".join(lines)

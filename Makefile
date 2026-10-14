@@ -1,9 +1,4 @@
-DC := $(shell command -v docker-compose 2> /dev/null)
-ifeq (DC,)
-DC = $(shell which docker-compose)
-else
-DC = $(shell which docker) compose
-endif
+DC ?= docker compose
 
 
 default: help
@@ -75,8 +70,14 @@ clean:
 #	node stuff
 	-rm -rf node_modules
 
-lint: .docker-build
-	${DC} run web pre-commit run --all-files
+lint: .env
+	${DC} build lint
+	git_common_dir="$$(git rev-parse --path-format=absolute --git-common-dir)" && \
+	${DC} run --rm --no-deps \
+		--volume "$$git_common_dir:$$git_common_dir:ro" \
+		--env GIT_CONFIG_COUNT=1 \
+		--env GIT_CONFIG_KEY_0=safe.directory \
+		--env GIT_CONFIG_VALUE_0=/app lint
 
 format: .docker-build
 	${DC} run web ruff format kitsune/

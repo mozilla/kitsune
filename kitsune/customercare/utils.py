@@ -9,6 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.utils.translation import gettext as _
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
@@ -16,7 +17,10 @@ from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.groups.models import GroupProfile
+from kitsune.llm.categorization.classifiers import eligible_product
 from kitsune.llm.spam.classifier import ModerationAction
+from kitsune.llm.support.classifiers import classification_notes
+from kitsune.llm.tasks import queue_spam_assessment
 from kitsune.products.models import (
     Product,
     ProductSupportConfig,
@@ -281,56 +285,30 @@ def adopt_chat_ticket(zd_ticket) -> SupportTicket | None:
 
 
 def generate_classification_tags(submission: SupportTicket, result: dict[str, Any]) -> list[str]:
-    """
-    Generate Zendesk tags from LLM classification results.
-
-    Returns tier tags (t1-, t2-, t3-), legacy tags, and automation tags based on the classified topic.
-    If product was reassigned, includes "other" tag.
-    """
-    product_slug = submission.product.slug
-    topic_result = result.get("topic_result", {})
-    product_result = result.get("product_result", {})
-
-    tags = []
-
-    # If product reassignment, add "other" tag
-    if product_result.get("product"):
-        tags.append("other")
-
-    # Get topic title from classification
-    topic_title = topic_result.get("topic", "")
-
-    # Find topic in database and build tier tags
-    topic = Topic.objects.filter(
-        title=topic_title, products__slug=product_slug, is_archived=False
-    ).first()
-
-    # If no topic or "Undefined" or topic not found in DB
-    # return current tags and legacy tag "general"
-    if not topic_title or topic_title == "Undefined" or not topic:
+    """Generate scoped taxonomy tags, preserving the reassignment marker."""
+    tags = ["other"] if result.get("product_result", {}).get("reassigned") else []
+    topic_id = result.get("topic_result", {}).get("topic_id")
+    topic = (
+        Topic.active.filter(pk=topic_id, products=submission.product).first()
+        if topic_id is not None
+        else None
+    )
+    if topic is None:
         return ["undefined", "general", *tags]
 
-    try:
-        tags.extend(topic.tier_tags)
+    tags.extend(topic.tier_tags)
+    zd_topic = ZendeskTopic.objects.filter(
+        topic=topic,
+        configurations__zendesk_config__support_configs__product=submission.product,
+        configurations__zendesk_config__support_configs__is_active=True,
+    ).first()
+    if zd_topic:
+        tags.extend(zd_topic.automation_tags)
 
-        # Automation tags from the ZendeskTopic linked to this Topic for this product.
-        zd_topic = ZendeskTopic.objects.filter(
-            topic=topic,
-            configurations__zendesk_config__support_configs__product=submission.product,
-            configurations__zendesk_config__support_configs__is_active=True,
-        ).first()
-        if zd_topic:
-            tags.extend(zd_topic.automation_tags)
-
-        # Legacy bucket lives on the t1 root Topic; fall back to "general" if unset.
-        root = topic
-        while root.parent_id is not None:
-            root = root.parent
-        tags.append(root.legacy_tag or "general")
-
-    except Exception:
-        return ["undefined", *tags]
-
+    root = topic
+    while root.parent_id is not None:
+        root = root.parent
+    tags.append(root.legacy_tag or "general")
     return tags
 
 
@@ -396,92 +374,78 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
 
 
 def process_zendesk_classification_result(
-    submission: SupportTicket,
-    result: dict[str, Any],
+    submission: SupportTicket, result: dict[str, Any]
 ) -> None:
-    """
-    Process the classification result from the LLM and take moderation action.
-    Handles spam, flag review, and sends to Zendesk if not spam.
-
-    The waffle switch controls whether flagged items go to moderation queue:
-    - Active: Create FlaggedObject for moderation queue (manual review)
-    - Inactive: Fully automated - reject spam without creating FlaggedObject
-    """
+    """Apply moderation or eligible private-ticket routing, then queue advisory work."""
     sumo_bot = Profile.get_sumo_bot()
+    notes = classification_notes(result)
 
-    def flag_submission(
-        notes: str,
-        status: int = FlaggedObject.FLAG_PENDING,
-        reason: str = FlaggedObject.REASON_CONTENT_MODERATION,
-        submission_status: str = SupportTicket.STATUS_FLAGGED,
-    ) -> None:
-        """Helper function to update submission status and create a flag."""
-        submission.submission_status = submission_status
+    def flag_submission(reason: str) -> None:
+        submission.submission_status = SupportTicket.STATUS_FLAGGED
         submission.save(update_fields=["submission_status"])
-        flag_object(
+        flag = flag_object(
             submission,
             by_user=sumo_bot,
             notes=notes,
-            status=status,
+            status=FlaggedObject.FLAG_PENDING,
             reason=reason,
         )
+        queue_spam_assessment(flag, result)
 
-    action = result.get("action")
-
-    match action:
+    match result.get("action"):
         case ModerationAction.SPAM:
-            notes = (
-                f"LLM classified as spam, for the following reason:\n"
-                f"{result.get('spam_result', {}).get('reason', '')}"
-            )
-
             if waffle.switch_is_active("zendesk-spam-classifier"):
-                flag_submission(
-                    notes=notes,
-                    status=FlaggedObject.FLAG_PENDING,
-                    reason=FlaggedObject.REASON_SPAM,
-                )
+                flag_submission(FlaggedObject.REASON_SPAM)
             else:
                 submission.submission_status = SupportTicket.STATUS_REJECTED
                 submission.save(update_fields=["submission_status"])
         case ModerationAction.FLAG_REVIEW:
-            notes = (
-                f"LLM flagged for manual review, for the following reason:\n"
-                f"{result.get('spam_result', {}).get('reason', '')}"
-            )
-            flag_submission(
-                notes=notes,
-                status=FlaggedObject.FLAG_PENDING,
-                reason=FlaggedObject.REASON_CONTENT_MODERATION,
-            )
+            flag_submission(result.get("review_reason", FlaggedObject.REASON_SPAM))
         case ModerationAction.NOT_SPAM:
-            # Find and set topic if classified
-            topic_title = result.get("topic_result", {}).get("topic")
-            if topic_title and topic_title != "Undefined":
-                topic = Topic.objects.filter(
-                    title=topic_title, products=submission.product, is_archived=False
-                ).first()
-                if topic:
-                    submission.topic = topic
+            product_id = result.get("product_result", {}).get("product_id", submission.product_id)
+            update_fields = ["zendesk_tags", "topic"]
+            if product_id != submission.product_id:
+                product = eligible_product(
+                    {"channel": "ticket", "user": submission.user}, product_id
+                )
+                if product is None:
+                    raise ValueError(
+                        "The classified product is no longer an eligible ticket destination."
+                    )
+                submission.product = product
+                submission.topic = None
+                submission.category = ""
+                update_fields.extend(["product", "category"])
 
-            # Preserve system tags
+            topic_id = result.get("topic_result", {}).get("topic_id")
+            if topic_id is not None:
+                topic = Topic.active.filter(
+                    pk=topic_id, products=submission.product, visible=True
+                ).first()
+                if topic is None:
+                    raise ValueError(
+                        "The classified topic does not belong to the resolved product."
+                    )
+                submission.topic = topic
+                if "category" in update_fields:
+                    category = ZendeskTopic.objects.filter(
+                        topic=topic,
+                        configurations__zendesk_config__support_configs__product=submission.product,
+                        configurations__zendesk_config__support_configs__is_active=True,
+                    ).first()
+                    if category:
+                        submission.category = category.slug
+
             system_tags = [
                 tag
                 for tag in submission.zendesk_tags
                 if tag in ["loginless_ticket", "stage"] or tag.startswith("seg-")
             ]
-
-            # Generate classification tags
-            classification_tags = generate_classification_tags(submission, result)
-
-            # Replace with system tags + classification tags
-            submission.zendesk_tags = system_tags + classification_tags
-            submission.save(update_fields=["zendesk_tags", "topic"])
-
+            submission.zendesk_tags = system_tags + generate_classification_tags(
+                submission, result
+            )
+            submission.save(update_fields=update_fields)
             send_support_ticket_to_zendesk(submission)
         case _:
-            flag_submission(
-                notes=f"Unknown classification action: {action}",
-                status=FlaggedObject.FLAG_PENDING,
-                reason=FlaggedObject.REASON_CONTENT_MODERATION,
-            )
+            notes += "\n" + _("Unknown classification action; manual review required.")
+            flag_submission(FlaggedObject.REASON_CONTENT_MODERATION)
