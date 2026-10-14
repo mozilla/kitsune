@@ -213,8 +213,14 @@ class MyProfilePage(BasePage):
         self._click(self.report_abuse_close_panel_button)
 
     def click_on_report_submit_button(self):
-        """Click on the report submit button"""
+        """Click on the report submit button and wait for the report to be confirmed.
+
+        The report is posted in the background, so leaving the page before the confirmation
+        message shows up can cancel the request and the report is never saved.
+        """
         self._click(self.report_abuse_submit_button)
+        self._wait_for_locator(self.reported_user_confirmation_message, timeout=15000,
+                               raise_exception=True)
 
     def click_on_private_message_button(self, expected_url=None):
         """Click on the private message button.

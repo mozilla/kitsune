@@ -12,17 +12,21 @@ from playwright_tests.messages.ask_a_question_messages.contact_support_messages 
 from playwright_tests.pages.sumo_pages import SumoPages
 
 troubleshooting_topic_url = "https://support.allizom.org/en-US/topics/browse"
+# Splits the topic walk across xdist workers; matches CI's --numprocesses 6.
+TOPIC_SHARDS = 6
 
 
 #  C2663958, C2663959
 @pytest.mark.exploreByTopics
-def test_explore_by_topic_product_filter(page: Page):
+@pytest.mark.parametrize("shard", range(TOPIC_SHARDS))
+def test_explore_by_topic_product_filter(page: Page, shard: int):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
 
     with allure.step("Navigating to the /topics/ Browse page"):
         utilities.navigate_to_link(troubleshooting_topic_url)
-    for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options():
+    for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options()[
+            shard::TOPIC_SHARDS]:
         topic = topic.strip()
         if topic != "Browse":
             sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
@@ -49,7 +53,8 @@ def test_explore_by_topic_product_filter(page: Page):
 
 # C2462867
 @pytest.mark.exploreByTopics
-def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory):
+@pytest.mark.parametrize("shard", range(TOPIC_SHARDS))
+def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory, shard: int):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory()
@@ -59,7 +64,8 @@ def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory):
 
     with allure.step("Navigating to the /topics/ Browse page"):
         utilities.navigate_to_link(troubleshooting_topic_url)
-    for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options():
+    for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options()[
+            shard::TOPIC_SHARDS]:
         topic = topic.strip()
         if topic != "Browse":
             sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
@@ -89,7 +95,8 @@ def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory):
 
 # C2663960
 @pytest.mark.exploreByTopics
-def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory):
+@pytest.mark.parametrize("shard", range(TOPIC_SHARDS))
+def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory, shard: int):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory()
@@ -100,14 +107,15 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory):
     with allure.step("Navigating to the /topics/ Browse page"):
         utilities.navigate_to_link(troubleshooting_topic_url)
 
-    for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options():
+    for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options()[
+            shard::TOPIC_SHARDS]:
         topic = topic.strip()
         if topic != "Browse":
             sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
         for product in sumo_pages.explore_by_topic_page.get_all_filter_by_product_options():
             product = product.strip()
-            current_url = utilities.get_page_url()
             sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product)
+            filtered_topic_url = utilities.get_page_url()
 
             if product == "All Products":
                 with allure.step("Clicking on the AAQ button"):
@@ -128,8 +136,9 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory):
                 with check, allure.step("Verifying that the correct AAQ form URL is displayed"):
                     expect(page).to_have_url(
                         utilities.aaq_question_test_data['products_aaq_url'][product])
-
-            utilities.navigate_to_link(current_url)
+            # Only an AAQ click leaves the page; the user goes back to it with the back button.
+            if utilities.get_page_url() != filtered_topic_url:
+                utilities.navigate_back()
 
 
 # C2663961

@@ -129,7 +129,7 @@ def test_contribute_forum_page_breadcrumbs(page: Page):
     )
     with allure.step("Verifying that the Contribute breadcrumb redirects to the Contribute page"):
         expect(page).to_have_url(ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL)
-    utilities.navigate_forward()
+    utilities.navigate_back()
 
     sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(
         sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[0]

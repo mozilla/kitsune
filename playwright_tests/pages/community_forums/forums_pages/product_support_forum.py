@@ -15,7 +15,6 @@ class ProductSupportForum(BasePage):
         """Locators belonging to the displayed questions."""
         self.showing_questions_tagged_tag = page.locator("div#tagged a[class='tag']")
         self.all_question_list_tags = page.locator("li[class='tag']")
-        self.show_all_questions_option = page.locator("a[class='show-all']")
         self.question_in_forum = lambda question_id: page.locator(
             f"//article[@id='{question_id}']")
         self.all_listed_questions = page.locator("//div[@id='questions-list']//article")
@@ -58,9 +57,3 @@ class ProductSupportForum(BasePage):
             filter_name (str): The name of the tab filter.
         """
         self._click(self.tab_filter_by_name(filter_name))
-
-    """Actions against the filter by tag section locators."""
-    def click_on_the_show_all_questions_option(self):
-        """Click on the 'Show all questions' option displayed when filtering by tags."""
-        super()._click(self.show_all_questions_option)
-

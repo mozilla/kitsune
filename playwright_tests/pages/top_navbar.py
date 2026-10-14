@@ -66,8 +66,6 @@ class TopNavbar(BasePage):
             "//h4[text()='Contributor discussions']/../following-sibling::ul/li/a")
         self.contributor_discussions_option = page.locator(
             "h4.mzp-c-menu-item-title").filter(has_text="Contributor discussions")
-        self.article_discussions_option = page.locator(
-            "div#main-navigation").get_by_role("link", name="Article discussions", exact=True)
         self.moderate_forum_content = page.locator(
             "div#main-navigation").get_by_role("link").filter(has_text="Moderate forum content")
         self.recent_revisions_option = page.locator(
@@ -87,8 +85,10 @@ class TopNavbar(BasePage):
             has_text="Community hub")
 
         """Locators belonging to the 'Sign in/up' top-navbar section."""
-        self.signin_signup_button = page.locator("div#profile-navigation").get_by_role(
-            "link").filter(has_text="Sign In/Up")
+        # Matched by its target rather than its text, so it works on every locale.
+        # The signed-in avatar link shares that target, so it is excluded.
+        self.signin_signup_button = page.locator(
+            "div#profile-navigation a[href$='/users/auth']:not(.has-avatar)")
         self.signed_in_username = page.locator("span.sumo-nav--username")
         self.signed_in_view_profile_option = page.locator(
             "//h4[contains(text(), 'View Profile')]/parent::a")
@@ -134,7 +134,10 @@ class TopNavbar(BasePage):
         if not is_first or not self._is_element_visible(option):
             hover_menu()
         option_text = re.sub(r'\s+', ' ', self._get_text_of_element(option)).strip()
-        self._click(option)
+        # Every navbar option is a link: wait for its navigation, otherwise the next hover can
+        # open the menu on the old page just before it gets replaced.
+        with self.page.expect_navigation(wait_until="domcontentloaded"):
+            self._click(option)
         return option_text
 
     """Actions against the 'Explore Help Articles' top-navbar section."""
@@ -227,11 +230,6 @@ class TopNavbar(BasePage):
         """Click on the 'Contributor discussions' top-navbar option"""
         self.hover_over_contribute_top_navbar()
         self._click(self.contributor_discussions_option)
-
-    def click_on_article_discussions_option(self):
-        """Click on the 'Article discussions' option"""
-        self.hover_over_contribute_top_navbar()
-        self._click(self.article_discussions_option)
 
     """Actions against the Contributor Tools."""
     def click_on_moderate_forum_content_option(self):

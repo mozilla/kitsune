@@ -28,7 +28,12 @@ def test_products_page_content(page: Page):
     with allure.step("Navigating back to the 'Products' page"):
         utilities.navigate_back()
 
-    for card in sumo_pages.products_page.get_all_product_support_titles():
+    cards = sumo_pages.products_page.get_all_product_support_titles()
+    with check, allure.step("Verifying that every product card has an expected subheading"):
+        missing = set(cards) - ProductsPageMessages.PRODUCT_CARDS_SUBHEADING.keys()
+        assert not missing, f"Product cards without an expected subheading: {missing}"
+
+    for card in cards:
         with check, allure.step(f"Verifying that the {card} card contains the correct subheading"):
             if card in ProductsPageMessages.PRODUCT_CARDS_SUBHEADING:
                 expect(sumo_pages.products_page.card_subheading(card)).to_have_text(
@@ -42,7 +47,12 @@ def test_products_page_card_redirect(page: Page):
     with allure.step("Navigating to products page via top-navbar"):
         sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
-    for card in sumo_pages.products_page.get_all_product_support_titles():
+    cards = sumo_pages.products_page.get_all_product_support_titles()
+    with check, allure.step("Verifying that every product card has an expected product url"):
+        missing = set(cards) - utilities.general_test_data['product_support'].keys()
+        assert not missing, f"Product cards without an expected product url: {missing}"
+
+    for card in cards:
         if card in utilities.general_test_data['product_support']:
             with allure.step(f"Clicking on {card} card and verifying that we are redirected "
                              f"to the correct product url"):

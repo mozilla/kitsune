@@ -75,7 +75,7 @@ class KBArticleReviewRevisionPage(BasePage):
         self._click(self.cancel_defer)
 
     def click_on_approve_revision_button(self):
-        self._click(self.approve_revision_button)
+        self._click(self.approve_revision_button, expected_locator=self.modal_accept_button)
 
     """Actions against the review revision modal locators."""
     def click_accept_revision_accept_button(self):

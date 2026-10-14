@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import ElementHandle, Page
 from playwright_tests.core.basepage import BasePage
 
@@ -28,18 +30,17 @@ class ProductSolutionsPage(BasePage):
             has_text="Featured Articles")
         self.featured_articles_cards = page.locator(
             "//h2[contains(text(),'Featured Articles')]/../..//a")
-        self.featured_article_card = lambda card_name: page.locator(
-            f'//h2[contains(text(),"Featured Articles")]/../..//a[normalize-space(text())='
-            f'"{card_name}"]')
+        # Matched by text rather than an XPath literal, which breaks on titles with quotes.
+        self.featured_article_card = lambda card_name: self.featured_articles_cards.filter(
+            has_text=re.compile(rf"^\s*{re.escape(card_name)}\s*$"))
 
         """Locators belonging to the popular topics section."""
         self.popular_topics_section_title = page.get_by_role("heading").filter(
             has_text="Popular Topics")
         self.popular_topics_cards = page.locator(
             "//h2[contains(text(),'Popular Topics')]/../..//a")
-        self.popular_topic_card = lambda card_name: page.locator(
-            f"//h2[contains(text(),'Popular Topics')]/../..//a[normalize-space(text()) = "
-            f"'{card_name}']")
+        self.popular_topic_card = lambda card_name: self.popular_topics_cards.filter(
+            has_text=re.compile(rf"^\s*{re.escape(card_name)}\s*$"))
 
         """Locators belonging to the support scam banner."""
         self.support_scams_banner = page.locator("div#id_scam_alert")

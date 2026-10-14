@@ -11,7 +11,7 @@ class MediaGallery(BasePage):
         self.search_gallery_searchbox = page.locator("form#gallery-search input")
         self.search_gallery_search_button = page.locator("form#gallery-search button")
         self.media_file = lambda media_file_name: page.locator(
-            f"//ol[@id='media-list']//a[@title='{media_file_name}']")
+            f"ol#media-list li a[title='{media_file_name}']")
 
         """Locators belonging to the Upload media modal."""
         self.upload_modal_image_preview = page.locator("//img[@class='preview']")
@@ -49,11 +49,10 @@ class MediaGallery(BasePage):
         self.insert_media_button = page.get_by_role("button", name="Insert Image", exact=True)
         self.linked_in_document = lambda document_name: page.locator(
             "div[class='documents'] li").get_by_role("link", name=document_name, exact=True)
-        self.media_file = lambda media_file_name: page.locator(
-            f"ol#media-list li a[title='{media_file_name}']")
 
         """Locators belonging to the delete image confirmation page."""
-        self.delete_this_image_button = page.locator("//button[text()='Delete this image']")
+        self.delete_image_confirmation_button = page.locator(
+            "form[method='post'] button[type='submit']")
 
         """Locators belonging to the Image Gallery pagination.
         Note: the rendered markup is <ol class="pagination cf">, so the 'pagination' class is
@@ -80,6 +79,7 @@ class MediaGallery(BasePage):
         Args:
             media_file_name (str): The name of the media file.
         """
+        self._click(self.media_file(media_file_name))
 
     """Actions against the 'Upload' media modal."""
     def click_on_upload_modal_delete_this_image_button(self):
@@ -169,7 +169,7 @@ class MediaGallery(BasePage):
 
     def click_on_image_description_edit_save_button(self):
         """Click on the 'Save image' button from the edit image description page."""
-        self._click(self.edit_image_save_image_button)
+        self._click(self.edit_image_save_image_button, wait_for_navigation=True)
 
     """Actions against the Image Gallery's search functionality."""
     def fill_search_media_gallery_searchbox_input_field(self, text: str):
@@ -227,7 +227,7 @@ class MediaGallery(BasePage):
 
     def click_on_cancel_media_insert(self):
         """Click on the 'Cancel' button from the 'Insert image...' modal."""
-        self._click(self.insert_media_button)
+        self._click(self.cancel_media_insert_button)
 
     def click_on_insert_media_button(self):
         """Click on the 'Insert Image' button from the 'Insert image...' modal."""
@@ -256,4 +256,4 @@ class MediaGallery(BasePage):
 
     """Actions against the media file deletion confirmation page."""
     def click_on_delete_this_image_confirmation_button(self):
-        self.click_on_delete_this_image_button()
+        self._click(self.delete_image_confirmation_button)

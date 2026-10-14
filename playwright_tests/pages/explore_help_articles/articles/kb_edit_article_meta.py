@@ -149,4 +149,4 @@ class KBArticleEditMetadata(BasePage):
         self._click(self.remove_related_documents_button(document_name))
 
     def click_on_save_changes_button(self):
-        self._click(self.save_changes_button)
+        self._click(self.save_changes_button, wait_for_navigation=True)

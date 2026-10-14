@@ -55,6 +55,8 @@ class QuestionPage(BasePage):
         self.question = lambda question_id: page.locator(f"div#{question_id}")
         self.question_more_options = page.locator(
             "//div[@class='thread-post']//button[text()='more options']")
+        self.expanded_question_more_options = page.locator(
+            "//div[@class='thread-post']//button[text()='more options'][@aria-expanded='true']")
         self.question_quote_option = page.locator("//div[@class='thread-post']//a[text()='Quote']")
         self.question_report_abuse_option = page.locator(
             "//div[@class='thread-post']//a[text()='Report Abuse']")
@@ -120,7 +122,6 @@ class QuestionPage(BasePage):
             "button[title='Numbered List']")
         self.post_a_reply_textarea_bulleted_list_button = page.locator(
             "button[title='Bulleted List']")
-        self.last_reply_by = page.locator("span[class='forum--meta-val visits no-border']")
         self.reply_author = lambda reply_id: page.locator(f"div#{reply_id} a[class='author-name']")
         self.reply_context = lambda reply_id: page.locator(f"div#{reply_id} div[class='content']")
         self.reply_author_display_name = lambda reply_id: page.locator(
@@ -130,6 +131,9 @@ class QuestionPage(BasePage):
         self.reply_section = lambda answer_id: page.locator(f"div#{answer_id}")
         self.more_options_for_answer = lambda answer_id: page.locator(
             f"div#{answer_id}").get_by_role("button", name="more options", exact=True)
+        self.expanded_more_options_for_answer = lambda answer_id: page.locator(
+            f"div#{answer_id}").get_by_role("button", name="more options", exact=True,
+                                            expanded=True)
         self.quote_reply = lambda answer_id: page.locator(f"div#{answer_id}").get_by_role(
             "link", name="Quote", exact=True)
         self.mark_reply_as_spam = lambda answer_id: page.locator(
@@ -230,6 +234,8 @@ class QuestionPage(BasePage):
         """Locators belonging to the report abuse section."""
         self.report_abuse_submit_button = page.locator(
             "div[class='mzp-c-modal-inner'] button[type='submit']")
+        self.report_abuse_confirmation_message = page.locator(
+            "div[class='mzp-c-modal-inner'] span[class='message']")
         self.report_abuse_textarea = page.locator("div[class='mzp-c-modal-inner'] textarea")
         # The reason radio options ('spam', 'language', 'abuse', 'other') inside the currently
         # open report-abuse modal. None is preselected - one must be explicitly clicked or the
@@ -270,7 +276,14 @@ class QuestionPage(BasePage):
         self._click(self.report_abuse_reason_option(reason_value))
 
     def click_on_report_abuse_submit_button(self):
+        """Click on the report submit button and wait for the report to be confirmed.
+
+        The report is posted in the background, so leaving the page before the confirmation
+        message shows up can cancel the request and the report is never saved.
+        """
         self._click(self.report_abuse_submit_button)
+        self._wait_for_locator(self.report_abuse_confirmation_message, timeout=15000,
+                               raise_exception=True)
 
     """Actions against the breadcrumbs locators."""
     def click_on_breadcrumb(self, breadcrumb_xpath: str):
@@ -295,9 +308,6 @@ class QuestionPage(BasePage):
         self._click(self.i_have_this_problem_too_no_thanks_button)
 
     """Actions against the general page locators."""
-    def click_last_reply_by(self):
-        self._click(self.last_reply_by)
-
     def get_question_id(self) -> str:
         return self._get_element_attribute_value(self.question_section, 'id')
 
@@ -305,7 +315,7 @@ class QuestionPage(BasePage):
         self._click(self.posted_questions_success_banner_my_questions_link)
 
     def click_on_solves_the_problem_button(self, target_reply_id: str):
-        self._click(self.reply_solves_the_problem(target_reply_id))
+        self._click(self.reply_solves_the_problem(target_reply_id), wait_for_navigation=True)
 
     def is_post_reply_button_visible(self) -> ElementHandle:
         self._wait_for_locator(self.post_reply_button)
@@ -315,14 +325,17 @@ class QuestionPage(BasePage):
         self._click(self.reply_author(reply_id))
 
     def click_on_question_more_options(self):
-        self._click(self.question_more_options)
+        # A click that lands while the page is still shifting its layout can leave the menu
+        # closed, so retry until it reports itself as expanded.
+        self._click(self.question_more_options,
+                    expected_locator=self.expanded_question_more_options)
 
     def click_on_question_report_abuse_option(self):
-        self._click(self.question_more_options)
+        self.click_on_question_more_options()
         self._click(self.question_report_abuse_option)
 
     def click_on_question_quote_option(self):
-        self._click(self.question_more_options)
+        self.click_on_question_more_options()
         self._click(self.question_quote_option)
 
     """Actions against the question tag section locators."""
@@ -370,8 +383,12 @@ class QuestionPage(BasePage):
     def click_on_the_additional_system_panel_close(self):
         self._click(self.close_additional_system_details_button)
 
-    def click_on_reply_more_options_button(self, answer_id: str):
-        self._click(self.more_options_for_answer(answer_id))
+    def click_on_reply_more_options_button(self, answer_id: str, expect_open: bool = True):
+        """Clicks the reply's 'more options' button, retrying until the menu reports itself as
+        expanded. Pass expect_open=False for a click that closes an open menu."""
+        self._click(self.more_options_for_answer(answer_id),
+                    expected_locator=(self.expanded_more_options_for_answer(answer_id)
+                                      if expect_open else None))
 
     def click_on_report_abuse_for_a_certain_reply(self, answer_id: str):
         self.click_on_reply_more_options_button(answer_id)
@@ -420,20 +437,22 @@ class QuestionPage(BasePage):
             return self._get_element_attribute_value(self.answer_by_username(repliant_username), "id")
 
     def click_on_undo_solution_button_from_reply(self):
-        self._click(self.undo_response_from_reply)
+        self._click(self.undo_response_from_reply, wait_for_navigation=True)
 
     """Actions against the question tools section locators."""
     def click_on_thread_locked_link(self):
         self._click(self.lock_this_thread_banner_link)
 
     def click_on_lock_this_question_option(self):
-        self._click(self.lock_this_question_option)
+        # The Question Tools links have no href: ui.js submits their form on click, so the click
+        # has to wait for the page to load and then for the redirect back to the question.
+        self._click(self.lock_this_question_option, wait_for_navigation=True)
 
     def click_on_subscribe_to_feed_option(self):
         self._click(self.subscribe_to_feed_option)
 
     def click_on_mark_as_spam_option(self):
-        self._click(self.mark_as_spam_option)
+        self._click(self.mark_as_spam_option, wait_for_navigation=True)
 
     def click_on_edit_this_question_question_tools_option(self):
         self._click(self.edit_this_question_option)
@@ -442,7 +461,7 @@ class QuestionPage(BasePage):
         self._click(self.delete_this_question_option)
 
     def click_on_archive_this_question_option(self):
-        self._click(self.archive_this_question_option)
+        self._click(self.archive_this_question_option, wait_for_navigation=True)
 
     def click_delete_this_question_button(self):
         self._click(self.delete_question_delete_button)

@@ -84,7 +84,10 @@ class KBArticleShowHistoryPage(BasePage):
         self._click(self.revision_editor(revision_id, username))
 
     def click_on_ready_for_l10n_option(self, revision_id: str):
-        self._click(self.ready_for_localization_button(revision_id))
+        # A click that lands while the page is still shifting its layout can leave the modal
+        # closed, so retry until its Submit button shows.
+        self._click(self.ready_for_localization_button(revision_id),
+                    expected_locator=self.ready_for_l10_modal_submit_button)
 
     def click_on_submit_l10n_readiness_button(self, revision_id: str):
         """
@@ -104,7 +107,8 @@ class KBArticleShowHistoryPage(BasePage):
         return self._is_element_visible(self.delete_this_document_button)
 
     def click_on_confirmation_delete_button(self):
-        self._click(self.delete_this_document_confirmation_delete_button)
+        self._click(self.delete_this_document_confirmation_delete_button,
+                    wait_for_navigation=True)
 
     def click_on_confirmation_cancel_button(self):
         self._click(self.delete_this_document_confirmation_cancel_button)

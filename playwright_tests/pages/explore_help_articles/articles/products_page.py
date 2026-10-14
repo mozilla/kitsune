@@ -14,9 +14,8 @@ class ProductsPage(BasePage):
 
         """Locators belonging to the product cards."""
         self.all_product_card_titles = page.locator("h3.card--title")
-        self.card_subheading = lambda card_title: page.locator(
-            f"//a[normalize-space(text())='{card_title}']/../following-sibling::p[@class='card--"
-            f"desc']")
+        self.card_subheading = lambda card_title: page.locator("div.card--details").filter(
+            has=page.get_by_role("link", name=card_title, exact=True)).locator("p.card--desc")
         self.card = lambda card_title: page.locator(
             "div.card--details").get_by_role("link", name=card_title, exact=True)
 

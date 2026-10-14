@@ -10,6 +10,7 @@ class KBArticlePage(BasePage):
         self.article_breadcrumb = lambda breadcrumb_name: page.locator(
             "ol#breadcrumbs").get_by_role("link", name=f"{breadcrumb_name}")
         self.kb_article_heading = page.locator("h1.sumo-page-heading")
+        self.redirected_from_link = page.locator("div#redirected-from a")
         self.kb_article_breadcrumbs_list = page.locator("ol#breadcrumbs").get_by_role("link")
         self.kb_article_restricted_banner = page.locator("div.warning-box")
         self.kb_article_content = page.locator("section#doc-content")
@@ -72,6 +73,13 @@ class KBArticlePage(BasePage):
 
     def get_text_of_article_title(self) -> str:
         return self._get_text_of_element(self.kb_article_heading)
+
+    def get_text_of_redirected_from_link(self) -> str | None:
+        """Returns the title in the '(Redirected from ...)' notice, or None if the article was
+        not reached through a redirect."""
+        if self._is_element_visible(self.redirected_from_link):
+            return self._get_text_of_element(self.redirected_from_link)
+        return None
 
     def get_article_products_metadata(self) -> list[str]:
         """Returns the list of product titles the article belongs to, as shown in the article
@@ -136,7 +144,9 @@ class KBArticlePage(BasePage):
         self._click(self.unhelpful_button)
 
     def click_on_helpfulness_option(self, option: str):
-        self._click(self.helpfulness_option(option))
+        # check() verifies the radio button actually got selected; a click while the survey is
+        # still sliding in can miss.
+        self._checkbox_interaction(self.helpfulness_option(option), check=True)
 
     def fill_helpfulness_textarea_field(self, text: str):
         self._fill(self.comments_textarea_field, text)

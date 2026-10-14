@@ -28,6 +28,19 @@ class KBCategoryPage(BasePage):
         """Clicks on a particular article listed on the category page."""
         self._click(self.article_from_list(article_name))
 
+    def is_article_listed(self, article_name: str) -> bool:
+        """Returns whether the article is listed on any page of the category. The list is
+        sorted by title and paginated, so it is searched from the first page, following 'Next'
+        like a user would."""
+        if (self._is_element_visible(self.pagination_section)
+                and self._get_text_of_element(self.selected_pagination_page) != "1"):
+            self.click_on_pagination_page(1)
+        while not self._is_element_visible(self.article_from_list(article_name)):
+            if not self._is_element_visible(self.next_pagination_button):
+                return False
+            self.click_on_next_pagination_page()
+        return True
+
     """Actions against the KB Category page pagination."""
     def click_on_next_pagination_page(self):
         """Clicks on the 'Next' pagination button."""

@@ -33,4 +33,4 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
         expect(sumo_pages.edit_my_profile_settings_page.
                your_settings_have_been_saved_notification_banner_text).to_have_text(
             EditSettingsPageMessages.MODIFIED_SETTINGS_NOTIFICATION_BANNER_MESSAGE)
-        assert not sumo_pages.edit_my_profile_settings_page.are_all_checkbox_checked()
+        assert sumo_pages.edit_my_profile_settings_page.are_all_checkbox_checked(checked=False)

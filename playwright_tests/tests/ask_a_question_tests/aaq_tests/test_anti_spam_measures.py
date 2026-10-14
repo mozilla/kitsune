@@ -140,7 +140,7 @@ def test_valid_prefs_and_internal_links_are_not_flagged_as_spam(page: Page, crea
 
         with check, allure.step("Signing out and verifying that the reply is displayed"):
             utilities.delete_cookies()
-            expect(sumo_pages.question_page.reply(reply_id))
+            expect(sumo_pages.question_page.reply(reply_id)).to_be_visible()
 
 
 # C1296001, C3395616
@@ -176,7 +176,7 @@ def test_question_owner_is_exempted_for_spam_auto_flag(page: Page, create_user_f
             expect(sumo_pages.question_page.reply_flagged_as_spam_banner).to_be_hidden()
 
         with check, allure.step(f"Verifying that the comment is displayed"):
-            expect(sumo_pages.question_page.reply(reply_id))
+            expect(sumo_pages.question_page.reply(reply_id)).to_be_visible()
 
 
 # C3395573, C3395578

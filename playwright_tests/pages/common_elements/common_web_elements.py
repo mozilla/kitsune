@@ -136,27 +136,29 @@ class CommonWebElements(BasePage):
                                    ) -> bool:
         if verification_type == "heading":
             self.click_on_frequent_topic_card_title(card)
-            if sumo_pages.product_topics_page.get_page_title() != card:
-                return False
+            redirected_correctly = sumo_pages.product_topics_page.get_page_title() == card
         elif verification_type == "article":
             listed_articles = sumo_pages.common_web_elements.get_frequent_topic_card_articles(
                 card)
             random_article = random.choice(listed_articles)
             sumo_pages.common_web_elements.click_on_a_frequent_topic_card_article(
                 card,random_article)
-            if sumo_pages.kb_article_page.get_text_of_article_title() != random_article:
-                return False
+            # A listed article can be a KB redirect; its target page names it in the
+            # '(Redirected from ...)' notice.
+            redirected_correctly = random_article in (
+                sumo_pages.kb_article_page.get_text_of_article_title(),
+                sumo_pages.kb_article_page.get_text_of_redirected_from_link())
         elif verification_type == "counter":
             counter = utilities.number_extraction_from_string(
                 sumo_pages.common_web_elements.get_frequent_topic_card_view_all_articles_link_text(
                     card))
             sumo_pages.common_web_elements.click_frequent_topic_card_view_all_articles_link(card)
             listed_articles = sumo_pages.product_topics_page.get_all_listed_article_titles()
-            if sumo_pages.product_topics_page.get_page_title() != card and len(listed_articles
-                                                                               ) != counter:
-                return False
+            redirected_correctly = (sumo_pages.product_topics_page.get_page_title() == card
+                                    and len(listed_articles) == counter)
+        # Go back on a mismatch too, so the next verification starts from the card page.
         utilities.navigate_back()
-        return True
+        return redirected_correctly
 
     def click_on_pagination_item(self, pagination_item: str):
         """Clicking on the pagination item"""

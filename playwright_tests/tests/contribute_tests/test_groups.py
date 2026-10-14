@@ -332,57 +332,58 @@ def test_add_group_members(page: Page, user_type, create_user_factory):
 
 # C2784450
 @pytest.mark.userGroupsTests
-@pytest.mark.parametrize("user_type", ['Group Leader', 'Staff user'])
-def test_edit_group_profile(page: Page, user_type, create_user_factory):
+def test_edit_group_profile(page: Page, create_user_factory):
+    # The staff user and a group leader edit the same shared group profile one after the other,
+    # since parallel edits would each read the other's change as the original text and save it
+    # back, leaving the profile changed on stage.
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory()
-
+    leader = create_user_factory()
     test_group = utilities.user_message_test_data['test_groups'][1]
+    staff_session = utilities.username_extraction_from_email(utilities.staff_user)
 
-    with allure.step("Signing in and accessing the test group"):
-        utilities.start_existing_session(
-            session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
-
+    with allure.step("Signing in with a staff account, accessing the test group and adding a "
+                     "group leader"):
+        utilities.start_existing_session(session_file_name=staff_session)
         utilities.navigate_to_link(utilities.general_test_data['groups'])
         sumo_pages.user_groups.click_on_a_particular_group(test_group)
+        sumo_pages.user_group_flow.add_a_user_to_group(leader["username"], is_leader=True)
+        group_profile_info = sumo_pages.user_groups.get_profile_information()
 
-    if user_type == "Group Leader":
-        sumo_pages.user_group_flow.add_a_user_to_group(test_user["username"], is_leader=True)
+    for editor, sign_in in (
+            ("Staff user", lambda: utilities.start_existing_session(
+                session_file_name=staff_session)),
+            ("Group leader", lambda: utilities.start_existing_session(cookies=leader))):
+        updated_info = f"{group_profile_info} edited by {editor}"
 
-    group_profile_info = sumo_pages.user_groups.get_profile_information()
+        with allure.step(f"Signing in as the {editor}"):
+            sign_in()
 
-    with check, allure.step("Clicking on the 'Edit' button and verifying that the correct page "
-                            "header is displayed"):
-        sumo_pages.user_groups.click_on_edit_group_profile_button()
-        expect(sumo_pages.user_groups.edit_group_profile_page_header).to_have_text(
-            UserGroupMessages.get_edit_profile_information_page_header(test_group))
+        with check, allure.step(f"Clicking on the 'Edit' button as the {editor} and verifying "
+                                f"the page header and the pre-filled information"):
+            sumo_pages.user_groups.click_on_edit_group_profile_button()
+            expect(sumo_pages.user_groups.edit_group_profile_page_header).to_have_text(
+                UserGroupMessages.get_edit_profile_information_page_header(test_group))
+            expect(sumo_pages.user_groups.edit_group_profile_textarea).to_have_text(
+                group_profile_info)
 
-    with check, allure.step("Verifying that the correct information was pre-filled inside the "
-                            "textarea field"):
-        expect(sumo_pages.user_groups.edit_group_profile_textarea).to_have_text(group_profile_info)
+        with allure.step(f"Changing the group profile information as the {editor} and "
+                         f"verifying that the new info is displayed"):
+            sumo_pages.user_groups.type_into_edit_group_profile_textarea(updated_info)
+            sumo_pages.user_groups.click_on_edit_group_profile_save_button()
+            expect(sumo_pages.user_groups.user_notification).to_have_text(
+                UserGroupMessages.GROUP_INFORMATION_UPDATE_NOTIFICATION)
+            expect(sumo_pages.user_groups.group_profile_information).to_have_text(updated_info)
 
-    with allure.step("Changing the group profile information and verifying that the new info is "
-                     "displayed"):
-        sumo_pages.user_groups.type_into_edit_group_profile_textarea(group_profile_info + " v2")
-        sumo_pages.user_groups.click_on_edit_group_profile_save_button()
-        expect(sumo_pages.user_groups.user_notification).to_have_text(
-            UserGroupMessages.GROUP_INFORMATION_UPDATE_NOTIFICATION)
-        expect(sumo_pages.user_groups.group_profile_information).to_have_text(
-            group_profile_info + " v2")
+        with allure.step("Signing out and verifying that the new group profile information is "
+                         "displayed for signed out users"):
+            utilities.delete_cookies()
+            expect(sumo_pages.user_groups.group_profile_information).to_have_text(updated_info)
 
-    with allure.step("Signing out and verifying that the new group profile information is "
-                     "displayed for signed out users"):
-        utilities.delete_cookies()
-        expect(sumo_pages.user_groups.group_profile_information).to_have_text(
-            group_profile_info + " v2")
-
-    with allure.step("Signing back in and reverting the profile information change"):
-        if user_type == "Group Leader":
-            utilities.start_existing_session(cookies=test_user)
-        else:
-            utilities.start_existing_session(
-                session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
-        sumo_pages.user_groups.click_on_edit_group_profile_button()
-        sumo_pages.user_groups.type_into_edit_group_profile_textarea(group_profile_info)
-        sumo_pages.user_groups.click_on_edit_group_profile_save_button()
+        with allure.step(f"Signing back in as the {editor} and reverting the change"):
+            sign_in()
+            sumo_pages.user_groups.click_on_edit_group_profile_button()
+            sumo_pages.user_groups.type_into_edit_group_profile_textarea(group_profile_info)
+            sumo_pages.user_groups.click_on_edit_group_profile_save_button()
+            expect(sumo_pages.user_groups.group_profile_information).to_have_text(
+                group_profile_info)

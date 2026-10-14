@@ -59,10 +59,12 @@ class MyProfileEditContributionAreasPage(BasePage):
         """Check if the forum contributors checkbox is checked"""
         return self._is_checkbox_checked(self.edit_contribution_areas_forum_contributors)
 
-    def are_all_cont_pref_checked(self) -> bool:
-        """Check if all contribution areas checkboxes are checked"""
-        return all([
+    def are_all_cont_pref_checked(self, checked: bool = True) -> bool:
+        """Check if all contribution areas checkboxes are checked, or all unchecked when
+        `checked` is False."""
+        states = [
             self.is_kb_contributors_checkbox_checked(),
             self.is_l10n_contributors_checkbox_checked(),
             self.is_forum_contributors_checkbox_checked()
-        ])
+        ]
+        return all(state == checked for state in states)

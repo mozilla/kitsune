@@ -125,7 +125,7 @@ class SentMessagePage(BasePage):
         Args:
             group_name (str): The name of the group.
         """
-        self._click(self.sent_message_to_group(group_name))
+        self._click(self.sent_message_to_group(group_name), wait_for_navigation=True)
 
     def click_on_delete_page_delete_button(self, expected_locator=None):
         """Click on the delete button on the delete message page.
@@ -133,7 +133,8 @@ class SentMessagePage(BasePage):
         Args:
             expected_locator (str): The expected locator after the deletion.
         """
-        self._click(self.delete_button, expected_locator=expected_locator)
+        self._click(self.delete_button, expected_locator=expected_locator,
+                    wait_for_navigation=True)
 
     def click_on_delete_page_cancel_button(self):
         """Click on the cancel button on the delete message page."""
@@ -156,7 +157,8 @@ class SentMessagePage(BasePage):
             excerpt (str): The excerpt of the message.
             expected_locator (str): The expected locator after the deletion.
         """
-        self.wait_for_dom_to_load()
+        # Wait for "load": scripts revealing banners can shift the checkboxes until then.
+        self.page.wait_for_load_state("load")
         if excerpt != '':
             sent_messages_count = self.sent_messages_by_excerpt_element_handles(excerpt)
         else:

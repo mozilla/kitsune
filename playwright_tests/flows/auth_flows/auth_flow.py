@@ -53,10 +53,14 @@ class AuthFlowPage:
             """If the 'Continue with Firefox Accounts' button is displayed, click on it."""
             self.auth_page.click_on_continue_with_firefox_accounts_button()
         self.auth_page.click_on_user_logged_in_sign_in_button()
-        # Clicking "Sign in" kicks off the FxA -> /fxa/callback/?code=... -> SUMO redirect
-        # chain. Block until it lands back on the SUMO origin and off the callback page,
-        # otherwise callers race the redirect and assert against the still-loading callback
-        # page (e.g. the signed-in username hasn't rendered yet, so to_have_text times out).
+        self.__wait_for_redirect_back_to_sumo()
+
+    def __wait_for_redirect_back_to_sumo(self):
+        """Wait until the FxA -> /fxa/callback/?code=... -> SUMO redirect chain lands back on the
+        SUMO origin and off the callback page. Callers otherwise race the redirect: they assert
+        against the still-loading callback page, or navigate away from FxA and cancel the
+        request that is still completing the sign-in.
+        """
         base = HomepageMessages.STAGE_HOMEPAGE_URL
         self.page.wait_for_url(
             lambda url: url.startswith(base) and "/fxa/callback" not in url,
@@ -97,7 +101,7 @@ class AuthFlowPage:
                 restmail_username=username if is_restmail else None, new_account=new_account
             ), new_account=new_account
             )
-        self.utilities.wait_for_dom_to_load()
+        self.__wait_for_redirect_back_to_sumo()
         return username, account_password
 
     def delete_test_account_flow(self, username: str, password: str):

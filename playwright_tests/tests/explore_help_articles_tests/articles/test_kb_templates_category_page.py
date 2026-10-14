@@ -28,29 +28,27 @@ def test_unreviewed_template_visibility_in_templates_category(page: Page, create
     with check, allure.step("Verifying that the unreviewed template is displayed inside the "
                             "Templates category page for the KB Reviewer who created it"):
         utilities.navigate_to_link(templates_category_link)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            template_details['article_title'])).to_be_visible()
+        assert sumo_pages.kb_category_page.is_article_listed(template_details['article_title'])
 
     with check, allure.step("Verifying that the unreviewed template is displayed inside the "
                             "Templates category page for a different KB Reviewer"):
         utilities.start_existing_session(cookies=test_user_two)
         utilities.navigate_to_link(templates_category_link)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            template_details['article_title'])).to_be_visible()
+        assert sumo_pages.kb_category_page.is_article_listed(template_details['article_title'])
 
     with check, allure.step("Verifying that the unreviewed template is not displayed inside the "
                             "Templates category page for a user without the necessary permissions"):
         utilities.start_existing_session(cookies=test_user_three)
         utilities.navigate_to_link(templates_category_link)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            template_details['article_title'])).to_be_hidden()
+        assert not sumo_pages.kb_category_page.is_article_listed(
+            template_details['article_title'])
 
     with check, allure.step("Verifying that the unreviewed template is not displayed inside the "
                             "Templates category page for signed out users"):
         utilities.delete_cookies()
         utilities.navigate_to_link(templates_category_link)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            template_details['article_title'])).to_be_hidden()
+        assert not sumo_pages.kb_category_page.is_article_listed(
+            template_details['article_title'])
 
 # C2266246
 @pytest.mark.kbTemplatesCategoryPage
@@ -73,22 +71,19 @@ def test_approved_template_visibility_in_templates_category(page: Page, create_u
     with check, allure.step("Verifying that the approved template is displayed inside the "
                             "Templates category page for the KB Reviewer"):
         utilities.navigate_to_link(templates_category_link)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            template_details['article_title'])).to_be_visible()
+        assert sumo_pages.kb_category_page.is_article_listed(template_details['article_title'])
 
     with check, allure.step("Verifying that the approved template is displayed inside the "
                             "Templates category page for a user without elevated permissions"):
         utilities.start_existing_session(cookies=test_user_two)
         utilities.navigate_to_link(templates_category_link)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            template_details['article_title'])).to_be_visible()
+        assert sumo_pages.kb_category_page.is_article_listed(template_details['article_title'])
 
     with check, allure.step("Verifying that the approved template is displayed inside the "
                             "Templates category page for signed out users"):
         utilities.delete_cookies()
         utilities.navigate_to_link(templates_category_link)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            template_details['article_title'])).to_be_visible()
+        assert sumo_pages.kb_category_page.is_article_listed(template_details['article_title'])
 
 
 # C2266247, C891400
@@ -112,8 +107,7 @@ def test_deleted_template_not_visible_in_templates_category(page: Page, create_u
     with check, allure.step("Verifying that the template is displayed inside the Templates "
                             "category page before deletion"):
         utilities.navigate_to_link(templates_category_link)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            template_details['article_title'])).to_be_visible()
+        assert sumo_pages.kb_category_page.is_article_listed(template_details['article_title'])
 
     with allure.step("Clicking on the template link from the Templates category page and "
                      "navigating to its history page"):
@@ -127,15 +121,15 @@ def test_deleted_template_not_visible_in_templates_category(page: Page, create_u
     with check, allure.step("Verifying that the deleted template is no longer displayed inside "
                             "the Templates category page for the KB Reviewer"):
         utilities.navigate_to_link(templates_category_link)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            template_details['article_title'])).to_be_hidden()
+        assert not sumo_pages.kb_category_page.is_article_listed(
+            template_details['article_title'])
 
     with check, allure.step("Verifying that the deleted template is no longer displayed inside "
                             "the Templates category page for signed out users"):
         utilities.delete_cookies()
         utilities.navigate_to_link(templates_category_link)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            template_details['article_title'])).to_be_hidden()
+        assert not sumo_pages.kb_category_page.is_article_listed(
+            template_details['article_title'])
 
 
 # C891402

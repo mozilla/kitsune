@@ -107,7 +107,8 @@ class InboxPage(BasePage):
                 excerpt (str): The excerpt of the message.
                 expected_locator (str): The expected locator after deleting all the messages.
         """
-        self.wait_for_dom_to_load()
+        # Wait for "load": scripts revealing banners can shift the checkboxes until then.
+        self.page.wait_for_load_state("load")
         if excerpt != '':
             inbox_messages_count = self.get_inbox_message_element_handles_based_on_excerpt(excerpt)
         else:
@@ -184,7 +185,8 @@ class InboxPage(BasePage):
             Args:
                 expected_locator (str): The expected locator after deleting the message.
         """
-        self._click(self.delete_confirmation_page_delete_button, expected_locator=expected_locator)
+        self._click(self.delete_confirmation_page_delete_button, expected_locator=expected_locator,
+                    wait_for_navigation=True)
 
     def click_on_cancel_button_inside_the_confirmation_page(self):
         """

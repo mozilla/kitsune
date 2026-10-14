@@ -14,13 +14,15 @@ from playwright_tests.messages.ask_a_question_messages.product_solutions_message
 )
 from playwright_tests.pages.sumo_pages import SumoPages
 
+# Splits the freemium product walk across xdist workers; 3 shards keep this file at 6 tests,
+# one per worker (--numprocesses 6).
+FREEMIUM_PRODUCT_SHARDS = 3
+
 
 #  C890370, C890374, C890372
 @pytest.mark.smokeTest
 @pytest.mark.productSolutionsPage
-def test_featured_articles_redirect(page: Page, is_chromium):
-    if is_chromium:
-        pytest.skip("Skipping this test for chromium browser")
+def test_featured_articles_redirect(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
@@ -45,18 +47,17 @@ def test_featured_articles_redirect(page: Page, is_chromium):
             if sumo_pages.product_solutions_page.is_featured_article_section_displayed():
                 for featured_article_card in (sumo_pages.product_solutions_page
                                               .get_all_featured_articles_titles()):
-                    sumo_pages.product_solutions_page.click_on_a_featured_article_card(
-                        featured_article_card.strip())
+                    featured_article_card = featured_article_card.strip()
                     with check, allure.step(f"Clicking on the {featured_article_card} and"
                                             f" verifying that the correct article page title is"
                                             f" displayed"):
                         with page.context.expect_page() as tab:
-                            feature_article_page = tab.value
-                            article_text = (feature_article_page.
-                                            locator("//h1[@class='sumo-page-heading']"
-                                                    ).inner_text())
-                            assert article_text == featured_article_card.strip()
-                            feature_article_page.close()
+                            sumo_pages.product_solutions_page.click_on_a_featured_article_card(
+                                featured_article_card)
+                        feature_article_page = tab.value
+                        expect(feature_article_page.locator("//h1[@class='sumo-page-heading']")
+                               ).to_have_text(featured_article_card)
+                        feature_article_page.close()
             else:
                 print(f"{card} has no featured articles displayed!!!")
             utilities.navigate_back()
@@ -72,7 +73,6 @@ def test_popular_topics_redirect(page: Page):
                      "Browse All products"):
         sumo_pages.top_navbar.click_on_browse_all_products_option()
         product = random.choice(sumo_pages.contact_support_page.get_all_product_card_titles())
-        utilities.navigate_back()
 
     with allure.step("Navigating to a random product page"):
         sumo_pages.contact_support_page.click_on_a_particular_card(product)
@@ -98,7 +98,8 @@ def test_popular_topics_redirect(page: Page):
 # T5696588
 @pytest.mark.smokeTest
 @pytest.mark.productSolutionsPage
-def test_ask_now_widget_redirect(page: Page, restmail_test_account_creation):
+@pytest.mark.parametrize("shard", range(FREEMIUM_PRODUCT_SHARDS))
+def test_ask_now_widget_redirect(page: Page, restmail_test_account_creation, shard: int):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     restmail_test_account_creation()
@@ -108,7 +109,8 @@ def test_ask_now_widget_redirect(page: Page, restmail_test_account_creation):
         sumo_pages.top_navbar.click_on_browse_all_products_option()
         utilities.delete_cookies()
 
-    for freemium_product in utilities.general_test_data["freemium_products"]:
+    for freemium_product in utilities.general_test_data["freemium_products"][
+            shard::FREEMIUM_PRODUCT_SHARDS]:
         with allure.step(f"Clicking on the {freemium_product} card "):
             sumo_pages.contact_support_page.click_on_a_particular_card(freemium_product)
         with check, allure.step("Verifying that the correct 'Still need help' subtext is "

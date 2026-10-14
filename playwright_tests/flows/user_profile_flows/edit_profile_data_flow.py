@@ -120,7 +120,7 @@ class EditProfileDataFlow:
         self.top_navbar.click_on_settings_profile_option()
         self.profile_navbar.click_on_edit_contribution_areas_option()
 
-        if not checked:
+        if checked:
             self.profile_contribution_areas.click_on_unchecked_cont_areas_checkboxes()
         else:
             self.profile_contribution_areas.click_on_all_checked_cont_areas_checkboxes()

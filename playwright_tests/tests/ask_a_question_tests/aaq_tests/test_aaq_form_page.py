@@ -13,6 +13,10 @@ from playwright_tests.messages.contribute_messages.con_pages.con_page_messages i
     ContributePageMessages)
 from playwright_tests.pages.sumo_pages import SumoPages
 
+# Splits the per-topic question posting across xdist workers (71 questions in one test took
+# ~4.5 min). The freemium product order balances the shards at 22/22/18/9 questions.
+TOPIC_QUESTION_SHARDS = 4
+
 
 # T5696741, T5696742
 @pytest.mark.aaqPage
@@ -257,7 +261,9 @@ def test_aaq_form_cancel_button_freemium_products(page: Page, create_user_factor
 
 # T5696597, T5696601, T5696602
 @pytest.mark.aaqPage
-def test_post_aaq_questions_for_all_freemium_products_topics(page: Page, create_user_factory):
+@pytest.mark.parametrize("shard", range(TOPIC_QUESTION_SHARDS))
+def test_post_aaq_questions_for_all_freemium_products_topics(page: Page, create_user_factory,
+                                                             shard: int):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Forum Moderators"])
@@ -266,7 +272,8 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page, create_
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to each product AAQ form"):
-        for product in utilities.general_test_data["freemium_products"]:
+        for product in utilities.general_test_data["freemium_products"][
+                shard::TOPIC_QUESTION_SHARDS]:
             utilities.navigate_to_link(
                 utilities.aaq_question_test_data["products_aaq_url"][product])
 
