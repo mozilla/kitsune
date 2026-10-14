@@ -1,11 +1,10 @@
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.admin.utils import get_deleted_objects
 from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
-from django.db.models import Exists, OuterRef
-from django.db.models.functions import Length, Substr
 from django.http import HttpResponseBadRequest
 from django.utils.text import capfirst
 from treebeard.admin import TreeAdmin
@@ -76,6 +75,14 @@ class GroupProfileAdmin(TreeAdmin):
             message = " ".join(error.messages)
             messages.error(request, message)
             return HttpResponseBadRequest(message)
+
+    def get_deleted_objects(self, objs, request):
+        return add_subgroups_to_deleted_objects(
+            super().get_deleted_objects(objs, request),
+            GroupProfile.objects.filter(pk__in=[profile.pk for profile in objs]),
+            request,
+            self.admin_site,
+        )
 
     def get_readonly_fields(self, request, obj=None):
         """Make visibility, visible_to_groups, and isolation_enabled read-only for subgroups."""
@@ -159,32 +166,37 @@ class GroupProfileAdmin(TreeAdmin):
         form.instance.group.user_set.add(*form.instance.leaders.all())
 
 
+def add_subgroups_to_deleted_objects(deleted, profiles, request, admin_site, listed_groups=()):
+    """
+    Add to a delete confirmation page what deleting these profiles also deletes.
+    """
+    to_delete, model_count, perms_needed, protected = deleted
+    groups = list(profiles.subgroup_groups())
+    if groups:
+        more_to_delete, _, more_perms_needed, more_protected = get_deleted_objects(
+            groups, request, admin_site
+        )
+        to_delete.extend(more_to_delete)
+        perms_needed.update(more_perms_needed)
+        protected.extend(more_protected)
+    # Profiles of the listed groups are already on the page, through the cascade.
+    kept_group_profiles = (
+        profiles.descendants().exclude(group__in=groups).exclude(group__in=listed_groups)
+    )
+    verbose_name = capfirst(GroupProfile._meta.verbose_name)
+    to_delete.extend(f"{verbose_name}: {profile}" for profile in kept_group_profiles)
+    return to_delete, model_count, perms_needed, protected
+
+
 class GroupAdmin(DjangoGroupAdmin):
     def get_deleted_objects(self, objs, request):
-        """
-        Add the profiles that go with the groups to the delete confirmation page.
-
-        GroupProfile.group doesn't cascade (see groups.signals.delete_group_profiles),
-        so Django can't see that the profiles, and their subgroups' profiles, get
-        deleted too. Without this, the page wouldn't list them, and staff could delete
-        them without permission to delete group profiles.
-        """
-        to_delete, model_count, perms_needed, protected = super().get_deleted_objects(
-            objs, request
+        return add_subgroups_to_deleted_objects(
+            super().get_deleted_objects(objs, request),
+            GroupProfile.objects.filter(group__in=objs),
+            request,
+            self.admin_site,
+            listed_groups=objs,
         )
-        own_profile_at_or_above = GroupProfile.objects.filter(
-            group__in=objs, path=Substr(OuterRef("path"), 1, Length("path"))
-        )
-        # The groups' profiles and every profile below them, each once, in tree order.
-        if profiles := list(GroupProfile.objects.filter(Exists(own_profile_at_or_above))):
-            opts = GroupProfile._meta
-            to_delete.extend(
-                f"{capfirst(opts.verbose_name)}: {profile.slug}" for profile in profiles
-            )
-            model_count[opts.verbose_name_plural] = len(profiles)
-            if not request.user.has_perm(f"{opts.app_label}.delete_{opts.model_name}"):
-                perms_needed.add(opts.verbose_name)
-        return to_delete, model_count, perms_needed, protected
 
 
 admin.site.register(GroupProfile, GroupProfileAdmin)

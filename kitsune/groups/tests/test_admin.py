@@ -154,53 +154,103 @@ class GroupProfileAdminTests(TestCase):
         self.assertIn("File is too large.", form.errors["avatar"][0])
 
 
-class GroupAdminDeleteTests(TestCase):
-    """The Group admin's delete pages must show and check the profiles that go too."""
+class DeleteConfirmationTests(TestCase):
+    """Both admins' delete pages must show and check everything that goes too."""
 
     def setUp(self):
-        root = GroupProfile.objects.add_root(
+        self.root = GroupProfile.objects.add_root(
             create_kwargs={"group": Group.objects.create(name="Root"), "slug": "root"}
         )
         self.company = GroupProfile.objects.add_child(
-            root, create_kwargs={"group": Group.objects.create(name="Acme"), "slug": "acme"}
+            self.root, create_kwargs={"group": Group.objects.create(name="Acme"), "slug": "acme"}
         )
-        GroupProfile.objects.add_child(
+        self.team = GroupProfile.objects.add_child(
             self.company,
             create_kwargs={"group": Group.objects.create(name="Acme IT"), "slug": "acme-it"},
         )
-        self.delete_url = reverse("admin:auth_group_delete", args=[self.company.group_id])
+        self.group_delete_url = reverse("admin:auth_group_delete", args=[self.company.group_id])
+        self.profile_delete_url = reverse(
+            "admin:groups_groupprofile_delete", args=[self.company.pk]
+        )
 
     def _login(self, user):
-        # Admin pages force OIDC re-authentication unless the session has an unexpired
-        # ID token from the OIDC backend.
         self.client.force_login(user, backend="kitsune.users.auth.SumoOIDCAuthBackend")
         session = self.client.session
         session["oidc_id_token_expiration"] = time.time() + 3600
         session.save()
 
-    def test_confirmation_lists_profile_and_subgroups(self):
-        self._login(UserFactory(is_staff=True, is_superuser=True))
-
-        resp = self.client.get(self.delete_url)
-
-        self.assertEqual(resp.status_code, 200)
-        deleted = resp.context["deleted_objects"]
-        self.assertIn("Group profile: acme", deleted)
-        self.assertIn("Group profile: acme-it", deleted)
-        self.assertNotIn("Group profile: root", deleted)
-        self.assertEqual(resp.context["perms_lacking"], set())
-
-    def test_deleting_needs_permission_to_delete_group_profiles(self):
+    def _staff_with(self, perm):
+        app_label, codename = perm.split(".")
         user = UserFactory(is_staff=True)
         user.user_permissions.add(
-            Permission.objects.get(content_type__app_label="auth", codename="delete_group")
+            Permission.objects.get(content_type__app_label=app_label, codename=codename)
         )
-        self._login(user)
+        return user
 
-        resp = self.client.get(self.delete_url)
+    def _group_entry(self, profile):
+        url = reverse("admin:auth_group_change", args=[profile.group_id])
+        return f'Group: <a href="{url}">{profile.group}</a>'
+
+    def _profile_entry(self, profile):
+        url = reverse("admin:groups_groupprofile_change", args=[profile.pk])
+        return f'Group profile: <a href="{url}">{profile}</a>'
+
+    def test_group_delete_lists_subgroups(self):
+        self._login(UserFactory(is_staff=True, is_superuser=True))
+
+        resp = self.client.get(self.group_delete_url)
+
+        self.assertEqual(resp.status_code, 200)
+        for profile in (self.company, self.team):
+            self.assertContains(resp, self._group_entry(profile), count=1)
+            self.assertContains(resp, self._profile_entry(profile), count=1)
+        self.assertNotContains(resp, self._group_entry(self.root))
+        self.assertNotContains(resp, self._profile_entry(self.root))
+        self.assertEqual(resp.context["perms_lacking"], set())
+
+    def test_group_delete_lists_profile_of_subgroup_kept_elsewhere(self):
+        other_root = GroupProfile.objects.add_root(
+            create_kwargs={"group": Group.objects.create(name="Other"), "slug": "other"}
+        )
+        GroupProfile.objects.add_child(
+            other_root, create_kwargs={"group": self.team.group, "slug": "acme-it-elsewhere"}
+        )
+        self._login(UserFactory(is_staff=True, is_superuser=True))
+
+        resp = self.client.get(self.group_delete_url)
+
+        self.assertNotContains(resp, self._group_entry(self.team))
+        self.assertContains(resp, "Group profile: Acme IT", count=1)
+
+    def test_group_delete_needs_permission_to_delete_group_profiles(self):
+        self._login(self._staff_with("auth.delete_group"))
+
+        resp = self.client.get(self.group_delete_url)
         self.assertEqual(resp.context["perms_lacking"], {"group profile"})
 
-        resp = self.client.post(self.delete_url, {"post": "yes"})
+        resp = self.client.post(self.group_delete_url, {"post": "yes"})
         self.assertEqual(resp.status_code, 403)
         self.assertTrue(Group.objects.filter(pk=self.company.group_id).exists())
         self.assertTrue(GroupProfile.objects.filter(pk=self.company.pk).exists())
+
+    def test_profile_delete_lists_subgroups_but_not_its_own_group(self):
+        self._login(UserFactory(is_staff=True, is_superuser=True))
+
+        resp = self.client.get(self.profile_delete_url)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, self._group_entry(self.company))
+        self.assertContains(resp, self._group_entry(self.team), count=1)
+        self.assertContains(resp, self._profile_entry(self.team), count=1)
+        self.assertEqual(resp.context["perms_lacking"], set())
+
+    def test_profile_delete_needs_permission_to_delete_groups(self):
+        self._login(self._staff_with("groups.delete_groupprofile"))
+
+        resp = self.client.get(self.profile_delete_url)
+        self.assertEqual(resp.context["perms_lacking"], {"group"})
+
+        resp = self.client.post(self.profile_delete_url, {"post": "yes"})
+        self.assertEqual(resp.status_code, 403)
+        self.assertTrue(GroupProfile.objects.filter(pk=self.company.pk).exists())
+        self.assertTrue(Group.objects.filter(pk=self.team.group_id).exists())

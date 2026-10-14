@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group, User
-from django.db.models.signals import m2m_changed, post_delete, post_save
+from django.db.models.signals import m2m_changed, post_save, pre_delete
 from django.dispatch import receiver
 
 from kitsune.groups.membership import guard_enterprise_memberships
@@ -72,10 +72,11 @@ def sync_visible_to_groups_on_create(sender, instance, **kwargs):
     instance._needs_visible_to_groups_sync = False
 
 
-@receiver(post_delete, sender=Group, dispatch_uid="groups.delete_group_profiles")
+@receiver(pre_delete, sender=Group, dispatch_uid="groups.delete_group_profiles")
 def delete_group_profiles(sender, instance, using, **kwargs):
     """
-    Delete a deleted group's profiles through treebeard rather than via cascade
-    in order to properly maintain the profile tree.
+    Delete a group's profiles through treebeard rather than via cascade
+    in order to properly maintain the profile tree. This also deletes the
+    subgroups' Groups (see GroupProfileQuerySet.delete).
     """
     GroupProfile.objects.using(using).filter(group_id=instance.pk).delete()

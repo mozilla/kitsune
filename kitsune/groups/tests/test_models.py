@@ -1531,13 +1531,58 @@ class DeleteGroupTreeTests(TestCase):
         self.root.refresh_from_db()
         self.assertEqual(self.root.numchild, 1)
 
-    def test_deleting_group_removes_descendant_profiles(self):
+    def test_deleting_group_deletes_subgroups(self):
         child = self._child(self.root, "child")
         grandchild = self._child(child, "grandchild")
+        great_grandchild = self._child(grandchild, "great-grandchild")
         child.group.delete()
 
-        self.assertFalse(GroupProfile.objects.filter(pk=grandchild.pk).exists())
-        self.assertTrue(Group.objects.filter(pk=grandchild.group_id).exists())
+        self.assertFalse(
+            GroupProfile.objects.filter(pk__in=[grandchild.pk, great_grandchild.pk]).exists()
+        )
+        self.assertFalse(
+            Group.objects.filter(pk__in=[grandchild.group_id, great_grandchild.group_id]).exists()
+        )
+        self.assertEqual(GroupProfile.find_problems(), ([], [], [], [], []))
+
+    def test_deleting_group_keeps_subgroup_with_a_profile_elsewhere(self):
+        child = self._child(self.root, "child")
+        shared = self._child(child, "shared")
+        other_root = GroupProfile.objects.add_root(
+            create_kwargs={"group": GroupFactory(), "slug": "other-root"}
+        )
+        elsewhere = GroupProfile.objects.add_child(
+            other_root, create_kwargs={"group": shared.group, "slug": "shared-elsewhere"}
+        )
+        child.group.delete()
+
+        self.assertFalse(GroupProfile.objects.filter(pk=shared.pk).exists())
+        self.assertTrue(Group.objects.filter(pk=shared.group_id).exists())
+        self.assertTrue(GroupProfile.objects.filter(pk=elsewhere.pk).exists())
+        self.assertEqual(GroupProfile.find_problems(), ([], [], [], [], []))
+
+    def test_deleting_profile_keeps_its_group_but_deletes_subgroups(self):
+        child = self._child(self.root, "child")
+        grandchild = self._child(child, "grandchild")
+        child.delete()
+
+        self.assertTrue(Group.objects.filter(pk=child.group_id).exists())
+        self.assertFalse(Group.objects.filter(pk=grandchild.group_id).exists())
+        self.assertFalse(GroupProfile.objects.filter(pk__in=[child.pk, grandchild.pk]).exists())
+        self.assertEqual(GroupProfile.find_problems(), ([], [], [], [], []))
+
+    def test_bulk_deleting_a_group_and_its_subgroup(self):
+        child = self._child(self.root, "child")
+        grandchild = self._child(child, "grandchild")
+        great_grandchild = self._child(grandchild, "great-grandchild")
+        profiles = [child, grandchild, great_grandchild]
+        # The subgroup's Group is deleted by the tree code first, then again by Django.
+        Group.objects.filter(pk__in=[child.group_id, grandchild.group_id]).delete()
+
+        self.assertFalse(GroupProfile.objects.filter(pk__in=[p.pk for p in profiles]).exists())
+        self.assertFalse(Group.objects.filter(pk__in=[p.group_id for p in profiles]).exists())
+        self.root.refresh_from_db()
+        self.assertEqual(self.root.numchild, 0)
         self.assertEqual(GroupProfile.find_problems(), ([], [], [], [], []))
 
     def test_deleting_profiles_takes_the_exclusive_lock(self):

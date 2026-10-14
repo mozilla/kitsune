@@ -1,5 +1,5 @@
-from django.contrib.auth.models import User
-from django.db.models import Exists, OuterRef, Q
+from django.contrib.auth.models import Group, User
+from django.db.models import Exists, Max, OuterRef, Q
 from django.db.models.functions import Length, Substr
 from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
 
@@ -11,11 +11,49 @@ from kitsune.groups.membership import (
 
 
 class GroupProfileQuerySet(MP_NodeQuerySet):
+    def descendants(self):
+        """Every profile below these ones."""
+        at_or_above = self.filter(path=Substr(OuterRef("path"), 1, Length("path")))
+        return (
+            self.model.objects.using(self.db)
+            .filter(Exists(at_or_above))
+            .exclude(pk__in=self.values("pk"))
+        )
+
+    def subgroup_groups(self):
+        """
+        The Groups of the profiles below these ones, which deleting these deletes too.
+
+        Leaves out the Groups of these profiles, and any Group that also has a profile
+        outside this subtree: only its profiles in the subtree get deleted. Each Group
+        has a "depth", its deepest profile's depth, for deleting deepest first.
+        """
+        below = self.descendants()
+        elsewhere = (
+            self.model.objects.using(self.db)
+            .filter(group=OuterRef("pk"))
+            .exclude(pk__in=below.values("pk"))
+            .exclude(pk__in=self.values("pk"))
+        )
+        return (
+            Group.objects.using(self.db)
+            .filter(profile__in=below)
+            .exclude(pk__in=self.values("group_id"))
+            .exclude(Exists(elsewhere))
+            .annotate(depth=Max("profile__depth"))
+        )
+
     def delete(self, *args, **kwargs):
         # Treebeard reads paths in one query and deletes by path in another, so a
         # move in between could make it delete the wrong subtree.
         with lock_enterprise_hierarchy(using=self.db, exclusive=True):
+            # Deepest first, so each subgroup's delete handlers still see the tree above it.
+            for group in list(self.subgroup_groups().order_by("-depth")):
+                group.delete(using=self.db)
             return super().delete(*args, **kwargs)
+
+    delete.alters_data = True  # type: ignore[attr-defined]
+    delete.queryset_only = True  # type: ignore[attr-defined]
 
 
 class GroupProfileManager(MP_NodeManager):
