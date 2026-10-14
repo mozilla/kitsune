@@ -162,12 +162,11 @@ class GroupProfileAdmin(TreeAdmin):
 class GroupAdmin(DjangoGroupAdmin):
     def get_deleted_objects(self, objs, request):
         """
-        Add the profiles that go with the groups to the delete confirmation page.
+        Add the subgroups' profiles to the delete confirmation page.
 
-        GroupProfile.group doesn't cascade (see groups.signals.delete_group_profiles),
-        so Django can't see that the profiles, and their subgroups' profiles, get
-        deleted too. Without this, the page wouldn't list them, and staff could delete
-        them without permission to delete group profiles.
+        Django's cascade lists the groups' own profiles, but it can't see that deleting
+        them through treebeard (see groups.signals.delete_group_profiles) also deletes
+        every profile below them.
         """
         to_delete, model_count, perms_needed, protected = super().get_deleted_objects(
             objs, request
@@ -175,15 +174,13 @@ class GroupAdmin(DjangoGroupAdmin):
         own_profile_at_or_above = GroupProfile.objects.filter(
             group__in=objs, path=Substr(OuterRef("path"), 1, Length("path"))
         )
-        # The groups' profiles and every profile below them, each once, in tree order.
-        if profiles := list(GroupProfile.objects.filter(Exists(own_profile_at_or_above))):
-            opts = GroupProfile._meta
-            to_delete.extend(
-                f"{capfirst(opts.verbose_name)}: {profile.slug}" for profile in profiles
-            )
-            model_count[opts.verbose_name_plural] = len(profiles)
-            if not request.user.has_perm(f"{opts.app_label}.delete_{opts.model_name}"):
-                perms_needed.add(opts.verbose_name)
+        # Every profile below the groups' own profiles, each once, in tree order.
+        # Profiles of the groups themselves are already listed by Django.
+        if profiles := list(
+            GroupProfile.objects.filter(Exists(own_profile_at_or_above)).exclude(group__in=objs)
+        ):
+            verbose_name = capfirst(GroupProfile._meta.verbose_name)
+            to_delete.extend(f"{verbose_name}: {profile}" for profile in profiles)
         return to_delete, model_count, perms_needed, protected
 
 

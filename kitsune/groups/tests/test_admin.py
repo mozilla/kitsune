@@ -184,10 +184,12 @@ class GroupAdminDeleteTests(TestCase):
         resp = self.client.get(self.delete_url)
 
         self.assertEqual(resp.status_code, 200)
-        deleted = resp.context["deleted_objects"]
-        self.assertIn("Group profile: acme", deleted)
-        self.assertIn("Group profile: acme-it", deleted)
-        self.assertNotIn("Group profile: root", deleted)
+        # Django's cascade lists the group's own profile, as a link to its change page.
+        change_url = reverse("admin:groups_groupprofile_change", args=[self.company.pk])
+        self.assertContains(resp, f'Group profile: <a href="{change_url}">Acme</a>', count=1)
+        # The subgroup's profile is added by GroupAdmin.
+        self.assertContains(resp, "Group profile: Acme IT", count=1)
+        self.assertNotContains(resp, "Group profile: Root")
         self.assertEqual(resp.context["perms_lacking"], set())
 
     def test_deleting_needs_permission_to_delete_group_profiles(self):

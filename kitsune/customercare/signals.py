@@ -116,6 +116,10 @@ def on_group_removal(sender, instance, action, reverse, pk_set, **kwargs):
 
 @receiver(pre_delete, sender=Group, dispatch_uid="customercare.signals.on_group_deletion.Group")
 def on_group_deletion(sender, instance, **kwargs):
+    # This reads the profile tree, so it must run before groups.signals.delete_group_profiles
+    # deletes the group's profiles. Receivers run in INSTALLED_APPS order, so
+    # "kitsune.customercare" must stay above "kitsune.groups".
+    #
     # A chat organization's own group takes the organization with it, and
     # on_organization_deletion covers everyone in that case.
     if instance.support_organizations.filter(include_live_chat=True).exists():
