@@ -46,12 +46,14 @@ def get_taxonomy(
     product: Product | str | None = None,
     include_metadata: list[str] | tuple[str, ...] | None = None,
     output_format: str = "YAML",
+    include_ids: bool = False,
 ) -> str:
     """
     Returns the currently active taxonomy as a string in the output format requested
     (either "YAML" or "JSON"). If a product is given, the taxonomy is limited to that
     product, otherwise the entire taxonomy, spanning all products, is returned. Requires
     only a single database query if a specific product is given, otherwise two queries.
+    Set include_ids to identify topics unambiguously without changing the default output.
     """
 
     result = {}
@@ -90,10 +92,12 @@ def get_taxonomy(
 
         for topic in topics_by_parent.get(parent.id if parent else None, ()):
             item = {"title": topic.title}
+            if include_ids:
+                item["id"] = topic.id
 
             if include_metadata:
-                if not topic.metadata:
-                    # Skip topics that don't have any metadata.
+                if not isinstance(topic.metadata, dict) or not topic.metadata:
+                    # Skip topics that don't have usable metadata.
                     continue
                 for name in include_metadata:
                     if value := topic.metadata.get(name):
@@ -138,8 +142,9 @@ def get_products(
         item = {"title": product.title}
 
         if include_metadata:
+            metadata = product.metadata if isinstance(product.metadata, dict) else {}
             for name in include_metadata:
-                if value := product.metadata.get(name):
+                if value := metadata.get(name):
                     item[name] = value
         else:
             item["description"] = product.description

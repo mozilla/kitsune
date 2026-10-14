@@ -1,4 +1,3 @@
-
 from typing import override
 
 from django.contrib.auth.models import User
@@ -85,6 +84,7 @@ class FlaggedObject(ModelBase):
             and owner.profile.is_system_account
         ):
             self.content_object.delete()
-            self.delete()
+            if self.pk is not None:
+                self.delete()
             return
         super().save(*args, **kwargs)

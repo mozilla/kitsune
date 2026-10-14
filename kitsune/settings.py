@@ -1550,6 +1550,24 @@ GOOGLE_CLOUD_PROJECT = config("GOOGLE_CLOUD_PROJECT", default="")
 # development. It should NEVER be defined for the dev, stage, and prod environments.
 GOOGLE_APPLICATION_CREDENTIALS = config("GOOGLE_APPLICATION_CREDENTIALS", default="")
 
+# Classification decisions and advisory moderation assessments.
+OPENAI_API_KEY = config("OPENAI_API_KEY", default="")
+OPENAI_BASE_URL = config("OPENAI_BASE_URL", default="https://api.openai.com/v1")
+DECISIONS_MODEL = config("DECISIONS_MODEL", default="gpt-6-luna")
+DECISIONS_TIMEOUT_SECONDS = config("DECISIONS_TIMEOUT_SECONDS", default=30, cast=float)
+# Provider ceiling for choice questions, including the abstention option.
+DECISIONS_MAX_CHOICES = 255
+SPAM_REVIEW_PROBABILITY = config("SPAM_REVIEW_PROBABILITY", default=0.50, cast=float)
+SPAM_REJECT_PROBABILITY = config("SPAM_REJECT_PROBABILITY", default=0.80, cast=float)
+SPAM_RELEVANCE_REVIEW_PROBABILITY = config(
+    "SPAM_RELEVANCE_REVIEW_PROBABILITY", default=0.50, cast=float
+)
+SPAM_ASSESSMENT_MODEL = config("SPAM_ASSESSMENT_MODEL", default="gemini-2.5-flash")
+PRODUCT_REASSIGN_PROBABILITY = config("PRODUCT_REASSIGN_PROBABILITY", default=0.90, cast=float)
+MOZILLA_ACCOUNT_REASSIGN_PROBABILITY = config(
+    "MOZILLA_ACCOUNT_REASSIGN_PROBABILITY", default=0.95, cast=float
+)
+
 # shell_plus conf
 SHELL_PLUS_DONT_LOAD = ["silk"]
 

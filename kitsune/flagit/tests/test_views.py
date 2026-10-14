@@ -1,15 +1,27 @@
+from unittest.mock import patch
+
 from django.contrib.contenttypes.models import ContentType
 from django.utils import translation
 from jinja2 import Environment
 
+from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.tests import SupportTicketFactory
+from kitsune.customercare.utils import process_zendesk_classification_result
 from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.tests import TestCaseBase
 from kitsune.flagit.views import get_hierarchical_topics
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.llm.support.classifiers import classify_zendesk_submission
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    TopicFactory,
+    ZendeskConfigFactory,
+)
 from kitsune.questions.models import Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import get, post, translated_db_strings
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory, add_permission
 
 
@@ -242,6 +254,66 @@ class SpamFlagReconciliationTestCase(TestCaseBase):
         self.assertIsNone(answer.marked_as_spam_by)
 
 
+class TicketSpamReviewTestCase(TestCaseBase):
+    def setUp(self):
+        super().setUp()
+        self.moderator = UserFactory()
+        add_permission(self.moderator, FlaggedObject, "can_moderate")
+        self.client.login(username=self.moderator.username, password="testpass")
+
+    def reviewed_ticket(self, probability, relevance):
+        product = ProductFactory()
+        ProductSupportConfigFactory(product=product, zendesk_config=ZendeskConfigFactory())
+        ticket = SupportTicketFactory(
+            product=product, submission_status=SupportTicket.STATUS_PENDING
+        )
+        answers = {
+            "spam": {"type": "predicate", "name": "spam", "probability": probability},
+            "relevance_uncertainty": {
+                "type": "predicate",
+                "name": "relevance_uncertainty",
+                "probability": relevance,
+            },
+        }
+        with patch("kitsune.llm.spam.classifier.evaluate_decisions", return_value=answers):
+            result = classify_zendesk_submission(ticket)
+        process_zendesk_classification_result(ticket, result)
+        flag = FlaggedObject.objects.get(
+            content_type=ContentType.objects.get_for_model(ticket), object_id=ticket.pk
+        )
+        return ticket, flag
+
+    def test_uncertain_ticket_can_be_rejected_as_spam(self):
+        ticket, flag = self.reviewed_ticket(0.65, 0.1)
+        with patch("kitsune.flagit.views.send_support_ticket_to_zendesk") as sender:
+            post(
+                self.client,
+                "flagit.update",
+                {"status": FlaggedObject.FLAG_ACCEPTED},
+                args=[flag.pk],
+            )
+        ticket.refresh_from_db()
+        flag.refresh_from_db()
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_REJECTED)
+        self.assertEqual(flag.status, FlaggedObject.FLAG_ACCEPTED)
+        sender.assert_not_called()
+
+    def test_relevance_guard_review_can_be_allowed_by_staff(self):
+        ticket, flag = self.reviewed_ticket(0.9, 0.8)
+        with patch("kitsune.customercare.utils.ZendeskClient") as client:
+            client.return_value.create_ticket.return_value.ticket.id = "reviewed-ticket"
+            post(
+                self.client,
+                "flagit.update",
+                {"status": FlaggedObject.FLAG_REJECTED},
+                args=[flag.pk],
+            )
+        ticket.refresh_from_db()
+        flag.refresh_from_db()
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_SENT)
+        self.assertEqual(flag.status, FlaggedObject.FLAG_REJECTED)
+
+
 class ModerationFlagSupersedeTestCase(TestCaseBase):
     """Only principals with flagit.can_moderate may supersede a pending
     CONTENT_MODERATION flag by submitting a different-reason flag on the
@@ -314,6 +386,18 @@ class ModerationFlagSupersedeTestCase(TestCaseBase):
         new_flag = FlaggedObject.objects.get(creator=self.flagger)
         self.assertEqual(new_flag.status, FlaggedObject.FLAG_DUPLICATE)
         self.assertEqual(new_flag.reason, FlaggedObject.REASON_CONTENT_MODERATION)
+
+    def test_reopening_a_classified_flag_clears_its_bot_attempt_marker(self):
+        self.moderation_flag.status = FlaggedObject.FLAG_ACCEPTED
+        self.moderation_flag.handled_by = Profile.get_sumo_bot()
+        self.moderation_flag.save(update_fields=["status", "handled_by"])
+        self.client.login(username=self.flagger.username, password="testpass")
+
+        self._post_flag(FlaggedObject.REASON_CONTENT_MODERATION)
+
+        self.moderation_flag.refresh_from_db()
+        self.assertEqual(self.moderation_flag.status, FlaggedObject.FLAG_PENDING)
+        self.assertIsNone(self.moderation_flag.handled_by_id)
 
 
 class GetHierarchicalTopicsTestCase(TestCaseBase):

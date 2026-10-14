@@ -57,12 +57,14 @@ RUN cp .env-build .env && \
 # ==================================
 # Stage 4: Frontend Builder (Node.js)
 # ==================================
-FROM node:22-bookworm AS frontend-builder
+FROM node:22-bookworm AS node-deps
 
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci
+
+FROM node-deps AS frontend-builder
 
 COPY . .
 COPY --from=jsi18n-generator /app/jsi18n ./jsi18n
@@ -79,6 +81,14 @@ FROM python-base AS dev
 # Copy source code and install the project itself
 COPY . .
 RUN uv sync --frozen --extra dev
+
+FROM python-base AS lint
+
+COPY --from=node-deps /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-deps /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
+RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
+    ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+COPY --from=node-deps /app/node_modules /app/node_modules
 
 # =============================
 # Stage 6: Testing Image Target

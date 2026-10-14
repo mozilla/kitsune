@@ -24,6 +24,10 @@ styleguide
 .claude
 .cursor-server
 .mypy_cache
+**/.pytest_cache
+**/.ruff_cache
+.ipython
+.uv-cache
 gcloud
 .bash_history
 .pdbhistory

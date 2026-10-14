@@ -75,6 +75,7 @@ dependencies = [
     "django-silk>=5.1.0,<6",
     "requests>=2.34.2,<3",
     "httpx>=0.28.1,<1",
+    "openai>=3.26.0,<4",
     "fuzzywuzzy>=0.18.0,<0.19",
     "django-ses==4.8.0",
     "django-post-office==3.11.2",

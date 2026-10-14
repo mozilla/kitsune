@@ -589,7 +589,8 @@ class ZendeskConfig(ModelBase):
         help_text="Show deployment-related fields (update channel and policy distribution) in the support form",
     )
     skip_spam_moderation = models.BooleanField(
-        default=False, help_text="Skip AI-based spam and product checking for this product"
+        default=False,
+        help_text="Skip AI-based spam checking; product and topic classification still run",
     )
     topics = models.ManyToManyField(
         "ZendeskTopic",

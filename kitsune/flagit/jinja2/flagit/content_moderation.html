@@ -24,9 +24,17 @@
           </div>
           {% if object.notes %}
             {% if object.content_type.model == 'question' %}
-              <p class="notes">{{ _('Additional notes:') }} &nbsp;<a target="_blank" href="{{ object.content_object.get_absolute_url() }}">{{ object.notes }}</a></p>
+              <p class="notes">{{ _('Additional notes:') }} &nbsp;<a target="_blank" href="{{ object.content_object.get_absolute_url() }}">
+                {% for line in object.notes.splitlines() %}
+                  {{ line }}{% if not loop.last %}<br>{% endif %}
+                {% endfor %}
+              </a></p>
             {% else %}
-              <p class="notes">{{ _('Additional notes:') }} {{ object.notes }}</p>
+              <p class="notes">{{ _('Additional notes:') }}
+                {% for line in object.notes.splitlines() %}
+                  {{ line }}{% if not loop.last %}<br>{% endif %}
+                {% endfor %}
+              </p>
             {% endif %}
           {% endif %}
         </hgroup>

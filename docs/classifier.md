@@ -1,496 +1,170 @@
-# AI-Powered Content Classification System
+# Content Classification
 
-## Overview
+## Scope and pipeline
 
-Kitsune's AI-powered classification system automatically analyzes user-submitted content (support questions and Zendesk tickets) to detect spam, validate product assignment, and classify content into appropriate topics. The system uses Large Language Models (LLMs) to provide three-stage classification that helps route content correctly and reduce moderation burden.
-
-## Classification Stages
-
-The classifier performs up to three sequential analyses:
-
-1. **Spam Detection** - Identifies spam, scams, and inappropriate content
-2. **Product Validation** - Checks if content belongs to the correct product (with potential reassignment)
-3. **Topic Classification** - Categorizes content into the product's taxonomy
-
-## Architecture
-
-### Core Components
-
-#### 1. Spam Classifier (`kitsune/llm/spam/classifier.py`)
-
-The spam classifier analyzes content and returns a confidence score (0-100) along with reasoning.
-
-**Confidence Thresholds:**
-- **≥75%**: High confidence spam → Automatic spam action
-- **60-74%**: Medium confidence → Flag for manual review
-- **<60%**: Low confidence → Not spam, continue to product/topic classification
-
-**Special Flag - `maybe_misclassified`:**
-When the LLM detects spam but suspects it might be legitimate content posted to the wrong product, it sets this flag. This triggers a product reassignment check before marking as spam.
-
-#### 2. Product Classifier (`kitsune/llm/categorization/classifiers.py`)
-
-Analyzes whether content belongs to a different product than initially assigned. This handles cases where users:
-- Select the wrong product in the form
-- Post content about multiple products
-- Submit generic questions that better fit another product
-
-The classifier can be configured to only consider products with forum support (`only_with_forums=True`).
-
-#### 3. Topic Classifier (`kitsune/llm/categorization/classifiers.py`)
-
-Classifies content into the product's topic taxonomy. Topics are hierarchical (e.g., "Sync and Save > Sync Your Profile") and used for:
-- Routing to appropriate support channels
-- Generating analytics
-- Creating searchable tags (Zendesk)
-
-### Entry Points
-
-The classifier has two main entry points with different behaviors:
-
-1. **`classify_question()`** - For support questions (AAQ flow)
-2. **`classify_zendesk_submission()`** - For Zendesk support tickets
-
-## Classification Flows
-
-### Questions (AAQ) Flow
+New support questions and Zendesk submissions are classified in Celery workers. The pipeline screens Mozilla-wide spam first, resolves a product for admitted requests, and then selects a topic from that product's taxonomy. Answer heuristics, discussion forums, live-chat adoption, and translation are separate systems.
 
 ```mermaid
-graph TD
-    A[New Question Submitted] --> B[Spam Detection]
-    B --> C{Is Spam?}
-    C -->|High Confidence ≥75%| D{maybe_misclassified?}
-    C -->|Medium 60-74%| E[Flag for Review]
-    C -->|Low <60%| F[Topic Classification]
-
-    D -->|Yes| G[Product Reassignment Check]
-    D -->|No| H[Mark as Spam]
-
-    G --> I{Different Product<br/>with Forums?}
-    I -->|Yes| J[Reassign Product]
-    I -->|No| H
-
-    J --> F
-    E --> END1[Manual Review Queue]
-    F --> K[Update Question]
-    K --> L[Flag for Content Moderation]
-    H --> M[Flag as Spam]
-
-    END1:::pending
-    L:::success
-    M:::spam
-
-    classDef spam fill:#f96,stroke:#333,stroke-width:2px
-    classDef success fill:#9f6,stroke:#333,stroke-width:2px
-    classDef pending fill:#fc9,stroke:#333,stroke-width:2px
+flowchart TD
+    A[Submission] --> B[Decisions spam and relevance predicates]
+    B --> C[Moderation policy]
+    C -->|Not spam| D[Decisions product choice]
+    D --> E[Resolve eligible destination]
+    E --> F[Decisions topic choice]
+    F --> G[Apply product, topic, and tags]
+    C -->|Spam| H[Existing question or ticket spam action]
+    C -->|Uncertain| I[Persist pending review flag]
+    I --> J[Queue independent advisory assessment after commit]
+    J --> K[Attach advisory note without changing moderation]
 ```
 
-**Key Characteristics:**
-- **Only considers products with forums** for reassignment (Questions require forum support)
-- Updates question's product and topic fields if reassigned/classified
-- Creates automatic tags based on topic
-- All questions get flagged for content moderation with classification results
+Spam and uncertain requests do not run product or topic selection. Product classification runs for every admitted request, including ticket configurations that bypass spam moderation.
 
-### Zendesk Flow
+Routing uses the actual submitter and an explicit `forum` or `ticket` channel; it does not create anonymous identities or apply login-exception rules. Tickets with no stored user—legacy loginless Mozilla Accounts submissions or deleted owners—retain their submitted product and can still receive a topic.
 
-```mermaid
-graph TD
-    A[New Support Ticket] --> B{Skip Spam<br/>Moderation?}
-    B -->|Yes - Config Set| C[Product Reassignment Check]
-    B -->|No - Normal Flow| D[Spam Detection]
+## Spam policy
 
-    D --> E{Is Spam?}
-    E -->|High Confidence ≥75%| F{maybe_misclassified?}
-    E -->|Medium 60-74%| G[Flag for Review]
-    E -->|Low <60%| C
+`kitsune/llm/spam/classifier.py` uses two named Decisions predicates:
 
-    F -->|Yes| H[Product Reassignment Check]
-    F -->|No| I{Waffle Switch<br/>zendesk-spam-classifier}
+- `spam`: estimated probability that the content violates the Mozilla-wide spam policy.
+- `relevance_uncertainty`: estimated probability that uncertain Mozilla relevance or unfamiliar feature terminology is the **only** potential spam concern.
 
-    I -->|Active| J[Flag for Moderation]
-    I -->|Inactive| K[Auto-Reject]
+The model receives subject, body, submission channel, locale, and a neutral Mozilla product catalog with descriptions and known-legitimate examples. It does not receive the user's selected product, selected topic, or an earlier verdict. A support request for another Mozilla product is not spam because it was submitted under the wrong product. Mozilla-related advertisements, scams, and abuse remain spam.
 
-    H --> L{Different Product?}
-    C --> L
+Private-ticket policy allows personal contact/account information that would be suspicious in public solicitation. Non-English text and unfamiliar feature names are not spam signals.
 
-    L -->|Yes| M{Original Product<br/>has Ticketing?}
-    L -->|No| N[Topic Classification]
+### Probability routing
 
-    M -->|Yes| O[Send to Zendesk with 'other' tag]
-    M -->|No| P[Flag for Review]
+The defaults are configurable Django settings, read when applying the decision:
 
-    N --> Q[Generate Tier Tags]
-    Q --> R[Send to Zendesk]
+| Condition | Outcome |
+| --- | --- |
+| `P(spam) < SPAM_REVIEW_PROBABILITY` | Not spam; continue routing |
+| Review cutoff reached, but reject cutoff not reached | Pending human review |
+| Reject cutoff reached and relevance-only uncertainty below its cutoff | Spam action |
+| Reject cutoff reached, but relevance-only uncertainty reaches its cutoff | Pending human review, not automatic spam |
+| Either answer is refused, missing, malformed, or unavailable | Pending human review |
 
-    G --> END1[Manual Review Queue]
-    J --> END1
-    P --> END1
-    K --> END2[Rejected]
-    O --> END3[Sent to Zendesk]
-    R --> END3
+Default spam cutoffs are `0.50` for review and `0.80` for spam. Default relevance-only review cutoff is `0.50`. Cutoffs must be finite probabilities; the spam review cutoff must be lower than the reject cutoff. Invalid configuration raises a configuration error rather than silently changing moderation.
 
-    END1:::pending
-    END2:::rejected
-    END3:::success
+The relevance guard replaces the old prompt-only confidence ceiling. It protects plausible support requests about unfamiliar features while explicitly excluding independent advertising, abuse, or other spam evidence.
 
-    classDef success fill:#9f6,stroke:#333,stroke-width:2px
-    classDef pending fill:#fc9,stroke:#333,stroke-width:2px
-    classDef rejected fill:#f96,stroke:#333,stroke-width:2px
+Decisions probabilities are estimates, not guarantees of calibrated accuracy. Evaluate false positives, recall, and review volume on labeled support content when adjusting the cutoffs.
+
+## Product and topic routing
+
+`kitsune/llm/categorization/classifiers.py` uses constrained choices with unique runtime keys mapped to database IDs. Product and topic titles are not unique identifiers.
+
+### Product selection
+
+The product list is queried from the database for each classification; adding or archiving a product changes the candidates without code changes. The subject/body, user-selected product, product descriptions, and platform distinctions guide primary-product selection. The selection is a weak prior, not an instruction to agree. An explicit unknown/ambiguous/no-primary-product choice permits abstention.
+
+- Matching the current product retains it.
+- A different eligible product is applied only if its supplied-option probability reaches `PRODUCT_REASSIGN_PROBABILITY` (default `0.90`). The separate API `confidence` field is not used as this probability.
+- Mozilla Accounts sources use the stricter of that cutoff and `MOZILLA_ACCOUNT_REASSIGN_PROBABILITY` (default `0.95`). The prompt also protects generic account-access and lockout requests from incidental product mentions.
+- Ambiguous, refused, unavailable, or low-probability choices retain the current selection and record the reason for abstention.
+- Questions without a selected product can receive a confident eligible product. If none can be resolved, they enter content/routing review without requesting an advisory spam assessment.
+
+`eligible_products()` and `eligible_product()` share `ProductSupportConfig.objects.route_support_request()`. Candidates must be active and non-archived, and respect visibility, submission channel, forum locale, subscriptions, and organization routing. Consumers use the single-product lookup to revalidate a moved destination before applying it, rather than rebuilding the full catalog.
+
+Public questions stay in eligible forums. Private tickets stay in eligible Zendesk destinations; classification never publishes ticket content to a public forum.
+
+### Topic selection
+
+The model receives a list of the resolved product's taxonomy topics, with descriptions, examples, and hierarchy paths from `get_taxonomy(..., include_metadata=["description", "examples"], include_ids=True)`. Native choices constrain its answer to those topic IDs or Undefined; it cannot invent a topic or select another product's topic. It should prefer the most specific applicable topic. The original topic hint is dropped when the product changes.
+
+The default taxonomy output remains unchanged for other callers. Only active, visible, product-associated topics included by the existing metadata-filtered hierarchy are offered. Malformed metadata is treated as absent. Missing ancestors or ancestors excluded by that hierarchy also exclude their descendants.
+
+An explicit Undefined choice resolves to `topic_id=None`. Empty catalogs skip the request. `DECISIONS_MAX_CHOICES` names the provider's [255-choice ceiling](https://developers.openai.com/api/reference/resources/decisions/methods/create), including the abstention option, for both product and topic requests. Oversized catalogs explicitly abstain rather than silently truncate. Refusals and service failures do not invent a topic.
+
+Question updates clear an old product's topic, invalidate the cached product slug, and rebuild derived tags. Ticket moves update the actual product, clear the old category/topic, use the destination's topic/category mapping, preserve system/segmentation tags, and select the destination's Zendesk configuration, form, and brand.
+
+## Advisory spam assessment
+
+`kitsune/llm/tasks.py::assess_uncertain_spam` runs only for valid probability-based uncertainty, including the relevance guard. Missing/refused/unavailable Decisions answers receive factual review notes but do not trigger this assessment.
+
+The pending flag exists before the job is published, and publication is deferred until transaction commit. A broker publication failure leaves the content in review; it cannot turn an uncertain ticket into a failed-classification ticket eligible for automatic delivery.
+
+Celery task arguments contain only the flag ID and SHA-256 digests of the initial notes and assessment input. Subject, body, and raw notes are not serialized into broker messages or Celery task-argument context. Classification and advisory workers share `question_payload()` / `ticket_payload()` for subject, body, channel, and locale. The worker reloads the content from the database and verifies the digests before requesting the configured advisory model.
+
+The advisory model independently receives the content and neutral policy/catalog. It does **not** receive the Decisions probability/verdict or the selected product. Its structured assessment contains:
+
+- Suggested verdict: spam, not spam, or uncertain.
+- Observed spam signals.
+- Observed legitimate-support signals.
+- Remaining uncertainty.
+
+This is an independent reviewer assessment, not an explanation of Decisions' internal reasoning. It is advisory: it cannot mark/unmark content, accept a flag, reject a ticket, or change routing.
+
+The job skips deleted content, content edited before assessment, and obsolete flags. Its final note update requires the flag to remain pending with exactly the expected initial notes, preventing it from overwriting a moderator decision or a newer classification. Provider/parser failures use the task's bounded retry behavior and leave the review flag intact.
+
+Moderation templates render note lines separately and autoescape every line, including model-supplied text.
+
+## Entry points, switches, and persisted effects
+
+- `classify_question()` and `classify_zendesk_submission()` in `kitsune/llm/support/classifiers.py` return the staged decision result.
+- `question_classifier` runs on new questions when `QUESTION_CLASSIFIER_ENABLED` is enabled. `auto-question-classifier` controls classification; `flagit-spam-autoflag` retains the existing disabled-classifier review fallback.
+- Ticket classification is queued by the existing submission flow. `ZendeskConfig.skip_spam_moderation` now skips only spam screening, not product/topic classification.
+- Clear question spam is marked as spam and receives the existing accepted bot flag. Uncertain question spam remains visible and receives a pending spam flag.
+- Admitted questions persist product/topic changes and an accepted content-moderation flag with score/routing notes.
+- Clear ticket spam is sent to the staff spam queue when `zendesk-spam-classifier` is active, otherwise rejected. That pending high-probability case does not request an advisory assessment.
+- Ticket spam-screening reviews, including probability uncertainty, relevance-guard cases, refused/malformed answers, and provider unavailability, receive pending spam-reason flags in the staff Zendesk spam queue **regardless of the `zendesk-spam-classifier` switch**. This queue needs staff coverage even when that switch is off. Staff can choose "Removed spam content" to reject the ticket or "No spam found" to deliver it. An explicit routing-review reason still uses the content-moderation queue. Existing content-moderation flags are not migrated automatically. Admitted tickets persist routing fields/tags and are sent through `ZendeskClient`.
+- Question classification records the bot in `handled_by` without resolving a pending human review. Stale-question processing excludes flags already classified by the bot, so unresolved-product reviews cannot repeatedly occupy the batch or starve later questions. It preserves a newly pending uncertainty flag rather than overwrite it as accepted. Other existing task failure and failed-ticket delivery behavior is unchanged.
+- Re-flagging an existing row as pending clears its previous bot-attempt marker so it can reenter classification, both through the helper and the HTTP flag endpoint. Accepted flags on system-account content retain the existing content-deletion policy; stale batches continue past deleted questions and flags.
+
+The result contract uses `spam_result.probability` and `relevance_uncertainty_probability`, ID-based `product_result`/`topic_result`, the submitted product ID, and an optional JSON-serializable assessment payload. There is no model-written confidence, boolean spam gate, `maybe_misclassified`, or generated-JSON categorization parser.
+
+## Configuration and local operation
+
+Configuration lives in Django settings; environment-backed values are documented in `.env-dist`:
+
+| Setting | Purpose |
+| --- | --- |
+| `OPENAI_API_KEY` | Decisions service credential; keep out of source control and chat |
+| `OPENAI_BASE_URL` | Global or approved regional endpoint |
+| `DECISIONS_MODEL` | Supported Decisions model |
+| `DECISIONS_TIMEOUT_SECONDS` | SDK request timeout |
+| `DECISIONS_MAX_CHOICES` | Provider choice ceiling, including abstention; not a business product cap |
+| `SPAM_REVIEW_PROBABILITY` | Lower spam review boundary |
+| `SPAM_REJECT_PROBABILITY` | Automatic spam boundary |
+| `SPAM_RELEVANCE_REVIEW_PROBABILITY` | Relevance-only uncertainty guard |
+| `PRODUCT_REASSIGN_PROBABILITY` | Automatic product move boundary |
+| `MOZILLA_ACCOUNT_REASSIGN_PROBABILITY` | Stricter Accounts-source move boundary |
+| `SPAM_ASSESSMENT_MODEL` | Configured advisory model |
+
+The advisory assessment uses `get_llm()` with `SPAM_ASSESSMENT_MODEL`. Restart Django/Celery processes after changing environment values. Keep provider creation centralized: `evaluate_decisions()` for classification, `get_llm()` for advisory assessment, generation, and translation. Changing providers may require updating that factory, not just a model ID.
+
+Example spam policy values:
+
+```dotenv
+SPAM_REVIEW_PROBABILITY=0.50
+SPAM_REJECT_PROBABILITY=0.80
+SPAM_RELEVANCE_REVIEW_PROBABILITY=0.50
 ```
 
-**Key Characteristics:**
-- **Considers all products** for reassignment (not just those with forums)
-- Can skip spam detection entirely via product configuration
-- Special handling for product reassignment based on ticketing support
-- Generates hierarchical tier tags (t1-, t2-, t3-) for Zendesk routing
-- Waffle switch controls spam moderation vs auto-rejection
+Apply the products migration that updates the spam-bypass field's description, install dependencies from the lockfile, and configure organization access/data handling before making live requests. Private ticket text changes provider recipient; review the required retention/residency arrangements. API availability is not evidence of model accuracy or measured latency.
 
-## Product Reassignment Logic
+### Operational limits and recovery
 
-### Questions (AAQ)
+The Decisions client permits two retries after the initial attempt. With the current default request timeout, the approximate request-attempt exposure is:
 
-When spam is flagged with `maybe_misclassified=True`:
+| Path | Approximate timeout exposure before backoff |
+| --- | --- |
+| Spam screening exhausts its three attempts | 90 seconds, then manual review |
+| All three sequential classification stages consume three near-timeout attempts | 270 seconds |
 
-1. Run product classifier with `only_with_forums=True`
-2. If different product found with forum support:
-   - Change action to `NOT_SPAM`
-   - Reassign question to new product
-   - Run topic classification for new product
-3. If no suitable product found:
-   - Keep spam classification
+These are planning estimates, not measured latency or hard end-to-end deadlines: HTTP timeouts apply to request operations, and retry backoff adds time. The full-chain estimate requires spam screening to eventually succeed; an exhausted spam screen stops before product/topic classification.
 
-**Why only products with forums?** Questions require a forum for discussion, so reassignment only makes sense to products that support this channel.
+The default Compose worker consumes classification, email, and retrieval queues in one worker pool. Slow provider requests can occupy that pool and delay unrelated work. Mitigations are lowering `DECISIONS_TIMEOUT_SECONDS` or routing classification to a dedicated queue with separate worker capacity. Reducing the SDK's fixed retry count requires a code change. Merely adding a queue to the same worker does not isolate capacity.
 
-### Zendesk
+Provider-outage reviews are not automatically replayed when the provider recovers. Questions retain pending spam flags, and tickets remain held for staff review; the stale-question processor does not select those flags. Explicit moderation or operator recovery is required. This is manual-review fallback, not a pause-and-resume workflow.
 
-Product reassignment can happen in two scenarios:
+Staff approval of an uncertain ticket uses its current routing fields; it does not automatically resume product/topic classification. The existing failed-ticket delivery safety net for unexpected processing exceptions is separate from these pending provider-outage reviews.
 
-**Scenario 1: Spam with `maybe_misclassified=True`**
-- Check all products (not just those with forums)
-- Decision based on original product's ticketing support:
-  - **Original has ticketing**: Send to Zendesk with "other" tag (let Zendesk handle routing)
-  - **Original lacks ticketing**: Flag for manual review (might need forum-based support)
+Run behavioral checks through Docker:
 
-**Scenario 2: Not spam, routine check**
-- Check all products for better match
-- Decision logic same as Scenario 1
-
-**Why check ticketing support?** If the original product has Zendesk integration, a misclassified product can still be routed within Zendesk using the "other" tag. If the original product lacks ticketing, the user might need forum-based support instead, requiring human review.
-
-## Zendesk Tag Generation
-
-When a Zendesk ticket is classified as `NOT_SPAM`, the system generates tags for routing:
-
-### Tier Tags
-
-Topics are hierarchical. Example: `Sync and Save > Sync Your Profile > Sync Your Passwords`
-
-This generates tier tags:
-- `t1-sync-and-save`
-- `t2-sync-your-profile`
-- `t3-sync-your-passwords`
-
-### Additional Tags
-
-- **Legacy tags**: Backward-compatible tags for existing Zendesk workflows (e.g., "general", "bookmarks")
-- **Automation tags**: Trigger specific Zendesk automations based on topic
-- **"other" tag**: Added when product reassignment occurred
-- **"undefined" tag**: Used when topic classification fails or returns "Undefined"
-- **System tags**: Preserved tags like "loginless_ticket", "stage"
-
-### Tag Conversion Rules
-
-Topics → Tags transformation:
-- Convert to lowercase
-- Remove punctuation (`,` `.`)
-- Replace spaces with hyphens
-- Example: `"Sync and Save"` → `"sync-and-save"`
-
-## Configuration
-
-### Feature Flags (Waffle Switches)
-
-**`auto-question-classifier`** (Questions)
-- **Active**: Run full classification pipeline
-- **Inactive**: Flag all questions for manual review (with `flagit-spam-autoflag` as fallback)
-
-**`flagit-spam-autoflag`** (Questions)
-- **Active**: Auto-flag questions when `auto-question-classifier` is disabled
-- Only used as fallback mechanism
-
-**`zendesk-spam-classifier`** (Zendesk)
-- **Active**: Spam tickets go to moderation queue for human review
-- **Inactive**: Spam tickets are automatically rejected (fully automated)
-
-### Product-Level Configuration
-
-#### Skip Spam Moderation
-
-Products can bypass spam detection entirely via `ProductSupportConfig.zendesk_config.skip_spam_moderation`:
-
-```python
-config = product.support_configs.get(is_active=True)
-if config.zendesk_config.skip_spam_moderation:
-    # Skip spam detection, go straight to product/topic classification
+```sh
+docker compose run --rm web ./manage.py test kitsune.llm.tests kitsune.products.tests.test_utils kitsune.questions.tests.test_utils kitsune.customercare.tests.test_utils kitsune.customercare.tests.test_tasks --keepdb -v 2
 ```
 
-**Use case**: High-trust products or products with external spam filtering.
-
-#### Ticketing Support
-
-Products declare Zendesk integration via `Product.has_ticketing_support`:
-
-```python
-@property
-def has_ticketing_support(self):
-    return self.support_configs.filter(
-        is_active=True,
-        zendesk_config__isnull=False,
-    ).exists()
-```
-
-This property influences product reassignment behavior in Zendesk flow.
-
-### LLM Configuration
-
-The classifier uses the default LLM configured in `kitsune/llm/utils.py` via `get_llm()`. Model selection happens at runtime and can be configured via Django settings.
-
-**Retry Logic**: All classifier chains use automatic retry with exponential backoff (via `build_chain_with_retry()`).
-
-## Processing Pipeline
-
-### Celery Tasks
-
-**`question_classifier`** (`kitsune/llm/tasks.py`)
-- Triggered when new question is created
-- Checks `auto-question-classifier` waffle switch
-- Calls `classify_question()` and `process_classification_result()`
-- Retries on failure (max 3 retries with exponential backoff)
-
-**`zendesk_submission_classifier`** (`kitsune/customercare/tasks.py`)
-- Triggered when new support ticket is created
-- Always runs (waffle switch only affects spam handling)
-- Calls `classify_zendesk_submission()` and `process_zendesk_classification_result()`
-- On failure after retries: marks ticket as `STATUS_PROCESSING_FAILED`
-
-**`process_moderation_queue`** (`kitsune/llm/tasks.py`)
-- Periodic task to reprocess flagged questions
-- Only runs if `auto-question-classifier` is active
-- Handles stale flags from previous classification attempts
-
-**`process_failed_zendesk_tickets`** (`kitsune/customercare/tasks.py`)
-- Safety net for tickets where classification failed
-- Sends to Zendesk with whatever tags are currently set
-
-**`auto_reject_old_zendesk_spam`** (`kitsune/customercare/tasks.py`)
-- Auto-rejects spam tickets older than 14 days
-- Prevents spam from accumulating in moderation queue
-
-## Moderation Actions
-
-The classifier returns one of three actions:
-
-### ModerationAction.NOT_SPAM
-- Content is legitimate
-- Product/topic fields updated if needed
-- Question: Flagged for content moderation with classification notes
-- Zendesk: Sent to Zendesk with generated tags
-
-### ModerationAction.SPAM
-- High confidence spam (≥75%)
-- Question: `mark_as_spam()` called, flagged as spam
-- Zendesk: Behavior depends on `zendesk-spam-classifier` switch
-  - Active: Flag for manual review
-  - Inactive: Auto-reject (`STATUS_REJECTED`)
-
-### ModerationAction.FLAG_REVIEW
-- Medium confidence spam (60-74%)
-- Both: Flagged with `FLAG_PENDING` status for manual review
-- Includes LLM reasoning in flag notes
-
-## Implementation Details
-
-### Spam Detection with Confidence
-
-The spam classifier returns structured output:
-
-```python
-{
-    "is_spam": bool,
-    "confidence": int,  # 0-100
-    "reason": str,
-    "maybe_misclassified": bool  # Optional flag
-}
-```
-
-**Confidence determines action:**
-```python
-def determine_action_from_spam_result(spam_result: dict):
-    confidence = spam_result.get("confidence", 0)
-    if confidence >= 75:
-        return ModerationAction.SPAM
-    elif confidence > 60:
-        return ModerationAction.FLAG_REVIEW
-    else:
-        return ModerationAction.NOT_SPAM
-```
-
-### Product Reassignment Helper
-
-Both flows use a shared helper `_handle_product_reassignment()`:
-
-```python
-def _handle_product_reassignment(
-    payload: dict[str, Any],
-    product: Product,
-    only_with_forums: bool,
-    on_reassignment: Callable[[dict[str, Any], Product], dict[str, Any]],
-) -> dict[str, Any] | None
-```
-
-This encapsulates:
-1. Running product classifier
-2. Checking if product actually changed
-3. Calling the appropriate reassignment handler
-4. Returning results or None if no reassignment
-
-### Topic Hierarchy Handling
-
-Topic classification may return hierarchical paths like:
-- `"Sync and Save > Sync Your Profile"`
-- `"Bookmarks.History.Cookies"`
-- `"Privacy / Security :: Passwords"`
-
-The system extracts the most specific topic using `get_most_specific()`:
-
-```python
-# Recognizes separators: ">", ";", " / ", " - ", ".", "::", ":", "|"
-get_most_specific("Sync and Save > Sync Your Profile")
-# Returns: "Sync Your Profile"
-```
-
-## Exception Handling
-
-### Classification Failures
-
-**Questions:**
-- Task retries up to 3 times with exponential backoff
-- If all retries fail: question remains unflagged (may be picked up by periodic queue processor)
-
-**Zendesk:**
-- Task retries up to 3 times
-- After all retries: ticket marked `STATUS_PROCESSING_FAILED`
-- Periodic task `process_failed_zendesk_tickets` sends these to Zendesk with current tags
-
-### Missing Topics
-
-If topic classification returns "Undefined" or topic isn't found in database:
-- Question: Uses product's default topic (if any)
-- Zendesk: Uses "undefined" + "general" tags
-
-### Product Not Found
-
-If product reassignment suggests a product that doesn't exist in the database:
-- Reassignment is skipped
-- Original product is retained
-- Classification continues with original product's taxonomy
-
-## Common Scenarios
-
-### Scenario 1: Clean Question Submission
-1. User submits Firefox question about bookmarks
-2. Spam classifier: 15% confidence → `NOT_SPAM`
-3. Product classifier: Confirms Firefox (no reassignment)
-4. Topic classifier: "Bookmarks, History and Tabs > Bookmarks"
-5. Question updated with topic, flagged for content moderation
-
-### Scenario 2: Wrong Product Selection
-1. User submits about "Pocket" but selected "Firefox"
-2. Spam classifier: 20% confidence → `NOT_SPAM`
-3. Product classifier: Detects "Pocket" product
-4. Question reassigned to Pocket
-5. Topic classifier runs with Pocket's taxonomy
-6. Question updated, flagged for content moderation
-
-### Scenario 3: Misclassified Spam (Question)
-1. User posts legitimate Mozilla Account question
-2. Spam classifier: 80% confidence, `maybe_misclassified=True`
-3. Product reassignment check: Finds "Mozilla Account" product (has forums)
-4. Action changed to `NOT_SPAM`, question reassigned
-5. Topic classification runs for Mozilla Account
-6. Question updated, flagged for content moderation
-
-### Scenario 4: Misclassified Spam (Zendesk, Original Product Has Ticketing)
-1. User submits VPN question to wrong product
-2. Spam classifier: 85% confidence, `maybe_misclassified=True`
-3. Product reassignment check: Finds "Mozilla VPN" product
-4. Original product has ticketing support
-5. Send to Zendesk with "other" tag (Zendesk will route)
-6. No topic classification needed
-
-### Scenario 5: Misclassified Spam (Zendesk, Original Product Lacks Ticketing)
-1. User submits question to product without Zendesk integration
-2. Spam classifier: 85% confidence, `maybe_misclassified=True`
-3. Product reassignment check: Finds different product
-4. Original product lacks ticketing support
-5. Action: `FLAG_REVIEW` (might need forum support)
-6. Human review required
-
-### Scenario 6: Skip Spam for Trusted Product
-1. Product configured with `skip_spam_moderation=True`
-2. Spam detection bypassed entirely
-3. Product reassignment check runs
-4. Topic classification runs
-5. Ticket sent to Zendesk with tags
-
-### Scenario 7: High Confidence Spam (Zendesk, Auto-reject)
-1. Obvious spam submitted
-2. Spam classifier: 95% confidence
-3. `zendesk-spam-classifier` switch inactive
-4. Ticket auto-rejected (`STATUS_REJECTED`)
-5. No flagged object created
-
-### Scenario 8: Medium Confidence Spam
-1. Suspicious content submitted
-2. Spam classifier: 65% confidence
-3. Action: `FLAG_REVIEW`
-4. Question/ticket flagged with `FLAG_PENDING`
-5. Waits in moderation queue for human review
-
-## Summary of Key Differences
-
-| Aspect | Questions (AAQ) | Zendesk |
-|--------|----------------|---------|
-| **Product Reassignment Scope** | Only products with forums | All products |
-| **Reassignment Decision Factor** | N/A (forums required) | Original product's ticketing support |
-| **Spam Moderation Bypass** | Not available | Via `skip_spam_moderation` config |
-| **Spam Handling Switch** | `auto-question-classifier` | `zendesk-spam-classifier` |
-| **Tag Generation** | Auto-tags based on topic | Hierarchical tier tags (t1-, t2-, t3-) |
-| **Failed Classification** | Silent failure (retry later) | Marked failed, sent without full classification |
-| **Output** | Updated Question record + FlaggedObject | Zendesk ticket with tags |
-
-## Monitoring and Observability
-
-### FlaggedObject Records
-
-All classification results create `FlaggedObject` records with:
-- **Reason**: `REASON_SPAM` or `REASON_CONTENT_MODERATION`
-- **Status**: `FLAG_PENDING` or `FLAG_ACCEPTED`
-- **Notes**: LLM reasoning and classification details
-- **Creator**: SUMO Bot user
-
-### Status Tracking (Zendesk)
-
-Support tickets progress through statuses:
-- `STATUS_NEW` → Created
-- `STATUS_PROCESSING_FAILED` → Classification failed
-- `STATUS_FLAGGED` → Awaiting moderation
-- `STATUS_SENT` → Sent to Zendesk
-- `STATUS_REJECTED` → Rejected as spam
-
-### Logging
-
-Classification tasks log to `k.task` logger with:
-- Classification failures and retry attempts
-- Failed ticket processing counts
-- Auto-rejection counts for old spam
+These checks use controlled provider outputs to verify probability boundaries, abstention, eligibility, database identity, advisory isolation, concurrency, and moderation transitions. Live model quality and latency require authenticated evaluation on representative, appropriately handled content.
