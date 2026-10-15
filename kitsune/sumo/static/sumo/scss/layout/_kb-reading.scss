@@ -1,0 +1,137 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+// This set of styles overrides defaults so classes don't need to be used
+// on headlines, etc. on articles.
+.document--content,
+.forum--entry-content,
+#doc-content {
+
+  #toc,
+  .note {
+    padding: p.$spacing-lg;
+    border-radius: var(--global-radius);
+    background: var(--color-shade-bg);
+    margin-bottom: p.$spacing-xl;
+
+    h2 {
+      @include c.sumo-card-heading;
+      margin-top: 0;
+    }
+  }
+
+  #toc {
+    .tocnumber {
+      display: none;
+    }
+  }
+
+  h1 {
+    @include c.text-display-xs;
+  }
+
+  h2 {
+    @include c.text-display-xxs;
+  }
+
+  h3,
+  h4,
+  h5,
+  h6 {
+    @include c.text-display-xxxs;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-top: 1.5em;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  .wiki-image {
+    padding: 5px 0;
+    vertical-align: middle;
+    display: inline-block;
+  }
+
+  .separator {
+    border: 0 none;
+    border-bottom: 1px solid var(--text-color);
+    margin: p.$spacing-md 0;
+  }
+
+  ul {
+    list-style: disc;
+    margin: p.$spacing-md;
+  }
+
+  ol {
+    list-style: decimal;
+    margin: p.$spacing-md;
+  }
+
+  li {
+    margin-bottom: p.$spacing-sm;
+  }
+
+  .filepath {
+    font-style: italic;
+  }
+
+  .button,
+  .key {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid var(--color-marketing-gray-03);
+    padding: 0 p.$spacing-md;
+    border-radius: p.$border-radius-xs;
+    font-family: var(--heading-alt-font-family);
+    @include p.font-size(14px);
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--color-marketing-gray-07);
+  }
+
+  .key {
+    padding: 0 p.$spacing-sm;
+    font-family: var(--code-font-family);
+  }
+
+  .pref {
+    padding: 0 2px;
+    border: 1px solid var(--color-marketing-gray-03);
+  }
+
+  .menu {
+    background: var(--color-marketing-gray-02);
+    color: var(--color-marketing-gray-10);
+    padding: 2px 4px;
+  }
+
+  dl {
+    margin: 0 0 p.$spacing-md p.$spacing-lg;
+
+    dd {
+      margin-left: p.$spacing-lg;
+    }
+  }
+
+  .youtube-embed {
+    height: 0;
+    padding-bottom: 56.25%;
+    position: relative;
+
+    iframe {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}

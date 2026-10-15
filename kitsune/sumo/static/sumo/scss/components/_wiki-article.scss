@@ -1,0 +1,441 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+figure {
+  &.linked-in-product {
+    display: flex;
+    margin-bottom: p.$spacing-xl;
+
+    img {
+      width: 24px;
+      height: 24px;
+      margin-inline-end: p.$spacing-sm;
+    }
+
+    figcaption {
+      font-weight: bold;
+      line-height: normal;
+    }
+  }
+}
+
+// These styles were pulled directly from the less files.
+
+article {
+  &.locked>* {
+    opacity: 0.3;
+  }
+
+  >* {
+    transition: opacity 1s;
+  }
+}
+
+.sidebar-nav {
+  &.topics {
+    background-color: #fff;
+    // margin-top: p.$spacing-md;
+
+    >li {
+      background-color: #fff;
+
+      &.selected {
+
+        >a,
+        >a:visited {
+          background: #f3f3f3;
+          border: none;
+          border-left: p.$spacing-xs solid #000;
+          color: #000;
+          font-weight: bold;
+
+          &:before {
+            content: none;
+          }
+
+          &:hover {
+            color: #000;
+          }
+        }
+
+        &.has-subtopics {
+          >a {
+            background: #fff;
+          }
+        }
+      }
+
+      >a,
+      >a:visited,
+      {
+      color: #000;
+      background: #fff;
+      border: none;
+      border-left: p.$spacing-xs solid #e7e7e7;
+      text-transform: none;
+
+      &:before {
+        content: none;
+      }
+
+      &:hover {
+        color: var(--color-link);
+      }
+    }
+
+    &.subtopic-selected {
+
+      >a,
+      >a:visited {
+        background: #fff;
+        border-left: p.$spacing-xs solid #000;
+      }
+    }
+
+    >ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      text-transform: none;
+
+      >li {
+
+        >a,
+        >a:visited {
+          background: #f3f3f3;
+          border-left: none;
+          color: #000;
+          display: block;
+          padding: 12px 20px;
+          text-decoration: none;
+
+          &:hover {
+            color: var(--color-link);
+          }
+        }
+
+        &.selected {
+
+          >a,
+          >a:visited {
+            border-left: p.$spacing-xs solid #000;
+            font-weight: bold;
+
+            &:hover {
+              color: #000;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .html-rtl &.topics>li {
+    &.selected {
+
+      >a,
+      >a:visited {
+        border-left: none;
+        border-right: p.$spacing-xs solid #000;
+      }
+    }
+
+    >a,
+    >a:visited,
+    {
+    border-left: none;
+    border-right: p.$spacing-xs solid #e7e7e7;
+  }
+
+  &.subtopic-selected {
+
+    >a,
+    >a:visited {
+      border-left: none;
+      border-right: p.$spacing-xs solid #000;
+    }
+  }
+}
+}
+
+&.related-products {
+  >li {
+    >a {
+      >span {
+        box-sizing: border-box;
+        display: block;
+        min-height: p.$spacing-lg;
+        padding-left: 34px;
+        padding-top: 3px;
+        position: relative;
+
+        img {
+          background-repeat: no-repeat;
+          background-size: cover;
+          height: p.$spacing-lg;
+          left: 0;
+          margin-top: -12px;
+          position: absolute;
+          top: 50%;
+          width: p.$spacing-lg;
+        }
+      }
+    }
+  }
+}
+}
+
+#os_input,
+#browser_input {
+  cursor: pointer;
+  padding: 0 10px;
+  width: 120px !important;
+  // background: #fff @iconsSprite 60px -280px no-repeat;
+}
+
+.wait {
+  display: none;
+}
+
+.wiki-doc {
+  #doc-contributors {
+    display: block;
+    min-height: 100px;
+    padding: 30px 0 10px 0;
+
+    .help-title-prefix {
+      color: #000;
+      float: left;
+      font-size: p.$spacing-lg;
+      padding-left: 5px;
+    }
+
+    .help-title {
+      color: #000;
+      float: left;
+      font-size: p.$spacing-lg;
+      padding-left: 15px;
+      width: 32%;
+    }
+
+    .contributors {
+      float: right;
+      padding-left: 40px;
+      width: 54%;
+    }
+
+    .help-link {
+      color: #000;
+      float: right;
+      padding-top: 10px;
+    }
+
+    a.user,
+    a.user:visited,
+    a.user:hover {
+      color: #eee;
+    }
+  }
+
+  .separator {
+    width: 100%;
+    height: 2px;
+    background: #000;
+  }
+}
+
+/* Style video modal */
+div.video .kbox-container {
+  width: 680px;
+  height: 550px;
+  text-align: left;
+}
+
+.html-rtl div.video .kbox-container {
+  text-align: right;
+}
+
+.document-vote {
+  form.busy {
+    .wait {
+      display: inline;
+      margin: 0 0 0 15px;
+      position: relative;
+      top: 3px;
+    }
+  }
+}
+
+.html-rtl {
+  .document-vote {
+    form.busy {
+      .wait {
+        margin: 0 15px 0 0;
+      }
+    }
+  }
+}
+
+article {
+
+  #unhelpful-survey,
+  #helpful-survey {
+    textarea {
+      height: 65px;
+      margin: 6px 0 2px 12px;
+      resize: vertical;
+      width: 275px;
+    }
+
+    &:after {
+      background: #fff;
+      box-shadow: -2px 2px 2px rgba(0, 0, 0, 0.3);
+      content: '';
+      display: block;
+      height: 10px;
+      left: -5px;
+      position: absolute;
+      top: 15px;
+      transform: rotate(45deg);
+      width: 10px;
+      z-index: 1;
+    }
+  }
+}
+
+#unhelpful-survey,
+#helpful-survey {
+  p {
+    margin: p.$spacing-sm 0;
+  }
+
+  .helpful-button {
+    display: block;
+    margin-top: p.$spacing-md;
+  }
+
+  ul {
+    list-style: none;
+  }
+
+  li {
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+
+    label {
+      font-weight: normal;
+      margin: 0;
+      @include c.text-body-sm;
+
+
+      &:before {
+        top: 2px;
+        margin-right: 10px;
+      }
+    }
+  }
+
+
+  .btn-submit {
+    margin: 6px 14px;
+    float: left;
+  }
+
+  .character-counter,
+  .disabled-reason {
+    @include c.text-body-xs;
+  }
+}
+
+.doc-watch {
+  padding: 40px 0 0 0;
+}
+
+.wiki-product-title {
+  margin-left: p.$spacing-lg;
+
+  >img {
+    float: left;
+    padding-top: 2px;
+  }
+
+  >a:link,
+  a:visited {
+    color: #000;
+    float: left;
+    font-size: p.$spacing-md;
+    padding-left: 20px;
+    padding-top: 6px;
+    text-decoration: none;
+    width: 110px;
+  }
+
+  .html-rtl & {
+    margin-left: 0;
+    margin-right: p.$spacing-lg;
+
+    >img {
+      float: right;
+    }
+
+    >a:link,
+    a:visited {
+      float: right;
+      padding-left: 0;
+      padding-right: 20px;
+    }
+  }
+}
+
+#get-involved-box {
+  margin-top: p.$spacing-lg;
+  margin-bottom: p.$spacing-2xl;
+
+  .btn {
+    font-size: p.$spacing-md;
+    margin-bottom: 20px;
+    padding: p.$spacing-sm 40px;
+  }
+}
+
+.collapsible {
+  .wiki-section {
+    >h1 {
+      margin-top: p.$spacing-lg;
+      margin-bottom: p.$spacing-lg;
+      position: relative;
+      cursor: pointer;
+      @include c.sumo-card-heading;
+
+      &:before {
+        background: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 3.515v16.97M3.515 12h16.97' stroke='%23000' stroke-width='2' fill='none' fill-rule='evenodd' stroke-linecap='round'/%3E%3C/svg%3E") 0 0 no-repeat;
+        background-size: auto;
+        background-size: 20px, 20px;
+        -webkit-transition: transform .1s ease-in-out;
+        -webkit-transition: -webkit-transform .1s ease-in-out;
+        transition: -webkit-transform .1s ease-in-out;
+        transition: transform .1s ease-in-out;
+        transition: transform .1s ease-in-out, -webkit-transform .1s ease-in-out;
+        content: "";
+        height: 20px;
+        margin-top: -8px;
+        position: absolute;
+        top: 50%;
+        width: 20px;
+        right: 8px;
+        transform: rotate(45deg);
+      }
+    }
+  }
+}
+
+.wiki-section.collapsed {
+  section {
+    display: none;
+  }
+
+  >h1:before {
+    transform: rotate(0);
+  }
+}

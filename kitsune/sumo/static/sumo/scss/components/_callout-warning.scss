@@ -1,0 +1,27 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+.sumo-banner-warning {
+  background: var(--color-warning);
+  color: var(--color-heading);
+}
+
+.document--content,
+.forum--entry-content,
+#doc-content {
+  .warning {
+    padding: p.$spacing-lg;
+    border-radius: var(--global-radius);
+    background: var(--color-shade-bg);
+    margin-bottom: p.$spacing-xl;
+
+    h2 {
+      @include c.sumo-card-heading;
+      margin-top: 0;
+    }
+  }
+
+  .warning {
+    background: var(--color-warning)
+  }
+}

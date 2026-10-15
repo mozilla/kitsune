@@ -1,0 +1,17 @@
+@use '../config' as c;
+
+.elevation-00 {
+  @include c.elevation-00;
+}
+
+.elevation-01 {
+  @include c.elevation-01;
+}
+
+.elevation-02 {
+  @include c.elevation-02;
+}
+
+.elevation-03 {
+  @include c.elevation-03;
+}

@@ -1,0 +1,97 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+.card {
+  &--ribbon {
+    text-align: center;
+
+    .card--title {
+      @include c.sumo-callout-heading;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 0 p.$spacing-md 0;
+
+      @media #{p.$mq-lg} {
+        margin-bottom: 0;
+      }
+    }
+
+    &.has-moz-headings .card--title {
+      font-family: var(--title-font-family);
+      color: var(--color-moz-heading);
+    }
+
+    .card--icon-sm {
+      margin-bottom: p.$spacing-sm;
+      width: p.$spacing-xl;
+      height: auto;
+      flex-shrink: 0;
+    }
+
+    .card--desc {
+      @include c.text-body-xs;
+      margin: 20px 0;
+    }
+
+    &.no-body-text {
+      .card--details {
+        justify-content: space-between;
+      }
+    }
+  }
+
+  @media #{p.$mq-md} {
+    &--ribbon {
+      .card--title {
+        flex-direction: row;
+      }
+
+      .card--icon-sm {
+        margin-right: 10px;
+        margin-bottom: 0;
+        @include p.bidi(((margin-right, 10px, 0),
+            (margin-left, 0, 10px),
+          ));
+      }
+
+      .card--desc {
+        @include c.text-body-sm;
+        margin: p.$spacing-sm 0 p.$spacing-lg 0;
+      }
+    }
+  }
+
+  @media #{p.$mq-lg} {
+    &--ribbon {
+      text-align: left;
+
+      .card--details {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+      }
+
+      .card--title {
+        margin-right: 40px;
+        line-height: 1.2;
+        flex: 0 1 auto;
+        text-align: center;
+      }
+
+      .sumo-button {
+        flex: 0 1 auto;
+      }
+
+      .card--desc {
+        min-width: 25ch;
+        max-width: 45ch;
+        flex: 1 1 0;
+        @include p.bidi(((margin, 0 40px 0 0, 0 0 0 40px),
+          ));
+      }
+    }
+  }
+}
