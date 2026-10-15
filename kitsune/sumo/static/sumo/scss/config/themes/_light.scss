@@ -173,6 +173,46 @@
 //
 // Style guide: colors.topic-card
 
+// KB reading
+//
+// KB article content in `#doc-content`: the table of contents rule, the metadata rule, notes,
+// Firefox UI label chips, and keycaps. Forum posts share the parser's classes and keep the menu
+// label colors. The keycap edge is a shadow, so it appears in the theme maps only.
+//
+// Colors:
+// --kb-toc-rule: #CDCDD4 - Dark: #3A3D43 (graphite-08)
+// --kb-metadata-rule: #EDEDF0 - Dark: #3A3D43 (graphite-08)
+// --kb-note-bg: #F7F7FA - Dark: #22252A (graphite-04)
+// --kb-note-edge: #0060DF - Dark: #8FBEFA (azure-03)
+// --kb-chip-bg: #EEF4FD - Dark: rgba(143, 190, 250, 0.1)
+// --kb-chip-border: rgba(0, 96, 223, 0.22) - Dark: rgba(143, 190, 250, 0.24)
+// --kb-chip-text: #0A3F8F - Dark: #D6E6FF (azure-01)
+// --kb-keycap-bg: transparent - Dark: #3A3D43 (graphite-08)
+// --kb-keycap-border: #CDCDD4 - Dark: rgba(255, 255, 255, 0.1)
+// --kb-keycap-text: #5E5E72 - Dark: #F0F0F4 (light-gray-03)
+// --kb-menu-bg: #EDEDF0 - Dark: #32353D (graphite-07)
+// --kb-menu-text: #141422 - Dark: #F9F9FB (light-gray-02)
+// --kb-separator: #000000 - Dark: #83868D (graphite-10)
+//
+// Weight: 20
+//
+// Style guide: colors.kb-reading
+
+// Wiki article
+//
+// The topics sidebar nav, the contributors list, and the helpful survey. The survey arrow
+// shadow appears in the theme maps only.
+//
+// Colors:
+// --topics-nav-item-bg: #F3F3F3 - Dark: #282B32 (graphite-05)
+// --topics-nav-edge: #E7E7E7 - Dark: #3A3D43 (graphite-08)
+// --topics-nav-edge-selected: #000000 - Dark: #F9F9FB (light-gray-02)
+// --doc-contributors-user-link: #EEEEEE - Dark: #C9CCD2 (graphite-12)
+//
+// Weight: 21
+//
+// Style guide: colors.wiki-article
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -265,6 +305,29 @@ $light: (
   'topic-card-divider': var(--color-border),
   'topic-card-plate-bg': #F3F3F7,
   'topic-card-shadow': p.$box-shadow-sm,
+
+  // KB reading
+  'kb-toc-rule': var(--color-marketing-gray-03),
+  'kb-metadata-rule': var(--color-border),
+  'kb-note-bg': #F7F7FA,
+  'kb-note-edge': var(--color-blue-06),
+  'kb-chip-bg': #EEF4FD,
+  'kb-chip-border': rgba(0, 96, 223, 0.22),
+  'kb-chip-text': #0A3F8F,
+  'kb-keycap-bg': transparent,
+  'kb-keycap-border': var(--color-marketing-gray-03),
+  'kb-keycap-text': var(--color-marketing-gray-07),
+  'kb-keycap-edge': none,
+  'kb-menu-bg': var(--color-marketing-gray-02),
+  'kb-menu-text': var(--color-marketing-gray-10),
+  'kb-separator': var(--color-black),
+
+  // Wiki article
+  'topics-nav-item-bg': #F3F3F3,
+  'topics-nav-edge': #E7E7E7,
+  'topics-nav-edge-selected': var(--color-black),
+  'doc-contributors-user-link': #EEEEEE,
+  'helpful-survey-arrow-shadow': -2px 2px 2px rgba(0, 0, 0, 0.3),
 
   'elevation-rim': 0 0 #0000,
   'elevation-1': (

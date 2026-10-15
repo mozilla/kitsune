@@ -94,7 +94,7 @@
         </div>
       </div>
       {% endif %}
-      {{ document.html|safe }}
+      {{ document.html|scrollable_tables|safe }}
     {% elif fallback_reason == 'no_translation' %}
       {% if document.is_localizable and any_localizable_revision and not document.is_archived %}
       <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
@@ -110,7 +110,7 @@
       </div>
       {% endif %}
 
-      {{ document.html|safe }}
+      {{ document.html|scrollable_tables|safe }}
 
     {% elif fallback_reason == 'translation_not_approved' %}
     <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
@@ -128,9 +128,9 @@
 
       {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
         {# This is the actual fallback document, show it. #}
-        {{ document.html|safe }}
+        {{ document.html|scrollable_tables|safe }}
       {% else %}
-        {{ document.parent.html|safe }}
+        {{ document.parent.html|scrollable_tables|safe }}
       {% endif %}
     {% elif fallback_reason == 'fallback_locale' %}
       <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
@@ -144,7 +144,7 @@
         </div>
       </div>
 
-      {{ document.html|safe }}
+      {{ document.html|scrollable_tables|safe }}
     {% else %}
       {{ _("This article doesn't have approved content yet.") }}
     {% endif %}

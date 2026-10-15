@@ -62,7 +62,6 @@
 
   .separator {
     border: 0 none;
-    border-bottom: 1px solid var(--text-color);
     margin: p.$spacing-md 0;
   }
 
@@ -85,33 +84,35 @@
   }
 
   .button,
-  .key {
+  .key,
+  kbd {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    border: 2px solid var(--color-marketing-gray-03);
+    border: 2px solid var(--kb-keycap-border);
     padding: 0 p.$spacing-md;
     border-radius: p.$border-radius-xs;
     font-family: var(--heading-alt-font-family);
     @include p.font-size(14px);
     font-weight: 700;
     text-decoration: none;
-    color: var(--color-marketing-gray-07);
+    color: var(--kb-keycap-text);
   }
 
-  .key {
+  .key,
+  kbd {
     padding: 0 p.$spacing-sm;
     font-family: var(--code-font-family);
   }
 
   .pref {
     padding: 0 2px;
-    border: 1px solid var(--color-marketing-gray-03);
+    border: 1px solid var(--color-border-interactive);
   }
 
   .menu {
-    background: var(--color-marketing-gray-02);
-    color: var(--color-marketing-gray-10);
+    background: var(--kb-menu-bg);
+    color: var(--kb-menu-text);
     padding: 2px 4px;
   }
 
@@ -134,4 +135,81 @@
       height: 100%;
     }
   }
+}
+
+#doc-content {
+  max-inline-size: 70ch;
+
+  p,
+  li {
+    line-height: 1.65;
+  }
+
+  p {
+    margin-bottom: 1.1em;
+  }
+
+  li {
+    margin-bottom: 0.35em;
+  }
+
+  h2 {
+    margin-top: 2.2em;
+  }
+
+  // Backslash paths and dotted pref names have no break opportunities, so they would overflow.
+  .filepath,
+  .pref {
+    overflow-wrap: break-word;
+  }
+
+  #toc {
+    padding-block: 4px;
+    padding-inline: 22px 0;
+    border-inline-start: 2px solid var(--kb-toc-rule);
+    border-radius: 0;
+    background: transparent;
+
+    h2 {
+      @include p.font-size(15px);
+    }
+
+    a {
+      text-decoration: none;
+      color: var(--color-link);
+
+      &:hover {
+        text-decoration: underline;
+        color: var(--color-link-hover);
+      }
+    }
+  }
+
+  .note {
+    padding: 16px 20px;
+    border-inline-start: 3px solid var(--kb-note-edge);
+    border-radius: var(--radius-md);
+    background: var(--kb-note-bg);
+  }
+
+  .menu,
+  .button {
+    border-radius: var(--radius-sm);
+    background: var(--kb-chip-bg);
+    color: var(--kb-chip-text);
+  }
+
+  .button {
+    border-color: var(--kb-chip-border);
+  }
+
+  .key,
+  kbd {
+    box-shadow: var(--kb-keycap-edge);
+    background: var(--kb-keycap-bg);
+  }
+}
+
+#document_metadata.has-border-bottom {
+  border-bottom: 1px solid var(--kb-metadata-rule);
 }

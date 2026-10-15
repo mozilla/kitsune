@@ -49,7 +49,12 @@
         { "fg": "--callout-warning-action-border", "bg": "--callout-warning-bg-start", "min": 3, "themes": ["light"] },
         { "fg": "--landing-card-desc-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--topic-card-title", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
-        { "fg": "--topic-card-link", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] }
+        { "fg": "--topic-card-link", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--kb-note-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--kb-note-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--kb-chip-text", "bg": "--kb-chip-bg", "backdrop": "--kb-note-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--kb-keycap-text", "bg": "--kb-keycap-bg", "backdrop": "--kb-note-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--kb-menu-text", "bg": "--kb-menu-bg", "min": 4.5, "themes": ["light", "dark"] }
     ],
     "exceptions": [
         {

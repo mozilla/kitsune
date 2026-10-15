@@ -91,6 +91,29 @@ $dark: (
   'topic-card-plate-bg': rgba(255, 255, 255, 0.07),
   'topic-card-shadow': var(--elevation-1),
 
+  // KB reading
+  'kb-toc-rule': var(--color-graphite-08),
+  'kb-metadata-rule': var(--color-border),
+  'kb-note-bg': var(--color-graphite-04),
+  'kb-note-edge': var(--color-azure-03),
+  'kb-chip-bg': rgba(143, 190, 250, 0.1),
+  'kb-chip-border': rgba(143, 190, 250, 0.24),
+  'kb-chip-text': var(--color-azure-01),
+  'kb-keycap-bg': var(--color-graphite-08),
+  'kb-keycap-border': rgba(255, 255, 255, 0.1),
+  'kb-keycap-text': var(--color-light-gray-03),
+  'kb-keycap-edge': inset 0 -2px 0 rgba(0, 0, 0, 0.35),
+  'kb-menu-bg': var(--color-graphite-07),
+  'kb-menu-text': var(--color-light-gray-02),
+  'kb-separator': var(--color-graphite-10),
+
+  // Wiki article
+  'topics-nav-item-bg': var(--color-graphite-05),
+  'topics-nav-edge': var(--color-graphite-08),
+  'topics-nav-edge-selected': var(--color-light-gray-02),
+  'doc-contributors-user-link': var(--color-graphite-12),
+  'helpful-survey-arrow-shadow': -2px 2px 2px rgba(0, 0, 0, 0.3),
+
   'elevation-rim': (
     inset 0 1px 0 rgba(255, 255, 255, 0.07),
     inset 0 0 0 1px rgba(255, 255, 255, 0.035)

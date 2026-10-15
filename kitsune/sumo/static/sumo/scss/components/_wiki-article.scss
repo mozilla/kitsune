@@ -33,20 +33,20 @@ article {
 
 .sidebar-nav {
   &.topics {
-    background-color: #fff;
+    background-color: var(--page-bg);
     // margin-top: p.$spacing-md;
 
     >li {
-      background-color: #fff;
+      background-color: var(--page-bg);
 
       &.selected {
 
         >a,
         >a:visited {
-          background: #f3f3f3;
+          background: var(--topics-nav-item-bg);
           border: none;
-          border-left: p.$spacing-xs solid #000;
-          color: #000;
+          border-left: p.$spacing-xs solid var(--topics-nav-edge-selected);
+          color: var(--color-moz-text);
           font-weight: bold;
 
           &:before {
@@ -54,13 +54,13 @@ article {
           }
 
           &:hover {
-            color: #000;
+            color: var(--color-moz-text);
           }
         }
 
         &.has-subtopics {
           >a {
-            background: #fff;
+            background: var(--page-bg);
           }
         }
       }
@@ -68,10 +68,10 @@ article {
       >a,
       >a:visited,
       {
-      color: #000;
-      background: #fff;
+      color: var(--color-moz-text);
+      background: var(--page-bg);
       border: none;
-      border-left: p.$spacing-xs solid #e7e7e7;
+      border-left: p.$spacing-xs solid var(--topics-nav-edge);
       text-transform: none;
 
       &:before {
@@ -87,8 +87,8 @@ article {
 
       >a,
       >a:visited {
-        background: #fff;
-        border-left: p.$spacing-xs solid #000;
+        background: var(--page-bg);
+        border-left: p.$spacing-xs solid var(--topics-nav-edge-selected);
       }
     }
 
@@ -102,9 +102,9 @@ article {
 
         >a,
         >a:visited {
-          background: #f3f3f3;
+          background: var(--topics-nav-item-bg);
           border-left: none;
-          color: #000;
+          color: var(--color-moz-text);
           display: block;
           padding: 12px 20px;
           text-decoration: none;
@@ -118,11 +118,11 @@ article {
 
           >a,
           >a:visited {
-            border-left: p.$spacing-xs solid #000;
+            border-left: p.$spacing-xs solid var(--topics-nav-edge-selected);
             font-weight: bold;
 
             &:hover {
-              color: #000;
+              color: var(--color-moz-text);
             }
           }
         }
@@ -136,7 +136,7 @@ article {
       >a,
       >a:visited {
         border-left: none;
-        border-right: p.$spacing-xs solid #000;
+        border-right: p.$spacing-xs solid var(--topics-nav-edge-selected);
       }
     }
 
@@ -144,7 +144,7 @@ article {
     >a:visited,
     {
     border-left: none;
-    border-right: p.$spacing-xs solid #e7e7e7;
+    border-right: p.$spacing-xs solid var(--topics-nav-edge);
   }
 
   &.subtopic-selected {
@@ -152,7 +152,7 @@ article {
     >a,
     >a:visited {
       border-left: none;
-      border-right: p.$spacing-xs solid #000;
+      border-right: p.$spacing-xs solid var(--topics-nav-edge-selected);
     }
   }
 }
@@ -204,14 +204,14 @@ article {
     padding: 30px 0 10px 0;
 
     .help-title-prefix {
-      color: #000;
+      color: var(--color-moz-text);
       float: left;
       font-size: p.$spacing-lg;
       padding-left: 5px;
     }
 
     .help-title {
-      color: #000;
+      color: var(--color-moz-text);
       float: left;
       font-size: p.$spacing-lg;
       padding-left: 15px;
@@ -225,7 +225,7 @@ article {
     }
 
     .help-link {
-      color: #000;
+      color: var(--color-moz-text);
       float: right;
       padding-top: 10px;
     }
@@ -233,14 +233,14 @@ article {
     a.user,
     a.user:visited,
     a.user:hover {
-      color: #eee;
+      color: var(--doc-contributors-user-link);
     }
   }
 
   .separator {
     width: 100%;
     height: 2px;
-    background: #000;
+    background: var(--kb-separator);
   }
 }
 
@@ -288,8 +288,8 @@ article {
     }
 
     &:after {
-      background: #fff;
-      box-shadow: -2px 2px 2px rgba(0, 0, 0, 0.3);
+      background: var(--color-surface);
+      box-shadow: var(--helpful-survey-arrow-shadow);
       content: '';
       display: block;
       height: 10px;
@@ -319,7 +319,7 @@ article {
   }
 
   li {
-    color: #fff;
+    color: var(--color-inverse);
     cursor: pointer;
     position: relative;
 
@@ -362,7 +362,7 @@ article {
 
   >a:link,
   a:visited {
-    color: #000;
+    color: var(--color-moz-text);
     float: left;
     font-size: p.$spacing-md;
     padding-left: 20px;
