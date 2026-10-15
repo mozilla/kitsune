@@ -1,0 +1,37 @@
+// Emitted through a mixin so the :root block lands after the theme blocks, not where this module is first loaded.
+@use 'sass:map';
+@use 'themes/light';
+
+$mappings: (
+  'background-color': 'page-bg',
+  'background-color-secondary': 'color-shade-bg',
+  'background-color-tertiary': 'protocol-background-color-tertiary',
+  'body-text-color': 'color-moz-text',
+  'body-text-color-secondary': 'protocol-body-text-color-secondary',
+  'title-text-color': 'color-moz-heading',
+  'link-color': 'color-link',
+  'link-color-hover': 'color-link-hover',
+  'link-color-visited': 'protocol-link-color-visited',
+
+  'background-color-inverse': 'protocol-background-color-inverse',
+  'background-color-secondary-inverse': 'protocol-background-color-secondary-inverse',
+  'background-color-tertiary-inverse': 'protocol-background-color-tertiary-inverse',
+  'body-text-color-inverse': 'color-inverse',
+  'body-text-color-secondary-inverse': 'protocol-body-text-color-secondary-inverse',
+  'title-text-color-inverse': 'color-inverse',
+  'link-color-inverse': 'protocol-link-color-inverse',
+  'link-color-hover-inverse': 'protocol-link-color-hover-inverse',
+  'link-color-visited-inverse': 'protocol-link-color-visited-inverse',
+);
+
+@mixin emit {
+  :root {
+    @each $property, $token in $mappings {
+      @if not map.has-key(light.$light, $token) {
+        @error 'Protocol property "#{$property}" maps to "#{$token}", which is not a theme token.';
+      }
+
+      --#{$property}: var(--#{$token});
+    }
+  }
+}

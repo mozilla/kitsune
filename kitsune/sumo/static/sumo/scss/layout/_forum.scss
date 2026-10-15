@@ -332,8 +332,8 @@
     }
 
     &.is-active {
-      background-color: var(--color-link);
-      color: var(--color-inverse);
+      background-color: var(--color-accent);
+      color: var(--color-text-on-accent);
     }
 
     &:hover {
@@ -747,7 +747,7 @@
   line-height: 1;
   border: 1px solid var(--color-light-gray-04);
   border-radius: 2em;
-  background: var(--color-inverse);
+  background: var(--color-surface);
   cursor: pointer;
   color: var(--color-text-light);
   transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;

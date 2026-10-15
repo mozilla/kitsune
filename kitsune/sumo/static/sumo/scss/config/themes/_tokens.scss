@@ -1,0 +1,58 @@
+@use 'sass:list';
+@use 'sass:map';
+@use 'sass:meta';
+
+@mixin emit-theme($map) {
+  @if meta.type-of($map) != 'map' and $map != () {
+    @error 'emit-theme expects a map, got #{meta.inspect($map)}.';
+  }
+
+  @each $name, $value in $map {
+    @if not $value or $value == '' or $value == () {
+      @error 'Theme token "#{$name}" has no value (#{meta.inspect($value)}).';
+    }
+
+    --#{$name}: #{$value};
+  }
+}
+
+@mixin assert-same-keys($light, $dark) {
+  @each $name, $theme in ('$light': $light, '$dark': $dark) {
+    @if meta.type-of($theme) != 'map' and $theme != () {
+      @error '#{$name} must be a map, got #{meta.inspect($theme)}.';
+    }
+  }
+
+  @if list.length($light) == 0 and list.length($dark) == 0 {
+    @error 'Both theme maps are empty; $light and $dark need at least one token.';
+  }
+
+  $missing-from-dark: ();
+  $missing-from-light: ();
+
+  @each $key in map.keys($light) {
+    @if not map.has-key($dark, $key) {
+      $missing-from-dark: list.append($missing-from-dark, $key, $separator: comma);
+    }
+  }
+
+  @each $key in map.keys($dark) {
+    @if not map.has-key($light, $key) {
+      $missing-from-light: list.append($missing-from-light, $key, $separator: comma);
+    }
+  }
+
+  $message: '';
+
+  @if list.length($missing-from-dark) > 0 {
+    $message: '#{$message} missing from $dark (config/themes/_dark.scss): #{$missing-from-dark}.';
+  }
+
+  @if list.length($missing-from-light) > 0 {
+    $message: '#{$message} missing from $light (config/themes/_light.scss): #{$missing-from-light}.';
+  }
+
+  @if $message != '' {
+    @error 'Theme maps must have the same keys:#{$message}';
+  }
+}

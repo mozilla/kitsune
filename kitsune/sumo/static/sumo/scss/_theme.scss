@@ -1,0 +1,52 @@
+@use 'config' as c;
+@use 'config/themes/tokens';
+@use 'config/themes/light';
+@use 'config/themes/dark';
+@use 'config/protocol-bridge';
+
+@include tokens.assert-same-keys(light.$light, dark.$dark);
+
+:root {
+  @include c.cssvars(c.$colors);
+  @include tokens.emit-theme(light.$light);
+
+  --base-font-size: 1rem;
+  --heading-font-family: var(--title-font-family);
+  --heading-alt-font-family: var(--heading-font-family);
+  --code-font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+
+  --global-margin: 1rem;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --global-radius: var(--radius-sm);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  @include tokens.emit-theme(dark.$dark);
+  color-scheme: dark;
+}
+
+// Printing always uses the light theme.
+@media print {
+  [data-theme="dark"] {
+    @include tokens.emit-theme(light.$light);
+    color-scheme: light;
+  }
+}
+
+@include protocol-bridge.emit;
+
+// With locales where Mozilla Headline and Mozilla Text have partial character support,
+// we use Inter for everything to avoid mixed fonts within a word/sentence:
+[lang="ee"], [lang="ig"], [lang="vi"], [lang="yo"] {
+  --body-font-family: Inter, X-LocaleSpecific, sans-serif;
+  --title-font-family: Inter, X-LocaleSpecific, sans-serif;
+}
+
+.shade-bg {
+  background: var(--color-shade-bg);
+}

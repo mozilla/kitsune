@@ -1,6 +1,6 @@
 // Colors
 //
-// There is a scss file included called `_project-theme.scss`. This file contains
+// The theme maps in `config/themes/`, emitted by `_theme.scss`, contain
 // semantic naming of variables that map to 'paint swatch' naming.
 // Components should all use the semantically-named variables to better indicate the
 // designer's intent and promote site-wide consistency. For example, `--text-color`
@@ -379,6 +379,80 @@ $colors: (
     '08': #20123A,
     '09': #20133A,
     '10': #1D1133,
+  ),
+  // Graphite
+  //
+  // Colors:
+  // --color-graphite-01: #101318 - color('graphite', '01')
+  // --color-graphite-02: #16181D - color('graphite', '02')
+  // --color-graphite-03: #1C1E23 - color('graphite', '03')
+  // --color-graphite-04: #22252A - color('graphite', '04')
+  // --color-graphite-05: #282B32 - color('graphite', '05')
+  // --color-graphite-06: #2C2F36 - color('graphite', '06')
+  // --color-graphite-07: #32353D - color('graphite', '07')
+  // --color-graphite-08: #3A3D43 - color('graphite', '08')
+  // --color-graphite-09: #5A5E66 - color('graphite', '09')
+  // --color-graphite-10: #83868D - color('graphite', '10')
+  // --color-graphite-11: #B7BBC1 - color('graphite', '11')
+  // --color-graphite-12: #C9CCD2 - color('graphite', '12')
+  //
+  // Weight: 13
+  //
+  // Style guide: colors.graphite
+  'graphite': (
+    '01': #101318,
+    '02': #16181D,
+    '03': #1C1E23,
+    '04': #22252A,
+    '05': #282B32,
+    '06': #2C2F36,
+    '07': #32353D,
+    '08': #3A3D43,
+    '09': #5A5E66,
+    '10': #83868D,
+    '11': #B7BBC1,
+    '12': #C9CCD2,
+  ),
+  // Azure
+  //
+  // Colors:
+  // --color-azure-01: #D6E6FF - color('azure', '01')
+  // --color-azure-02: #B0D4FF - color('azure', '02')
+  // --color-azure-03: #8FBEFA - color('azure', '03')
+  // --color-azure-04: #396ED6 - color('azure', '04')
+  // --color-azure-05: #2D60C3 - color('azure', '05')
+  //
+  // Weight: 14
+  //
+  // Style guide: colors.azure
+  'azure': (
+    '01': #D6E6FF,
+    '02': #B0D4FF,
+    '03': #8FBEFA,
+    '04': #396ED6,
+    '05': #2D60C3,
+  ),
+  // Lavender
+  //
+  // Colors:
+  // --color-lavender: #BFA9DB
+  //
+  // Weight: 15
+  //
+  // Style guide: colors.lavender
+  'lavender': #BFA9DB,
+  // Sage
+  //
+  // Colors:
+  // --color-sage-01: #83D5AD - color('sage', '01')
+  // --color-sage-02: #193729 - color('sage', '02')
+  //
+  // Weight: 16
+  //
+  // Style guide: colors.sage
+  'sage': (
+    '01': #83D5AD,
+    '02': #193729,
   ),
   'black': #000000,
   'white': #FFFFFF,

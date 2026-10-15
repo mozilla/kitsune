@@ -34,7 +34,7 @@
   height: p.$spacing-xl;
   border: 2px solid var(--color-marketing-gray-03);
   border-radius: var(--global-radius);
-  background-color: var(--color-inverse);
+  background-color: var(--color-surface);
 
   font-family: var(--heading-alt-font-family);
   @include p.font-size(14px);
@@ -101,34 +101,34 @@
 
   &.primary-button {
     border-width: 0;
-    background: var(--color-link);
-    color: var(--color-inverse);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
 
     &:hover:not(:disabled) {
-      background: var(--color-blue-07);
-      color: var(--color-inverse);
+      background: var(--color-accent-hover);
+      color: var(--color-text-on-accent);
     }
 
     &:active:not(:disabled) {
-      background: var(--color-blue-09);
+      background: var(--color-accent-active);
     }
   }
 
   &.secondary-button {
     border-color: var(--color-link);
-    background: var(--color-inverse);
+    background: var(--color-surface);
     color: var(--color-link);
 
     &:hover:not(:disabled) {
       border-color: var(--color-blue-07);
       background-color: var(--color-blue-07);
-      color: var(--color-inverse);
+      color: var(--color-text-on-accent);
     }
 
     &:active:not(:disabled) {
       border-color: var(--color-blue-09);
       background: var(--color-blue-09);
-      color: var(--color-inverse);
+      color: var(--color-text-on-accent);
     }
   }
 
@@ -136,7 +136,7 @@
     &:hover:not(:disabled) {
       border-color: var(--color-red-07);
       background-color: var(--color-red-07);
-      color: var(--color-inverse);
+      color: var(--color-text-on-accent);
     }
   }
 

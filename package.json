@@ -30,7 +30,8 @@
     "webpack:watch": "env-cmd -- npx concurrently npm:webpack:watch:*",
     "webpack:watch:dev": "npx webpack watch --config webpack.dev.js",
     "webpack:watch:pre-render": "npx webpack watch --config webpack.pre-render.js",
-    "webpack:test": "npx webpack build --config webpack.test.js && npx mocha --require ./webpack/mocha-require dist/tests.js"
+    "webpack:test": "npx webpack build --config webpack.test.js && npx mocha --require ./webpack/mocha-require dist/tests.js",
+    "theme:test": "node --test \"scripts/theme/*.test.mjs\""
   },
   "license": "MPL-2.0",
   "dependencies": {

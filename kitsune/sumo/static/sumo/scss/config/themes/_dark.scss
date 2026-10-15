@@ -1,0 +1,93 @@
+@use '../mixins' as c;
+@use '@mozilla-protocol/core/protocol/css/includes/lib' as p;
+
+$dark: (
+  'page-bg': var(--color-graphite-03),
+  'card-bg': var(--color-graphite-05),
+  'color-surface': var(--color-graphite-05),
+  'color-surface-raised': var(--color-graphite-07),
+  'color-click': var(--color-azure-03),
+  'color-success': var(--color-green-06),
+  'color-warning': var(--color-yellow-03),
+  'color-error': var(--color-red-05),
+  'color-shade-bg': var(--color-graphite-04),
+  'color-error-hover': var(--color-red-07),
+  'color-inverse-bg': #322F5A,
+  'surface-inverse-image': linear-gradient(160deg, #322F5A 0%, #22203B 100%),
+  'color-inverse': var(--color-light-gray-02),
+  'color-text-on-accent': var(--color-white),
+  'color-heading': var(--color-light-gray-02),
+  'color-text': var(--color-light-gray-04),
+  'color-text-light': var(--color-graphite-11),
+  'color-link': var(--color-click),
+  'color-link-hover': var(--color-azure-02),
+  'color-link-visited': var(--color-lavender),
+  'color-link-active-bg': var(--color-graphite-07),
+  'color-accent': var(--color-azure-04),
+  'color-accent-hover': var(--color-azure-05),
+  'color-accent-active': var(--color-azure-05),
+  'color-secondary': var(--color-graphite-11),
+  'color-link-inverse-visited': var(--color-purple-02),
+  'color-link-inverse-active-bg': rgba(c.color('marketing-gray', '02'), 0.2),
+  'color-border': var(--color-graphite-08),
+  'color-border-interactive': var(--color-graphite-10),
+  'color-callout-bg': var(--color-graphite-04),
+  'color-field-bg': var(--color-graphite-02),
+  'color-moz-heading': var(--color-light-gray-02),
+  'color-moz-text': var(--color-moz-heading),
+  'color-moz-inverse-bg': var(--color-ink-08),
+  'focus-shadow': (0 0 0 2px var(--color-graphite-03), 0 0 0 4px var(--color-azure-03)),
+
+  'field-border-color-default': var(--color-graphite-10),
+  'field-border-color-hover': var(--color-azure-03),
+  'checkbox-checked-color': var(--color-blue-06),
+  'field-border-color-disabled': var(--color-graphite-08),
+  'field-background-color-disabled': var(--color-graphite-04),
+  'field-color-disabled': var(--color-marketing-gray-03),
+
+  'status-info-bg': #2A313D,
+  'status-info-text': var(--color-azure-03),
+  'status-success-bg': var(--color-sage-02),
+  'status-success-text': var(--color-sage-01),
+  'status-pending-bg': #3B342B,
+  'status-pending-text': #F6BC5D,
+  'status-neutral-bg': #2E3035,
+  'status-neutral-text': var(--color-graphite-11),
+  'status-error-bg': #3C2C32,
+  'status-error-text': var(--color-red-03),
+
+  'elevation-rim': (
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035)
+  ),
+  'elevation-1': (
+    var(--elevation-rim),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 6px 12px -4px rgba(0, 0, 0, 0.35),
+    0 18px 36px -12px rgba(0, 0, 0, 0.55)
+  ),
+  'elevation-2': (
+    var(--elevation-rim),
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 12px 24px -6px rgba(0, 0, 0, 0.4),
+    0 32px 64px -16px rgba(0, 0, 0, 0.65)
+  ),
+  'elevation-3': var(--elevation-2),
+  'elevation-0-border': 1px solid rgba(255, 255, 255, 0.08),
+
+  'media-uploaded-icon-filter': invert(1) brightness(0.9),
+  'media-content-image-filter': brightness(0.9),
+
+  'protocol-background-color-tertiary': var(--color-callout-bg),
+  'protocol-body-text-color-secondary': var(--color-text-light),
+  'protocol-link-color-visited': var(--color-link-visited),
+  'protocol-background-color-inverse': var(--color-inverse-bg),
+  // Protocol's inverse values, unchanged in dark.
+  'protocol-background-color-secondary-inverse': p.$background-color-secondary-inverse,
+  'protocol-background-color-tertiary-inverse': p.$background-color-tertiary-inverse,
+  'protocol-body-text-color-secondary-inverse': p.$body-text-color-secondary-inverse,
+  'protocol-link-color-inverse': p.$link-color-inverse,
+  'protocol-link-color-hover-inverse': p.$link-color-hover-inverse,
+
+  'protocol-link-color-visited-inverse': var(--color-link-inverse-visited),
+);

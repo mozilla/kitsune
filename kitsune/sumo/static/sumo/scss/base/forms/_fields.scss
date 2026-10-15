@@ -1,15 +1,6 @@
 @use '../../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
-:root {
-  --field-border-color-default: var(--color-marketing-gray-05);
-  --field-border-color-hover: var(--color-blue-07);
-  --checkbox-checked-color: var(--color-blue-06);
-  --field-border-color-disabled: var(--color-marketing-gray-03);
-  --field-background-color-disabled: var(--color-marketing-gray-01);
-  --field-color-disabled: var(--color-marketing-gray-03);
-}
-
 // Forms
 //
 // Forms are used throughout the system and can be arranged in several ways. The

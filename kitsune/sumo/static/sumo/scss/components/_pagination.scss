@@ -39,8 +39,8 @@
     margin: 0 p.$spacing-xs;
 
     &.selected a {
-      background-color: var(--color-link);
-      color: var(--color-inverse);
+      background-color: var(--color-accent);
+      color: var(--color-text-on-accent);
     }
   }
 
