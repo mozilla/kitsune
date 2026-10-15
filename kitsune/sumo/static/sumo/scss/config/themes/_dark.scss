@@ -74,6 +74,15 @@ $dark: (
   'callout-warning-action-text': #FFD58A,
   'callout-warning-action-hover-bg': rgba(246, 188, 93, 0.1),
 
+  // Card (landing)
+  'landing-card-plate-bg': radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035)),
+  'landing-card-plate-ring': inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+  'landing-card-highlight': radial-gradient(120% 100% at 0% 0%, rgba(255, 255, 255, 0.04), transparent 55%),
+  'landing-card-hover-ring': inset 0 0 0 1px rgba(143, 190, 250, 0.22),
+  'landing-card-hover-shadow': var(--elevation-2),
+  'landing-card-desc-text': var(--color-graphite-11),
+  'landing-card-divider': var(--color-graphite-08),
+
   'elevation-rim': (
     inset 0 1px 0 rgba(255, 255, 255, 0.07),
     inset 0 0 0 1px rgba(255, 255, 255, 0.035)

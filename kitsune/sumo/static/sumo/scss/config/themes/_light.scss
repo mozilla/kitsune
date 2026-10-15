@@ -143,6 +143,19 @@
 //
 // Style guide: colors.callout-warning
 
+// Landing card
+//
+// The product and article cards. Only the text and divider colors can be shown as swatches;
+// the logo plate, the highlight layer, and the hover ring and shadow appear in the theme maps only.
+//
+// Colors:
+// --landing-card-desc-text: #5E5E72 - Dark: #B7BBC1 (graphite-11)
+// --landing-card-divider: #E0E0E6 - Dark: #3A3D43 (graphite-08)
+//
+// Weight: 18
+//
+// Style guide: colors.card-landing
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -218,6 +231,15 @@ $light: (
   'callout-warning-action-border': #B07A20,
   'callout-warning-action-text': #6B4300,
   'callout-warning-action-hover-bg': #FFF6E3,
+
+  // Card (landing)
+  'landing-card-plate-bg': radial-gradient(circle at 30% 25%, #FFFFFF, #F1F1F5),
+  'landing-card-plate-ring': inset 0 0 0 1px rgba(21, 20, 26, 0.06),
+  'landing-card-highlight': none,
+  'landing-card-hover-ring': inset 0 0 0 1px rgba(0, 96, 223, 0.18),
+  'landing-card-hover-shadow': var(--elevation-2),
+  'landing-card-desc-text': var(--color-marketing-gray-07),
+  'landing-card-divider': var(--color-light-gray-04),
 
   'elevation-rim': 0 0 #0000,
   'elevation-1': (

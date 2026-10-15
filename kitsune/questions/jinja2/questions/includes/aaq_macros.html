@@ -10,10 +10,12 @@
     <div id="product-picker" class="sumo-card-grid stack-on-mobile">
       <div class="scroll-wrap">
         {% for product in products %}
-          <div class="card card--product zoom-on-hover">
-          <img src="{{ product.image_alternate_url }}"
-              alt="{{ pgettext('DB: products.Product.title', product.title)|forceescape }}"
-              class="card--icon">
+          <div class="card card--product">
+            <div class="card--icon-plate">
+              <img src="{{ product.image_alternate_url }}"
+                  alt="{{ pgettext('DB: products.Product.title', product.title)|forceescape }}"
+                  class="card--icon">
+            </div>
 
             <div class="card--details">
               <h3 class="card--title">

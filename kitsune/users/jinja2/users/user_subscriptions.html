@@ -10,7 +10,9 @@
     </h2>
     {% for product in products %}
       <div class="card card--product subscriptions">
-        <img class="card--icon" src="{{ product.image_alternate_url }}" alt="{{ pgettext('DB: products.Product.title', product.title)|forceescape }}">
+        <div class="card--icon-plate">
+          <img class="card--icon" src="{{ product.image_alternate_url }}" alt="{{ pgettext('DB: products.Product.title', product.title)|forceescape }}">
+        </div>
         <div class="card--details">
           <h3 class="card--title">
             <a class="title" href="{{ url('products.product', product.slug) }}"
