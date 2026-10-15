@@ -1,10 +1,12 @@
+import time
 from unittest import mock
 
 from django import forms
 from django.contrib.admin.sites import AdminSite
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import RequestFactory
+from django.urls import reverse
 
 from kitsune.groups.admin import GroupProfileAdmin, GroupProfileAdminForm
 from kitsune.groups.models import GroupProfile
@@ -150,3 +152,57 @@ class GroupProfileAdminTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("avatar", form.errors)
         self.assertIn("File is too large.", form.errors["avatar"][0])
+
+
+class GroupAdminDeleteTests(TestCase):
+    """The Group admin's delete pages must show and check the profiles that go too."""
+
+    def setUp(self):
+        root = GroupProfile.objects.add_root(
+            create_kwargs={"group": Group.objects.create(name="Root"), "slug": "root"}
+        )
+        self.company = GroupProfile.objects.add_child(
+            root, create_kwargs={"group": Group.objects.create(name="Acme"), "slug": "acme"}
+        )
+        GroupProfile.objects.add_child(
+            self.company,
+            create_kwargs={"group": Group.objects.create(name="Acme IT"), "slug": "acme-it"},
+        )
+        self.delete_url = reverse("admin:auth_group_delete", args=[self.company.group_id])
+
+    def _login(self, user):
+        # Admin pages force OIDC re-authentication unless the session has an unexpired
+        # ID token from the OIDC backend.
+        self.client.force_login(user, backend="kitsune.users.auth.SumoOIDCAuthBackend")
+        session = self.client.session
+        session["oidc_id_token_expiration"] = time.time() + 3600
+        session.save()
+
+    def test_confirmation_lists_profile_and_subgroups(self):
+        self._login(UserFactory(is_staff=True, is_superuser=True))
+
+        resp = self.client.get(self.delete_url)
+
+        self.assertEqual(resp.status_code, 200)
+        # Django's cascade lists the group's own profile, as a link to its change page.
+        change_url = reverse("admin:groups_groupprofile_change", args=[self.company.pk])
+        self.assertContains(resp, f'Group profile: <a href="{change_url}">Acme</a>', count=1)
+        # The subgroup's profile is added by GroupAdmin.
+        self.assertContains(resp, "Group profile: Acme IT", count=1)
+        self.assertNotContains(resp, "Group profile: Root")
+        self.assertEqual(resp.context["perms_lacking"], set())
+
+    def test_deleting_needs_permission_to_delete_group_profiles(self):
+        user = UserFactory(is_staff=True)
+        user.user_permissions.add(
+            Permission.objects.get(content_type__app_label="auth", codename="delete_group")
+        )
+        self._login(user)
+
+        resp = self.client.get(self.delete_url)
+        self.assertEqual(resp.context["perms_lacking"], {"group profile"})
+
+        resp = self.client.post(self.delete_url, {"post": "yes"})
+        self.assertEqual(resp.status_code, 403)
+        self.assertTrue(Group.objects.filter(pk=self.company.group_id).exists())
+        self.assertTrue(GroupProfile.objects.filter(pk=self.company.pk).exists())

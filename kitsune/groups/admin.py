@@ -1,8 +1,13 @@
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
+from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
+from django.db.models import Exists, OuterRef
+from django.db.models.functions import Length, Substr
 from django.http import HttpResponseBadRequest
+from django.utils.text import capfirst
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
@@ -154,4 +159,31 @@ class GroupProfileAdmin(TreeAdmin):
         form.instance.group.user_set.add(*form.instance.leaders.all())
 
 
+class GroupAdmin(DjangoGroupAdmin):
+    def get_deleted_objects(self, objs, request):
+        """
+        Add the subgroups' profiles to the delete confirmation page.
+
+        Django's cascade lists the groups' own profiles, but it can't see that deleting
+        them through treebeard (see groups.signals.delete_group_profiles) also deletes
+        every profile below them.
+        """
+        to_delete, model_count, perms_needed, protected = super().get_deleted_objects(
+            objs, request
+        )
+        own_profile_at_or_above = GroupProfile.objects.filter(
+            group__in=objs, path=Substr(OuterRef("path"), 1, Length("path"))
+        )
+        # Every profile below the groups' own profiles, each once, in tree order.
+        # Profiles of the groups themselves are already listed by Django.
+        if profiles := list(
+            GroupProfile.objects.filter(Exists(own_profile_at_or_above)).exclude(group__in=objs)
+        ):
+            verbose_name = capfirst(GroupProfile._meta.verbose_name)
+            to_delete.extend(f"{verbose_name}: {profile}" for profile in profiles)
+        return to_delete, model_count, perms_needed, protected
+
+
 admin.site.register(GroupProfile, GroupProfileAdmin)
+admin.site.unregister(Group)
+admin.site.register(Group, GroupAdmin)

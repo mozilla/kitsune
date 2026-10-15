@@ -1,8 +1,11 @@
 """Tests for GroupProfile model and visibility manager."""
 
+from unittest.mock import patch
+
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, Group
 
+from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupFactory, GroupProfileFactory
 from kitsune.products.tests import (
@@ -1503,3 +1506,45 @@ class OrgRootTests(TestCase):
     def test_staff_can_view(self):
         staff_user = UserFactory(is_staff=True)
         self.assertTrue(self.c1.can_view_tickets(staff_user))
+
+
+class DeleteGroupTreeTests(TestCase):
+    """Deleting a Group must keep the GroupProfile tree consistent."""
+
+    def setUp(self):
+        self.root = GroupProfile.objects.add_root(
+            create_kwargs={"group": GroupFactory(), "slug": "root"}
+        )
+
+    def _child(self, parent, slug):
+        return GroupProfile.objects.add_child(
+            parent, create_kwargs={"group": GroupFactory(), "slug": slug}
+        )
+
+    def test_add_child_after_deleting_only_child_group(self):
+        child = self._child(self.root, "child")
+        child.group.delete()
+
+        self.root.refresh_from_db()
+        self.assertEqual(self.root.numchild, 0)
+        self._child(self.root, "replacement")
+        self.root.refresh_from_db()
+        self.assertEqual(self.root.numchild, 1)
+
+    def test_deleting_group_removes_descendant_profiles(self):
+        child = self._child(self.root, "child")
+        grandchild = self._child(child, "grandchild")
+        child.group.delete()
+
+        self.assertFalse(GroupProfile.objects.filter(pk=grandchild.pk).exists())
+        self.assertTrue(Group.objects.filter(pk=grandchild.group_id).exists())
+        self.assertEqual(GroupProfile.find_problems(), ([], [], [], [], []))
+
+    def test_deleting_profiles_takes_the_exclusive_lock(self):
+        self._child(self.root, "child")
+        with patch(
+            "kitsune.groups.managers.lock_enterprise_hierarchy", wraps=lock_enterprise_hierarchy
+        ) as lock:
+            GroupProfile.objects.filter(slug="child").delete()
+
+        lock.assert_called_once_with(using="default", exclusive=True)

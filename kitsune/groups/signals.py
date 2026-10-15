@@ -1,5 +1,5 @@
-from django.contrib.auth.models import User
-from django.db.models.signals import m2m_changed, post_save
+from django.contrib.auth.models import Group, User
+from django.db.models.signals import m2m_changed, post_save, pre_delete
 from django.dispatch import receiver
 
 from kitsune.groups.membership import guard_enterprise_memberships
@@ -70,3 +70,17 @@ def sync_visible_to_groups_on_create(sender, instance, **kwargs):
             instance.visible_to_groups.set(parent.visible_to_groups.all())
 
     instance._needs_visible_to_groups_sync = False
+
+
+@receiver(pre_delete, sender=Group, dispatch_uid="groups.delete_group_profiles")
+def delete_group_profiles(sender, instance, using, **kwargs):
+    """
+    Delete a group's profiles through treebeard rather than via cascade
+    in order to properly maintain the profile tree.
+
+    This must run after customercare.signals.on_group_deletion, which reads the
+    profile tree to decide whose chat access to revoke. Django runs receivers in
+    the order they're connected, which follows INSTALLED_APPS, so "kitsune.customercare"
+    must stay above "kitsune.groups".
+    """
+    GroupProfile.objects.using(using).filter(group_id=instance.pk).delete()
