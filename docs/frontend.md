@@ -355,6 +355,33 @@ The icon takes its color through `currentColor`.
 * Add `-ring`, `-shadow`, `-icon-bg`, and `-icon` to `config/themes/_forced-colors.scss`.
 The mixin removes the gradient itself under forced colors.
 
+#### Product themes
+
+`config/_product-themes.scss` is one Sass map keyed by product slug,
+and `_theme.scss` emits each entry as a `.product-theme--<slug>` class that sets custom properties.
+Templates with a product context set `product_theme` to the product's slug,
+and `base.html` adds `product-theme--<slug>` to `<body>`.
+Only slugs in the map match any CSS,
+so other products keep the default look.
+A component shown outside a product's pages can carry the class itself,
+as the Enterprise banner does.
+
+To theme a product, add one entry. Every key is optional,
+and the values apply in both themes:
+
+* `callout-ring`, `callout-base`, and `callout-glows` set the hooks the `brand-callout` mixin reads:
+`--product-callout-ring` (a 1px gradient border just outside the callout),
+`--product-callout-base`, and `--product-callout-glows` (any number of comma-separated layers).
+Forced colors ignore them.
+* `hero-text` sets `--product-hero-text`, the text color over the product's hero artwork.
+* `has-art: true` marks a hero with its own artwork and turns the aurora off.
+
+The artwork itself, and the rules that read `--product-hero-text`, live in `layout/_products.scss` under the product's hero class,
+so a product with artwork needs those rules as well as its registry entry.
+
+Values may be raw colors, because the file is in `config/`.
+An unknown key, a non-boolean `has-art`, or an empty value fails the build.
+
 #### Runtime and the flag
 
 The `dark-mode` waffle flag turns the runtime on or off; templates read it as `DARK_MODE`.

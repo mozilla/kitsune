@@ -124,12 +124,12 @@
     var(--product-callout-base, var(--brand-callout-base));
   color: var(--brand-callout-text);
 
-  // A masked pseudo-element draws the ring, so the surface needs no border and has no seam when the ring is `none`.
+  // A masked pseudo-element draws the ring just outside the surface: no border or seam, and the rim stays inside the ring.
   &::before {
     position: absolute;
-    inset: 0;
+    inset: -1px;
     padding: 1px;
-    border-radius: inherit;
+    border-radius: calc(var(--radius-xl) + 1px);
     background: var(--product-callout-ring, none);
     mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
     mask-composite: exclude;

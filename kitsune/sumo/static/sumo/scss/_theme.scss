@@ -3,6 +3,7 @@
 @use 'config/themes/light';
 @use 'config/themes/dark';
 @use 'config/themes/forced-colors';
+@use 'config/product-themes';
 @use 'config/protocol-bridge';
 
 @include tokens.assert-same-keys(light.$light, dark.$dark);
@@ -47,6 +48,8 @@
     @include tokens.emit-theme(forced-colors.$forced-colors);
   }
 }
+
+@include product-themes.emit;
 
 @include protocol-bridge.emit;
 

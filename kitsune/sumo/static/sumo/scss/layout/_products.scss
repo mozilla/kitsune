@@ -34,12 +34,12 @@
   .popular-searches,
   #main-breadcrumbs,
   .breadcrumbs {
-    color: #ffffff;
+    color: var(--product-hero-text);
   }
 
   #main-breadcrumbs a,
   .breadcrumbs a {
-    color: #ffffff;
+    color: var(--product-hero-text);
 
     &:hover {
       color: rgba(255, 255, 255, 0.8);
@@ -51,11 +51,11 @@
   }
 
   .popular-searches a {
-    color: #ffffff;
+    color: var(--product-hero-text);
     text-decoration-color: rgba(255, 255, 255, 0.6);
 
     &:hover {
-      text-decoration-color: #ffffff;
+      text-decoration-color: var(--product-hero-text);
     }
 
     &:active {
@@ -84,10 +84,6 @@ body[data-product-slug="firefox-enterprise"] {
       display: block;
     }
   }
-}
-
-.sumo-banner.enterprise-banner {
-  background: linear-gradient(135deg, var(--color-moz-inverse-bg) 0%, #3a0f6e 30%, #7543e3 60%, #b833e1 90%, #fc4055 100%);
 }
 
 .sumo-page-subheader {

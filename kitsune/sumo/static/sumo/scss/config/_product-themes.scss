@@ -1,0 +1,57 @@
+@use 'sass:list';
+@use 'sass:map';
+@use 'sass:meta';
+
+// Product themes keyed by slug; the keys are documented under Theming in docs/frontend.md.
+$product-themes: (
+  'firefox-enterprise': (
+    'has-art': true,
+    'callout-ring': linear-gradient(
+      120deg,
+      rgba(117, 67, 227, 0.95),
+      rgba(184, 51, 225, 0.95) 55%,
+      rgba(252, 64, 85, 0.95)
+    ),
+    'callout-base': linear-gradient(120deg, #1C1035 0%, #241447 100%),
+    'callout-glows': (
+      radial-gradient(70% 140% at 100% 0%, rgba(117, 67, 227, 0.55), transparent 60%),
+      radial-gradient(45% 120% at 88% 125%, rgba(252, 64, 85, 0.38), transparent 65%),
+      radial-gradient(40% 110% at 62% 130%, rgba(184, 51, 225, 0.36), transparent 65%)
+    ),
+    'hero-text': white,
+  ),
+);
+
+$_properties: ('callout-ring', 'callout-base', 'callout-glows', 'hero-text');
+
+@mixin emit {
+  @each $slug, $theme in $product-themes {
+    @if meta.type-of($slug) != 'string' or meta.type-of($theme) != 'map' {
+      @error 'Product theme #{meta.inspect($slug)} must map a slug to a map of keys, got #{meta.inspect($theme)}.';
+    }
+
+    @each $key, $value in $theme {
+      @if $key == 'has-art' {
+        @if meta.type-of($value) != 'bool' {
+          @error 'Product theme "#{$slug}": has-art must be true or false, got #{meta.inspect($value)}.';
+        }
+      } @else if not list.index($_properties, $key) {
+        @error 'Product theme "#{$slug}" has an unknown key #{meta.inspect($key)}; known keys: has-art, #{$_properties}.';
+      } @else if not $value or $value == '' or $value == () {
+        @error 'Product theme "#{$slug}": #{$key} has no value (#{meta.inspect($value)}).';
+      }
+    }
+
+    .product-theme--#{$slug} {
+      @each $key in $_properties {
+        @if map.has-key($theme, $key) {
+          --product-#{$key}: #{map.get($theme, $key)};
+        }
+      }
+
+      @if map.get($theme, 'has-art') {
+        --hero-aurora: none;
+      }
+    }
+  }
+}

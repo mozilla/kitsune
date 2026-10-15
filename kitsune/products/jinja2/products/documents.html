@@ -7,6 +7,7 @@
 
 {% if product %}
   {% set announcement_product = product %}
+  {% set product_theme = product.slug %}
   {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title)|forceescape)] %}
   {% if subtopic %}
     {% set ga_content_group = "product-and-topic-and-subtopic-home" %}

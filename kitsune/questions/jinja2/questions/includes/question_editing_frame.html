@@ -13,6 +13,9 @@ behaviors like editing them can be provided by overriding blocks.
 {% from "upload/attachments.html" import attachments_form %}
 {% set scripts = ('questions',) %}
 {% set is_enterprise = current_product and current_product.slug == 'firefox-enterprise' %}
+{% if current_product %}
+  {% set product_theme = current_product.slug %}
+{% endif %}
 
 {% set hide_aaq_link = True %}
 
