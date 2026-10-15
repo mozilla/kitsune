@@ -1,76 +1,17 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
-// Firefox Enterprise product landing page background
-.home-search-section.product-firefox-enterprise {
-  position: relative;
-  overflow: hidden;
+// Cream shows while the image loads.
+.home-search-section.pro-support-masthead {
+  background: #fcf5f0 url('../../sumo/img/pro-support-bubbles.webp') center / cover no-repeat;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    max-height: 793px;
-    background-image: url('../../sumo/img/ent-noodles-wide.svg');
-    background-repeat: no-repeat;
-    background-position: top left;
-    background-size: 100% 100%;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  // Ensure content stays above the background
-  >* {
-    position: relative;
-    z-index: 1;
-  }
-
-  // White text for all elements over the colored background
-  .sumo-page-heading-xl,
-  .product-title-text,
-  .popular-searches,
-  #main-breadcrumbs,
-  .breadcrumbs {
-    color: #ffffff;
-  }
-
-  #main-breadcrumbs a,
-  .breadcrumbs a {
-    color: #ffffff;
-
-    &:hover {
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    &:active {
-      background-color: transparent;
-    }
-  }
-
-  .popular-searches a {
-    color: #ffffff;
-    text-decoration-color: rgba(255, 255, 255, 0.6);
-
-    &:hover {
-      text-decoration-color: #ffffff;
-    }
-
-    &:active {
-      background-color: transparent;
-    }
-  }
-
-  // Enhance search box visibility
   .searchbox {
-    background: #ffffff;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
   }
 }
 
-body[data-product-slug="firefox-enterprise"] {
+body.product-landing {
   .support-callouts--bottom {
     display: none;
   }
@@ -86,8 +27,121 @@ body[data-product-slug="firefox-enterprise"] {
   }
 }
 
-.sumo-banner.enterprise-banner {
-  background: linear-gradient(135deg, var(--color-moz-inverse-bg) 0%, #3a0f6e 30%, #7543e3 60%, #b833e1 90%, #fc4055 100%);
+// The section that follows already adds its own top padding.
+.get-support.support-callouts--top,
+.support-callouts.pro-support-banner:not(.support-callouts--bottom) {
+  padding-top: p.$spacing-lg;
+  padding-bottom: 0;
+}
+
+.get-support--grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: p.$spacing-lg;
+  margin-top: p.$spacing-lg;
+
+  @media #{p.$mq-md} {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.get-support--item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border: 1px solid #ebdffa;
+  border-radius: 12px;
+  background-color: #fcf5f0;
+  @include c.elevation-01;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  // Only cards with a link are clickable, so only they react to hover.
+  &:has(a):hover {
+    @include c.elevation-02;
+    border-color: #6132bc;
+
+    .get-support--title a {
+      text-decoration: underline;
+    }
+  }
+
+  &:has(a:focus-visible) {
+    box-shadow: var(--focus-shadow);
+  }
+}
+
+.get-support--head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.get-support--badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  color: #210340;
+
+  &.is-contact {
+    background: linear-gradient(160deg, #210340, #3a0f6e);
+    color: #ffffff;
+  }
+
+  &.is-getting-started {
+    background: linear-gradient(135deg, #e4d7fc, #c8b2f6);
+  }
+
+  &.is-account {
+    background: linear-gradient(to bottom, #fec583, #fd845a);
+  }
+}
+
+.get-support--icon {
+  width: 22px;
+  height: 22px;
+}
+
+.get-support--title {
+  @include c.text-body-lg;
+  margin-bottom: 0;
+  font-family: var(--body-font-family);
+  font-weight: 700;
+
+  a,
+  a:visited {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  // Stretch the link over the whole card.
+  a::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+  }
+
+  a:focus {
+    outline: none;
+  }
+}
+
+.get-support--desc {
+  @include c.text-body-md;
+  margin-bottom: 0;
+}
+
+.card.is-pro-support {
+  background: linear-gradient(110deg, #ffedd5 0%, #fde5ca 25%, #f6e7e5 50%, #eee2f8 75%, #e0d2f6 100%);
+
+  .card--title,
+  .card--desc {
+    color: #000000;
+  }
 }
 
 .sumo-page-subheader {

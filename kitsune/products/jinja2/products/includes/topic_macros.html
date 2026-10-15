@@ -46,7 +46,7 @@
 
 {% macro support_callout(product=None, aaq_context=None, extra_class=None) %}
 {% set is_ticketed = (aaq_context.current_support_type == 'zendesk') if aaq_context else False %}
-{% set is_enterprise = (product.slug == "firefox-enterprise") if product else False %}
+{% set is_enterprise = (product.slug == settings.ENTERPRISE_GROUP_SLUG) if product else False %}
 {% set enterprise_logged_out_url = "https://www.firefox.com/en-US/browsers/enterprise/contact/?utm_source=sumo-announcement" %}
 {% if product and has_support_config and not settings.READ_ONLY %}
   <section class="support-callouts mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
@@ -61,22 +61,17 @@
               </g>
             </g>
           </svg>
-
-          {% if is_enterprise and is_ticketed %}
-            {{ _('Partner Support') }}
-          {% elif is_enterprise and not user.is_authenticated %}
-            {# L10n: A header, displayed for enterprise users when asking a new question or as a title of the Still Need Help banner. Attention: This is a brand name that should not be tranlsated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
-            {{ _('Firefox Professional Support') }}
+          {% if is_enterprise and not user.is_authenticated %}
+            {# L10n: A header, displayed on the Firefox Enterprise page to visitors who are not signed in, inviting them to learn about paid support. #}
+            {{ _("Need dedicated support?") }}
           {% else %}
-            {{ _('Still need help?') }}
+            {{ _("Still need help?") }}
           {% endif %}
         </h3>
         <p class="card--desc">
-          {% if is_enterprise and is_ticketed %}
-            {{ _("Get dedicated technical assistance and deployment guidance from our team, with expert support tailored to your organization's needs.") }}
-          {% elif is_enterprise and not user.is_authenticated %}
-            {# L10n: Displayed for non-uthenticated enterprise users. Attention: Firefox Professional Support is a brand name that should not be tranlsated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
-            {{ _("Dedicated technical assistance and deployment guidance are available to Firefox Professional Support customers.") }}
+          {% if is_enterprise and not user.is_authenticated %}
+            {# L10n: Displayed for non-authenticated enterprise users. Attention: Firefox Professional Support is a brand name that should not be tranlsated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
+            {{ _("Dedicated technical assistance is available to Firefox Professional Support customers.") }}
           {% elif is_ticketed %}
             {{ _("We're here for you! If you haven't found a solution after exploring our help articles, you can get in touch with our support team.") }}
           {% else %}
@@ -87,7 +82,7 @@
           href="{% if is_enterprise and not user.is_authenticated %}{{ enterprise_logged_out_url }}{% else %}{{ get_aaq_url(aaq_context or {}) }}{% endif %}"
           data-event-name="link_click"
           data-event-parameters='{
-            "link_name": "{% if is_enterprise and (is_ticketed or not user.is_authenticated) %}enterprise-banner.aaq-step-3{% else %}aaq-banner.aaq-step-3{% endif %}",
+            "link_name": "{% if is_enterprise and not user.is_authenticated %}enterprise-banner.contact-sales{% else %}aaq-banner.aaq-step-3{% endif %}",
             "link_detail": "{{ product.slug }}"
           }'>
           {% if is_enterprise and not user.is_authenticated %}
@@ -102,6 +97,131 @@
     </div>
   </section>
 {% endif %}
+{%- endmacro %}
+
+{% macro professional_support_callout(product, aaq_context=None, extra_class=None) %}
+{% if not settings.READ_ONLY %}
+  {% if product in professional_support_products %}
+    {{ professional_support_section(product=product, aaq_context=aaq_context, extra_class=extra_class) }}
+  {% elif professional_support_products %}
+    {{ professional_support_banner(professional_support_products[0], extra_class=extra_class) }}
+  {% endif %}
+{% endif %}
+{%- endmacro %}
+
+{% macro professional_support_banner(support_product, extra_class=None) %}
+{% if not settings.READ_ONLY %}
+  <section class="support-callouts pro-support-banner mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
+    <div class="card card--ribbon is-pro-support heading-is-one-line">
+      <div class="card--details">
+        <h3 class="card--title">
+          <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+              <g transform="translate(2.000000, 1.878680)" stroke="currentColor" stroke-width="2">
+                <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+                <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+              </g>
+            </g>
+          </svg>
+          {# L10n: A header, displayed to users whose organization has professional support. Attention: This is a brand name that should not be translated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
+          {{ _("Firefox Professional Support") }}
+        </h3>
+        <p class="card--desc">
+          {# L10n: Displayed to users whose organization has professional support. The button below leads to their support page. #}
+          {{ _("Visit your organization’s dedicated support page to contact our team and access your support services.") }}
+        </p>
+        <a class="sumo-button primary-button button-lg"
+          href="{{ url('products.product', support_product.slug) }}"
+          data-event-name="link_click"
+          data-event-parameters='{
+            "link_name": "pro-support-banner.support-page",
+            "link_detail": "{{ support_product.slug }}"
+          }'>
+          {# L10n: A button that leads to the user's Firefox Professional Support page. #}
+          {{ _("Access Support") }}
+        </a>
+      </div>
+    </div>
+  </section>
+{% endif %}
+{%- endmacro %}
+
+{% macro professional_support_section(product, aaq_context=None, extra_class=None) %}
+  <section class="get-support mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
+    <h2 class="sumo-page-subheading">{{ _('Get help') }}</h2>
+    <div class="get-support--grid">
+      <div class="get-support--item">
+        <div class="get-support--head">
+          <div class="get-support--badge is-contact" aria-hidden="true">
+            <svg class="get-support--icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+              <g transform="translate(2, 1.87868)">
+                <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 0,2.01675081 0,3.12132031 L0,15.1213203 C0,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+                <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+              </g>
+            </svg>
+          </div>
+          <h3 class="get-support--title">
+            <a href="{{ get_aaq_url(aaq_context or {}) }}"
+              data-event-name="link_click"
+              data-event-parameters='{
+                "link_name": "pro-support-section.contact-support",
+                "link_detail": "{{ product.slug }}"
+              }'>{{ _('Contact support') }}</a>
+          </h3>
+        </div>
+        {# L10n: Attention: Firefox Professional Support is a brand name that should not be translated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
+        <p class="get-support--desc">{{ _("Get dedicated technical assistance from our Firefox Professional Support team.") }}</p>
+      </div>
+      <div class="get-support--item">
+        <div class="get-support--head">
+          <div class="get-support--badge is-getting-started" aria-hidden="true">
+            <svg class="get-support--icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C14.8 4.2 16 7.6 16 11.5V16H8V11.5C8 7.6 9.2 4.2 12 2Z"></path>
+              <circle cx="12" cy="9.5" r="1.75"></circle>
+              <path d="M8 12.5L5 15.5V19L8 17"></path>
+              <path d="M16 12.5L19 15.5V19L16 17"></path>
+              <path d="M10 19V21.5M14 19V21.5"></path>
+            </svg>
+          </div>
+          <h3 class="get-support--title">
+            <a href="{{ url('products.documents', product_slug=product.slug, topic_slug='getting-started') }}"
+              data-event-name="link_click"
+              data-event-parameters='{
+                "link_name": "pro-support-section.getting-started",
+                "link_detail": "{{ product.slug }}"
+              }'>{{ _('Get started') }}</a>
+          </h3>
+        </div>
+        {# L10n: Attention: Firefox Professional Support is a brand name that should not be translated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
+        <p class="get-support--desc">{{ _("Learn more about what’s included in Firefox Professional Support.") }}</p>
+      </div>
+      <div class="get-support--item">
+        <div class="get-support--head">
+          <div class="get-support--badge is-account" aria-hidden="true">
+            <svg class="get-support--icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 16C18 16 20 17.5 21 21"></path>
+              <path d="M16 11C16 11 19 10 19 7C19 4 16 3 16 3"></path>
+              <path d="M2 21C2 21 3.5 15 9 15C14.5 15 16 21 16 21"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <h3 class="get-support--title">
+            {% if support_org_group %}
+            <a href="{{ url('groups.profile', support_org_group.slug) }}"
+              data-event-name="link_click"
+              data-event-parameters='{
+                "link_name": "pro-support-section.org-group",
+                "link_detail": "{{ product.slug }}"
+              }'>{{ _('Manage your account') }}</a>
+            {% else %}
+            {{ _('Manage your account') }}
+            {% endif %}
+          </h3>
+        </div>
+        <p class="get-support--desc">{{ _("View your organization’s support ticket history and manage users.") }}</p>
+      </div>
+    </div>
+  </section>
 {%- endmacro %}
 
 {% macro topic_sidebar(topics, subtopics, product=None, selected_topic=None, selected_subtopic=None) -%}

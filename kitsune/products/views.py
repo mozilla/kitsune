@@ -6,11 +6,12 @@ from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
+from kitsune.customercare.utils import resolve_org_group
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
 from kitsune.products.managers import ProductSupportConfigManager
 from kitsune.products.models import Product, Topic, TopicSlugHistory
-from kitsune.products.utils import should_show_enterprise_banner
+from kitsune.products.utils import get_professional_support_products
 from kitsune.sumo.utils import get_aaq_context, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
@@ -28,7 +29,7 @@ def product_list(request):
         template,
         {
             "products": products,
-            "display_enterprise_banner": should_show_enterprise_banner(request.user),
+            "professional_support_products": get_professional_support_products(request.user),
         },
     )
 
@@ -68,6 +69,12 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             latest_version = 0
     topics = topics_for(request.user, product=product, parent=None)
     aaq_context = get_aaq_context(request, product)
+    professional_support_products = get_professional_support_products(request.user)
+    support_org_group = (
+        resolve_org_group(request.user, product)
+        if product in professional_support_products
+        else None
+    )
 
     return render(
         request,
@@ -83,6 +90,8 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             and aaq_context.get("current_support_type")
             != ProductSupportConfigManager.SUPPORT_TYPE_HIDE,
             "aaq_context": aaq_context,
+            "professional_support_products": professional_support_products,
+            "support_org_group": support_org_group,
         },
     )
 
