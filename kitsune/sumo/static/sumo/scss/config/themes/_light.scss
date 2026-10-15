@@ -226,6 +226,29 @@
 //
 // Style guide: colors.hero
 
+// Brand callout
+//
+// The support callout ("Still need help?"), built by the `brand-callout` mixin. It looks the same
+// in both themes except for its shadow. The theme maps compose the surface from the three stop colors
+// and the glow, so text is checked against each stop. The gradients, rim, shadows, and chip ring
+// can't be shown as swatches, so they appear only in the theme maps.
+//
+// Colors:
+// --brand-callout-stop-start: #20123A - Dark: #20123A
+// --brand-callout-stop-mid: #2A1852 - Dark: #2A1852
+// --brand-callout-stop-end: #36206A - Dark: #36206A
+// --brand-callout-glow: rgba(144, 89, 255, 0.38) - Dark: rgba(144, 89, 255, 0.38)
+// --brand-callout-title: #FFFFFF - Dark: #FFFFFF
+// --brand-callout-text: rgba(255, 255, 255, 0.8) - Dark: rgba(255, 255, 255, 0.8)
+// --brand-callout-chip-bg: rgba(255, 255, 255, 0.1) - Dark: rgba(255, 255, 255, 0.1)
+// --brand-callout-action-bg: #FFFFFF - Dark: #FFFFFF
+// --brand-callout-action-text: #20133A (ink-09) - Dark: #20133A (ink-09)
+// --brand-callout-action-hover-bg: #EEEAFB - Dark: #EEEAFB
+//
+// Weight: 23
+//
+// Style guide: colors.brand-callout
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -351,6 +374,32 @@ $light: (
   ),
   'hero-link': var(--color-blue-07),
   'hero-edge': none,
+
+  // Brand callout
+  'brand-callout-stop-start': #20123A,
+  'brand-callout-stop-mid': #2A1852,
+  'brand-callout-stop-end': #36206A,
+  'brand-callout-glow': rgba(144, 89, 255, 0.38),
+  'brand-callout-base': linear-gradient(
+    120deg,
+    var(--brand-callout-stop-start) 0%,
+    var(--brand-callout-stop-mid) 60%,
+    var(--brand-callout-stop-end) 100%
+  ),
+  'brand-callout-glows': radial-gradient(120% 140% at 100% 0%, var(--brand-callout-glow), transparent 55%),
+  'brand-callout-rim': (
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06)
+  ),
+  'brand-callout-shadow': 0 18px 36px -20px rgba(32, 18, 58, 0.38),
+  'brand-callout-title': var(--color-white),
+  'brand-callout-text': rgba(255, 255, 255, 0.8),
+  'brand-callout-chip-bg': rgba(255, 255, 255, 0.1),
+  'brand-callout-chip-ring': inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+  'brand-callout-action-bg': var(--color-white),
+  'brand-callout-action-text': var(--color-ink-09),
+  'brand-callout-action-hover-bg': #EEEAFB,
+  'brand-callout-action-shadow': 0 6px 16px -6px rgba(0, 0, 0, 0.45),
 
   'elevation-rim': 0 0 #0000,
   'elevation-1': (

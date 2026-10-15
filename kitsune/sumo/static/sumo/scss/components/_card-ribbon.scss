@@ -5,6 +5,10 @@
   &--ribbon {
     text-align: center;
 
+    &.is-inverse {
+      @include c.brand-callout;
+    }
+
     .card--title {
       @include c.sumo-callout-heading;
       display: flex;

@@ -115,6 +115,81 @@
   }
 }
 
+@mixin brand-callout {
+  position: relative;
+  box-shadow: var(--brand-callout-rim), var(--brand-callout-shadow);
+  border-radius: var(--radius-xl);
+  background:
+    var(--product-callout-glows, var(--brand-callout-glows)),
+    var(--product-callout-base, var(--brand-callout-base));
+  color: var(--brand-callout-text);
+
+  // A masked pseudo-element draws the ring, so the surface needs no border and has no seam when the ring is `none`.
+  &::before {
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: var(--product-callout-ring, none);
+    mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+    mask-composite: exclude;
+    pointer-events: none;
+    content: '';
+  }
+
+  .card--title,
+  strong {
+    color: var(--brand-callout-title);
+  }
+
+  .card--desc {
+    color: var(--brand-callout-text);
+  }
+
+  svg {
+    box-sizing: content-box;
+    padding: p.$spacing-sm;
+    box-shadow: var(--brand-callout-chip-ring);
+    border-radius: var(--radius-md);
+    background: var(--brand-callout-chip-bg);
+  }
+
+  .sumo-button.primary-button {
+    box-shadow: var(--brand-callout-action-shadow);
+    background: var(--brand-callout-action-bg);
+    color: var(--brand-callout-action-text);
+
+    &:hover:not(:disabled),
+    &:active:not(:disabled) {
+      background: var(--brand-callout-action-hover-bg);
+      color: var(--brand-callout-action-text);
+    }
+
+    &:focus {
+      box-shadow: var(--focus-shadow), var(--brand-callout-action-shadow);
+    }
+  }
+
+  @media (forced-colors: active) {
+    // Product hooks can carry gradients, which forced colors would leave under system-colored text.
+    --product-callout-glows: none;
+    --product-callout-base: none;
+    --product-callout-ring: none;
+
+    // Forced colors paints a transparent border in a system color, which gives the callout and its button an edge.
+    border: 1px solid transparent;
+
+    // The icon's white stroke comes from the markup and would vanish on the system background.
+    svg g {
+      stroke: currentColor;
+    }
+
+    .sumo-button.primary-button {
+      border: 1px solid transparent;
+    }
+  }
+}
+
 @mixin ulol {
   ul {
     list-style: disc;
