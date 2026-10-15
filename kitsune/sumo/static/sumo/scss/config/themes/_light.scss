@@ -1,6 +1,122 @@
 @use '../mixins' as c;
 @use '@mozilla-protocol/core/protocol/css/includes/lib' as p;
 
+// Surfaces
+//
+// Backgrounds for the page and the things on it. `--color-inverse-bg` is the dark ink
+// surface of inverse cards and banners; in the dark theme `--surface-inverse-image`
+// adds a gradient on top of it (`none` in light).
+//
+// Colors:
+// --page-bg: #FFFFFF - Dark: #1C1E23 (graphite-03)
+// --card-bg: #FFFFFF - Dark: #282B32 (graphite-05)
+// --color-surface: #FFFFFF - Dark: #282B32 (graphite-05)
+// --color-surface-raised: #FFFFFF - Dark: #32353D (graphite-07)
+// --color-shade-bg: #F9F9FB - Dark: #22252A (graphite-04)
+// --color-callout-bg: #EDEDF0 - Dark: #22252A (graphite-04)
+// --color-field-bg: #FFFFFF - Dark: #16181D (graphite-02)
+// --color-link-active-bg: #EDEDF0 - Dark: #32353D (graphite-07)
+// --color-inverse-bg: #20133A - Dark: #322F5A
+// --color-moz-inverse-bg: #20123A - Dark: #20123A
+//
+// Weight: -6
+//
+// Style guide: colors.surfaces
+
+// Text
+//
+// Text colors, including text on inverse surfaces (`--color-inverse`) and on accent
+// fills (`--color-text-on-accent`). The `--color-moz-*` tokens are Mozilla brand text.
+//
+// Colors:
+// --color-text: #42435A - Dark: #E0E0E6 (light-gray-04)
+// --color-text-light: #5E5E72 - Dark: #B7BBC1 (graphite-11)
+// --color-secondary: #7A7A8B - Dark: #B7BBC1 (graphite-11)
+// --color-heading: #20133A - Dark: #F9F9FB (light-gray-02)
+// --color-inverse: #FFFFFF - Dark: #F9F9FB (light-gray-02)
+// --color-text-on-accent: #FFFFFF - Dark: #FFFFFF
+// --color-moz-heading: #000000 - Dark: #F9F9FB (light-gray-02)
+// --color-moz-text: #000000 - Dark: #F9F9FB (light-gray-02)
+//
+// Weight: -5
+//
+// Style guide: colors.text
+
+// Links
+//
+// Link colors for the default, hover, and visited states, and the inverse variants
+// for links on inverse surfaces. `--color-click` and `--color-link` have the same value.
+//
+// Colors:
+// --color-link: #0060DF - Dark: #8FBEFA (azure-03)
+// --color-click: #0060DF - Dark: #8FBEFA (azure-03)
+// --color-link-hover: #0250BB - Dark: #B0D4FF (azure-02)
+// --color-link-visited: #B933E1 - Dark: #BFA9DB (lavender)
+// --color-link-inverse-visited: #F6B8FF - Dark: #F6B8FF
+// --color-link-inverse-active-bg: rgba(237, 237, 240, 0.2) - Dark: rgba(237, 237, 240, 0.2)
+//
+// Weight: -4
+//
+// Style guide: colors.links
+
+// Accent
+//
+// Fills for primary actions, such as primary buttons. Text on these fills is
+// `--color-text-on-accent`.
+//
+// Colors:
+// --color-accent: #0060DF - Dark: #396ED6 (azure-04)
+// --color-accent-hover: #0250BB - Dark: #2D60C3 (azure-05)
+// --color-accent-active: #073072 - Dark: #2D60C3 (azure-05)
+//
+// Weight: -3
+//
+// Style guide: colors.accent
+
+// Borders and fields
+//
+// Dividers, control borders, and the states of form fields.
+//
+// Colors:
+// --color-border: #EDEDF0 - Dark: #3A3D43 (graphite-08)
+// --color-border-interactive: #CDCDD4 - Dark: #83868D (graphite-10)
+// --field-border-color-default: #9595A2 - Dark: #83868D (graphite-10)
+// --field-border-color-hover: #0250BB - Dark: #8FBEFA (azure-03)
+// --field-border-color-disabled: #CDCDD4 - Dark: #3A3D43 (graphite-08)
+// --field-background-color-disabled: #F9F9FA - Dark: #22252A (graphite-04)
+// --field-color-disabled: #CDCDD4 - Dark: #CDCDD4
+// --checkbox-checked-color: #0060DF - Dark: #0060DF
+//
+// Weight: -2
+//
+// Style guide: colors.borders
+
+// Status
+//
+// Feedback colors. The `--status-*-bg` and `--status-*-text` tokens are used in pairs.
+// In the light theme the `-bg` tokens are translucent over the page and the `-text`
+// tokens are opaque.
+//
+// Colors:
+// --color-success: #3FE1B0 - Dark: #3FE1B0
+// --color-warning: #FFEA80 - Dark: #3B342B
+// --color-error: #FF6A75 - Dark: #FF6A75
+// --color-error-hover: #E12850 - Dark: #E12850
+// --status-info-bg: rgba(0, 96, 223, 0.08) - Dark: #2A313D
+// --status-info-text: #0060DF - Dark: #8FBEFA (azure-03)
+// --status-success-bg: rgba(63, 225, 176, 0.08) - Dark: #193729 (sage-02)
+// --status-success-text: #3FE1B0 - Dark: #83D5AD (sage-01)
+// --status-pending-bg: rgba(255, 213, 103, 0.2) - Dark: #3B342B
+// --status-pending-text: #CC3D00 - Dark: #F6BC5D
+// --status-neutral-bg: rgba(149, 149, 162, 0.12) - Dark: #2E3035
+// --status-neutral-text: #5E5E72 - Dark: #B7BBC1 (graphite-11)
+// --status-error-bg: rgba(255, 79, 95, 0.08) - Dark: #3C2C32
+// --status-error-text: #C50043 - Dark: #FF9AA2 (red-03)
+//
+// Weight: -1
+//
+// Style guide: colors.status
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),

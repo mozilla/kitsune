@@ -1,0 +1,67 @@
+{
+    "pairs": [
+        { "fg": "--color-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--color-shade-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--color-callout-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--color-surface-raised", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-heading", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-heading", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-light", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-light", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-secondary", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-secondary", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link-visited", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link-visited", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link-hover", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link-hover", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--color-accent", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--color-accent-hover", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-inverse", "bg": "--color-inverse-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-heading", "bg": "--color-warning", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--color-warning", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--color-warning", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--field-border-color-default", "bg": "--color-field-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--field-border-color-hover", "bg": "--color-field-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-border-interactive", "bg": "--color-surface", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--status-info-text", "bg": "--status-info-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--status-success-text", "bg": "--status-success-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--status-pending-text", "bg": "--status-pending-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--status-neutral-text", "bg": "--status-neutral-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--status-error-text", "bg": "--status-error-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] }
+    ],
+    "exceptions": [
+        {
+            "fg": "--color-secondary",
+            "bg": "--page-bg",
+            "theme": "light",
+            "reason": "Light design: marketing-gray-06 secondary text on white is 4.21:1"
+        },
+        {
+            "fg": "--color-secondary",
+            "bg": "--card-bg",
+            "theme": "light",
+            "reason": "Light design: marketing-gray-06 secondary text on white cards is 4.21:1"
+        },
+        {
+            "fg": "--field-border-color-default",
+            "bg": "--color-field-bg",
+            "theme": "light",
+            "reason": "Light design: the marketing-gray-05 input border on white is 2.96:1"
+        },
+        {
+            "fg": "--color-border-interactive",
+            "bg": "--color-surface",
+            "theme": "light",
+            "reason": "Light design: the marketing-gray-03 control border on white is 1.58:1"
+        },
+        {
+            "fg": "--status-success-text",
+            "bg": "--status-success-bg",
+            "theme": "light",
+            "reason": "Light design: the Solved label's green-06 text on an 8% green tint is 1.60:1"
+        }
+    ]
+}

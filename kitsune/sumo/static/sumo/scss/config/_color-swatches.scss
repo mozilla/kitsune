@@ -1,31 +1,28 @@
 // Colors
 //
-// The theme maps in `config/themes/`, emitted by `_theme.scss`, contain
-// semantic naming of variables that map to 'paint swatch' naming.
-// Components should all use the semantically-named variables to better indicate the
-// designer's intent and promote site-wide consistency. For example, `--text-color`
-// shows intent, where `--ink-01` doesn't carry any semantic meaning.
+// Colors come in layers: a palette, semantic tokens built from it, and components
+// that read the tokens.
 //
-// Colors are stored in a nested SCSS map and then converted to root-level CSS
-// variables with a SCSS mixin. The first option in the swatches below shows the
-// CSS variable. Use these whenever possible to allow for access to the theme
-// overrides. Sometimes using SCSS variables directly is required, such as when
-// adding colors to css-inline SVGs, or mixing RGBA values. In those cases, use
-// the color() function, which will print the hex value in the compiled CSS.
+// **Palette.** The ramps below (`--color-blue-06`, `--color-graphite-03`) live in the
+// nested SCSS map `$colors` and are emitted on `:root` as CSS variables by the
+// `cssvars` mixin. They are the same in every theme. In Sass, `color('blue', '06')`
+// returns a palette value at compile time, which the theme maps need for alpha mixes.
 //
-// Colors:
-// --color-text: #42435A - var(--color-marketing-gray-08)
-// --color-heading: #20123A - var(--color-ink-08)
-// --color-text: #42435A - var(--color-marketing-gray-08)
-// --color-link: #0060DF - var(--color-blue-06)
-// --color-link-visited: #B933E1 - var(--color-purple-06)
-// --color-link-active-bg: #EDEDF0 - var(--color-marketing-gray-02)
-// --color-link-inverse-visited: #F6B8FF - var(--color-purple-02)
-// --color-link-inverse-active-bg: rgba(c.color('marketing-gray', '02'), 0.2) - N/A
-// --color-click: #0060DF - var(--color-blue-06)
-// --color-success: #3FE1B0 - var(--color-green-06)
-// --color-warning: #FFEA80 - var(--color-yellow-03)
-// --color-error: #FF6A75 -  var(--color-red-05)
+// **Semantic tokens.** `--color-text` or `--page-bg` shows intent, where
+// `--color-ink-09` doesn't. Each token has a light and a dark value, defined in the
+// two maps in `config/themes/` and emitted by `_theme.scss`: the light map on `:root`,
+// the dark map on `[data-theme="dark"]`. The build fails if the maps don't have the
+// same keys.
+//
+// Components read semantic tokens only. Outside `config/`, stylelint rejects hex and
+// named colors, `rgb()` and `hsl()`, raw palette variables such as
+// `var(--color-blue-06)`, and `color()`, except in the files exempted in
+// `.stylelintrc`. See the Theming section of `docs/frontend.md`.
+//
+// The first sections below list the semantic color tokens. A swatch shows the token's
+// light value and its description gives the dark value. The palette ramps follow.
+// Shadows, filters, the focus ring, the inverse-surface gradient, and the `protocol-*`
+// tokens can't be shown as swatches, so they appear only in the theme maps.
 //
 // Weight: 2
 //

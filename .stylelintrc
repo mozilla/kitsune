@@ -89,6 +89,104 @@
       "overflow",
       "clip",
       "content"
+    ],
+    "color-no-hex": [true, { "severity": "error" }],
+    "color-named": ["never", { "severity": "error" }],
+    "function-disallowed-list": [
+      ["/^(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|light-dark)$/i"],
+      { "severity": "error" }
+    ],
+    "declaration-property-value-disallowed-list": [
+      {
+        "/.*/": [
+          "/var\\(\\s*--color-(?:[a-z-]+-\\d+|white|black|lavender)(?![\\w-])/i",
+          "/\\w\\.color\\(/i",
+          "/\\$color-/i",
+          "/\\$colors(?![\\w-])/i",
+          "/\\$(?:link-color|background-color|body-text-color|title-text-color|field-border(?!-radius)|select-bg|box-shadow-|button-border-color-focus)/i",
+          "/var\\(\\s*[^,)]*,\\s*(?!\\s|var\\(|(?:transparent|currentcolor|none|inherit|initial|unset|revert|auto|normal|-?[\\d.]+(?:%|[a-z]+)?)\\s*\\))/i"
+        ]
+      },
+      { "severity": "error" }
+    ],
+    "selector-disallowed-list": [
+      ["/\\[\\s*data-theme/i"],
+      { "severity": "error" }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["svelte/**/*.svelte"],
+      "customSyntax": "postcss-html"
+    },
+    {
+      "files": ["kitsune/sumo/static/sumo/scss/config/**/*.scss"],
+      "rules": {
+        "color-no-hex": null,
+        "color-named": null,
+        "function-disallowed-list": null,
+        "declaration-property-value-disallowed-list": null,
+        "selector-disallowed-list": null
+      }
+    },
+    {
+      "files": ["kitsune/sumo/static/sumo/scss/_theme.scss"],
+      "rules": {
+        "selector-disallowed-list": null
+      }
+    },
+    {
+      "files": [
+        "kitsune/sumo/static/sumo/scss/_device-migration-wizard.scss",
+        "kitsune/sumo/static/sumo/scss/base/_table.scss",
+        "kitsune/sumo/static/sumo/scss/base/_typography.scss",
+        "kitsune/sumo/static/sumo/scss/base/_utilities.scss",
+        "kitsune/sumo/static/sumo/scss/base/forms/_buttons.scss",
+        "kitsune/sumo/static/sumo/scss/base/forms/_fields.scss",
+        "kitsune/sumo/static/sumo/scss/base/forms/_radios-checkboxes.scss",
+        "kitsune/sumo/static/sumo/scss/base/forms/_range.scss",
+        "kitsune/sumo/static/sumo/scss/base/forms/_toggles.scss",
+        "kitsune/sumo/static/sumo/scss/components/_breadcrumbs.scss",
+        "kitsune/sumo/static/sumo/scss/components/_card-topic.scss",
+        "kitsune/sumo/static/sumo/scss/components/_dashboards.scss",
+        "kitsune/sumo/static/sumo/scss/components/_editor-tools.scss",
+        "kitsune/sumo/static/sumo/scss/components/_flaggit.scss",
+        "kitsune/sumo/static/sumo/scss/components/_groups.scss",
+        "kitsune/sumo/static/sumo/scss/components/_kbox--todo-remove.scss",
+        "kitsune/sumo/static/sumo/scss/components/_messages.scss",
+        "kitsune/sumo/static/sumo/scss/components/_notifications.scss",
+        "kitsune/sumo/static/sumo/scss/components/_product-picker-dropdown.scss",
+        "kitsune/sumo/static/sumo/scss/components/_progress-bar.scss",
+        "kitsune/sumo/static/sumo/scss/components/_sidebar-nav.scss",
+        "kitsune/sumo/static/sumo/scss/components/_tabs.scss",
+        "kitsune/sumo/static/sumo/scss/components/_users.autocomplete.scss",
+        "kitsune/sumo/static/sumo/scss/components/_wiki-article.scss",
+        "kitsune/sumo/static/sumo/scss/components/_wiki-editor.scss",
+        "kitsune/sumo/static/sumo/scss/form-step.styles.scss",
+        "kitsune/sumo/static/sumo/scss/form-wizard-configure-step.styles.scss",
+        "kitsune/sumo/static/sumo/scss/form-wizard-setup-device-step.styles.scss",
+        "kitsune/sumo/static/sumo/scss/form-wizard.styles.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_aaq.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_community.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_contributors.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_document.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_forum.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_kb-reading.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_nav.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_products.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_profile.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_question-entry.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_questions-contributed.scss",
+        "kitsune/sumo/static/sumo/scss/layout/_thread-detail.scss",
+        "kitsune/sumo/static/sumo/scss/reminder-dialog.styles.scss",
+        "svelte/contribute/Contribute.svelte"
+      ],
+      "rules": {
+        "color-no-hex": null,
+        "color-named": null,
+        "function-disallowed-list": null,
+        "declaration-property-value-disallowed-list": null
+      }
+    }
+  ]
 }
