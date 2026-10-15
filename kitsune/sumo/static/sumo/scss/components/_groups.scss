@@ -1164,3 +1164,20 @@ body:has(#group-tickets) {
   }
 
 }
+
+#enterprise-company-form {
+  .form-error {
+    display: block;
+    margin-top: p.$spacing-sm;
+    color: var(--color-red-08);
+    @include c.text-body-md;
+  }
+
+  form > .form-error {
+    margin: 0 0 p.$spacing-lg;
+    padding: p.$spacing-md;
+    border-left: 4px solid var(--color-red-08);
+    border-radius: p.$border-radius-sm;
+    background: var(--color-red-01);
+  }
+}
