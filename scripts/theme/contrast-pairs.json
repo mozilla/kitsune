@@ -30,7 +30,23 @@
         { "fg": "--status-success-text", "bg": "--status-success-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--status-pending-text", "bg": "--status-pending-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--status-neutral-text", "bg": "--status-neutral-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
-        { "fg": "--status-error-text", "bg": "--status-error-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] }
+        { "fg": "--status-error-text", "bg": "--status-error-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--callout-warning-heading", "bg": "--callout-warning-bg-start", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--callout-warning-heading", "bg": "--callout-warning-bg-mid", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--callout-warning-heading", "bg": "--callout-warning-bg-end", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--callout-warning-text", "bg": "--callout-warning-bg-start", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--callout-warning-text", "bg": "--callout-warning-bg-mid", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--callout-warning-text", "bg": "--callout-warning-bg-end", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--callout-warning-bg-start", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--callout-warning-bg-mid", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--callout-warning-bg-end", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--callout-warning-icon", "bg": "--callout-warning-icon-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--callout-warning-action-text", "bg": "--callout-warning-action-bg", "min": 4.5, "themes": ["light"] },
+        { "fg": "--callout-warning-action-text", "bg": "--callout-warning-bg-start", "min": 4.5, "themes": ["dark"] },
+        { "fg": "--callout-warning-action-text", "bg": "--callout-warning-bg-mid", "min": 4.5, "themes": ["dark"] },
+        { "fg": "--callout-warning-action-text", "bg": "--callout-warning-bg-end", "min": 4.5, "themes": ["dark"] },
+        { "fg": "--callout-warning-action-text", "bg": "--callout-warning-action-hover-bg", "backdrop": "--callout-warning-bg-start", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--callout-warning-action-border", "bg": "--callout-warning-bg-start", "min": 3, "themes": ["light"] }
     ],
     "exceptions": [
         {

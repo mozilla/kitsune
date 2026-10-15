@@ -1,0 +1,8 @@
+$forced-colors: (
+  // `none, none` is invalid in a box-shadow list, which computes to no shadow.
+  'callout-warning-ring': none,
+  'callout-warning-shadow': none,
+  'callout-warning-icon-bg': none,
+  // An svg keeps an authored color in forced colors, so the icon follows the text color.
+  'callout-warning-icon': currentColor,
+);

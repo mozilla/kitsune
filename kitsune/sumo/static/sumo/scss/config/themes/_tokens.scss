@@ -56,3 +56,23 @@
     @error 'Theme maps must have the same keys:#{$message}';
   }
 }
+
+@mixin assert-known-keys($overrides, $theme) {
+  @each $name, $map in ('$overrides': $overrides, '$theme': $theme) {
+    @if meta.type-of($map) != 'map' and $map != () {
+      @error '#{$name} must be a map, got #{meta.inspect($map)}.';
+    }
+  }
+
+  $unknown: ();
+
+  @each $key in map.keys($overrides) {
+    @if not map.has-key($theme, $key) {
+      $unknown: list.append($unknown, $key, $separator: comma);
+    }
+  }
+
+  @if list.length($unknown) > 0 {
+    @error 'Forced-colors overrides name tokens that are not in the theme maps (config/themes/_light.scss): #{$unknown}.';
+  }
+}

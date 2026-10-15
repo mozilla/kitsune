@@ -305,6 +305,16 @@ so the layer uses `!important`.
 This is the one place theming code uses it,
 and it only applies in forced-colors mode.
 
+Decorative tokens follow a second path.
+`config/themes/_forced-colors.scss` is a map of tokens that change under `forced-colors: active`.
+Decorative layers, such as the ring and shadow of a callout, become `none`.
+An icon's color becomes `currentColor`,
+because an `svg` keeps an authored `color` instead of taking the forced one.
+`_theme.scss` emits the map inside `@media (forced-colors: active)` on `:root` and `[data-theme="dark"]`,
+after both themes,
+so system colors are never painted over decoration.
+A key that isn't a theme token fails the build.
+
 #### Print
 
 Printing always uses the light theme.
@@ -313,6 +323,37 @@ along with `color-scheme: light`,
 so a page printed from the dark theme comes out as light.
 Because the whole map is re-emitted,
 new tokens are covered without extra work.
+
+#### Callouts
+
+The forum scam banner and KB warnings share one component:
+the `callout($variant)` mixin in `config/_mixins.scss`.
+It draws a tinted card with a start edge,
+an icon chip on an `svg` inside it,
+and an outlined `.sumo-button.primary-button`,
+all from `--callout-<variant>-*` tokens.
+`components/_callout-warning.scss` includes `callout(warning)` for `.sumo-banner-warning` and `#doc-content .warning`.
+Forum posts keep their own `.warning` look.
+
+A new variant defines the same token set in both theme maps,
+then includes `callout(<variant>)` on its selector:
+
+* `-bg-start`, `-bg-mid`, and `-bg-end` are the solid gradient stops,
+and `-bg-mid-at` is where the middle stop sits.
+The mixin composes the gradient from them instead of a token holding it,
+because a token's `var()` references resolve on `:root`,
+where the angle that flips in RTL can't reach them.
+Text sits on the stops,
+so the contrast check pairs it with each stop instead of with the gradient.
+* `-edge` and `-edge-width` draw the start edge.
+It is a logical border, so it mirrors in RTL and survives forced colors.
+* `-ring` and `-shadow` are the box-shadow layers.
+* `-icon-bg` and `-icon` color the chip and the icon.
+The icon takes its color through `currentColor`.
+* `-heading` and `-text` color the heading and the body.
+* `-action-bg`, `-action-border`, `-action-text`, and `-action-hover-bg` style the action.
+* Add `-ring`, `-shadow`, `-icon-bg`, and `-icon` to `config/themes/_forced-colors.scss`.
+The mixin removes the gradient itself under forced colors.
 
 #### Runtime and the flag
 

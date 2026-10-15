@@ -63,6 +63,58 @@
   border-radius: var(--global-radius);
 }
 
+@mixin callout($variant) {
+  @if meta.type-of($variant) != 'string' {
+    @error 'callout expects a variant name such as `warning`, got #{meta.inspect($variant)}.';
+  }
+
+  // Composed here, not in a token, because a token's var() resolves on :root where the RTL angle can't reach it.
+  --callout-angle: 90deg;
+
+  border-inline-start: var(--callout-#{$variant}-edge-width) solid var(--callout-#{$variant}-edge);
+  box-shadow: var(--callout-#{$variant}-ring), var(--callout-#{$variant}-shadow);
+  background: linear-gradient(
+    var(--callout-angle),
+    var(--callout-#{$variant}-bg-start) 0%,
+    var(--callout-#{$variant}-bg-mid) var(--callout-#{$variant}-bg-mid-at),
+    var(--callout-#{$variant}-bg-end) 100%
+  );
+  color: var(--callout-#{$variant}-text);
+
+  [dir='rtl'] & {
+    --callout-angle: 270deg;
+  }
+
+  @media (forced-colors: active) {
+    background: none;
+  }
+
+  strong,
+  h2 {
+    color: var(--callout-#{$variant}-heading);
+  }
+
+  svg {
+    box-sizing: content-box;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--callout-#{$variant}-icon-bg);
+    color: var(--callout-#{$variant}-icon);
+  }
+
+  .sumo-button.primary-button {
+    border: 2px solid var(--callout-#{$variant}-action-border);
+    background: var(--callout-#{$variant}-action-bg);
+    color: var(--callout-#{$variant}-action-text);
+
+    &:hover:not(:disabled),
+    &:active:not(:disabled) {
+      background: var(--callout-#{$variant}-action-hover-bg);
+      color: var(--callout-#{$variant}-action-text);
+    }
+  }
+}
+
 @mixin ulol {
   ul {
     list-style: disc;

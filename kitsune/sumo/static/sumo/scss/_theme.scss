@@ -2,9 +2,11 @@
 @use 'config/themes/tokens';
 @use 'config/themes/light';
 @use 'config/themes/dark';
+@use 'config/themes/forced-colors';
 @use 'config/protocol-bridge';
 
 @include tokens.assert-same-keys(light.$light, dark.$dark);
+@include tokens.assert-known-keys(forced-colors.$forced-colors, light.$light);
 
 :root {
   @include c.cssvars(c.$colors);
@@ -35,6 +37,14 @@
   [data-theme="dark"] {
     @include tokens.emit-theme(light.$light);
     color-scheme: light;
+  }
+}
+
+// After both themes, so these win at equal specificity.
+@media (forced-colors: active) {
+  :root,
+  [data-theme="dark"] {
+    @include tokens.emit-theme(forced-colors.$forced-colors);
   }
 }
 

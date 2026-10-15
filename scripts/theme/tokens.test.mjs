@@ -88,6 +88,43 @@ describe("assert-same-keys", () => {
     });
 });
 
+describe("assert-known-keys", () => {
+    test("compiles without output when every override is a theme token", () => {
+        const css = compile(`
+            @include tokens.assert-known-keys(
+                ('page-bg': none),
+                ('page-bg': white, 'color-text': black)
+            );
+        `);
+        assert.equal(css, "");
+    });
+
+    test("compiles without output when there are no overrides", () => {
+        assert.equal(compile(`@include tokens.assert-known-keys((), ('page-bg': white));`), "");
+    });
+
+    test("names every override that is not a theme token", () => {
+        assertSassError(
+            `@include tokens.assert-known-keys(
+                ('page-bg': none, 'typo-one': none, 'typo-two': none),
+                ('page-bg': white)
+            );`,
+            /not in the theme maps.*typo-one, typo-two/,
+        );
+    });
+
+    test("rejects overrides that are not a map", () => {
+        assertSassError(
+            `@include tokens.assert-known-keys('page-bg', ('page-bg': white));`,
+            /\$overrides must be a map/,
+        );
+    });
+
+    test("rejects a theme that is not a map", () => {
+        assertSassError(`@include tokens.assert-known-keys(('page-bg': none), null);`, /\$theme must be a map/);
+    });
+});
+
 describe("emit-theme", () => {
     test("emits one custom property per map entry", () => {
         const css = compile(`
@@ -149,6 +186,35 @@ describe("theme entry point", () => {
         const darkNames = customPropertyNames(dark);
         assert.ok(darkNames.length > 0, "the dark theme defines no tokens");
         assert.deepEqual(darkNames, customPropertyNames(print));
+    });
+
+    test("forced-colors overrides follow both themes and only name tokens the theme defines", () => {
+        const css = sass.compile(path.join(scssDir, "_theme.scss"), { loadPaths, style: "expanded" }).css;
+        const root = postcss.parse(css);
+        const themeRoot = root.nodes.find(
+            (node) => node.type === "rule" && node.selector === ":root" && customPropertyNames(node).includes("--page-bg"),
+        );
+        const dark = root.nodes.find(
+            (node) => node.type === "rule" && node.selector.replace(/["']/g, "") === "[data-theme=dark]",
+        );
+        const forced = root.nodes.find((node) => node.type === "atrule" && node.params === "(forced-colors: active)");
+        assert.ok(forced, "no @media (forced-colors: active) block");
+        assert.ok(root.index(forced) > root.index(dark), "forced-colors overrides must come after the dark theme");
+
+        const overrides = forced.nodes.find(
+            (node) => node.type === "rule" && node.selectors.map((selector) => selector.replace(/["']/g, "")).join() === ":root,[data-theme=dark]",
+        );
+        assert.ok(overrides, "no :root, [data-theme=dark] rule inside the forced-colors block");
+
+        const themeTokens = customPropertyNames(themeRoot);
+        const names = customPropertyNames(overrides);
+        assert.ok(names.length > 0, "the forced-colors block overrides no tokens");
+        for (const name of names) {
+            assert.ok(themeTokens.includes(name), `${name} is overridden under forced colors but the theme does not define it`);
+        }
+        for (const decl of overrides.nodes) {
+            assert.match(decl.value, /^(?:none|currentColor)$/, `${decl.prop} should be none or currentColor under forced colors`);
+        }
     });
 
     test("the Protocol bridge follows the theme :root and points each Protocol property at a token the theme defines", () => {

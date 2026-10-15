@@ -56,6 +56,24 @@ $dark: (
   'status-error-bg': #3C2C32,
   'status-error-text': var(--color-red-03),
 
+  // Callout (warning)
+  'callout-warning-bg-start': #48433B,
+  'callout-warning-bg-mid': #36352F,
+  'callout-warning-bg-end': #303134,
+  'callout-warning-bg-mid-at': 45%,
+  'callout-warning-edge': #F6BC5D,
+  'callout-warning-edge-width': 3px,
+  'callout-warning-ring': inset 0 0 0 1px rgba(246, 188, 93, 0.16),
+  'callout-warning-shadow': var(--elevation-1),
+  'callout-warning-icon-bg': #615440,
+  'callout-warning-icon': #F6BC5D,
+  'callout-warning-heading': var(--color-light-gray-02),
+  'callout-warning-text': var(--color-light-gray-04),
+  'callout-warning-action-bg': transparent,
+  'callout-warning-action-border': rgba(246, 188, 93, 0.55),
+  'callout-warning-action-text': #FFD58A,
+  'callout-warning-action-hover-bg': rgba(246, 188, 93, 0.1),
+
   'elevation-rim': (
     inset 0 1px 0 rgba(255, 255, 255, 0.07),
     inset 0 0 0 1px rgba(255, 255, 255, 0.035)

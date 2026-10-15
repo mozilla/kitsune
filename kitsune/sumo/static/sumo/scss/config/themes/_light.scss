@@ -117,6 +117,32 @@
 //
 // Style guide: colors.status
 
+// Warning callout
+//
+// The tinted card used by the scam banner and by KB warnings. The `callout` mixin composes
+// its background gradient from the three `--callout-warning-bg-*` stops, with
+// `--callout-warning-bg-mid-at` placing the middle one, so text is checked against each
+// stop. The ring and shadow can't be shown as swatches, so they appear only in the
+// theme maps.
+//
+// Colors:
+// --callout-warning-bg-start: #FFF6E2 - Dark: #48433B
+// --callout-warning-bg-mid: #FFFBF2 - Dark: #36352F
+// --callout-warning-bg-end: #FFFDF9 - Dark: #303134
+// --callout-warning-edge: #EFA831 - Dark: #F6BC5D
+// --callout-warning-icon-bg: #FFEBC2 - Dark: #615440
+// --callout-warning-icon: #AF6700 - Dark: #F6BC5D
+// --callout-warning-heading: #20133A - Dark: #F9F9FB (light-gray-02)
+// --callout-warning-text: #42435A - Dark: #E0E0E6 (light-gray-04)
+// --callout-warning-action-bg: #FFFFFF - Dark: transparent
+// --callout-warning-action-border: #B07A20 - Dark: rgba(246, 188, 93, 0.55)
+// --callout-warning-action-text: #6B4300 - Dark: #FFD58A
+// --callout-warning-action-hover-bg: #FFF6E3 - Dark: rgba(246, 188, 93, 0.1)
+//
+// Weight: 17
+//
+// Style guide: colors.callout-warning
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -171,6 +197,27 @@ $light: (
   'status-neutral-text': var(--color-text-light),
   'status-error-bg': rgba(c.color('red', '06'), 0.08),
   'status-error-text': c.color('red', '08'),
+
+  // Callout (warning)
+  'callout-warning-bg-start': #FFF6E2,
+  'callout-warning-bg-mid': #FFFBF2,
+  'callout-warning-bg-end': #FFFDF9,
+  'callout-warning-bg-mid-at': 55%,
+  'callout-warning-edge': #EFA831,
+  'callout-warning-edge-width': 4px,
+  'callout-warning-ring': inset 0 0 0 1px rgba(239, 168, 49, 0.22),
+  'callout-warning-shadow': (
+    0 1px 2px rgba(14, 13, 26, 0.05),
+    0 10px 24px -12px rgba(175, 103, 0, 0.16)
+  ),
+  'callout-warning-icon-bg': #FFEBC2,
+  'callout-warning-icon': #AF6700,
+  'callout-warning-heading': var(--color-ink-09),
+  'callout-warning-text': var(--color-marketing-gray-08),
+  'callout-warning-action-bg': var(--color-white),
+  'callout-warning-action-border': #B07A20,
+  'callout-warning-action-text': #6B4300,
+  'callout-warning-action-hover-bg': #FFF6E3,
 
   'elevation-rim': 0 0 #0000,
   'elevation-1': (

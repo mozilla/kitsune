@@ -2,17 +2,14 @@
 @use 'protocol/css/includes/lib' as p;
 
 .sumo-banner-warning {
-  background: var(--color-warning);
-  color: var(--color-heading);
+  @include c.callout(warning);
+  border-radius: var(--radius-lg);
 }
 
 .document--content,
 .forum--entry-content,
 #doc-content {
   .warning {
-    padding: p.$spacing-lg;
-    border-radius: var(--global-radius);
-    background: var(--color-shade-bg);
     margin-bottom: p.$spacing-xl;
 
     h2 {
@@ -20,8 +17,16 @@
       margin-top: 0;
     }
   }
+}
 
-  .warning {
-    background: var(--color-warning)
-  }
+.forum--entry-content .warning {
+  padding: p.$spacing-lg;
+  border-radius: var(--global-radius);
+  background: var(--color-warning);
+}
+
+#doc-content .warning {
+  @include c.callout(warning);
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
 }
