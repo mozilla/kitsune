@@ -21,8 +21,9 @@ preserve the original unfiltered manager and avoid wrapping monitoring again.
 
 Enterprise preparation can create an inactive SUMO account before its first
 Mozilla sign-in, or reuse an eligible account without changing its existing
-identity. It is service-only and does not deliver invitations, activate accounts,
-or grant company membership.
+identity. Intake is service-only and does not deliver invitations, activate
+accounts, or grant company membership. Successful Zendesk provisioning grants the
+company membership required before issuing a first-login link.
 
 Ordinary Mozilla sign-in cannot claim an unclaimed, invitation-created account by
 matching its email address, and does not apply Mozilla profile updates to that
@@ -43,7 +44,25 @@ Mozilla account refreshes preserve locally saved deactivation, password, and
 first/last-name changes. An account made hidden before a pending refresh resumes
 is refused rather than updated.
 
-See [Enterprise account preparation](groups.md#enterprise-account-preparation)
-for operator permissions, required information, eligibility, configuration, and
-repeat-intake behavior, and [Enterprise company membership](groups.md#enterprise-company-membership)
-for membership boundaries.
+## Invited first login
+
+The invitation token is tied to the OAuth state of the sign-in it started, so the
+callback claims only that invitation; the token is never sent to Mozilla. The
+verified Mozilla email must match the invitation and its UID must not belong to
+another profile. The verified identity decides: a different signed-in SUMO session
+is replaced.
+
+The prepared account must still be inactive, unused, and without a Mozilla
+identity. Zendesk is bound before local activation, and acceptance commits together
+with the profile update, so a rollback can safely replay the same binding. Captured
+names and the unusable password are kept; an empty display name is set to the
+captured full name, truncated to the display-name limit, so profile sync keeps the
+provisioned Zendesk name. Later sign-ins need no invitation.
+
+Validation and provider failures return to the invitation page without accepting.
+Cancelling Mozilla sign-in returns to the invitation without an error, ready to
+retry. Profile and email-identity sync tasks are queued after commit; queueing
+failures are logged without failing the sign-in.
+
+See [preparation requirements](groups.md#enterprise-account-preparation)
+and [membership rules](groups.md#enterprise-company-membership).

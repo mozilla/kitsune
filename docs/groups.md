@@ -260,9 +260,9 @@ Intake also validates these deployment settings:
   path starting with a single slash, not a full URL, and contain neither backslashes
   nor control characters.
 
-These settings do not make preparation send expiring links or redirect invitees.
-See [Users](users.md#enterprise-account-preparation) for the sign-in restrictions
-on prepared accounts.
+Intake does not send links or activate accounts. Successful remote provisioning
+adds company membership; the separate link-issuance and first-login services
+described below make a prepared account claimable.
 
 ## Enterprise Zendesk provisioning
 
@@ -290,8 +290,11 @@ correct the cause.
 
 ### Status and manual recovery
 
-- Success returns `ready` with the organization/user IDs saved and the target
-  Zendesk membership established. This marks Zendesk preparation only.
+- Success saves the organization/user IDs, establishes the target Zendesk
+  membership, and adds membership in the company's SUMO group. Invitations for
+  accounts created by intake become `ready` for a first-login link; invitations for
+  existing accounts become `accepted`. It does not add root membership or
+  leadership, activate the account, or send a welcome.
 - Expected provider failures return `failed`, the failed operation, and a safe
   error code—not raw provider responses. Successful returned IDs are retained only
   after the final locked validation passes.
@@ -307,9 +310,32 @@ correct the cause.
 - Accepted history remains unchanged. Preflight authorization or configuration
   failures raise before remote work; changes detected afterward stop local writes.
 
-Provisioning does not activate SUMO accounts, grant local memberships, send mail,
-or accept invitations. See [Zendesk provisioning](zendesk.md#enterprise-provisioning)
-for provider permissions, identity rules, and recovery limits.
+Provisioning does not activate SUMO accounts or send mail.
+See [Zendesk provisioning](zendesk.md#enterprise-provisioning) for provider
+permissions, identity rules, and recovery limits.
+
+## Enterprise invitation links and first login
+
+Links are only for accounts created by intake. Existing accounts gain access when
+provisioning succeeds, which also completes their invitations, so they need no link.
+
+After provisioning, authorized staff call
+`kitsune.groups.invitations.issue_enterprise_invitation(actor=..., invitation=...)`
+and build the URL with `reverse("groups.invitation_link", args=[token])`.
+Treat the URL as a credential and keep it out of logs and analytics. Issuance sends
+no mail. The first issue sets `expires_at` from `ENTERPRISE_INVITATION_MAX_AGE`;
+reissuing keeps that expiry, so expired links cannot be renewed.
+
+Opening the link moves the token into the session and redirects to the
+`groups.invitation` page, which shows the company and invited email. Continuing
+starts Mozilla sign-in. Signing in with the invited email activates the prepared
+account, links its Mozilla and Zendesk identities, consumes the link, and lands on
+`ENTERPRISE_ONBOARDING_LANDING_PATH` or, when blank, the enterprise product page in
+the account's locale.
+
+Acceptance requires the saved account, current support configuration, Zendesk
+mappings, and company membership, and never recreates them. See
+[Users](users.md#invited-first-login) for sign-in rules and failure handling.
 
 ## Enterprise company membership
 

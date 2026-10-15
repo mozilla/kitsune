@@ -84,6 +84,20 @@ class CreateZendeskUserTests(TestCase):
 
         mock_client.assert_not_called()
 
+    def test_an_unclaimed_prepared_account_cannot_create_an_ordinary_remote_identity(
+        self, mock_client
+    ):
+        user = UserFactory(is_active=False, profile__fxa_uid=None)
+        invitation = EnterpriseInvitationFactory(user=user, created_user=True)
+
+        create_zendesk_user(user.pk)
+
+        mock_client.assert_not_called()
+        user.profile.refresh_from_db()
+        invitation.refresh_from_db()
+        self.assertEqual(user.profile.zendesk_id, "")
+        self.assertIsNone(invitation.accepted_at)
+
 
 @patch("kitsune.customercare.tasks.ZendeskClient")
 class UpdateZendeskUserTests(TestCase):

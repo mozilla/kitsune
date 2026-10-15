@@ -1,12 +1,11 @@
 import logging
-from functools import partial
 
 import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.db import transaction
 from django.urls import reverse as django_reverse
 from django.utils.translation import activate
@@ -14,6 +13,7 @@ from django.utils.translation import gettext as _
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from kitsune.customercare.tasks import update_zendesk_identity
+from kitsune.groups.invitations import claim_enterprise_invitation, invitation_error
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
@@ -111,8 +111,6 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             if users:
                 raise SuspiciousOperation("Multiple users returned")
             user = super().create_user(claims)
-            # Create a user profile for the user and populate it with data from
-            # Mozilla accounts
             profile, _created = Profile.objects.get_or_create(user=user)
             profile.is_fxa_migrated = True
             profile.fxa_uid = claims.get("uid")
@@ -123,7 +121,6 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             if email := claims.get("email"):
                 profile.is_mozilla_staff = is_mozilla_domain_email(email)
 
-            # Let's get the first element even if it's an empty string
             # A few assertions return a locale of None so we need to default to empty string
             fxa_locale = (claims.get("locale", "") or "").split(",")[0]
             if fxa_locale in settings.SUMO_LANGUAGES:
@@ -132,15 +129,12 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
                 profile.locale = self.request.session.get("login_locale", settings.LANGUAGE_CODE)
             activate(profile.locale)
 
-            # If there is a refresh token, store it
             if self.refresh_token:
                 profile.fxa_refresh_token = self.refresh_token
             profile.save()
-            # User subscription information
             products = Product.active.filter(codename__in=subscriptions)
             profile.products.set(products)
 
-            # This is a new sumo profile, show edit profile message
             messages.success(
                 self.request,
                 _(
@@ -160,10 +154,35 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
                 extra_tags="safe",
             )
 
-            # update contributor status
             self.update_contributor_status(profile)
 
             return user
+
+    def get_or_create_user(self, access_token, id_token, payload):
+        request = getattr(self, "request", None)
+        token = getattr(request, "enterprise_invitation_token", None)
+        if token is None:
+            return super().get_or_create_user(access_token, id_token, payload)
+
+        claims = self.get_userinfo(access_token, id_token, payload)
+        if not self.verify_claims(claims):
+            raise SuspiciousOperation("Claims verification failed")
+        try:
+            # Acceptance and the profile refresh commit together.
+            with transaction.atomic():
+                user = claim_enterprise_invitation(token, claims)
+                user = self.update_user(user, claims)
+                if user is None:
+                    raise invitation_error("account_conflict")
+                locale = (claims.get("locale") or "").split(",")[0]
+                if locale in settings.SUMO_LANGUAGES:
+                    user.profile.locale = locale
+                    user.profile.save(update_fields=["locale"])
+        except ValidationError as error:
+            request.enterprise_invitation_error = error.code
+            return None
+        activate(user.profile.locale)
+        return user
 
     def filter_users_by_claims(self, claims):
         """Match users by FxA uid or email."""
@@ -221,12 +240,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         if profile.account_type == Profile.AccountType.SYSTEM:
             raise SuspiciousOperation("System accounts cannot sign in with Mozilla accounts")
         request = getattr(self, "request", None)
-        if (
-            not profile.fxa_uid
-            and user.enterprise_invitations.filter(
-                created_user=True, accepted_at__isnull=True
-            ).exists()
-        ):
+        if profile.is_unclaimed_invitee:
             if request:
                 messages.error(
                     request,
@@ -239,7 +253,6 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         email = claims.get("email")
         user_attr_changed = False
-        # Check if the user has active subscriptions
         subscriptions = claims.get("subscriptions", [])
 
         # Staff-group accounts retain their local email when Mozilla's address changes.
@@ -255,20 +268,15 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             user.email = email
             user_attr_changed = True
 
-        # Follow avatars from FxA profiles
         profile.fxa_avatar = claims.get("avatar", "")
-        # User subscription information
         products = Product.active.filter(codename__in=subscriptions)
         profile.products.set(products)
-
-        # update contributor status
         self.update_contributor_status(profile)
 
         # Users can select their own display name.
         if not profile.name:
             profile.name = claims.get("displayName", "")
 
-        # If there is a refresh token, store it
         if self.refresh_token:
             profile.fxa_refresh_token = self.refresh_token
 
@@ -280,7 +288,12 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # The task must see the committed address, never a rolled-back change.
         if user_attr_changed:
-            transaction.on_commit(partial(update_zendesk_identity.delay, user.pk, email))
+            transaction.on_commit(
+                lambda user_id=user.pk, address=email: update_zendesk_identity.delay(
+                    user_id, address
+                ),
+                robust=True,
+            )
 
         return user
 

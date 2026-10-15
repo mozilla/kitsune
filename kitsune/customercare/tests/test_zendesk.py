@@ -1352,6 +1352,117 @@ class ZendeskProvisioningTests(SimpleTestCase):
                     )
                 self.assertEqual(error.exception.response.status_code, status)
 
+    def bind(self):
+        self.client.bind_user_identity(
+            zendesk_id="123", fxa_uid="authenticated-uid", email=self.user_args["email"]
+        )
+
+    def expect_identity_owner(self, *users):
+        self.expect("GET", "users/show_many", {"users": list(users), "next_page": None})
+
+    def test_binding_sets_identity_and_preserves_custom_fields(self):
+        remote = self.remote_user(user_fields={"user_id": "", "department": "Operations"})
+        bound = {
+            **remote,
+            "external_id": "authenticated-uid",
+            "user_fields": {"user_id": "authenticated-uid", "department": "Operations"},
+        }
+        self.expect("GET", "users/123", {"user": remote})
+        self.expect_identity_owner()
+        self.expect("PUT", "users/123", {"user": bound})
+        self.expect("GET", "users/123", {"user": bound})
+
+        self.bind()
+
+        update = next(request for request in self.requests if request.method == "PUT")
+        self.assertEqual(
+            json.loads(update.body)["user"],
+            {
+                "id": 123,
+                "external_id": "authenticated-uid",
+                "user_fields": {"user_id": "authenticated-uid", "department": "Operations"},
+            },
+        )
+        lookup = next(request for request in self.requests if "show_many" in request.url)
+        self.assertEqual(
+            parse_qs(urlsplit(lookup.url).query), {"external_ids": ["authenticated-uid"]}
+        )
+
+    def test_binding_same_identity_is_a_successful_replay_after_local_rollback(self):
+        remote = self.remote_user(
+            external_id="authenticated-uid", user_fields={"user_id": "authenticated-uid"}
+        )
+        for _ in range(2):
+            self.expect("GET", "users/123", {"user": remote})
+            self.expect_identity_owner(remote)
+            self.expect("PUT", "users/123", {"user": remote})
+            self.expect("GET", "users/123", {"user": remote})
+            self.bind()
+        self.assertFalse(any(request.method == "POST" for request in self.requests))
+
+    def test_binding_refuses_a_mismatched_remote_user_before_writing(self):
+        for fields in (
+            {"id": 999},
+            {"email": "other@example.com"},
+            {"external_id": "another-identity"},
+            {"user_fields": {"user_id": "another-identity"}},
+            {"external_id": "authenticated-uid", "user_fields": {"user_id": "another-identity"}},
+        ):
+            with self.subTest(fields=fields):
+                self.expect("GET", "users/123", {"user": self.remote_user(**fields)})
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.bind()
+                self.assertEqual(error.exception.code, "account_conflict")
+        self.assertTrue(all(request.method == "GET" for request in self.requests))
+
+    def test_binding_rejects_another_external_identity_owner_without_overwriting(self):
+        self.expect("GET", "users/123", {"user": self.remote_user()})
+        self.expect_identity_owner(self.remote_user(id=987, external_id="authenticated-uid"))
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.bind()
+        self.assertEqual(error.exception.code, "account_conflict")
+        self.assertTrue(all(request.method == "GET" for request in self.requests))
+
+    def test_binding_requires_fresh_readback_of_both_identity_fields(self):
+        bound = self.remote_user(
+            external_id="authenticated-uid", user_fields={"user_id": "authenticated-uid"}
+        )
+        for stale in (
+            self.remote_user(),
+            self.remote_user(external_id="authenticated-uid"),
+            self.remote_user(user_fields={"user_id": "authenticated-uid"}),
+        ):
+            with self.subTest(stale=stale):
+                self.expect("GET", "users/123", {"user": self.remote_user()})
+                self.expect_identity_owner()
+                self.expect("PUT", "users/123", {"user": bound})
+                self.expect("GET", "users/123", {"user": stale})
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.bind()
+                self.assertEqual(error.exception.code, "account_conflict")
+
+    def test_binding_missing_saved_remote_user_is_not_recreated(self):
+        self.expect("GET", "users/123", {"error": "RecordNotFound"}, status=404)
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.bind()
+        self.assertEqual(error.exception.code, "resource_missing")
+        self.assertTrue(all(request.method == "GET" for request in self.requests))
+
+    def test_binding_conflict_is_safe_and_transient_failure_remains_classifiable(self):
+        for status in (422, 503):
+            self.expect("GET", "users/123", {"user": self.remote_user()})
+            self.expect_identity_owner()
+            self.expect("PUT", "users/123", {"error": "Private provider details"}, status=status)
+            if status == 422:
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.bind()
+                self.assertEqual(error.exception.code, "zendesk_conflict")
+                self.assertNotIn("Private provider details", str(error.exception))
+            else:
+                with self.assertRaises(APIException) as error:
+                    self.bind()
+                self.assertEqual(error.exception.response.status_code, status)
+
 
 class ZendeskConfigurationChecksTests(SimpleTestCase):
     def test_partial_oauth_configuration_warns(self):

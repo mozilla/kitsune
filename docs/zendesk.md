@@ -94,13 +94,17 @@ active, unsuspended end users without elevated roles are eligible; existing name
 and identities are preserved. New unclaimed users use the supplied first and last
 names, have no fabricated identity, and set `verified=False` and
 `skip_verify_email=True`. Duplicate-create failures are left for a later manual
-retry, not an immediate second lookup. Ordinary background sync skips unclaimed
-invitation-created accounts without a Mozilla identity. Any later claim must
-attach that identity to the same Zendesk user.
+retry, not an immediate second lookup. Ordinary background creation and profile
+sync skip unclaimed invitation-created accounts without a Mozilla identity.
+Successful first login attaches that identity to the same Zendesk user.
 
 Profile Zendesk IDs must be canonical decimal strings, without whitespace or
-leading zeros. Imports and manual corrections must preserve this format so
-ownership checks can detect existing links, including hidden profiles.
+leading zeros. Ownership checks use exact matches, including hidden profiles;
+imports and manual corrections must preserve this format.
+A non-unique partial index covers nonblank Zendesk IDs, allowing ownership
+checks to avoid full-profile scans while account and hierarchy locks are held.
+Apply `users.0040_profile_zendesk_id_index` before rolling out invited first
+login; it builds this index concurrently.
 
 Membership provisioning creates the requested pair through the
 [Organization Memberships API](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/#create-membership),
@@ -125,6 +129,17 @@ recovered on a later valid attempt.
 Remote writes and local changes are not atomic, and SUMO cannot lock concurrent
 changes made directly in Zendesk. Identity conflicts or missing prepared resources
 require manual correction rather than guessing or overwriting another account.
+
+### Authenticated identity binding
+
+`ZendeskClient.bind_user_identity(zendesk_id=..., fxa_uid=..., email=...)` attaches
+a verified Mozilla identity to the saved end user. It checks the user's primary
+email, role, and existing identity, and refuses when another Zendesk user already
+owns the external ID. Callers check local ownership first.
+
+Binding updates only `external_id` and `user_fields.user_id`, never upserting or
+creating a user. Other custom fields are preserved, both identities are read back,
+and replaying the same binding after a local rollback is safe.
 
 ## Using `requests` to query the API
 

@@ -1,0 +1,19 @@
+{% extends "groups/base.html" %}
+{% set title = _('Enterprise support invitation') %}
+{% set meta = (('robots', 'noindex, nofollow'),) %}
+
+{% block content %}
+  <article id="enterprise-invitation">
+    <h1 class="sumo-page-heading">{{ title }}</h1>
+    {% if error %}
+      <p class="form-error is-visible" role="alert">{{ error }}</p>
+    {% endif %}
+    {% if invitation %}
+      <p>{{ _('Support has been prepared for you at {company}.')|f(company=invitation.company.group.name) }}</p>
+      <p>{{ _('Sign in or register with a Mozilla account using {email}.')|f(email=invitation.email) }}</p>
+      <a href="{{ url('users.fxa_authentication_init')|urlparams(enterprise_invitation=invitation.pk, next=landing_path) }}" class="sumo-button primary-button">
+        {{ _('Continue with Mozilla account') }}
+      </a>
+    {% endif %}
+  </article>
+{% endblock %}

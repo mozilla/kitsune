@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 from django.contrib.auth.models import Group, User
+from kombu.exceptions import OperationalError
 
 from kitsune.customercare.tasks import revoke_chat_tickets
 from kitsune.groups.models import GroupProfile
@@ -16,6 +17,17 @@ from kitsune.sumo.tests import TestCase
 from kitsune.users.monkeypatch import _deactivate_users
 from kitsune.users.tests import UserFactory
 from kitsune.users.utils import anonymize_user, delete_user_pipeline
+
+
+@patch("kitsune.customercare.signals.update_zendesk_user.delay")
+class ZendeskUserSyncSignalTests(TestCase):
+    def test_sync_is_queued_after_commit(self, delay):
+        user = UserFactory(profile__zendesk_id="789")
+        with self.captureOnCommitCallbacks(execute=True):
+            user.profile.name = "Renamed"
+            user.profile.save(update_fields=["name"])
+            delay.assert_not_called()
+        delay.assert_called_once_with(user.pk)
 
 
 @patch("kitsune.customercare.tasks.tag_revoked_chat_tickets.delay")
@@ -42,6 +54,17 @@ class TagChatTicketsIfRevokedTests(TestCase):
             revoke_chat_tickets(user)
 
         delay.assert_not_called()
+
+    def test_publication_failure_does_not_abort_account_deletion(self, delay):
+        user = UserFactory(profile__zendesk_id="789")
+        user_id = user.pk
+        delay.side_effect = OperationalError("broker unavailable")
+
+        with self.captureOnCommitCallbacks(execute=True):
+            revoke_chat_tickets(user)
+            user.delete()
+
+        self.assertFalse(User.all_users.filter(pk=user_id).exists())
 
 
 @patch("kitsune.customercare.signals.revoke_chat_tickets")
