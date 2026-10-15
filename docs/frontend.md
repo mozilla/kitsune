@@ -314,6 +314,79 @@ so a page printed from the dark theme comes out as light.
 Because the whole map is re-emitted,
 new tokens are covered without extra work.
 
+#### Runtime and the flag
+
+The `dark-mode` waffle flag turns the runtime on or off; templates read it as `DARK_MODE`.
+With it off, pages render exactly as they do without the feature.
+Anonymous HTML is cached and shared,
+so for anonymous traffic the flag must be on or off for everyone: no percentage rollout and no testing mode.
+
+#### Attributes
+
+On `<html>`:
+
+* `data-theme`: the resolved theme, `light` or `dark`. CSS reads only this one.
+* `data-theme-preference`: `system`, `light`, or `dark`.
+* `data-theme-owner`: an opaque per-account key. Its presence marks a logged-in page.
+* `data-theme-endpoint`: the URL that saves the preference.
+
+The server renders the last three for logged-in users only.
+The head script sets the first two, and the runtime keeps them current.
+
+#### Head script
+
+`kitsune/sumo/theme_head.js` is inlined first in `<head>`, so the theme is set before the first paint.
+It reads `data-theme-preference` on a logged-in page and `localStorage` otherwise,
+treats unknown values as `system`, resolves `system` with `prefers-color-scheme`,
+and sets the two attributes and `<meta name="theme-color">`
+(with the flag on, the `favicon()` macro leaves out its own).
+It isn't transpiled: keep it ES5, under 1 KB, and free of listeners and requests.
+Don't add `<meta name="color-scheme">`: it would darken the canvas before the theme is known.
+
+`settings.py` holds the file as `HEAD_SCRIPT` and its hash as `HEAD_SCRIPT_CSP_SOURCE`, which `script-src` allows outside `DEBUG`.
+`theme_head_script()` inlines the text verbatim, so it always matches the hash.
+The wiki's `doc_page_cache` keys include the hash, so editing the script never serves stale cached pages.
+
+#### Runtime API and event
+
+`sumo/js/theme.js`, in the common bundle:
+
+* `getPreference()`: `system`, `light`, or `dark`.
+* `getTheme()`: `light` or `dark`.
+* `isActive()`: `false` where the head script didn't run; the runtime then does nothing.
+* `setPreference(preference)`: applies and saves a preference, ignoring unknown values.
+
+While the preference is `system`, the theme follows the OS.
+`sumo:themechange` fires on `document` with `detail: { theme, preference }` when either changes,
+so it also fires when only the preference does, as for System to Dark on a dark OS:
+
+```js
+document.addEventListener("sumo:themechange", ({ detail }) => redraw(detail.theme));
+```
+
+#### Storage and sync
+
+* **Anonymous:** `localStorage["sumo-theme-preference"]`; other tabs follow through `storage` events.
+* **Logged-in:** the `theme_preference` `Setting` row (`get_theme_preference` and `set_theme_preference` in `kitsune/users/theme.py`), rendered on every page.
+Other tabs follow through `BroadcastChannel("sumo-theme")` messages `{ owner, preference }`,
+ignoring other owners and never saving or re-posting what they receive.
+* **Saving:** `savePreference()` in `theme-persistence.js` posts `preference` and `owner` to `POST /<locale>/users/theme` with `keepalive`.
+A page keeps one save in flight, sends only the latest choice next, and doesn't retry a failed save.
+* **Endpoint:** requires login and CSRF. It returns 200 with the stored preference, 400 for an unknown preference or no owner,
+409 when `owner` isn't the signed-in account's key (the page then stops saving), and 404 with the flag off.
+
+#### Switcher
+
+`theme_switcher(id_prefix, variant, field_name=None, checked=None)` in `common_macros.html` renders the System, Light, and Dark radios
+for the `themeSwitcher` Alpine component in `theme-switcher.js`:
+
+* `id_prefix` prefixes the radio ids and names the group, so it must be unique on the page.
+* `variant` adds `is-footer`, `is-menu`, or `is-field`.
+* `field_name` makes it a form field that works without JavaScript; without it, the switcher renders `hidden` and appears once the runtime is active.
+* `checked` is the server-rendered choice.
+
+With the flag on, it appears in the footer, in the avatar menu, and in account settings as the `theme_preference` field of `SettingsForm`.
+
 ## Images
 
 Images directly imported in JS files,

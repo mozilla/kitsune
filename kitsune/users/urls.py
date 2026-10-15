@@ -44,6 +44,7 @@ users_patterns = [
     re_path(r"^close_account$", views.close_account, name="users.close_account"),
     re_path(r"^edit$", views.edit_profile, name="users.edit_my_profile"),
     re_path(r"^settings$", views.edit_settings, name="users.edit_settings"),
+    re_path(r"^theme$", views.theme_preference, name="users.theme_preference"),
     re_path(r"^contributions$", views.edit_contribution_area, name="users.edit_contribution_area"),
     re_path(r"^watches$", views.edit_watch_list, name="users.edit_watch_list"),
     re_path(r"^deactivate$", views.deactivate, name="users.deactivate"),

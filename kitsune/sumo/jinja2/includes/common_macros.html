@@ -510,6 +510,28 @@
 {% endmacro %}
 
 
+{% macro theme_switcher(id_prefix, variant, field_name=None, checked=None) %}
+{# Without a form to submit, the switcher needs JavaScript, so the component reveals it. #}
+<fieldset class="sumo-theme-switcher is-{{ variant }}" x-data="themeSwitcher" @change="choose"
+  {%- if not field_name %} hidden{% endif %}>
+  {# L10n: Heading above the choices of color theme: System, Light and Dark. -#}
+  <legend class="sumo-theme-switcher--legend">{{ _('Appearance') }}</legend>
+  <div class="sumo-theme-switcher--options">
+    {# L10n: Color theme that follows the device's light or dark setting. -#}
+    {% set system_label = _('System') -%}
+    {# L10n: Color theme with a light background. -#}
+    {% set light_label = _('Light') -%}
+    {# L10n: Color theme with a dark background. -#}
+    {% set dark_label = _('Dark') %}
+    {% for value, label in (('system', system_label), ('light', light_label), ('dark', dark_label)) %}
+    <input type="radio" id="{{ id_prefix }}-theme-{{ value }}" name="{{ field_name or id_prefix ~ '-theme' }}"
+      value="{{ value }}"{% if value == checked %} checked{% endif %}>
+    <label for="{{ id_prefix }}-theme-{{ value }}">{{ label }}</label>
+    {% endfor %}
+  </div>
+</fieldset>
+{% endmacro %}
+
 {% macro profile_nav(user, hide_aaq_link=False) %}
 {% if not hide_header_search %}
 <li class="mzp-c-menu-category sumo-nav--item-right">
@@ -597,6 +619,9 @@
               </p>
             </a>
           </section>
+          {%- if DARK_MODE %}
+          {{ theme_switcher('profile-menu', 'menu') }}
+          {%- endif %}
           <div class="sumo-button-wrap align-end">
             <form id="sign-out" action="{{ url('users.logout') }}" method="post">
               {% csrf_token %}
@@ -860,7 +885,9 @@
 <link rel="shortcut icon" href="{{ webpack_static('sumo/img/favicon.ico') }}">
 <link rel="apple-touch-icon" sizes="180x180" href="{{ webpack_static('sumo/img/apple-touch-icon.png') }}">
 <link rel="manifest" href="/manifest.json">
+{% if not DARK_MODE -%}
 <meta name="theme-color" content="#ffffff">
+{% endif -%}
 {% endmacro %}
 
 {% macro download_firefox() %}

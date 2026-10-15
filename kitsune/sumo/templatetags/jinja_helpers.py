@@ -613,6 +613,12 @@ def matomo_mzla_enabled(products) -> bool:
 
 
 @library.global_function
+def theme_head_script() -> Markup:
+    """The inline head script, verbatim: the CSP hash covers these exact bytes."""
+    return Markup(settings.HEAD_SCRIPT)
+
+
+@library.global_function
 def safe_file_url(file: FieldFile) -> str | None:
     """
     Returns the URL of the given file field or None if its underlying file does not exist.
