@@ -59,10 +59,19 @@
         {% for t in tickets %}
           <tr>
             <td class="group-tickets--cell-subject">
-              <a href="{{ t.get_absolute_url() }}">{{ t.subject }}</a>
+              {% set ticket_url = t.get_absolute_url() %}
+              {% if ticket_url %}
+                <a href="{{ ticket_url }}">{{ t.subject }}</a>
+              {% else %}
+                {{ t.subject }}
+              {% endif %}
             </td>
             <td class="group-tickets--cell-submitter">
-              <a class="group-tickets--submitter" href="{{ profile_url(t.user) }}">{{ display_name(t.user) }}</a>
+              {% if t.user %}
+                <a class="group-tickets--submitter" href="{{ profile_url(t.user) }}">{{ display_name(t.user) }}</a>
+              {% else %}
+                {{ _('deleted user') }}
+              {% endif %}
             </td>
             <td class="group-tickets--cell-status">
               {{ zd_status_badge(t, size="lg") }}

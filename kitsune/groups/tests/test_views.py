@@ -615,6 +615,32 @@ class GroupTicketsViewTests(TestCase):
         # The deleted ticket renders with the shared "Inactive" status pill.
         self.assertContains(all_response, "Inactive")
 
+    def test_ticket_of_a_deleted_user_renders_without_links(self):
+        leaver = UserFactory()
+        orphan = SupportTicketFactory(
+            user=leaver,
+            product=self.open_ticket.product,
+            org_group=self.c1,
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+        )
+        leaver.delete()
+
+        self.client.force_login(self.member)
+        response = self.client.get(reverse("groups.tickets", args=[self.c1.slug]))
+
+        self.assertEqual(response.status_code, 200)
+        row = pq(
+            next(
+                tr
+                for tr in pq(response.content)(".group-tickets--table tbody tr")
+                if orphan.subject in pq(tr).text()
+            )
+        )
+        self.assertEqual(row(".group-tickets--cell-subject").text(), orphan.subject)
+        self.assertFalse(row(".group-tickets--cell-subject a"))
+        self.assertEqual(row(".group-tickets--cell-submitter").text(), "deleted user")
+        self.assertFalse(row(".group-tickets--cell-submitter a"))
+
     def test_htmx_request_returns_fragment(self):
         self.client.force_login(self.member)
         response = self.client.get(
