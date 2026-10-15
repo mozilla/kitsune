@@ -1,6 +1,7 @@
 import json
 from base64 import b64decode
 from unittest.mock import Mock, patch
+from urllib.parse import parse_qs, urlsplit
 
 import requests
 from django.contrib.auth.models import AnonymousUser
@@ -853,7 +854,7 @@ class ZendeskOAuthTests(SimpleTestCase):
                 self.assertNotIn(api_error, str(error.exception))
 
     def test_organization_api_failures_remain_available_for_service_classification(self):
-        for status in (401, 403, 503):
+        for status in (400, 401, 403, 409, 422, 503):
             with self.subTest(status=status):
                 self.api_status = status
                 with self.assertRaises(APIException) as error:
@@ -873,6 +874,483 @@ class ZendeskOAuthTests(SimpleTestCase):
             ZendeskClient(disable_cache=True, ratelimit_budget=0).validate_organization("123")
         sleep.assert_not_called()
         self.assertEqual(len(self.api_requests), 1)
+
+
+@override_settings(
+    ZENDESK_SUBDOMAIN="provisioning-test",
+    ZENDESK_USER_EMAIL="provisioner@example.com",
+    ZENDESK_API_TOKEN="test-api-token",
+    ZENDESK_OAUTH_CLIENT_ID="",
+    ZENDESK_OAUTH_CLIENT_SECRET="",
+)
+class ZendeskProvisioningTests(SimpleTestCase):
+    """Exercise real Zenpy provisioning requests with no network access."""
+
+    def setUp(self):
+        self.responses = []
+        self.requests = []
+        transport = patch("requests.sessions.Session.send", side_effect=self.send)
+        transport.start()
+        self.addCleanup(transport.stop)
+        self.addCleanup(lambda: self.assertEqual(self.responses, []))
+        self.client = ZendeskClient(disable_cache=True, ratelimit_budget=0)
+        self.user_args = {"email": "member@example.com", "name": "Invited Name", "locale": "fr"}
+        self.organization_args = {
+            "name": "Invited Company",
+            "external_id": "c1e9f574-00d8-4a32-b84b-b1f33a9ce149",
+        }
+
+    def expect(self, method, path, data, status=200):
+        self.responses.append((method, path, data, status))
+
+    def send(self, request, **kwargs):
+        self.requests.append(request)
+        self.assertTrue(self.responses, f"Unexpected request: {request.method} {request.url}")
+        method, path, data, status = self.responses.pop(0)
+        url = urlsplit(request.url)
+        self.assertEqual(url.netloc, "provisioning-test.zendesk.com")
+        self.assertEqual((request.method, url.path), (method, f"/api/v2/{path}.json"))
+        if isinstance(data, requests.RequestException):
+            raise data
+        response = requests.Response()
+        response.request = request
+        response.url = request.url
+        response.status_code = status
+        response._content = json.dumps(data).encode()
+        return response
+
+    def remote_user(self, **fields):
+        return {
+            "id": 123,
+            "name": "Established Remote Name",
+            "email": "member@example.com",
+            "locale": "en-US",
+            "role": "end-user",
+            "active": True,
+            "suspended": False,
+            "shared": False,
+            "external_id": None,
+            "user_fields": {},
+            **fields,
+        }
+
+    def expect_users(self, *users):
+        self.expect(
+            "GET", "users/search", {"users": list(users), "count": len(users), "next_page": None}
+        )
+
+    def expect_memberships(self, *organization_ids, next_page=None, default_organization_id=None):
+        self.expect(
+            "GET",
+            "users/123/organization_memberships",
+            {
+                "organization_memberships": [
+                    {
+                        "id": index + 1,
+                        "user_id": 123,
+                        "organization_id": organization_id,
+                        "default": organization_id == default_organization_id,
+                    }
+                    for index, organization_id in enumerate(organization_ids)
+                ],
+                "next_page": next_page,
+            },
+        )
+
+    def test_conflict_exposes_only_safe_codes(self):
+        for code, expected in (
+            ("account_conflict", "account_conflict"),
+            ("company_conflict", "company_conflict"),
+            ("resource_missing", "resource_missing"),
+            ("zendesk_conflict", "zendesk_conflict"),
+            ("Provider response with private details", "zendesk_conflict"),
+            (None, "zendesk_conflict"),
+        ):
+            with self.subTest(code=code):
+                error = ZendeskProvisioningConflict(code)
+                self.assertEqual(error.code, expected)
+                self.assertEqual(str(error), expected)
+
+    def test_saved_organization_preserves_name_identity_and_sharing_policy(self):
+        organization = {
+            "id": 456,
+            "name": "Established Company",
+            "external_id": "managed-elsewhere",
+            "shared_comments": True,
+            "shared_tickets": True,
+        }
+        self.expect("GET", "organizations/456", {"organization": organization})
+
+        self.assertEqual(
+            self.client.ensure_organization(**self.organization_args, zendesk_id="00456"), "456"
+        )
+
+    def test_organization_lost_response_reuses_stable_uuid_not_name_search(self):
+        self.expect("POST", "organizations/create_or_update", requests.Timeout("Lost response"))
+        with self.assertRaises(requests.Timeout):
+            self.client.ensure_organization(**self.organization_args)
+        self.expect(
+            "POST",
+            "organizations/create_or_update",
+            {"organization": {"id": 456, **self.organization_args}},
+        )
+
+        self.assertEqual(self.client.ensure_organization(**self.organization_args), "456")
+        for request in self.requests:
+            organization = json.loads(request.body)["organization"]
+            self.assertEqual(organization["external_id"], self.organization_args["external_id"])
+            self.assertEqual(organization["name"], self.organization_args["name"])
+            self.assertNotIn("shared_comments", organization)
+            self.assertNotIn("shared_tickets", organization)
+
+    def test_organization_name_collision_is_not_adopted(self):
+        self.expect(
+            "POST",
+            "organizations/create_or_update",
+            {"error": "RecordInvalid", "description": "Name already exists"},
+            status=422,
+        )
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.client.ensure_organization(**self.organization_args)
+        self.assertEqual(error.exception.code, "zendesk_conflict")
+        self.assertNotIn("Name already exists", str(error.exception))
+
+    def test_missing_saved_organization_does_not_fall_back_to_creation(self):
+        self.expect("GET", "organizations/456", {"error": "RecordNotFound"}, status=404)
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.client.ensure_organization(**self.organization_args, zendesk_id="456")
+        self.assertEqual(error.exception.code, "resource_missing")
+
+    def test_organization_requires_stable_external_id(self):
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.client.ensure_organization(name="Company", external_id="")
+        self.assertEqual(error.exception.code, "zendesk_conflict")
+
+    def test_organization_rejects_mismatching_upsert_identity(self):
+        self.expect(
+            "POST",
+            "organizations/create_or_update",
+            {"organization": {"id": 456, "external_id": "another-company"}},
+        )
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.client.ensure_organization(**self.organization_args)
+        self.assertEqual(error.exception.code, "zendesk_conflict")
+
+    def test_prepared_user_creation_suppresses_email_without_fabricating_identity(self):
+        self.expect_users()
+        self.expect("POST", "users", {"user": self.remote_user()}, status=201)
+
+        self.assertEqual(self.client.ensure_user(**self.user_args), "123")
+
+        user = json.loads(self.requests[-1].body)["user"]
+        self.assertEqual(user["email"], self.user_args["email"])
+        self.assertEqual(user["role"], "end-user")
+        self.assertFalse(user["verified"])
+        self.assertTrue(user["skip_verify_email"])
+        self.assertNotIn("external_id", user)
+        self.assertNotIn("user_fields", user)
+        self.assertNotIn("organization_id", user)
+
+    def test_real_fxa_identity_is_included_only_for_new_users(self):
+        self.expect_users()
+        self.expect(
+            "POST",
+            "users",
+            {"user": self.remote_user(external_id="fxa-uid", user_fields={"user_id": "fxa-uid"})},
+            status=201,
+        )
+
+        self.assertEqual(self.client.ensure_user(**self.user_args, fxa_uid="fxa-uid"), "123")
+
+        user = json.loads(self.requests[-1].body)["user"]
+        self.assertEqual(user["external_id"], "fxa-uid")
+        self.assertEqual(user["user_fields"], {"user_id": "fxa-uid"})
+        self.assertTrue(user["verified"])
+        self.assertTrue(user["skip_verify_email"])
+
+    def test_existing_user_preserves_name_email_locale_and_remote_identity(self):
+        user = self.remote_user(
+            email="Member@Example.com",
+            external_id="fxa-uid",
+            user_fields={"user_id": "fxa-uid", "unrelated": "preserved"},
+        )
+        for saved_id in (None, "00123"):
+            with self.subTest(saved_id=saved_id):
+                if saved_id is None:
+                    self.expect_users(user)
+                else:
+                    self.expect("GET", "users/123", {"user": user})
+                self.assertEqual(
+                    self.client.ensure_user(
+                        **self.user_args, fxa_uid="fxa-uid", zendesk_id=saved_id
+                    ),
+                    "123",
+                )
+
+    def test_email_lookup_quotes_search_metacharacters(self):
+        email = '"member\\name"@example.com'
+        self.expect_users(self.remote_user(email=email))
+
+        self.assertEqual(self.client.ensure_user(**{**self.user_args, "email": email}), "123")
+        self.assertEqual(
+            parse_qs(urlsplit(self.requests[-1].url).query),
+            {"query": ['email:"\\"member\\\\name\\"@example.com"']},
+        )
+
+    def test_existing_email_without_fxa_identity_is_not_updated(self):
+        self.expect_users(self.remote_user())
+
+        self.assertEqual(self.client.ensure_user(**self.user_args, fxa_uid="fxa-uid"), "123")
+
+    def test_prepared_user_does_not_claim_unmatched_remote_identity(self):
+        for fields in (
+            {"external_id": "unknown-fxa-uid"},
+            {"user_fields": {"user_id": "unknown-fxa-uid"}},
+        ):
+            with self.subTest(fields=fields):
+                self.expect_users(self.remote_user(**fields))
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.client.ensure_user(**self.user_args)
+                self.assertEqual(error.exception.code, "account_conflict")
+
+    def test_matching_external_id_does_not_override_conflicting_custom_fxa_identity(self):
+        self.expect_users(
+            self.remote_user(external_id="fxa-uid", user_fields={"user_id": "different-fxa-uid"})
+        )
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.client.ensure_user(**self.user_args, fxa_uid="fxa-uid")
+        self.assertEqual(error.exception.code, "account_conflict")
+
+    def test_existing_remote_identity_must_match_local_fxa_identity(self):
+        self.expect_users(self.remote_user(external_id="different-fxa-uid"))
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.client.ensure_user(**self.user_args, fxa_uid="fxa-uid")
+        self.assertEqual(error.exception.code, "account_conflict")
+
+    def test_saved_user_conflict_requires_manual_correction(self):
+        for fields in (
+            {"id": 789},
+            {"email": "another-member@example.com"},
+            {"external_id": "another-fxa-uid"},
+        ):
+            with self.subTest(fields=fields):
+                self.expect("GET", "users/123", {"user": self.remote_user(**fields)})
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.client.ensure_user(**self.user_args, fxa_uid="fxa-uid", zendesk_id="123")
+                self.assertEqual(error.exception.code, "account_conflict")
+
+    def test_ambiguous_email_results_are_not_linked(self):
+        self.expect_users(self.remote_user(), self.remote_user(id=789))
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.client.ensure_user(**self.user_args)
+        self.assertEqual(error.exception.code, "account_conflict")
+
+    def test_secondary_or_partial_email_match_is_not_adopted(self):
+        self.expect_users(self.remote_user(email="other-member@example.com"))
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.client.ensure_user(**self.user_args)
+        self.assertEqual(error.exception.code, "account_conflict")
+
+    def test_deleted_suspended_shared_and_privileged_users_are_rejected(self):
+        for fields in (
+            {"active": False},
+            {"active": None},
+            {"active": 1},
+            {"suspended": True},
+            {"shared": True},
+            {"shared_agent": True},
+            {"chat_only": True},
+            {"role": "agent"},
+            {"role": "admin"},
+            {"role": None},
+            {"custom_role_id": 321},
+        ):
+            with self.subTest(fields=fields):
+                self.expect_users(self.remote_user(**fields))
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.client.ensure_user(**self.user_args)
+                self.assertEqual(error.exception.code, "account_conflict")
+
+    def test_missing_saved_user_is_not_recreated(self):
+        self.expect("GET", "users/123", {"error": "RecordNotFound"}, status=404)
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.client.ensure_user(**self.user_args, zendesk_id="123")
+        self.assertEqual(error.exception.code, "resource_missing")
+
+    def test_user_lost_response_manual_retry_preserves_created_user(self):
+        self.expect_users()
+        self.expect("POST", "users", requests.Timeout("Lost response"))
+        with self.assertRaises(requests.Timeout):
+            self.client.ensure_user(**self.user_args)
+        self.expect_users(self.remote_user())
+
+        self.assertEqual(self.client.ensure_user(**self.user_args), "123")
+
+    def test_user_creation_conflict_requires_manual_retry(self):
+        for status in (400, 409, 422):
+            with self.subTest(status=status):
+                self.expect_users()
+                self.expect("POST", "users", {"error": "RecordInvalid"}, status=status)
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.client.ensure_user(**self.user_args)
+                self.assertEqual(error.exception.code, "zendesk_conflict")
+
+                self.expect_users(self.remote_user(name="Concurrent Creator's Name"))
+                self.assertEqual(self.client.ensure_user(**self.user_args), "123")
+
+    def test_membership_creation_uses_only_dedicated_endpoint(self):
+        self.expect(
+            "POST",
+            "organization_memberships",
+            {"organization_membership": {"id": 789, "user_id": 123, "organization_id": 456}},
+            status=201,
+        )
+
+        self.client.ensure_organization_membership(user_id="00123", organization_id="00456")
+        membership = json.loads(self.requests[-1].body)["organization_membership"]
+        self.assertEqual(membership["user_id"], 123)
+        self.assertEqual(membership["organization_id"], 456)
+        self.assertNotIn("default", membership)
+
+    def test_membership_response_must_match_requested_pair(self):
+        for pair in (
+            {"user_id": 789, "organization_id": 456},
+            {"user_id": 123, "organization_id": 789},
+            {"user_id": None, "organization_id": 456},
+        ):
+            with self.subTest(pair=pair):
+                self.expect(
+                    "POST",
+                    "organization_memberships",
+                    {"organization_membership": {"id": 891, **pair}},
+                    status=201,
+                )
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.client.ensure_organization_membership(
+                        user_id="123", organization_id="456"
+                    )
+                self.assertEqual(error.exception.code, "zendesk_conflict")
+
+    def test_membership_422_finds_target_after_unrelated_default_on_earlier_page(self):
+        self.expect("POST", "organization_memberships", {"error": "RecordInvalid"}, status=422)
+        self.expect_memberships(
+            789,
+            default_organization_id=789,
+            next_page=(
+                "https://provisioning-test.zendesk.com/api/v2/"
+                "users/123/organization_memberships.json?page=2"
+            ),
+        )
+        self.expect_memberships(456)
+
+        self.client.ensure_organization_membership(user_id="123", organization_id="456")
+
+    def test_duplicate_membership_is_success_only_after_fresh_target_read(self):
+        self.expect("POST", "organization_memberships", {"error": "RecordInvalid"}, status=422)
+        self.expect_memberships(456)
+
+        self.client.ensure_organization_membership(user_id="123", organization_id="456")
+
+    def test_membership_422_without_target_is_not_success(self):
+        for organizations in ((), (789,)):
+            with self.subTest(organizations=organizations):
+                self.expect(
+                    "POST", "organization_memberships", {"error": "RecordInvalid"}, status=422
+                )
+                self.expect_memberships(*organizations)
+
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.client.ensure_organization_membership(
+                        user_id="123", organization_id="456"
+                    )
+                self.assertEqual(error.exception.code, "zendesk_conflict")
+
+    def test_membership_422_cannot_confirm_another_users_pair(self):
+        self.expect("POST", "organization_memberships", {"error": "RecordInvalid"}, status=422)
+        self.expect(
+            "GET",
+            "users/123/organization_memberships",
+            {
+                "organization_memberships": [{"id": 891, "user_id": 789, "organization_id": 456}],
+                "next_page": None,
+            },
+        )
+
+        with self.assertRaises(ZendeskProvisioningConflict) as error:
+            self.client.ensure_organization_membership(user_id="123", organization_id="456")
+        self.assertEqual(error.exception.code, "zendesk_conflict")
+
+    def test_membership_422_preserves_other_company_memberships_and_default(self):
+        for organizations in ((789, 456), (456, 789)):
+            with self.subTest(organizations=organizations):
+                self.expect(
+                    "POST", "organization_memberships", {"error": "RecordInvalid"}, status=422
+                )
+                self.expect_memberships(*organizations, default_organization_id=789)
+
+                self.client.ensure_organization_membership(user_id="123", organization_id="456")
+
+    def test_membership_lost_response_manual_retry_confirms_target(self):
+        self.expect("POST", "organization_memberships", requests.Timeout("Lost response"))
+        with self.assertRaises(requests.Timeout):
+            self.client.ensure_organization_membership(user_id="123", organization_id="456")
+        self.expect("POST", "organization_memberships", {"error": "RecordInvalid"}, status=422)
+        self.expect_memberships(456)
+
+        self.client.ensure_organization_membership(user_id="123", organization_id="456")
+
+    def test_missing_membership_resource_is_a_safe_conflict(self):
+        for api_error in ("NotFound", "RecordNotFound"):
+            with self.subTest(api_error=api_error):
+                self.expect("POST", "organization_memberships", {"error": api_error}, status=404)
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.client.ensure_organization_membership(
+                        user_id="123", organization_id="456"
+                    )
+                self.assertEqual(error.exception.code, "resource_missing")
+
+    def test_invalid_saved_ids_fail_before_any_provider_request(self):
+        for invalid_id in ("", "0", "-1", "１２３", "123/456", "1" * 256):
+            with self.subTest(invalid_id=invalid_id):
+                with self.assertRaises(ZendeskProvisioningConflict):
+                    self.client.ensure_user(**self.user_args, zendesk_id=invalid_id)
+                with self.assertRaises(ZendeskProvisioningConflict):
+                    self.client.ensure_organization_membership(
+                        user_id="123", organization_id=invalid_id
+                    )
+
+    def test_provider_authentication_and_server_errors_remain_classifiable(self):
+        for status in (401, 403, 503):
+            with self.subTest(status=status):
+                self.expect("GET", "users/search", {"error": "ProviderFailure"}, status=status)
+                with self.assertRaises(APIException) as error:
+                    self.client.ensure_user(**self.user_args)
+                self.assertEqual(error.exception.response.status_code, status)
+                self.expect(
+                    "POST",
+                    "organization_memberships",
+                    {"error": "ProviderFailure"},
+                    status=status,
+                )
+                with self.assertRaises(APIException) as error:
+                    self.client.ensure_organization_membership(
+                        user_id="123", organization_id="456"
+                    )
+                self.assertEqual(error.exception.response.status_code, status)
+                self.expect(
+                    "POST", "organization_memberships", {"error": "RecordInvalid"}, status=422
+                )
+                self.expect(
+                    "GET",
+                    "users/123/organization_memberships",
+                    {"error": "ProviderFailure"},
+                    status=status,
+                )
+                with self.assertRaises(APIException) as error:
+                    self.client.ensure_organization_membership(
+                        user_id="123", organization_id="456"
+                    )
+                self.assertEqual(error.exception.response.status_code, status)
 
 
 class ZendeskConfigurationChecksTests(SimpleTestCase):

@@ -150,9 +150,7 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
         self.assertFalse(GroupProfile.objects.filter(leaders=user).exists())
         self.assertTrue(invitation.created_user)
         self.assertEqual(invitation.created_by_id, self.actor.pk)
-        self.assertEqual(invitation.support_config_id, self.config.pk)
         self.assertEqual(invitation.status, EnterpriseInvitation.Status.PENDING)
-        self.assertEqual(invitation.completed_actions, ["sumo_account"])
         self.assertIsNone(invitation.welcome_email_id)
         self.assertIsNone(invitation.email_queued_at)
         self.assertIsNone(invitation.accepted_at)
@@ -247,7 +245,6 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
             with self.subTest(status=status):
                 EnterpriseInvitation.objects.filter(pk=invitation.pk).update(
                     status=status,
-                    completed_actions=["sumo_account", "zendesk_organization"],
                     failed_action="zendesk_user",
                     error_code="zendesk_unavailable",
                     token_version=4,
@@ -271,7 +268,6 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
         accepted = self.invite()
         accepted.status = EnterpriseInvitation.Status.ACCEPTED
         accepted.accepted_at = timezone.now()
-        accepted.completed_actions = ["sumo_account", "sumo_membership", "welcome_email"]
         accepted.save()
         department = self.child(self.company)
         for membership in (self.company, department):
@@ -286,7 +282,6 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
         self.assertNotEqual(fresh.pk, accepted.pk)
         self.assertEqual(fresh.user_id, user.pk)
         self.assertFalse(fresh.created_user)
-        self.assertEqual(fresh.completed_actions, ["sumo_account"])
         accepted.refresh_from_db()
         self.assertEqual(accepted.status, EnterpriseInvitation.Status.ACCEPTED)
         self.assertEqual(EnterpriseInvitation.objects.filter(user=user).count(), 2)
@@ -328,17 +323,24 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
         self.assert_rejected(code="resource_missing")
         invitation.refresh_from_db()
         self.assertIsNone(invitation.user_id)
-        self.assertEqual(invitation.completed_actions, ["sumo_account"])
 
-    def test_deleted_captured_config_is_not_replaced_with_current_config(self):
-        invitation = self.invite()
+    def test_missing_current_config_refuses_repeated_intake(self):
+        self.invite()
         self.config.delete()
-        self.config = ProductSupportConfigFactory(
+        self.assert_rejected(code="configuration_error")
+
+    def test_repeated_intake_uses_replacement_active_company_config(self):
+        invitation = self.invite()
+        ProductSupportConfig.objects.filter(pk=self.config.pk).update(is_active=False)
+        current_config = ProductSupportConfigFactory(
             product=self.product, zendesk_config=ZendeskConfigFactory()
         )
         self.assert_rejected(code="configuration_error")
-        invitation.refresh_from_db()
-        self.assertIsNone(invitation.support_config_id)
+        SupportOrganizationFactory(group=self.company.group, config=current_config)
+        before = self.snapshot()
+        repeated = self.invite(first_name="Replacement", last_name="Names")
+        self.assertEqual(repeated.pk, invitation.pk)
+        self.assertEqual(self.snapshot(), before)
 
     def test_deleted_support_or_mapping_is_not_recreated_for_existing_invitation(self):
         self.invite()
@@ -357,7 +359,7 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
                 self.assert_rejected(code="company_conflict")
                 user.groups.remove(membership.group)
 
-    def test_other_organization_for_captured_config_conflicts_even_outside_enterprise_tree(self):
+    def test_other_organization_for_current_config_conflicts_even_outside_enterprise_tree(self):
         user = self.eligible_user()
         unrelated = GroupProfileFactory()
         SupportOrganizationFactory(group=unrelated.group, config=self.config)
@@ -486,8 +488,7 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
             ):
                 with self.subTest(setting=setting), override_settings(**{setting: ""}):
                     self.assert_rejected(code="configuration_error")
-            invitation = self.invite()
-        self.assertEqual(invitation.support_config_id, self.config.pk)
+            self.invite()
         self.assertTrue(
             SupportOrganization.objects.get(
                 group=self.company.group, config=self.config
@@ -518,27 +519,24 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
     @override_settings(ENTERPRISE_ONBOARDING_LANDING_PATH="/enterprise/support?source=invitation")
     def test_local_landing_path_allows_intake(self):
         invitation = self.invite()
-        self.assertEqual(invitation.completed_actions, ["sumo_account"])
         self.assertFalse(invitation.user.is_active)
 
     def test_database_allows_history_but_only_one_case_insensitive_open_invitation(self):
         user = self.eligible_user()
         first = EnterpriseInvitationFactory(
             company=self.company,
-            support_config=self.config,
             user=user,
             email=user.email,
             status=EnterpriseInvitation.Status.ACCEPTED,
         )
         historical = EnterpriseInvitationFactory(
             company=self.other_company,
-            support_config=self.config,
             user=user,
             email=user.email.upper(),
             status=EnterpriseInvitation.Status.ACCEPTED,
         )
         unfinished = EnterpriseInvitationFactory(
-            company=self.company, support_config=self.config, user=user, email=user.email.upper()
+            company=self.company, user=user, email=user.email.upper()
         )
         for status in (
             EnterpriseInvitation.Status.PENDING,
@@ -549,7 +547,6 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
                 with self.assertRaises(IntegrityError), transaction.atomic():
                     EnterpriseInvitationFactory(
                         company=self.other_company,
-                        support_config=self.config,
                         user=user,
                         email=user.email,
                         status=status,
@@ -675,7 +672,6 @@ class EnterpriseInvitationConcurrencyTests(InvitationFixtures, TransactionTestCa
         invitation = EnterpriseInvitation.objects.get(pk=first)
         self.assert_single_invitee(invitation)
         self.assertEqual(invitation.user.first_name, "First")
-        self.assertEqual(invitation.completed_actions, ["sumo_account"])
 
     def test_simultaneous_different_company_invites_have_one_owner(self):
         first, second = self.compete(

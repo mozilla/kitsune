@@ -1,5 +1,6 @@
 from functools import cached_property
 from hashlib import sha256
+from typing import NoReturn
 
 import requests
 from django.conf import settings
@@ -7,7 +8,8 @@ from django.core.cache import cache
 from zenpy import Zenpy
 from zenpy.lib.api_objects import Comment as ZendeskComment
 from zenpy.lib.api_objects import Identity as ZendeskIdentity
-from zenpy.lib.api_objects import Ticket
+from zenpy.lib.api_objects import Organization as ZendeskOrganization
+from zenpy.lib.api_objects import OrganizationMembership, Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
 from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyException
 
@@ -24,8 +26,36 @@ class ZendeskProvisioningConflict(Exception):
     """A permanent provisioning conflict described by a safe error code."""
 
     def __init__(self, code):
+        if code not in (
+            "account_conflict",
+            "company_conflict",
+            "resource_missing",
+            "zendesk_conflict",
+        ):
+            code = "zendesk_conflict"
         self.code = code
         super().__init__(code)
+
+    @classmethod
+    def raise_from(cls, exc: APIException | requests.HTTPError) -> NoReturn:
+        """Translate provider conflicts without wrapping other failures."""
+        status = exc.response.status_code if exc.response is not None else None
+        if isinstance(exc, RecordNotFoundException) or status == 404:
+            raise cls("resource_missing") from exc
+        if status in (400, 409, 422):
+            raise cls("zendesk_conflict") from exc
+        raise exc
+
+
+def canonical_zendesk_id(value) -> str:
+    """Validate and normalize a positive numeric Zendesk ID."""
+    text = str(value)
+    if not (text.isascii() and text.isdecimal() and len(text) <= 255):
+        raise ZendeskProvisioningConflict("zendesk_conflict")
+    number = int(text)
+    if number <= 0:
+        raise ZendeskProvisioningConflict("zendesk_conflict")
+    return str(number)
 
 
 def get_oauth_token():
@@ -95,25 +125,124 @@ class ZendeskClient:
 
     def validate_organization(self, zendesk_id: str) -> str:
         """Fetch an existing organization and return its canonical numeric ID."""
-        organization_id_text = str(zendesk_id)
-        if not (
-            organization_id_text.isascii()
-            and organization_id_text.isdecimal()
-            and len(organization_id_text) <= 255
-        ):
-            raise ZendeskProvisioningConflict("zendesk_conflict")
-        organization_id = int(organization_id_text)
-        if organization_id <= 0:
-            raise ZendeskProvisioningConflict("zendesk_conflict")
+        organization_id = canonical_zendesk_id(zendesk_id)
         try:
-            self.client.organizations(id=organization_id)
+            self.client.organizations(id=int(organization_id))
         except (APIException, requests.HTTPError) as exc:
             if isinstance(exc, RecordNotFoundException) or (
                 exc.response is not None and exc.response.status_code == 404
             ):
                 raise ZendeskProvisioningConflict("resource_missing") from exc
             raise
-        return str(organization_id)
+        return organization_id
+
+    def ensure_organization(
+        self, *, name: str, external_id: str, zendesk_id: str | None = None
+    ) -> str:
+        """Link a saved organization or provision using its stable local UUID."""
+        try:
+            if zendesk_id is not None:
+                return self.validate_organization(zendesk_id)
+            if not external_id:
+                raise ZendeskProvisioningConflict("zendesk_conflict")
+            organization = self.client.organizations.create_or_update(
+                ZendeskOrganization(name=name, external_id=external_id)
+            )
+        except (APIException, requests.HTTPError) as exc:
+            ZendeskProvisioningConflict.raise_from(exc)
+        if (organization.external_id or "").casefold() != external_id.casefold():
+            raise ZendeskProvisioningConflict("zendesk_conflict")
+        return canonical_zendesk_id(organization.id)
+
+    def validate_user(self, user, *, email, fxa_uid) -> str:
+        """Only an active end user with matching identities can be linked."""
+        if user.role != "end-user" or user.active is not True or user.suspended:
+            raise ZendeskProvisioningConflict("account_conflict")
+        if user.shared or user.shared_agent or user.chat_only or user.custom_role_id:
+            raise ZendeskProvisioningConflict("account_conflict")
+        if (user.email or "").casefold() != email.casefold():
+            raise ZendeskProvisioningConflict("account_conflict")
+        for remote_uid in (user.external_id, (user.user_fields or {}).get("user_id")):
+            if remote_uid and (not fxa_uid or remote_uid != fxa_uid):
+                raise ZendeskProvisioningConflict("account_conflict")
+        return canonical_zendesk_id(user.id)
+
+    def ensure_user(
+        self,
+        *,
+        email: str,
+        name: str,
+        locale: str,
+        fxa_uid: str | None = None,
+        zendesk_id: str | None = None,
+    ) -> str:
+        """Reuse a saved or email-matched user without changing existing details."""
+        try:
+            if zendesk_id is not None:
+                saved_id = canonical_zendesk_id(zendesk_id)
+                user = self.client.users(id=int(saved_id))
+                user_id: str | None = self.validate_user(user, email=email, fxa_uid=fxa_uid)
+                if user_id != saved_id:
+                    raise ZendeskProvisioningConflict("account_conflict")
+                return user_id
+
+            # Quote the email so it cannot introduce additional search terms.
+            quoted_email = email.replace("\\", "\\\\").replace('"', '\\"')
+            user_id = None
+            for user in self.client.users.search(query=f'email:"{quoted_email}"'):
+                matched_id = self.validate_user(user, email=email, fxa_uid=fxa_uid)
+                if user_id is not None and user_id != matched_id:
+                    raise ZendeskProvisioningConflict("account_conflict")
+                user_id = matched_id
+            if user_id is not None:
+                return user_id
+
+            fields = {}
+            if fxa_uid:
+                fields = {"external_id": fxa_uid, "user_fields": {"user_id": fxa_uid}}
+            # Unlike an upsert, create cannot overwrite an identity won by a race.
+            user = self.client.users.create(
+                ZendeskUser(
+                    email=email,
+                    name=name,
+                    locale=locale,
+                    role="end-user",
+                    verified=bool(fxa_uid),
+                    skip_verify_email=True,
+                    **fields,
+                )
+            )
+        except (APIException, requests.HTTPError) as exc:
+            ZendeskProvisioningConflict.raise_from(exc)
+        return self.validate_user(user, email=email, fxa_uid=fxa_uid)
+
+    def ensure_organization_membership(self, *, user_id: str, organization_id: str) -> None:
+        """Add the target membership without removing or replacing another company."""
+        user_id = canonical_zendesk_id(user_id)
+        organization_id = canonical_zendesk_id(organization_id)
+        try:
+            membership = self.client.organization_memberships.create(
+                OrganizationMembership(user_id=int(user_id), organization_id=int(organization_id))
+            )
+        except (APIException, requests.HTTPError) as exc:
+            if exc.response is not None and exc.response.status_code == 422:
+                try:
+                    for membership in self.client.users.organization_memberships(
+                        user=int(user_id)
+                    ):
+                        if (
+                            canonical_zendesk_id(membership.user_id) == user_id
+                            and canonical_zendesk_id(membership.organization_id) == organization_id
+                        ):
+                            return
+                except (APIException, requests.HTTPError) as read_exc:
+                    ZendeskProvisioningConflict.raise_from(read_exc)
+            ZendeskProvisioningConflict.raise_from(exc)
+        if (
+            canonical_zendesk_id(membership.user_id) != user_id
+            or canonical_zendesk_id(membership.organization_id) != organization_id
+        ):
+            raise ZendeskProvisioningConflict("zendesk_conflict")
 
     def _user_to_zendesk_user(self, user, email):
         """Given a Django user, return a Zendesk user."""

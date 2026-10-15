@@ -78,10 +78,19 @@ def zendesk_submission_classifier(submission_id: int) -> None:
 
 @shared_task
 def update_zendesk_user(user_id: int) -> None:
-    user = User.objects.get(pk=user_id)
-    if user.profile.zendesk_id:
-        zendesk = ZendeskClient()
-        zendesk.update_user(user)
+    user = User.objects.select_related("profile").get(pk=user_id)
+    profile = user.profile
+    if not profile.zendesk_id:
+        return
+    if (
+        not profile.fxa_uid
+        and user.enterprise_invitations.filter(
+            created_user=True, accepted_at__isnull=True
+        ).exists()
+    ):
+        # Ordinary sync would mark an unclaimed identity verified and replace its name.
+        return
+    ZendeskClient().update_user(user)
 
 
 @shared_task_with_retry
