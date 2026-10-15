@@ -16,7 +16,7 @@
 {% endmacro %}
 
 {% macro sumo_banner(id, text, modifier_class=None, image=None, button_text=None, button_link=None) %}
-  <div class="sumo-banner {{ modifer_class or '' }}" id="{{ id }}" data-close-initial="hidden">
+  <div class="sumo-banner {{ modifier_class or '' }}" id="{{ id }}" data-close-initial="hidden">
     <div class="content">
       {% if image %}
         <img class="icon" src="{{ image }}" alt="" role="presentation" />
