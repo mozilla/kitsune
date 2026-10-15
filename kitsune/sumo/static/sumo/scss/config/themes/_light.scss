@@ -104,8 +104,8 @@
 // --color-error-hover: #E12850 - Dark: #E12850
 // --status-info-bg: rgba(0, 96, 223, 0.08) - Dark: #2A313D
 // --status-info-text: #0060DF - Dark: #8FBEFA (azure-03)
-// --status-success-bg: rgba(63, 225, 176, 0.08) - Dark: #193729 (sage-02)
-// --status-success-text: #3FE1B0 - Dark: #83D5AD (sage-01)
+// --status-success-bg: rgba(0, 135, 135, 0.1) - Dark: #193729 (sage-02)
+// --status-success-text: #005E5E (green-09) - Dark: #83D5AD (sage-01)
 // --status-pending-bg: rgba(255, 213, 103, 0.2) - Dark: #3B342B
 // --status-pending-text: #CC3D00 - Dark: #F6BC5D
 // --status-neutral-bg: rgba(149, 149, 162, 0.12) - Dark: #2E3035
@@ -272,8 +272,8 @@ $light: (
 
   'status-info-bg': rgba(c.color('blue', '06'), 0.08),
   'status-info-text': var(--color-link),
-  'status-success-bg': rgba(c.color('green', '06'), 0.08),
-  'status-success-text': var(--color-success),
+  'status-success-bg': rgba(c.color('green', '08'), 0.1),
+  'status-success-text': var(--color-green-09),
   'status-pending-bg': rgba(c.color('yellow', '04'), 0.2),
   'status-pending-text': c.color('orange', '08'),
   'status-neutral-bg': rgba(c.color('marketing-gray', '05'), 0.12),

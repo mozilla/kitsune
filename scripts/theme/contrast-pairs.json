@@ -80,12 +80,6 @@
             "bg": "--color-surface",
             "theme": "light",
             "reason": "Light design: the marketing-gray-03 control border on white is 1.58:1"
-        },
-        {
-            "fg": "--status-success-text",
-            "bg": "--status-success-bg",
-            "theme": "light",
-            "reason": "Light design: the Solved label's green-06 text on an 8% green tint is 1.60:1"
         }
     ]
 }
