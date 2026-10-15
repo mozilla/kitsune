@@ -1,45 +1,36 @@
 import json
 
 import yaml
-from django.conf import settings
-from django.core.cache import cache
-from django.db.models import Prefetch, Q
+from django.db.models import Exists, OuterRef, Prefetch, Q
 
 from kitsune.groups.models import GroupProfile
-from kitsune.products.models import Product, ProductSupportConfig, Topic
-
-ENTERPRISE_ZENDESK_CACHE_KEY = "products:enterprise-zendesk-available"
-_ENTERPRISE_BANNER_CACHE_TIMEOUT = 3600  # 1 hour
+from kitsune.products.models import Product, SupportOrganization, Topic
 
 
-def is_enterprise_user(user) -> bool:
-    """Whether the user belongs to the enterprise group or any of its subgroups."""
-    return (
-        GroupProfile.objects.containing(user).filter(slug=settings.ENTERPRISE_GROUP_SLUG).exists()
-    )
+def get_professional_support_products(user) -> list[Product]:
+    """Get the set of products for which this user has access to professional support."""
 
+    if not (user and user.is_authenticated):
+        return []
 
-def should_show_enterprise_banner(user) -> bool:
-    """Show enterprise members the banner when Zendesk is the configured default."""
-    available = cache.get(ENTERPRISE_ZENDESK_CACHE_KEY)
-    if available is False or not is_enterprise_user(user):
-        return False
-
-    if available is None:
-        available = ProductSupportConfig.objects.filter(
-            Q(group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-            | Q(
-                default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-                group_default_support_type__isnull=True,
-            ),
-            product__slug="firefox-enterprise",
-            is_active=True,
-            zendesk_config__isnull=False,
-        ).exists()
-        cache.set(
-            ENTERPRISE_ZENDESK_CACHE_KEY, available, timeout=_ENTERPRISE_BANNER_CACHE_TIMEOUT
+    # TODO: The following is a placeholder until support plans are implemented.
+    return list(
+        Product.active.filter(
+            Exists(
+                SupportOrganization.objects.filter(
+                    Exists(
+                        GroupProfile.objects.filter(
+                            group__user=user,
+                            path__startswith=OuterRef("group__profile__path"),
+                        )
+                    ),
+                    config__product=OuterRef("pk"),
+                    config__is_active=True,
+                    config__zendesk_config__isnull=False,
+                )
+            )
         )
-    return available
+    )
 
 
 def get_taxonomy(

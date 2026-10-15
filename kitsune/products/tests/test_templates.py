@@ -4,13 +4,21 @@ from django.test.utils import override_settings
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 
+from kitsune.groups.tests import GroupProfileFactory
 from kitsune.products.models import HOT_TOPIC_SLUG, ProductSupportConfig
-from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    SupportOrganizationFactory,
+    TopicFactory,
+    ZendeskConfigFactory,
+)
 from kitsune.questions.models import QuestionLocale
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
 
 
@@ -173,6 +181,166 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(200, r.status_code)
         pqdoc = pq(r.content)
         self.assertEqual(2, len(pqdoc(".subtopics>li")))
+
+
+class ProfessionalSupportTestCase(TestCase):
+    """Sets up a product with professional support and an organization that has it."""
+
+    def setUp(self):
+        self.product = ProductFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
+        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
+        self.config = ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=AAQConfigFactory(enabled_locales=[locale]),
+            zendesk_config=ZendeskConfigFactory(),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+            group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
+        )
+        self.org = GroupProfileFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
+        self.group = self.org.group
+        SupportOrganizationFactory(config=self.config, group=self.group)
+        self.url = reverse("products.product", args=[self.product.slug])
+
+    def login_member(self):
+        user = UserFactory()
+        user.groups.add(self.group)
+        self.client.login(username=user.username, password="testpass")
+
+
+class EnterpriseGetSupportTests(ProfessionalSupportTestCase):
+    """Users with professional support for the product get the Get help section;
+    everyone else gets a banner."""
+
+    def test_member_sees_get_support(self):
+        self.login_member()
+
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        self.assertEqual(0, len(doc(".support-callouts")))
+        section = doc(".get-support.support-callouts--top")
+        self.assertEqual(3, len(section(".get-support--item")))
+        links = [pq(a).attr("href") for a in section(".get-support--link")]
+        self.assertEqual(
+            links,
+            [
+                reverse("questions.aaq_step3", kwargs={"product_slug": self.product.slug}),
+                reverse("products.documents", args=[self.product.slug, "getting-started"]),
+                reverse("groups.profile", args=[self.org.slug]),
+            ],
+        )
+        self.assertEqual("Get help", section("h2").text())
+
+    def test_member_without_zendesk_sees_still_need_help(self):
+        self.config.zendesk_config = None
+        self.config.save()
+        self.login_member()
+
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        self.assertEqual(0, len(doc(".get-support")))
+        self.assertIn("Still need help?", doc(".support-callouts--top .card--title").text())
+
+    def test_member_on_other_product_is_sent_to_their_support_page(self):
+        other = ProductFactory()
+        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
+        ProductSupportConfigFactory(
+            product=other,
+            forum_config=AAQConfigFactory(enabled_locales=[locale]),
+            zendesk_config=None,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
+        self.login_member()
+
+        url = reverse("products.product", args=[other.slug])
+        doc = pq(self.client.get(url, follow=True).content)
+
+        self.assertEqual(0, len(doc(".get-support")))
+        self.assertEqual(1, len(doc(".support-callouts--top")))
+        self.assertEqual(1, len(doc(".support-callouts--bottom")))
+        # The product's own support stays available alongside the pro banner.
+        middle = doc(
+            ".support-callouts:not(.support-callouts--top):not(.support-callouts--bottom)"
+        )
+        self.assertEqual(1, len(middle))
+        self.assertEqual("Still need help?", middle(".card--title").text())
+        banner = doc(".support-callouts--top")
+        self.assertEqual("Firefox Professional Support", banner(".card--title").text())
+        self.assertEqual(
+            "Your organization's contract includes professional support. Visit your dedicated "
+            "support page to contact our team and access your support services.",
+            banner(".card--desc").text(),
+        )
+        button = banner("a.sumo-button")
+        self.assertEqual("Access Support", button.text())
+        self.assertEqual(self.url, button.attr("href"))
+
+    def test_member_on_product_without_support_config_is_sent_to_their_support_page(self):
+        other = ProductFactory()
+        self.login_member()
+
+        url = reverse("products.product", args=[other.slug])
+        doc = pq(self.client.get(url, follow=True).content)
+
+        banner = doc(".support-callouts--top")
+        self.assertEqual("Firefox Professional Support", banner(".card--title").text())
+        self.assertEqual(self.url, banner("a.sumo-button").attr("href"))
+
+    def test_logged_out_sees_talk_to_an_expert(self):
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        self.assertEqual(0, len(doc(".get-support")))
+        banner = doc(".support-callouts--top")
+        self.assertEqual("Need dedicated support?", banner(".card--title").text())
+        self.assertIn(
+            "firefox.com/en-US/browsers/enterprise/contact/", banner("a.sumo-button").attr("href")
+        )
+
+    def test_non_member_sees_still_need_help(self):
+        user = UserFactory()
+        self.client.login(username=user.username, password="testpass")
+
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        self.assertEqual(0, len(doc(".get-support")))
+        banner = doc(".support-callouts--top")
+        self.assertIn("Still need help?", banner(".card--title").text())
+        self.assertEqual(
+            reverse("questions.aaq_step3", kwargs={"product_slug": self.product.slug}),
+            banner("a.sumo-button").attr("href"),
+        )
+
+
+class ProfessionalSupportBannerTests(ProfessionalSupportTestCase):
+    """The home page and the product list point members to their support page."""
+
+    pages = ("home", "products")
+
+    def test_member_sees_banner(self):
+        self.login_member()
+
+        for page in self.pages:
+            with self.subTest(page=page):
+                doc = pq(self.client.get(reverse(page), follow=True).content)
+
+                banner = doc(".support-callouts")
+                self.assertEqual(1, len(banner))
+                self.assertEqual("Firefox Professional Support", banner(".card--title").text())
+                self.assertEqual(self.url, banner("a.sumo-button").attr("href"))
+
+    def test_non_member_sees_no_banner(self):
+        user = UserFactory()
+        self.client.login(username=user.username, password="testpass")
+
+        for page in self.pages:
+            with self.subTest(page=page):
+                doc = pq(self.client.get(reverse(page), follow=True).content)
+                self.assertEqual(0, len(doc(".support-callouts")))
+
+    def test_logged_out_sees_no_banner(self):
+        for page in self.pages:
+            with self.subTest(page=page):
+                doc = pq(self.client.get(reverse(page), follow=True).content)
+                self.assertEqual(0, len(doc(".support-callouts")))
 
 
 _MZLA_SLUGS = ["thunderbird", "thunderbird-android"]
