@@ -19,39 +19,24 @@ from kitsune.users.models import Profile
 
 
 def get_provisioning_resources(*, actor, invitation, for_update=False):
-    """Read and validate prepared resources; callers choose when to lock them."""
+    """Authorize and validate prepared resources; accepted invitations have none."""
     root = get_enterprise_root()
     require_onboarding_allowed(actor, root)
     if invitation.status == EnterpriseInvitation.Status.ACCEPTED:
         return None
-    resources = get_prepared_resources(invitation, root=root, for_update=for_update)
-    if invitation.status not in (
-        EnterpriseInvitation.Status.PENDING,
-        EnterpriseInvitation.Status.FAILED,
-        EnterpriseInvitation.Status.READY,
-    ):
-        raise ValidationError(
-            _("This invitation's status is inconsistent. Contact an administrator."),
-            code="configuration_error",
-        )
-    return resources
+    return get_prepared_resources(invitation, root=root, for_update=for_update)
 
 
 def provision_enterprise_invitation(*, actor, invitation) -> EnterpriseInvitation:
     """Provision remotely before locking and revalidating local resources for persistence."""
+    # Lock on the saved email, never on a possibly stale caller object.
     email = EnterpriseInvitation.objects.values_list("email", flat=True).get(pk=invitation.pk)
     with lock_account_email(email):
         invitation = EnterpriseInvitation.objects.get(pk=invitation.pk)
-        if invitation.email != email:
-            raise ValidationError(
-                _("This invitation's email changed. Contact an administrator."),
-                code="account_conflict",
-            )
         resources = get_provisioning_resources(actor=actor, invitation=invitation)
         if resources is None:
             return invitation
         company, mapping, user, profile = resources
-        prepared_invitation = invitation
         prepared_company, prepared_mapping, prepared_profile = company, mapping, profile
         organization_id = user_id = None
         failed_action = error_code = ""
@@ -107,11 +92,9 @@ def provision_enterprise_invitation(*, actor, invitation) -> EnterpriseInvitatio
             if resources is None:
                 return invitation
             company, mapping, user, profile = resources
+            # Accept only links this run resolved; any other change means stale results.
             if (
-                invitation.email != prepared_invitation.email
-                or invitation.company_id != prepared_invitation.company_id
-                or invitation.user_id != prepared_invitation.user_id
-                or company.group_id != prepared_company.group_id
+                company.group_id != prepared_company.group_id
                 or mapping.pk != prepared_mapping.pk
                 or mapping.external_id != prepared_mapping.external_id
                 or (

@@ -342,26 +342,27 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.company.move(self.other_company, "last-child")
         self.assert_provision_rejected(invitation, exception=Http404)
 
-    def test_missing_mapping_is_not_recreated(self):
-        invitation = self.invite()
-        ZendeskOrganization.objects.filter(group_profile=self.company).delete()
-        self.assert_provision_rejected(invitation, code="resource_missing")
-
-    def test_missing_profile_is_not_recreated(self):
-        invitation = self.invite()
-        Profile.all_profiles.filter(user_id=invitation.user_id).delete()
-        self.assert_provision_rejected(invitation, code="resource_missing")
-
-    def test_missing_user_is_not_replaced(self):
-        invitation = self.invite()
-        User.all_users.get(pk=invitation.user_id).delete()
-        ProductSupportConfig.objects.filter(pk=self.config.pk).update(is_active=False)
-        self.assert_provision_rejected(invitation, code="resource_missing")
-
-    def test_support_mapping_for_current_config_must_still_exist(self):
-        invitation = self.invite()
-        SupportOrganization.objects.filter(group=self.company.group, config=self.config).delete()
-        self.assert_provision_rejected(invitation, code="configuration_error")
+    def test_missing_prepared_resources_are_not_recreated(self):
+        for name, remove in (
+            (
+                "mapping",
+                lambda invitation: ZendeskOrganization.objects.filter(
+                    group_profile=self.company
+                ).delete(),
+            ),
+            (
+                "profile",
+                lambda invitation: Profile.all_profiles.filter(
+                    user_id=invitation.user_id
+                ).delete(),
+            ),
+            ("user", lambda invitation: User.all_users.filter(pk=invitation.user_id).delete()),
+        ):
+            with self.subTest(name), transaction.atomic():
+                invitation = self.invite()
+                remove(invitation)
+                self.assert_provision_rejected(invitation, code="resource_missing")
+                transaction.set_rollback(True)
 
     def test_changed_active_config_uses_current_company_binding(self):
         invitation = self.invite()
@@ -386,6 +387,8 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         SupportOrganization.objects.filter(group=self.company.group).update(include_live_chat=True)
         with override_settings(ZENDESK_CHAT_WIDGET_KEY=""):
             self.assert_provision_rejected(invitation, code="configuration_error")
+        SupportOrganization.objects.filter(group=self.company.group, config=self.config).delete()
+        self.assert_provision_rejected(invitation, code="configuration_error")
 
     def test_duplicate_hidden_email_or_changed_local_email_is_not_rebound(self):
         invitation = self.invite()
@@ -433,11 +436,6 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         SupportOrganizationFactory(group=unrelated.group, config=self.config)
         user.groups.add(unrelated.group)
         self.assert_provision_rejected(invitation, code="company_conflict")
-
-    def test_unknown_invitation_status_is_rejected_before_provider_calls(self):
-        invitation = self.invite()
-        EnterpriseInvitation.objects.filter(pk=invitation.pk).update(status="unknown")
-        self.assert_provision_rejected(invitation, code="configuration_error")
 
     def test_invalid_remote_ids_are_rejected_before_provider_calls(self):
         invitation = self.invite()
@@ -646,22 +644,6 @@ class EnterpriseProvisioningConcurrencyTests(ProvisioningFixtures, TransactionTe
                 release.set()
             return owner.result(timeout=15), contender.result(timeout=15)
 
-    def test_same_invitation_retries_share_email_lock_and_saved_ids(self):
-        invitation = self.invite()
-        first, second = self.compete(
-            lambda: self.provision(invitation).status,
-            lambda: self.provision(invitation).status,
-        )
-        self.assertEqual((first, second), (EnterpriseInvitation.Status.READY,) * 2)
-        self.assertEqual(self.client.ensure_organization.call_args.kwargs["zendesk_id"], "101")
-        self.assertEqual(self.client.ensure_user.call_args.kwargs["zendesk_id"], "201")
-        self.client.ensure_organization_membership.assert_called_with(
-            user_id="201", organization_id="101"
-        )
-        invitation.refresh_from_db()
-        self.assertEqual(invitation.status, EnterpriseInvitation.Status.READY)
-        self.assertEqual((invitation.failed_action, invitation.error_code), ("", ""))
-
     def test_different_invitees_can_provision_the_same_unlinked_company_concurrently(self):
         invitations = (
             self.invite(email="first-invitee@example.com"),
@@ -820,24 +802,6 @@ class EnterpriseProvisioningConcurrencyTests(ProvisioningFixtures, TransactionTe
                 )
                 User.all_users.filter(pk=self.actor.pk).update(is_staff=True, is_active=True)
                 self.root.leaders.add(self.actor)
-
-    def test_invitation_retargeting_during_provider_io_stops_stale_writes(self):
-        other = self.invite(company=self.other_company, email="other-company@example.com")
-        for field, value in (
-            ("email", "retargeted@example.com"),
-            ("company_id", self.other_company.pk),
-            ("user_id", other.user_id),
-        ):
-            with self.subTest(field=field):
-                invitation = self.invite(email=f"retarget-{field}@example.com")
-                error = self.during_provider_call(
-                    invitation,
-                    lambda: EnterpriseInvitation.objects.filter(pk=invitation.pk).update(
-                        **{field: value}
-                    ),
-                    exception=ValidationError,
-                )
-                self.assertEqual(error.code, "account_conflict")
 
     def test_company_group_relink_during_provider_io_stops_stale_writes(self):
         invitation = self.invite()

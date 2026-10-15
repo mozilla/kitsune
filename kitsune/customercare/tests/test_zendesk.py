@@ -853,8 +853,14 @@ class ZendeskOAuthTests(SimpleTestCase):
                 self.assertEqual(error.exception.code, "resource_missing")
                 self.assertNotIn(api_error, str(error.exception))
 
-    def test_organization_api_failures_remain_available_for_service_classification(self):
-        for status in (400, 401, 403, 409, 422, 503):
+    def test_organization_api_failures_are_classified(self):
+        for status in (400, 409, 422):
+            with self.subTest(status=status):
+                self.api_status = status
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    ZendeskClient(disable_cache=True).validate_organization("123")
+                self.assertEqual(error.exception.code, "zendesk_conflict")
+        for status in (401, 403, 503):
             with self.subTest(status=status):
                 self.api_status = status
                 with self.assertRaises(APIException) as error:
@@ -1245,43 +1251,8 @@ class ZendeskProvisioningTests(SimpleTestCase):
 
         self.client.ensure_organization_membership(user_id="123", organization_id="456")
 
-    def test_duplicate_membership_is_success_only_after_fresh_target_read(self):
-        self.expect("POST", "organization_memberships", {"error": "RecordInvalid"}, status=422)
-        self.expect_memberships(456)
-
-        self.client.ensure_organization_membership(user_id="123", organization_id="456")
-
-    def test_membership_422_without_target_is_not_success(self):
-        for organizations in ((), (789,)):
-            with self.subTest(organizations=organizations):
-                self.expect(
-                    "POST", "organization_memberships", {"error": "RecordInvalid"}, status=422
-                )
-                self.expect_memberships(*organizations)
-
-                with self.assertRaises(ZendeskProvisioningConflict) as error:
-                    self.client.ensure_organization_membership(
-                        user_id="123", organization_id="456"
-                    )
-                self.assertEqual(error.exception.code, "zendesk_conflict")
-
-    def test_membership_422_cannot_confirm_another_users_pair(self):
-        self.expect("POST", "organization_memberships", {"error": "RecordInvalid"}, status=422)
-        self.expect(
-            "GET",
-            "users/123/organization_memberships",
-            {
-                "organization_memberships": [{"id": 891, "user_id": 789, "organization_id": 456}],
-                "next_page": None,
-            },
-        )
-
-        with self.assertRaises(ZendeskProvisioningConflict) as error:
-            self.client.ensure_organization_membership(user_id="123", organization_id="456")
-        self.assertEqual(error.exception.code, "zendesk_conflict")
-
-    def test_membership_422_preserves_other_company_memberships_and_default(self):
-        for organizations in ((789, 456), (456, 789)):
+    def test_membership_422_is_success_when_a_fresh_read_finds_the_target(self):
+        for organizations in ((456,), (789, 456), (456, 789)):
             with self.subTest(organizations=organizations):
                 self.expect(
                     "POST", "organization_memberships", {"error": "RecordInvalid"}, status=422
@@ -1290,14 +1261,26 @@ class ZendeskProvisioningTests(SimpleTestCase):
 
                 self.client.ensure_organization_membership(user_id="123", organization_id="456")
 
-    def test_membership_lost_response_manual_retry_confirms_target(self):
-        self.expect("POST", "organization_memberships", requests.Timeout("Lost response"))
-        with self.assertRaises(requests.Timeout):
-            self.client.ensure_organization_membership(user_id="123", organization_id="456")
-        self.expect("POST", "organization_memberships", {"error": "RecordInvalid"}, status=422)
-        self.expect_memberships(456)
-
-        self.client.ensure_organization_membership(user_id="123", organization_id="456")
+    def test_membership_422_without_the_target_pair_is_not_success(self):
+        for memberships in (
+            [],
+            [{"id": 1, "user_id": 123, "organization_id": 789}],
+            [{"id": 1, "user_id": 789, "organization_id": 456}],
+        ):
+            with self.subTest(memberships=memberships):
+                self.expect(
+                    "POST", "organization_memberships", {"error": "RecordInvalid"}, status=422
+                )
+                self.expect(
+                    "GET",
+                    "users/123/organization_memberships",
+                    {"organization_memberships": memberships, "next_page": None},
+                )
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.client.ensure_organization_membership(
+                        user_id="123", organization_id="456"
+                    )
+                self.assertEqual(error.exception.code, "zendesk_conflict")
 
     def test_missing_membership_resource_is_a_safe_conflict(self):
         for api_error in ("NotFound", "RecordNotFound"):

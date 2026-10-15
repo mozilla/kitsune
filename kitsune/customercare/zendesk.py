@@ -129,11 +129,7 @@ class ZendeskClient:
         try:
             self.client.organizations(id=int(organization_id))
         except (APIException, requests.HTTPError) as exc:
-            if isinstance(exc, RecordNotFoundException) or (
-                exc.response is not None and exc.response.status_code == 404
-            ):
-                raise ZendeskProvisioningConflict("resource_missing") from exc
-            raise
+            ZendeskProvisioningConflict.raise_from(exc)
         return organization_id
 
     def ensure_organization(

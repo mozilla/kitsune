@@ -214,7 +214,7 @@ as company setup and is unavailable in read-only mode.
 
 Preparation does not provision Zendesk users or organizations, grant company
 membership, activate accounts, or send email. Prepared accounts are not ready for
-ordinary sign-in, and there is no invitation delivery or acceptance flow.
+ordinary sign-in; they are claimed through an invitation link.
 
 ### Required information and account eligibility
 
@@ -267,52 +267,35 @@ described below make a prepared account claimable.
 ## Enterprise Zendesk provisioning
 
 Call `kitsune.groups.provisioning.provision_enterprise_invitation(actor=..., invitation=...)`
-to create or link the Zendesk organization, user, and organization membership.
-Intake remains local; no endpoint or background task invokes this service.
+to create or link the Zendesk organization, user, and organization membership. No
+endpoint or background task calls it.
 
-Provisioning rechecks current operator permissions, the prepared account, the
-current enterprise support configuration, and the company-membership boundary.
-It refuses read-only mode and does not recreate missing local resources. Accepted
-history returns before prepared-resource validation or hierarchy/row locking.
+Provisioning rechecks operator permissions, the prepared account, the current
+enterprise support configuration, and company membership rules. It refuses
+read-only mode, never recreates missing local resources, and leaves accepted
+invitations unchanged.
 
-Other Zendesk organization memberships and their defaults are preserved; they do
-not block adding the requested membership. Conflicting identities and Zendesk IDs
-owned by another SUMO profile require administrator resolution.
+Zendesk requests run while only the account-email lock is held; afterwards
+provisioning locks and revalidates the records before saving. Results are discarded
+if the company, account, or mapping changed in flight, except for links matching
+what this run resolved. Conflicting identities, or Zendesk IDs owned by another
+SUMO profile, need administrator resolution.
 
-Only the account-email lock is held during Zendesk requests. Preflight validation
-is read-only and takes no hierarchy or row locks. After the requests finish,
-provisioning takes the hierarchy and row locks, reloads the records, and validates
-again before saving IDs or status. A link changed in flight is accepted only when
-it matches a remote ID successfully resolved by this run. Conflicting company,
-account, mapping, or identity changes, or revoked permissions, stop stale local
-writes; remote work may already have succeeded and can be reconciled after staff
-correct the cause.
+### Status and recovery
 
-### Status and manual recovery
+- Success saves the Zendesk IDs and adds both the Zendesk membership and membership
+  in the company's SUMO group. Invitations for accounts created by intake become
+  `ready` for a first-login link; invitations for existing accounts become
+  `accepted`. It does not add root membership or leadership, activate accounts, or
+  send mail.
+- Expected provider failures return `failed` with the failed step and a safe error
+  code. Unexpected failures raise and roll back local changes.
+- Staff retry by calling the service again. It reruns the full sequence using saved
+  IDs, the organization UUID, and the invited email, so earlier partial remote work
+  is reconciled. There is no automatic retry.
 
-- Success saves the organization/user IDs, establishes the target Zendesk
-  membership, and adds membership in the company's SUMO group. Invitations for
-  accounts created by intake become `ready` for a first-login link; invitations for
-  existing accounts become `accepted`. It does not add root membership or
-  leadership, activate the account, or send a welcome.
-- Expected provider failures return `failed`, the failed operation, and a safe
-  error code—not raw provider responses. Successful returned IDs are retained only
-  after the final locked validation passes.
-- Unexpected failures are raised and roll back local changes. Remote writes may
-  already have succeeded and are reconciled on a later rerun.
-- Staff retry by calling the same service again. The fixed organization, user, and
-  membership sequence reruns using saved IDs; there is no per-step action journal
-  or automatic retry schedule. Ready invitations can also be revalidated.
-- Cleared local links can be recovered through the stable organization UUID or
-  user email. An explicitly linked organization with a different external key may
-  need manual correction. Missing saved remote resources fail rather than silently
-  replacing them.
-- Accepted history remains unchanged. Preflight authorization or configuration
-  failures raise before remote work; changes detected afterward stop local writes.
-
-Provisioning does not activate SUMO accounts or send mail.
 See [Zendesk provisioning](zendesk.md#enterprise-provisioning) for provider
-permissions, identity rules, and recovery limits.
+permissions and identity rules.
 
 ## Enterprise invitation links and first login
 
