@@ -1,3 +1,4 @@
+from datetime import timedelta
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 
@@ -5,12 +6,13 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.exceptions import SuspiciousOperation
 from django.test import RequestFactory, override_settings
+from django.utils import timezone
 from kombu.exceptions import OperationalError
 from requests import Timeout
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.customercare.zendesk import ZendeskProvisioningConflict
-from kitsune.groups.invitations import issue_enterprise_invitation
+from kitsune.groups.invitations import invitation_token
 from kitsune.groups.models import EnterpriseInvitation
 from kitsune.groups.tests.test_invitations import InvitationFixtures
 from kitsune.products.tests import ProductFactory
@@ -41,10 +43,9 @@ class EnterpriseAuthFixtures(InvitationFixtures):
         ZendeskOrganization.objects.filter(group_profile=self.company).update(zendesk_id="101")
         self.company.group.user_set.add(invitation.user)
         invitation.status = EnterpriseInvitation.Status.READY
-        invitation.save(update_fields=["status"])
-        token = issue_enterprise_invitation(actor=self.actor, invitation=invitation)
-        invitation.refresh_from_db()
-        return invitation, token
+        invitation.expires_at = timezone.now() + timedelta(days=1)
+        invitation.save(update_fields=["status", "expires_at"])
+        return invitation, invitation_token(invitation)
 
     def authenticate_invitation(self, token, claims):
         self.backend.request.enterprise_invitation_token = token

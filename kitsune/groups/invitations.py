@@ -1,14 +1,20 @@
 from datetime import timedelta
+from email.utils import make_msgid
 
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core import signing
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.http import Http404
 from django.utils import timezone, translation
+from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
+from post_office.models import PRIORITY, STATUS, Email
+from post_office.settings import get_message_id_enabled, get_message_id_fqdn
+from post_office.tasks import send_queued_mail
 from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.zendesk import ZendeskClient, ZendeskProvisioningConflict
@@ -22,6 +28,9 @@ from kitsune.groups.onboarding import (
     require_isolated_root,
     require_onboarding_allowed,
 )
+from kitsune.products.models import SupportOrganization
+from kitsune.sumo.email_utils import make_mail, safe_translation
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.identity import lock_account_email
 from kitsune.users.models import Profile
 
@@ -103,10 +112,89 @@ def get_invitation_resources(invitation, *, for_update=False):
     return company, mapping, user, profile
 
 
-def issue_enterprise_invitation(*, actor, invitation) -> str:
-    """Return a link token, starting the expiry window on first issue; sends no mail."""
+def invitation_token(invitation) -> str:
+    return signing.dumps(
+        {"invitation_id": invitation.pk, "version": invitation.token_version},
+        salt=INVITATION_SALT,
+    )
+
+
+def queue_welcome_email(invitation, *, company, user):
+    """Queue the welcome for delivery after commit and record it on the invitation.
+
+    New accounts get the secure first-login link with a fresh expiry. Existing accounts are
+    already accepted, so they get a plain link to enterprise support.
+    """
     if not invitation_settings_valid():
         raise invitation_error("configuration_error")
+    if invitation.created_user:
+        invitation.expires_at = timezone.now() + timedelta(
+            seconds=settings.ENTERPRISE_INVITATION_MAX_AGE
+        )
+        landing_path = None
+    else:
+        landing_path = invitation_landing_path(invitation)
+    include_live_chat = SupportOrganization.objects.filter(
+        group_id=company.group_id,
+        config__is_active=True,
+        config__product__slug=settings.ENTERPRISE_GROUP_SLUG,
+        include_live_chat=True,
+    ).exists()
+    host = Site.objects.get_current().domain
+
+    @safe_translation
+    def make_welcome(locale):
+        # Reversed inside the locale override so the link carries the recipient's locale.
+        path = landing_path or reverse(
+            "groups.invitation_link", args=[invitation_token(invitation)]
+        )
+        company_name = company.group.name
+        return make_mail(
+            subject=_("Your Mozilla Support access through {company} is ready").format(
+                company=company_name
+            ),
+            text_template="groups/email/enterprise_invitation.ltxt",
+            html_template="groups/email/enterprise_invitation.html",
+            context_vars={
+                "name": user.first_name or user.profile.display_name,
+                "company": company_name,
+                "email": invitation.email,
+                "new_account": invitation.created_user,
+                "include_live_chat": include_live_chat,
+                "start_url": f"https://{host}{path}",
+            },
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to_email=invitation.email,
+        )
+
+    message = make_welcome(user.profile.locale)
+    # Built directly: post_office's helpers would render this text as a Django template.
+    email = Email(
+        from_email=message.from_email,
+        to=message.to,
+        subject=message.subject,
+        message=message.body,
+        html_message=next(
+            (content for content, mimetype in message.alternatives if mimetype == "text/html"),
+            "",
+        ),
+        headers=message.extra_headers,
+        priority=PRIORITY.medium,
+        status=STATUS.queued,
+        # A queued welcome must not deliver a link that has already expired.
+        expires_at=invitation.expires_at if invitation.created_user else None,
+        message_id=make_msgid(domain=get_message_id_fqdn()) if get_message_id_enabled() else None,
+    )
+    email.save()
+    invitation.welcome_email = email
+    invitation.email_queued_at = timezone.now()
+    invitation.save(update_fields=["expires_at", "welcome_email", "email_queued_at"])
+    # The scheduled queue run delivers it if publishing fails.
+    transaction.on_commit(send_queued_mail.delay, robust=True)
+
+
+def resend_enterprise_invitation(*, actor, invitation) -> EnterpriseInvitation:
+    """Queue a replacement welcome with a renewed link; every earlier link stops working."""
     with transaction.atomic():
         invitation = (
             EnterpriseInvitation.objects.select_for_update().filter(pk=invitation.pk).first()
@@ -115,23 +203,27 @@ def issue_enterprise_invitation(*, actor, invitation) -> str:
             raise invitation_error("invalid_invitation")
         with lock_enterprise_hierarchy():
             require_onboarding_allowed(actor, get_enterprise_root())
-            first_issue = invitation.expires_at is None
-            if first_issue:
-                invitation.expires_at = timezone.now() + timedelta(
-                    seconds=settings.ENTERPRISE_INVITATION_MAX_AGE
-                )
-            require_open_invitation(invitation)
-            get_invitation_resources(invitation, for_update=True)
-            if first_issue:
-                invitation.save(update_fields=["expires_at"])
-    return signing.dumps(
-        {"invitation_id": invitation.pk, "version": invitation.token_version},
-        salt=INVITATION_SALT,
-    )
+            if (
+                not invitation.created_user
+                or invitation.status != EnterpriseInvitation.Status.READY
+            ):
+                raise invitation_error("invalid_invitation")
+            company, _mapping, user, _profile = get_invitation_resources(
+                invitation, for_update=True
+            )
+            invitation.token_version += 1
+            invitation.save(update_fields=["token_version"])
+            if invitation.welcome_email_id:
+                # Clear any retry schedule too: post-office rejects a schedule after expiry.
+                Email.objects.filter(pk=invitation.welcome_email_id).exclude(
+                    status=STATUS.sent
+                ).update(expires_at=timezone.now(), scheduled_time=None)
+            queue_welcome_email(invitation, company=company, user=user)
+    return invitation
 
 
 def load_enterprise_invitation(token, *, for_update=False) -> EnterpriseInvitation:
-    """Resolve a link token to its open invitation; account checks run at issuance and claim."""
+    """Resolve a link token to its open invitation; account checks run when sending and claiming."""
     if not token:
         raise invitation_error("invalid_invitation")
     try:

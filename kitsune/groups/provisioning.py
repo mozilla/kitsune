@@ -7,6 +7,7 @@ from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.customercare.zendesk import ZendeskClient, ZendeskProvisioningConflict
+from kitsune.groups.invitations import queue_welcome_email
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import EnterpriseInvitation
 from kitsune.groups.onboarding import (
@@ -142,6 +143,9 @@ def provision_enterprise_invitation(*, actor, invitation) -> EnterpriseInvitatio
                     # Existing accounts need no link, so the membership grant completes them.
                     invitation.status = EnterpriseInvitation.Status.ACCEPTED
                     invitation.accepted_at = timezone.now()
+                # Reruns never queue a second welcome; resend_enterprise_invitation replaces it.
+                if invitation.email_queued_at is None:
+                    queue_welcome_email(invitation, company=company, user=user)
             invitation.failed_action = failed_action
             invitation.error_code = error_code
             invitation.save(update_fields=["status", "failed_action", "error_code", "accepted_at"])

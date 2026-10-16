@@ -1,3 +1,4 @@
+{% from "includes/common_macros.html" import field with context %}
 <div class="card elevation-01 group-actions-card" id="enterprise-onboarding">
   <h3 class="card--title">{{ _('Enterprise onboarding') }}</h3>
   <div class="card--actions">
@@ -9,6 +10,18 @@
       <a href="{{ url('groups.manage_company', profile.slug) }}" class="sumo-button secondary-button button-sm button-full-width">
         {{ _('Support settings') }}
       </a>
+      <form id="enterprise-invite-form" method="POST" action="{{ url('groups.invite_user', profile.slug) }}">
+        {% csrf_token %}
+        {% for error in invitation_form.non_field_errors() %}
+          <p class="form-error is-visible" role="alert">{{ error }}</p>
+        {% endfor %}
+        {{ field(invitation_form.email) }}
+        {{ field(invitation_form.first_name) }}
+        {{ field(invitation_form.last_name) }}
+        <button type="submit" class="sumo-button primary-button button-sm button-full-width">
+          {{ _('Add person') }}
+        </button>
+      </form>
     {% endif %}
   </div>
 </div>

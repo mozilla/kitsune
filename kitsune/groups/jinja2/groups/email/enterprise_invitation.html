@@ -1,0 +1,29 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>{{ _('Hi {name},')|f(name=name) }}</p>
+
+  <p>{{ _('You now have Mozilla Support through {company}. You can:')|f(company=company) }}</p>
+
+  <ul>
+    <li>{{ _('Open support tickets with Mozilla support agents') }}</li>
+    <li>{{ _('See support tickets opened by others at {company}')|f(company=company) }}</li>
+    {% if include_live_chat %}
+      <li>{{ _('Chat live with a support agent') }}</li>
+    {% endif %}
+  </ul>
+
+  {% if new_account %}
+    <p>{{ _('To get started, sign in or create a Mozilla account using {email}.')|f(email=email) }}</p>
+  {% else %}
+    <p>{{ _('To get started, sign in with your Mozilla account.') }}</p>
+  {% endif %}
+
+  <p><a class="button" href="{{ start_url }}">{{ _('Open enterprise support') }}</a></p>
+
+  {% if new_account %}
+    <p>{{ _('This link is only for you and expires soon. If it stops working, contact the person who invited you.') }}</p>
+  {% endif %}
+{% endblock %}
+
+{% block footer %}{% endblock %}

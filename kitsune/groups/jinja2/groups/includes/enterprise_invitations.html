@@ -1,0 +1,39 @@
+<div class="group-section" id="enterprise-invitations">
+  <div class="section-heading">
+    <h2>{{ _('Pending invitations') }}</h2>
+  </div>
+  {% if invitations %}
+    <table>
+      <thead>
+        <tr>
+          <th>{{ _('Name') }}</th>
+          <th>{{ _('Email') }}</th>
+          <th>{{ _('Status') }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for invitation in invitations %}
+          <tr>
+            <td>{{ invitation.user.get_full_name() if invitation.user else '' }}</td>
+            <td>{{ invitation.email }}</td>
+            <td>
+              {{ invitation.get_status_display() }}
+              {% if invitation.error_code %}
+                <br>{{ invitation_failures.get(invitation.error_code, '') }}
+              {% endif %}
+            </td>
+            <td>
+              <form method="POST" action="{{ url('groups.resend_invitation', profile.slug, invitation.pk) }}">
+                {% csrf_token %}
+                <button type="submit" class="sumo-button secondary-button button-sm">{{ _('Resend') }}</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>{{ _('No pending invitations.') }}</p>
+  {% endif %}
+</div>

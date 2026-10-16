@@ -11,6 +11,7 @@ from django.db.models.functions import Coalesce, Lower, NullIf
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
@@ -20,6 +21,7 @@ from kitsune.customercare.models import SupportTicket, ZendeskOrganization
 from kitsune.groups.forms import (
     AddUserForm,
     EnterpriseCompanyForm,
+    EnterpriseInvitationForm,
     GroupAvatarForm,
     GroupProfileForm,
 )
@@ -27,16 +29,19 @@ from kitsune.groups.invitations import (
     INVITATION_ERRORS,
     invitation_landing_path,
     load_enterprise_invitation,
+    resend_enterprise_invitation,
 )
 from kitsune.groups.membership import lock_enterprise_hierarchy
-from kitsune.groups.models import GroupProfile
+from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.groups.onboarding import (
     can_onboard_enterprise,
     configure_enterprise_company,
     create_enterprise_company,
     get_enterprise_company,
     get_enterprise_root,
+    invite_enterprise_user,
 )
+from kitsune.groups.provisioning import provision_enterprise_invitation
 from kitsune.products.models import SupportOrganization
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate
@@ -46,6 +51,21 @@ TICKET_STATUS_FILTERS = {"active", "all", "solved"}
 
 # Mirrors Profile.display_name, which treats a blank name as unset.
 DISPLAY_NAME_ORDER = Lower(Coalesce(NullIf("profile__name", Value("")), "username"))
+
+# Staff-facing explanations for the safe codes recorded or raised by invitation services.
+INVITATION_FAILURES = {
+    "zendesk_unavailable": _lazy("Zendesk could not be reached."),
+    "zendesk_conflict": _lazy(
+        "Zendesk rejected the setup. Check the company's Zendesk organization."
+    ),
+    "account_conflict": _lazy(
+        "This account or its Zendesk user is linked to someone else. Ask an administrator."
+    ),
+    "company_conflict": _lazy("This person belongs to another company."),
+    "resource_missing": _lazy("A record this invitation needs no longer exists."),
+    "configuration_error": _lazy("Enterprise support is not configured correctly."),
+    "invalid_invitation": _lazy("This invitation changed. Reload the page and try again."),
+}
 
 
 def _remove_group_member(profile, user, request, remove_from_group=True):
@@ -138,7 +158,7 @@ def list(request):
     return render(request, "groups/list.html", {"groups": groups})
 
 
-def profile(request, group_slug, user_form=None):
+def profile(request, group_slug, user_form=None, invitation_form=None):
     prof = _get_group_profile_or_404(request.user, group_slug)
     leaders = prof.leaders.all().select_related("profile").order_by(DISPLAY_NAME_ORDER, "username")
     members_qs = (
@@ -167,6 +187,7 @@ def profile(request, group_slug, user_form=None):
     can_onboard = enterprise_root is not None and can_onboard_enterprise(
         request.user, enterprise_root
     )
+    enterprise_is_company = can_onboard and prof.depth == 2 and parent.pk == enterprise_root.pk
 
     return render(
         request,
@@ -181,22 +202,46 @@ def profile(request, group_slug, user_form=None):
             "parent": parent,
             "children": children,
             "enterprise_is_root": can_onboard and prof.pk == enterprise_root.pk,
-            "enterprise_is_company": (
-                can_onboard and prof.depth == 2 and parent.pk == enterprise_root.pk
+            "enterprise_is_company": enterprise_is_company,
+            "invitation_form": invitation_form or EnterpriseInvitationForm(),
+            # Accepted people are company members, so the member list already shows them.
+            "invitations": (
+                EnterpriseInvitation.objects.filter(company=prof)
+                .exclude(status=EnterpriseInvitation.Status.ACCEPTED)
+                .select_related("user")
+                .order_by("-created")
+                if enterprise_is_company
+                else None
             ),
+            "invitation_failures": INVITATION_FAILURES,
         },
     )
 
 
-@login_required
-@require_http_methods(["GET", "POST"])
-def manage_company(request, group_slug):
+def _onboarding_root(request):
+    """Return the enterprise root after checking the user may onboard companies."""
     try:
         root = get_enterprise_root()
     except ValidationError:
         raise Http404 from None
     if not can_onboard_enterprise(request.user, root):
         raise PermissionDenied
+    return root
+
+
+def _add_service_errors(form, error):
+    """Show a service ValidationError on the form, by field where possible."""
+    if hasattr(error, "error_dict"):
+        for field, errors in error.error_dict.items():
+            form.add_error(field if field in form.fields else None, errors)
+    else:
+        form.add_error(None, error)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def manage_company(request, group_slug):
+    root = _onboarding_root(request)
     creating = group_slug == root.slug
     prof = root if creating else get_enterprise_company(root, viewer=request.user, slug=group_slug)
     company = None if creating else prof
@@ -228,11 +273,7 @@ def manage_company(request, group_slug):
                     actor=request.user, company=company, **form.cleaned_data
                 )
         except ValidationError as error:
-            if hasattr(error, "error_dict"):
-                for field, errors in error.error_dict.items():
-                    form.add_error(field if field in form.fields else None, errors)
-            else:
-                form.add_error(None, error)
+            _add_service_errors(form, error)
         else:
             messages.success(
                 request,
@@ -246,6 +287,81 @@ def manage_company(request, group_slug):
         "groups/company_form.html",
         {"profile": prof, "form": form, "creating": creating},
     )
+
+
+def _provision_and_report(request, invitation):
+    queued_before = invitation.email_queued_at
+    invitation = provision_enterprise_invitation(actor=request.user, invitation=invitation)
+    if invitation.status == EnterpriseInvitation.Status.FAILED:
+        messages.error(
+            request,
+            _("Could not finish setting up {email}: {reason} Use Resend to try again.").format(
+                email=invitation.email,
+                reason=INVITATION_FAILURES.get(invitation.error_code, ""),
+            ),
+        )
+    elif invitation.email_queued_at != queued_before:
+        messages.success(
+            request,
+            _("{email} is set up and the welcome email was sent.").format(email=invitation.email),
+        )
+    else:
+        messages.info(request, _("{email} is already set up.").format(email=invitation.email))
+
+
+@login_required
+@require_POST
+def invite_user(request, group_slug):
+    """Create or reuse the person's account, provision Zendesk, and send the welcome."""
+    company = get_enterprise_company(
+        _onboarding_root(request), viewer=request.user, slug=group_slug
+    )
+    form = EnterpriseInvitationForm(request.POST)
+    if form.is_valid():
+        try:
+            invitation = invite_enterprise_user(
+                actor=request.user, company=company, **form.cleaned_data
+            )
+            _provision_and_report(request, invitation)
+        except ValidationError as error:
+            _add_service_errors(form, error)
+        else:
+            return HttpResponseRedirect(company.get_absolute_url())
+    return profile(request, group_slug, invitation_form=form)
+
+
+@login_required
+@require_POST
+def resend_invitation(request, group_slug, invitation_id):
+    """Finish a pending or failed setup, or send a ready invitation a fresh link."""
+    company = get_enterprise_company(
+        _onboarding_root(request), viewer=request.user, slug=group_slug
+    )
+    invitation = get_object_or_404(EnterpriseInvitation, pk=invitation_id, company=company)
+    # Accepted invitations fall through to provisioning, which returns them unchanged.
+    if invitation.status == EnterpriseInvitation.Status.READY and invitation.created_user:
+        try:
+            resend_enterprise_invitation(actor=request.user, invitation=invitation)
+        except ValidationError as error:
+            # Coded errors are worded for the invitee, so explain them to staff; field
+            # errors from building the email carry no code.
+            messages.error(
+                request,
+                INVITATION_FAILURES.get(getattr(error, "code", None), " ".join(error.messages)),
+            )
+        else:
+            messages.success(
+                request,
+                _("Sent {email} a new welcome email; earlier links no longer work.").format(
+                    email=invitation.email
+                ),
+            )
+    else:
+        try:
+            _provision_and_report(request, invitation)
+        except ValidationError as error:
+            messages.error(request, " ".join(error.messages))
+    return HttpResponseRedirect(company.get_absolute_url())
 
 
 @login_required

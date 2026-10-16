@@ -13,6 +13,12 @@ group_patterns = [
     re_path(r"^remove-leader/(?P<user_id>\d+)$", views.remove_leader, name="groups.remove_leader"),
     re_path(r"^tickets$", views.tickets, name="groups.tickets"),
     re_path(r"^settings$", views.manage_company, name="groups.manage_company"),
+    re_path(r"^invite-user$", views.invite_user, name="groups.invite_user"),
+    re_path(
+        r"^invitations/(?P<invitation_id>\d+)/resend$",
+        views.resend_invitation,
+        name="groups.resend_invitation",
+    ),
 ]
 
 urlpatterns = [

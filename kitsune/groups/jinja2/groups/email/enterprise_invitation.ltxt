@@ -1,0 +1,24 @@
+{%- autoescape false -%}
+{#- L10n: This is an email. Whitespace matters! -#}
+{{ _('Hi {name},')|f(name=name) }}
+
+{{ _('You now have Mozilla Support through {company}. You can:')|f(company=company) }}
+
+- {{ _('Open support tickets with Mozilla support agents') }}
+- {{ _('See support tickets opened by others at {company}')|f(company=company) }}
+{%- if include_live_chat %}
+- {{ _('Chat live with a support agent') }}
+{%- endif %}
+
+{% if new_account -%}
+{{ _('To get started, open the link below and sign in or create a Mozilla account using {email}.')|f(email=email) }}
+{%- else -%}
+{{ _('To get started, open the link below and sign in with your Mozilla account.') }}
+{%- endif %}
+
+{{ start_url }}
+{%- if new_account %}
+
+{{ _('This link is only for you and expires soon. If it stops working, contact the person who invited you.') }}
+{%- endif %}
+{% endautoescape %}
