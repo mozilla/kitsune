@@ -1,15 +1,17 @@
+@use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
 .card {
   &--topic {
+    @include c.elevated-surface(var(--card-bg));
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
-    background-color: var(--card-bg);
     border: 1px solid var(--topic-card-border);
     border-radius: var(--radius-lg);
     padding: p.$spacing-md;
+    // Not an elevation mixin: the light shadow is Protocol's small shadow, not --elevation-1.
     box-shadow: var(--topic-card-shadow);
     box-sizing: border-box;
     min-height: 320px;

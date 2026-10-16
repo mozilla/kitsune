@@ -72,7 +72,7 @@
   }
 
   .required-text {
-    color: red;
+    color: var(--survey-required-text);
   }
 
   &.is-forum-answer {
@@ -255,7 +255,7 @@
   font-size: 1rem;
 
   &.has-border-top {
-    border-top: 1px solid #EDEDF0;
+    border-top: 1px solid var(--kb-metadata-rule);
     margin-top: 12px;
     margin-bottom: 24px;
     padding-top: 12px;

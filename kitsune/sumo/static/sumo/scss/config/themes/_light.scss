@@ -5,7 +5,10 @@
 //
 // Backgrounds for the page and the things on it. `--color-inverse-bg` is the dark ink
 // surface of inverse cards and banners; in the dark theme `--surface-inverse-image`
-// adds a gradient on top of it (`none` in light).
+// adds a gradient on top of it (`none` in light). In the dark theme, surfaces that pass
+// their background to an elevation mixin are painted with `--surface-elevated-image`
+// (graphite-06 to graphite-05) over `--surface-elevated-bg` (`--card-bg`); both are
+// `initial` in light, so those surfaces keep their own background.
 //
 // Colors:
 // --page-bg: #FFFFFF - Dark: #1C1E23 (graphite-03)
@@ -52,7 +55,7 @@
 // --color-click: #0060DF - Dark: #8FBEFA (azure-03)
 // --color-link-hover: #0250BB - Dark: #B0D4FF (azure-02)
 // --color-link-visited: #B933E1 - Dark: #BFA9DB (lavender)
-// --color-link-inverse-visited: #F6B8FF - Dark: #F6B8FF
+// --color-link-inverse-visited: #F6B8FF - Dark: #BFA9DB (lavender)
 // --color-link-inverse-active-bg: rgba(237, 237, 240, 0.2) - Dark: rgba(237, 237, 240, 0.2)
 //
 // Weight: -4
@@ -84,8 +87,8 @@
 // --field-border-color-hover: #0250BB - Dark: #8FBEFA (azure-03)
 // --field-border-color-disabled: #CDCDD4 - Dark: #3A3D43 (graphite-08)
 // --field-background-color-disabled: #F9F9FA - Dark: #22252A (graphite-04)
-// --field-color-disabled: #CDCDD4 - Dark: #CDCDD4
-// --checkbox-checked-color: #0060DF - Dark: #0060DF
+// --field-color-disabled: #CDCDD4 - Dark: #5A5E66 (graphite-09)
+// --checkbox-checked-color: #0060DF - Dark: #396ED6 (azure-04)
 //
 // Weight: -2
 //
@@ -98,10 +101,10 @@
 // tokens are opaque.
 //
 // Colors:
-// --color-success: #3FE1B0 - Dark: #3FE1B0
+// --color-success: #3FE1B0 - Dark: #83D5AD (sage-01)
 // --color-warning: #FFEA80 - Dark: #3B342B
-// --color-error: #FF6A75 - Dark: #FF6A75
-// --color-error-hover: #E12850 - Dark: #E12850
+// --color-error: #FF6A75 - Dark: #FF9AA2 (red-03)
+// --color-error-hover: #E12850 - Dark: #FFBDC5 (red-02)
 // --status-info-bg: rgba(0, 96, 223, 0.08) - Dark: #2A313D
 // --status-info-text: #0060DF - Dark: #8FBEFA (azure-03)
 // --status-success-bg: rgba(0, 135, 135, 0.1) - Dark: #193729 (sage-02)
@@ -216,11 +219,17 @@
 // Hero
 //
 // The home and product landing heroes that carry `has-aurora`. Links in the hero use
-// `--hero-link` so they stay readable over the glow. The aurora background and the hero bottom
-// edge can't be shown as swatches, so they appear only in the theme maps.
+// `--hero-link` so they stay readable over the glow. A hero on product art (the Enterprise
+// hero) keeps white text in both themes, with the translucent `--hero-art-*` link hover and
+// underline, and lifts its searchbox with a shadow; in the dark theme the searchbox takes the
+// field surface. The aurora background, the hero bottom edge, and the searchbox shadow can't be
+// shown as swatches, so they appear only in the theme maps.
 //
 // Colors:
 // --hero-link: #0250BB - Dark: #8FBEFA (azure-03)
+// --hero-art-link-hover: rgba(255, 255, 255, 0.8) - Dark: rgba(255, 255, 255, 0.8)
+// --hero-art-underline: rgba(255, 255, 255, 0.6) - Dark: rgba(255, 255, 255, 0.6)
+// --hero-art-searchbox-bg: #FFFFFF - Dark: #16181D (graphite-02)
 //
 // Weight: 22
 //
@@ -365,6 +374,106 @@
 //
 // Style guide: colors.modal
 
+// Form controls
+//
+// Text fields, selects, checkboxes, radios, toggles, and range inputs. A field's validation color
+// draws its ring and its error text, and its icon is drawn in the same color. The validation icons,
+// the select chevron, and the checkbox and radio marks are images drawn in each theme's colors; they,
+// the validation rings, the dark field inset, and the dark-only native control accent (`--control-accent`)
+// and placeholder color (`--field-placeholder`, graphite-10 at full opacity) appear in the theme maps only.
+//
+// Colors:
+// --field-text: #0C0C0D - Dark: #E0E0E6 (light-gray-04)
+// --field-label-color-disabled: #D0D0D7 - Dark: #5A5E66 (graphite-09)
+// --field-error-color: #C50043 - Dark: #FF9AA2 (red-03)
+// --field-warning-color: #FFD567 - Dark: #F6BC5D
+// --field-success-color: #2AC3A2 - Dark: #83D5AD (sage-01)
+// --toggle-bg-color: #CDCDD4 - Dark: #83868D (graphite-10)
+// --toggle-knob: #FFFFFF - Dark: #FFFFFF
+// --toggle-disabled-bg: #EDEDF0 - Dark: #32353D (graphite-07)
+// --toggle-disabled-knob: #B1B1BC - Dark: #5A5E66 (graphite-09)
+// --range-slider-pip-color: #0060DF - Dark: #8FBEFA (azure-03)
+// --range-slider-pip-color-hover: #0250BB - Dark: #B0D4FF (azure-02)
+// --range-slider-pip-color-disabled: #B1B1BC - Dark: #5A5E66 (graphite-09)
+// --range-slider-bg: rgba(0, 96, 223, 0.3) - Dark: rgba(143, 190, 250, 0.3)
+// --range-slider-bg-disabled: #EDEDF0 - Dark: #32353D (graphite-07)
+//
+// Weight: 29
+//
+// Style guide: colors.form-controls
+
+// Buttons
+//
+// The default, secondary, and warning buttons; primary buttons use the accent tokens. The icon-only
+// buttons show Protocol's black icons in light and light-gray-02 copies in dark (`--search-icon`,
+// `--more-options-icon`); they, the primary button's dark highlight, and its hover glow appear in
+// the theme maps only.
+//
+// Colors:
+// --button-text: #5E5E72 - Dark: #E0E0E6 (light-gray-04)
+// --button-hover-border: #B1B1BC - Dark: #B7BBC1 (graphite-11)
+// --button-active-border: #9595A2 - Dark: #C9CCD2 (graphite-12)
+// --button-secondary-bg: #FFFFFF - Dark: transparent
+// --button-warning-hover-bg: #E12850 - Dark: #E12850 (red-07)
+// --delete-button-hover-text: #440306 - Dark: #FF9AA2 (red-03)
+//
+// Weight: 30
+//
+// Style guide: colors.buttons
+
+// Text components
+//
+// The destructive "close account" link, form error lists, the KB survey's "Required" note, and
+// the topics section heading. In the dark theme, underlined links get a thin underline in a 35%
+// tint of their own color with more offset; those tokens are `initial` in light and appear only
+// in the theme maps.
+//
+// Colors:
+// --warning-link: #C50043 - Dark: #FF9AA2 (red-03)
+// --warning-link-hover: #810220 - Dark: #FFBDC5 (red-02)
+// --errorlist-bg: #FFBDC5 - Dark: #3C2C32
+// --survey-required-text: #FF0000 - Dark: #FF9AA2 (red-03)
+// --topics-section-heading: #333333 - Dark: #F9F9FB (light-gray-02)
+//
+// Weight: 31
+//
+// Style guide: colors.text-components
+
+// Tables and utilities
+//
+// Highlighted table cells on revision and dashboard tables (the yellow cells use
+// `--color-warning`) and the `.light-grey-bg` utility.
+//
+// Colors:
+// --table-success-bg: #B3FFE3 - Dark: #193729 (sage-02)
+// --light-grey-bg: #F9F9FA - Dark: #22252A (graphite-04)
+//
+// Weight: 32
+//
+// Style guide: colors.tables
+
+// Navigation
+//
+// Tabs, breadcrumbs, the sidebar navigation, the progress bar, and the product picker. Tabs use
+// `--tabs-text-active` when hovered, pressed, or selected. The chevrons, the progress check, and the
+// sidebar's related-content icons are images drawn in each theme's colors, and the "Show more" caret
+// is recolored by a filter; they appear in the theme maps only.
+//
+// Colors:
+// --tabs-divider: #CDCDD4 - Dark: #3A3D43 (graphite-08)
+// --tabs-text: #42435A - Dark: #B7BBC1 (graphite-11)
+// --tabs-text-active: #0060DF - Dark: #F9F9FB (light-gray-02)
+// --tabs-underline: #0060DF - Dark: #8FBEFA (azure-03)
+// --tabs-dropdown-item-bg: #FFFFFF - Dark: transparent
+// --breadcrumbs-link: #80808F - Dark: #B7BBC1 (graphite-11)
+// --sidebar-nav-hover-bg: rgba(0, 0, 0, 0.1) - Dark: rgba(255, 255, 255, 0.08)
+// --progress-track: #CDCDD4 - Dark: #5A5E66 (graphite-09)
+// --progress-complete: #3FE1B0 - Dark: #83D5AD (sage-01)
+//
+// Weight: 33
+//
+// Style guide: colors.navigation
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -378,6 +487,8 @@ $light: (
   'color-error-hover': var(--color-red-07),
   'color-inverse-bg': var(--color-ink-09),
   'surface-inverse-image': none,
+  'surface-elevated-image': initial,
+  'surface-elevated-bg': initial,
   'color-inverse': var(--color-white),
   'color-text-on-accent': var(--color-white),
   'color-heading': var(--color-inverse-bg),
@@ -490,6 +601,10 @@ $light: (
   ),
   'hero-link': var(--color-blue-07),
   'hero-edge': none,
+  'hero-art-link-hover': rgba(255, 255, 255, 0.8),
+  'hero-art-underline': rgba(255, 255, 255, 0.6),
+  'hero-art-searchbox-bg': var(--color-white),
+  'hero-art-searchbox-shadow': 0 4px 20px rgba(0, 0, 0, 0.15),
 
   // Brand callout
   'brand-callout-stop-start': #20123A,
@@ -581,6 +696,83 @@ $light: (
   // Modal and details
   'modal-icon': #000000,
   'details-icon': #000000,
+
+  // Form controls
+  'field-text': #0C0C0D,
+  'field-inset': none,
+  'field-label-color-disabled': #D0D0D7,
+  'field-error-color': var(--color-red-08),
+  'field-warning-color': var(--color-yellow-04),
+  'field-success-color': var(--color-green-07),
+  'field-warning-ring': (0 0 0 p.$spacing-xs rgba(c.color('yellow', '04'), 0.3), 0 0 0 2px var(--field-warning-color)),
+  'field-error-ring': (0 0 0 p.$spacing-xs rgba(c.color('red', '08'), 0.4), 0 0 0 2px var(--field-error-color)),
+  'field-success-ring': (0 0 0 p.$spacing-xs rgba(c.color('green', '07'), 0.3), 0 0 0 2px var(--field-success-color)),
+  'select-chevron-icon': c.chevron('#42435A'),
+  'select-chevron-hover-icon': c.chevron('#0250BB'),
+  'select-chevron-disabled-icon': c.chevron('#CDCDD4'),
+  'checkbox-check-icon': c.checkbox-check('#FFF'),
+  'checkbox-check-disabled-icon': c.checkbox-check('#CDCDD4'),
+  'radio-dot-icon': c.radio-dot('#0060DF'),
+  'radio-dot-disabled-icon': c.radio-dot('#CDCDD4'),
+  'field-error-icon': c.error-mark('#C50043'),
+  'field-success-icon': c.success-mark('#2ac3a2'),
+  'control-accent': initial,
+  'field-placeholder': initial,
+  'field-placeholder-opacity': initial,
+  'toggle-bg-color': var(--color-marketing-gray-03),
+  'toggle-knob': var(--color-white),
+  'toggle-disabled-bg': var(--color-marketing-gray-02),
+  'toggle-disabled-knob': var(--color-marketing-gray-04),
+  'range-slider-pip-color': var(--color-blue-06),
+  'range-slider-pip-color-hover': var(--color-blue-07),
+  'range-slider-pip-color-disabled': var(--color-marketing-gray-04),
+  'range-slider-bg': rgba(c.color('blue', '06'), 0.3),
+  'range-slider-bg-disabled': var(--color-marketing-gray-02),
+
+  // Buttons
+  'button-text': var(--color-marketing-gray-07),
+  'button-hover-border': var(--color-marketing-gray-04),
+  'button-active-border': var(--color-marketing-gray-05),
+  'button-secondary-bg': var(--color-surface),
+  'button-warning-hover-bg': var(--color-red-07),
+  'button-primary-shadow': none,
+  'button-primary-hover-shadow': none,
+  'search-icon': url('protocol/img/icons/search.svg'),
+  'more-options-icon': url('protocol/img/icons/more-vertical.svg'),
+  'delete-button-hover-text': var(--color-red-10),
+
+  // Text components
+  'warning-link': var(--color-red-08),
+  'warning-link-hover': var(--color-red-09),
+  'errorlist-bg': var(--color-red-02),
+  'survey-required-text': #FF0000,
+  'topics-section-heading': #333333,
+  'link-underline-color': initial,
+  'link-underline-thickness': initial,
+  'link-underline-offset': initial,
+
+  // Tables and utilities
+  'table-success-bg': var(--color-green-03),
+  'light-grey-bg': var(--color-marketing-gray-01),
+
+  // Navigation
+  'tabs-divider': var(--color-marketing-gray-03),
+  'tabs-text': var(--color-text),
+  'tabs-text-active': var(--color-link),
+  'tabs-underline': var(--color-link),
+  'tabs-dropdown-item-bg': var(--page-bg),
+  'tabs-chevron-icon': c.chevron('#42435A'),
+  'breadcrumbs-link': var(--color-light-gray-10),
+  'breadcrumbs-chevron-icon': c.breadcrumb-chevron('#80808F'),
+  'sidebar-nav-hover-bg': rgba(0, 0, 0, 0.1),
+  'sidebar-nav-chevron-icon': c.chevron('#5E5E72'),
+  'related-document-icon': url('protocol/img/icons/reader-mode.svg'),
+  'related-question-icon': url('protocol/img/icons/blog.svg'),
+  'show-more-caret-filter': invert(27%) sepia(48%) saturate(3683%) hue-rotate(204deg) brightness(91%) contrast(106%),
+  'progress-track': var(--color-marketing-gray-03),
+  'progress-complete': var(--color-green-06),
+  'progress-check-icon': c.step-check('#000'),
+  'menu-list-chevron-icon': c.menu-list-chevron('#20133A'),
 
   'elevation-rim': 0 0 #0000,
   'elevation-1': (

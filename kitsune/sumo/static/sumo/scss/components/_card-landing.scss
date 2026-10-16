@@ -4,10 +4,8 @@
 .card {
   &--article,
   &--product {
-    @include c.elevation-01;
+    @include c.elevation-01(var(--card-bg), var(--landing-card-highlight));
     border-radius: var(--radius-lg);
-    background-image: var(--landing-card-highlight);
-    background-color: var(--card-bg);
     transition: transform .2s ease, box-shadow .2s ease;
 
     // Ring last so this shadow list pairs up with the resting elevation and the transition interpolates.

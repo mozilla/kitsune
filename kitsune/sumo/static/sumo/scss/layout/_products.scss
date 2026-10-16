@@ -42,7 +42,7 @@
     color: var(--product-hero-text);
 
     &:hover {
-      color: rgba(255, 255, 255, 0.8);
+      color: var(--hero-art-link-hover);
     }
 
     &:active {
@@ -52,7 +52,7 @@
 
   .popular-searches a {
     color: var(--product-hero-text);
-    text-decoration-color: rgba(255, 255, 255, 0.6);
+    text-decoration-color: var(--hero-art-underline);
 
     &:hover {
       text-decoration-color: var(--product-hero-text);
@@ -65,8 +65,8 @@
 
   // Enhance search box visibility
   .searchbox {
-    background: #ffffff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--hero-art-searchbox-shadow);
+    background: var(--hero-art-searchbox-bg);
   }
 }
 
@@ -123,7 +123,7 @@ body[data-product-slug="firefox-enterprise"] {
   h2 {
     font-size: 24px;
     margin-bottom: 0px;
-    color: #333;
+    color: var(--topics-section-heading);
   }
 
   @media #{p.$mq-sm} {

@@ -7,13 +7,15 @@ $dark: (
   'color-surface': var(--color-graphite-05),
   'color-surface-raised': var(--color-graphite-07),
   'color-click': var(--color-azure-03),
-  'color-success': var(--color-green-06),
+  'color-success': var(--status-success-text),
   'color-warning': #3B342B,
-  'color-error': var(--color-red-05),
+  'color-error': var(--status-error-text),
   'color-shade-bg': var(--color-graphite-04),
-  'color-error-hover': var(--color-red-07),
+  'color-error-hover': var(--color-red-02),
   'color-inverse-bg': #322F5A,
   'surface-inverse-image': linear-gradient(160deg, #322F5A 0%, #22203B 100%),
+  'surface-elevated-image': linear-gradient(180deg, var(--color-graphite-06) 0%, var(--color-graphite-05) 60%),
+  'surface-elevated-bg': var(--card-bg),
   'color-inverse': var(--color-light-gray-02),
   'color-text-on-accent': var(--color-white),
   'color-heading': var(--color-light-gray-02),
@@ -27,7 +29,8 @@ $dark: (
   'color-accent-hover': var(--color-azure-05),
   'color-accent-active': var(--color-azure-05),
   'color-secondary': var(--color-graphite-11),
-  'color-link-inverse-visited': var(--color-purple-02),
+  'color-link-inverse-visited': var(--color-lavender),
+  // Inverse surfaces are dark in both themes, so the pressed-link overlay keeps its light value.
   'color-link-inverse-active-bg': rgba(c.color('marketing-gray', '02'), 0.2),
   'color-border': var(--color-graphite-08),
   'color-border-interactive': var(--color-graphite-10),
@@ -40,10 +43,10 @@ $dark: (
 
   'field-border-color-default': var(--color-graphite-10),
   'field-border-color-hover': var(--color-azure-03),
-  'checkbox-checked-color': var(--color-blue-06),
+  'checkbox-checked-color': var(--color-azure-04),
   'field-border-color-disabled': var(--color-graphite-08),
   'field-background-color-disabled': var(--color-graphite-04),
-  'field-color-disabled': var(--color-marketing-gray-03),
+  'field-color-disabled': var(--color-graphite-09),
 
   'status-info-bg': #2A313D,
   'status-info-text': var(--color-azure-03),
@@ -123,6 +126,11 @@ $dark: (
   ),
   'hero-link': var(--color-link),
   'hero-edge': inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+  // Product art and its white text are the same in both themes.
+  'hero-art-link-hover': rgba(255, 255, 255, 0.8),
+  'hero-art-underline': rgba(255, 255, 255, 0.6),
+  'hero-art-searchbox-bg': var(--color-field-bg),
+  'hero-art-searchbox-shadow': (var(--field-inset), 0 4px 20px rgba(0, 0, 0, 0.15)),
 
   // Brand callout
   'brand-callout-stop-start': #20123A,
@@ -216,6 +224,90 @@ $dark: (
   // Modal and details
   'modal-icon': var(--color-light-gray-02),
   'details-icon': var(--color-light-gray-02),
+
+  // Form controls
+  'field-text': var(--color-light-gray-04),
+  'field-inset': inset 0 1px 2px rgba(0, 0, 0, 0.45),
+  'field-label-color-disabled': var(--color-graphite-09),
+  'field-error-color': var(--status-error-text),
+  'field-warning-color': var(--status-pending-text),
+  'field-success-color': var(--status-success-text),
+  'field-warning-ring': (0 0 0 p.$spacing-xs rgba(246, 188, 93, 0.3), 0 0 0 2px var(--field-warning-color)),
+  'field-error-ring': (0 0 0 p.$spacing-xs rgba(c.color('red', '03'), 0.4), 0 0 0 2px var(--field-error-color)),
+  'field-success-ring': (0 0 0 p.$spacing-xs rgba(c.color('sage', '01'), 0.3), 0 0 0 2px var(--field-success-color)),
+  'select-chevron-icon': c.chevron(c.color('graphite', '11')),
+  'select-chevron-hover-icon': c.chevron(c.color('azure', '03')),
+  'select-chevron-disabled-icon': c.chevron(c.color('graphite', '09')),
+  'checkbox-check-icon': c.checkbox-check('#FFF'),
+  'checkbox-check-disabled-icon': c.checkbox-check(c.color('graphite', '09')),
+  'radio-dot-icon': c.radio-dot(c.color('azure', '04')),
+  'radio-dot-disabled-icon': c.radio-dot(c.color('graphite', '09')),
+  'field-error-icon': c.error-mark(c.color('red', '03')),
+  'field-success-icon': c.success-mark(c.color('sage', '01')),
+  'control-accent': var(--color-azure-03),
+  'field-placeholder': var(--color-graphite-10),
+  // Firefox dims placeholders by opacity, which would take graphite-10 below 4.5:1.
+  'field-placeholder-opacity': 1,
+  'toggle-bg-color': var(--color-graphite-10),
+  'toggle-knob': var(--color-white),
+  'toggle-disabled-bg': var(--color-graphite-07),
+  'toggle-disabled-knob': var(--color-graphite-09),
+  'range-slider-pip-color': var(--color-azure-03),
+  'range-slider-pip-color-hover': var(--color-azure-02),
+  'range-slider-pip-color-disabled': var(--color-graphite-09),
+  'range-slider-bg': rgba(c.color('azure', '03'), 0.3),
+  'range-slider-bg-disabled': var(--color-graphite-07),
+
+  // Buttons
+  'button-text': var(--color-light-gray-04),
+  'button-hover-border': var(--color-graphite-11),
+  'button-active-border': var(--color-graphite-12),
+  'button-secondary-bg': transparent,
+  // The same red as the unread badge: white text stays above 4.5:1.
+  'button-warning-hover-bg': var(--color-red-07),
+  'button-primary-shadow': inset 0 1px 0 rgba(255, 255, 255, 0.18),
+  'button-primary-hover-shadow': (var(--button-primary-shadow), 0 8px 20px -8px rgba(c.color('azure', '04'), 0.7)),
+  // Protocol's search.svg and more-vertical.svg in light-gray-02.
+  'search-icon': c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="#{c.color('light-gray', '02')}" d="M12 6c0-3.31-2.69-6-6-6S0 2.69 0 6s2.69 6 6 6c1.39 0 2.66-.47 3.68-1.26l5.29 5.29 1.06-1.06-5.29-5.29A5.98 5.98 0 0 0 12 6m-6 4.5c-2.48 0-4.5-2.02-4.5-4.5S3.52 1.5 6 1.5s4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5"/></svg>'),
+  'more-options-icon': c.svg-url('<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g transform="translate(11.000000, 4.000000)" stroke="#{c.color('light-gray', '02')}" stroke-width="2"><circle cx="1" cy="15" r="1"></circle><circle cx="1" cy="8" r="1"></circle><circle cx="1" cy="1" r="1"></circle></g></g></svg>'),
+  'delete-button-hover-text': var(--color-red-03),
+
+  // Text components
+  'warning-link': var(--status-error-text),
+  'warning-link-hover': var(--color-red-02),
+  'errorlist-bg': var(--status-error-bg),
+  'survey-required-text': var(--status-error-text),
+  'topics-section-heading': var(--color-heading),
+  // A 35% tint of each link's own color, so visited and inverse links keep matching underlines.
+  'link-underline-color': color-mix(in srgb, currentColor 35%, transparent),
+  'link-underline-thickness': 1px,
+  'link-underline-offset': 0.22em,
+
+  // Tables and utilities
+  'table-success-bg': var(--status-success-bg),
+  'light-grey-bg': var(--color-shade-bg),
+
+  // Navigation
+  'tabs-divider': var(--color-graphite-08),
+  'tabs-text': var(--color-graphite-11),
+  'tabs-text-active': var(--color-light-gray-02),
+  'tabs-underline': var(--color-azure-03),
+  'tabs-dropdown-item-bg': transparent,
+  'tabs-chevron-icon': c.chevron(c.color('graphite', '11')),
+  // Graphite-10 drops to 4.2:1 on shaded bands such as the products list.
+  'breadcrumbs-link': var(--color-graphite-11),
+  'breadcrumbs-chevron-icon': c.breadcrumb-chevron(c.color('graphite', '11')),
+  'sidebar-nav-hover-bg': rgba(255, 255, 255, 0.08),
+  'sidebar-nav-chevron-icon': c.chevron(c.color('graphite', '11')),
+  // Protocol's reader-mode.svg and blog.svg in light-gray-02.
+  'related-document-icon': c.svg-url('<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round"><g transform="translate(3.000000, 3.000000)" stroke="#{c.color('light-gray', '02')}" stroke-width="2"><rect stroke-linejoin="round" x="0" y="0" width="18" height="18" rx="2"></rect><path d="M4,5 L14,5"></path><path d="M4,9 L14,9"></path><path d="M4,13 L8,13"></path></g></g></svg>'),
+  'related-question-icon': c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><g fill="#{c.color('light-gray', '02')}" clip-path="url(#a)"><path d="M.11 1.29 3.2 12.81l3.43 3.2L8 11.53 4.91 0zM5.9 13.27 4.54 12 1.95 2.35l1.9-.51 2.59 9.65zM8 1.5h6.5V4H8v1.5h6.5v7H9V14h7V0H8z"/></g><defs><clipPath id="a"><path d="M0 0h16v16H0z"/></clipPath></defs></svg>'),
+  // Recolors the black caret to about azure-03, as the light filter does to blue-06.
+  'show-more-caret-filter': invert(40%) sepia(18%) saturate(704%) hue-rotate(174deg) brightness(166%) contrast(119%),
+  'progress-track': var(--color-graphite-09),
+  'progress-complete': var(--color-sage-01),
+  'progress-check-icon': c.step-check(c.color('graphite', '01')),
+  'menu-list-chevron-icon': c.menu-list-chevron(c.color('light-gray', '02')),
 
   'elevation-rim': (
     inset 0 1px 0 rgba(255, 255, 255, 0.07),

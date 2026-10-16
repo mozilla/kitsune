@@ -111,7 +111,7 @@
   }
 
   &.is-inverse {
-    background: var(--color-inverse-bg);
+    background: var(--surface-inverse-image) var(--color-inverse-bg);
 
     &,
     p,

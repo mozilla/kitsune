@@ -26,11 +26,13 @@
   --global-radius: var(--radius-sm);
 
   color-scheme: light;
+  accent-color: var(--control-accent, auto);
 }
 
 [data-theme="dark"] {
   @include tokens.emit-theme(dark.$dark);
   color-scheme: dark;
+  accent-color: var(--control-accent, auto);
 }
 
 // Printing always uses the light theme.

@@ -2,18 +2,44 @@
 // here for now, and I'll document them separately later if they
 // are reused in places other than cards.
 
+// The dark theme paints shadowed surfaces with the elevated layer; light keeps $bg, the component's own background.
+@mixin elevated-surface($bg, $overlay: null) {
+  @if $overlay {
+    background-image: $overlay, var(--surface-elevated-image, none);
+  } @else {
+    background-image: var(--surface-elevated-image, none);
+  }
+  background-color: var(--surface-elevated-bg, #{$bg});
+}
+
 @mixin elevation-00() {
   border: var(--elevation-0-border);
 }
 
-@mixin elevation-01() {
+// Pass $bg (and an $overlay layer) to get the elevated surface: a mixin can't see a background set outside it.
+@mixin elevation-01($bg: null, $overlay: null) {
+  @if $overlay and not $bg {
+    @error 'elevation-01: $overlay needs $bg.';
+  }
   box-shadow: var(--elevation-1);
+
+  @if $bg {
+    @include elevated-surface($bg, $overlay);
+  }
 }
 
-@mixin elevation-02 {
+@mixin elevation-02($bg: null) {
   box-shadow: var(--elevation-2);
+
+  @if $bg {
+    @include elevated-surface($bg);
+  }
 }
 
-@mixin elevation-03 {
+@mixin elevation-03($bg: null) {
   box-shadow: var(--elevation-3);
+
+  @if $bg {
+    @include elevated-surface($bg);
+  }
 }

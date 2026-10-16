@@ -15,11 +15,6 @@
 // Style guide: forms.range
 
 :root {
-  --range-slider-pip-color: var(--color-blue-06);
-  --range-slider-bg: #{rgba(c.color('blue', '06'), 0.3)};
-  --range-slider-pip-color-hover: var(--color-blue-07);
-  --range-slider-pip-color-disabled: var(--color-marketing-gray-04);
-  --range-slider-bg-disabled: var(--color-marketing-gray-02);
   --range-slider-height: 6px;
   --range-pip-size: 22px;
 }
@@ -41,7 +36,7 @@
   &::-webkit-slider-runnable-track {
     width: 100%;
     height: var(--range-slider-height);
-    border: 0px solid #000101;
+    border: 0;
     border-radius: 25px;
     background: var(--range-slider-bg);
     cursor: pointer;
@@ -57,7 +52,7 @@
     margin-top: -3.6px;
     width: var(--range-pip-size);
     height: var(--range-pip-size);
-    border: 0px solid #000000;
+    border: 0;
     border-radius: 50%;
     background: var(--range-slider-pip-color);
     cursor: pointer;
@@ -74,7 +69,7 @@
   &::-moz-range-track {
     width: 100%;
     height: var(--range-slider-height);
-    border: 0px solid #000101;
+    border: 0;
     border-radius: 25px;
     background: var(--range-slider-bg);
     cursor: pointer;
@@ -88,7 +83,7 @@
   &::-moz-range-thumb {
     width: var(--range-pip-size);
     height: var(--range-pip-size);
-    border: 0px solid #000000;
+    border: 0;
     border-radius: 50%;
     background: var(--range-slider-pip-color);
     cursor: pointer;
@@ -110,7 +105,7 @@
   }
 
   &::-ms-fill-lower {
-    border: 0px solid #000101;
+    border: 0;
     border-radius: 50px;
     background: var(--range-slider-bg);
   }
@@ -120,7 +115,7 @@
   }
 
   &::-ms-fill-upper {
-    border: 0px solid #000101;
+    border: 0;
     border-radius: 50px;
     background: var(--range-slider-bg);
   }
@@ -132,7 +127,7 @@
   &::-ms-thumb {
     width: var(--range-pip-size);
     height: var(--range-pip-size);
-    border: 0px solid #000000;
+    border: 0;
     border-radius: 50%;
     background: var(--range-slider-pip-color);
     cursor: pointer;
