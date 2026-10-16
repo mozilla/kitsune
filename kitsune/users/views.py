@@ -4,13 +4,14 @@ import secrets
 import string
 from ast import literal_eval
 from operator import attrgetter
+from urllib.parse import parse_qs, urlsplit
 
 import requests
 import waffle
 from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.models import User
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.http import (
     Http404,
     HttpResponse,
@@ -45,6 +46,7 @@ from kitsune.community.utils import num_deleted_contributions
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.utils import resolve_user_org_group
 from kitsune.forums.models import Post, Thread
+from kitsune.groups.invitations import invitation_error, load_enterprise_invitation
 from kitsune.kbadge.models import Award
 from kitsune.kbforums.models import Post as KBForumPost
 from kitsune.kbforums.models import Thread as KBForumThread
@@ -248,9 +250,13 @@ def questions_contributed(request, username):
         raise Http404()
 
     if channel != "direct_support":
-        forum_questions = profile.user.questions.select_related(
-            "solution", "product", "topic", "last_answer", "last_answer__creator"
-        ).prefetch_related("metadata_set").order_by("-created")
+        forum_questions = (
+            profile.user.questions.select_related(
+                "solution", "product", "topic", "last_answer", "last_answer__creator"
+            )
+            .prefetch_related("metadata_set")
+            .order_by("-created")
+        )
         if product_slug:
             forum_questions = forum_questions.filter(product__slug=product_slug)
         if topic_slug:
@@ -531,12 +537,7 @@ def become(request, username=None):
 class FXAAuthenticateView(OIDCAuthenticationRequestView):
     @staticmethod
     def get_settings(attr, *args):
-        """Override settings for Mozilla accounts.
-
-        The default values for the OIDC lib are used for the SSO login in the admin
-        interface. For Mozilla accounts we need to pass different values, pointing to the
-        correct endpoints and RP specific attributes.
-        """
+        """Use Mozilla settings without changing admin SSO defaults."""
 
         val = get_oidc_fxa_setting(attr)
         if val is not None:
@@ -549,18 +550,35 @@ class FXAAuthenticateView(OIDCAuthenticationRequestView):
 
         request.session["login_locale"] = getattr(request, "LANGUAGE_CODE", settings.LANGUAGE_CODE)
 
-        return super().get(request)
+        if "enterprise_invitation" not in request.GET:
+            return super().get(request)
+
+        token = request.session.get("enterprise_invitation_token")
+        try:
+            invitation = load_enterprise_invitation(token)
+            if request.GET["enterprise_invitation"] != str(invitation.pk):
+                raise invitation_error("invalid_invitation")
+        except ValidationError as error:
+            request.session["enterprise_invitation_error"] = error.code
+            return HttpResponseRedirect(reverse("groups.invitation"))
+
+        response = super().get(request)
+        # Bind the token to this sign-in's OAuth state so other tabs cannot swap it.
+        state = parse_qs(urlsplit(response["Location"]).query)["state"][0]
+        states = {
+            key: value
+            for key, value in request.session.get("enterprise_invitation_states", {}).items()
+            if key in request.session["oidc_states"]
+        }
+        states[state] = token
+        request.session["enterprise_invitation_states"] = states
+        return response
 
 
 class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
     @staticmethod
     def get_settings(attr, *args):
-        """Override settings for Mozilla accounts.
-
-        The default values for the OIDC lib are used for the SSO login in the admin
-        interface. For Mozilla accounts we need to pass different values, pointing to the
-        correct endpoints and RP specific attributes.
-        """
+        """Use Mozilla settings without changing admin SSO defaults."""
 
         val = get_oidc_fxa_setting(attr)
         if val is not None:
@@ -569,7 +587,22 @@ class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
             attr, *args
         )
 
+    def get(self, request):
+        states = request.session.get("enterprise_invitation_states", {})
+        request.enterprise_invitation_token = states.pop(request.GET.get("state"), None)
+        if request.enterprise_invitation_token is not None:
+            request.session["enterprise_invitation_states"] = states
+        return super().get(request)
+
     def login_failure(self):
+        if (token := self.request.enterprise_invitation_token) is not None:
+            # The library may have logged out and flushed the session; keep the preview usable.
+            self.request.session["enterprise_invitation_token"] = token
+            # Cancelling or a lost OAuth state leaves the invitation usable; show no error.
+            if error := getattr(self.request, "enterprise_invitation_error", None):
+                self.request.session["enterprise_invitation_error"] = error
+            return HttpResponseRedirect(reverse("groups.invitation"))
+
         messages.add_message(
             self.request,
             messages.ERROR,

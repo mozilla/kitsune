@@ -147,7 +147,14 @@ class Profile(ModelBase):
     updated_column_name = "user__date_joined"
 
     class Meta:
-        indexes = [models.Index(Upper("name"), name="upper_name_idx")]
+        indexes = [
+            models.Index(Upper("name"), name="upper_name_idx"),
+            models.Index(
+                fields=["zendesk_id"],
+                condition=~models.Q(zendesk_id=""),
+                name="users_profile_zendesk_id_idx",
+            ),
+        ]
         permissions = (
             ("view_karma_points", "Can view karma points"),
             ("deactivate_users", "Can deactivate users"),
@@ -271,6 +278,16 @@ class Profile(ModelBase):
     @cached_property
     def in_staff_group(self):
         return self.user.groups.filter(name=settings.STAFF_GROUP).exists()
+
+    @property
+    def is_unclaimed_invitee(self):
+        """Whether this is an invitation-created account not yet linked to a Mozilla account."""
+        return (
+            not self.fxa_uid
+            and self.user.enterprise_invitations.filter(
+                created_user=True, accepted_at__isnull=True
+            ).exists()
+        )
 
     def visible_group_profiles(self, viewer=None):
         """

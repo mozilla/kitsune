@@ -11,7 +11,9 @@ from django.db.models.functions import Coalesce, Lower, NullIf
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
 from kitsune.customercare.models import SupportTicket, ZendeskOrganization
@@ -20,6 +22,11 @@ from kitsune.groups.forms import (
     EnterpriseCompanyForm,
     GroupAvatarForm,
     GroupProfileForm,
+)
+from kitsune.groups.invitations import (
+    INVITATION_ERRORS,
+    invitation_landing_path,
+    load_enterprise_invitation,
 )
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import GroupProfile
@@ -75,6 +82,39 @@ def _remove_group_member(profile, user, request, remove_from_group=True):
         user.groups.remove(profile.group)
 
     return True
+
+
+# Exempt so other methods get a bare 405, not a CSRF error page rendered at the token URL.
+@csrf_exempt
+@never_cache
+@require_GET
+def invitation_link(request, token):
+    """Move the bearer token into the session so no rendered page's URL carries it."""
+    request.session["enterprise_invitation_token"] = token
+    request.session.pop("enterprise_invitation_error", None)
+    return HttpResponseRedirect(reverse("groups.invitation"))
+
+
+@never_cache
+@require_GET
+def invitation(request):
+    """Preview a prepared account; signing in with its Mozilla account accepts it."""
+    error_code = request.session.pop("enterprise_invitation_error", None)
+    try:
+        prepared = load_enterprise_invitation(request.session.get("enterprise_invitation_token"))
+        landing_path = invitation_landing_path(prepared)
+    except ValidationError as error:
+        prepared = landing_path = None
+        error_code = error.code
+    return render(
+        request,
+        "groups/invitation.html",
+        {
+            "invitation": prepared,
+            "landing_path": landing_path,
+            "error": INVITATION_ERRORS.get(error_code),
+        },
+    )
 
 
 def list(request):

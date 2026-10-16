@@ -82,49 +82,44 @@ The [enterprise provisioning service](groups.md#enterprise-zendesk-provisioning)
 uses the authentication above. Its integration account must also be allowed to
 create organization memberships for end users.
 
-Existing organization IDs are checked without changing names, identities, or
-ticket-sharing policy. New organizations use `ZendeskOrganization.external_id`,
+Organizations are linked by saved ID or created with `ZendeskOrganization.external_id`,
 a stable local UUID, as the
 [create-or-update key](https://developer.zendesk.com/api-reference/ticketing/organizations/organizations/#create-or-update-organization).
-A matching name alone never adopts an organization.
+A matching name alone never adopts an organization, and existing organizations are
+not modified.
 
-User lookup uses the saved Zendesk ID when present, otherwise the invited email.
-Before linking, it checks the primary email and known Mozilla identity. Only
-active, unsuspended end users without elevated roles are eligible; existing names
-and identities are preserved. New unclaimed users use the supplied first and last
-names, have no fabricated identity, and set `verified=False` and
-`skip_verify_email=True`. Duplicate-create failures are left for a later manual
-retry, not an immediate second lookup. Ordinary background sync skips unclaimed
-invitation-created accounts without a Mozilla identity. Any later claim must
-attach that identity to the same Zendesk user.
+Users are linked by saved ID or invited email. Only active, unsuspended end users
+without elevated roles, whose primary email and Mozilla identity match, are
+eligible; existing names and identities are preserved. Users created for unclaimed
+accounts get no Mozilla identity and skip the verification email, and background
+sync leaves them alone until first login attaches the identity.
+
+Memberships use the
+[Organization Memberships API](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/#create-membership),
+which adds the target pair without removing the user's other memberships. A 422
+counts as success only when a fresh read finds that pair.
 
 Profile Zendesk IDs must be canonical decimal strings, without whitespace or
-leading zeros. Imports and manual corrections must preserve this format so
-ownership checks can detect existing links, including hidden profiles.
+leading zeros, so ownership checks match exactly; preserve this format in imports
+and manual corrections. Apply `users.0040_profile_zendesk_id_index`, which builds
+concurrently, before rolling out invited first login.
 
-Membership provisioning creates the requested pair through the
-[Organization Memberships API](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/#create-membership),
-not user `organization_id` updates, which remove other memberships. A 422 succeeds
-only when a fresh read confirms the exact target pair. Unrelated memberships and
-their defaults are preserved rather than treated as conflicts.
+Requests use `ZENDESK_SYNC_TIMEOUT`, with SDK caching and rate-limit waits
+disabled. Remote and local changes are not atomic: staff retry by rerunning the
+service, and saved IDs, the organization UUID, and email lookup reconcile earlier
+partial work. Zendesk search lag may require waiting before another attempt.
+Identity conflicts or missing prepared resources need manual correction.
 
-Requests use `ZENDESK_SYNC_TIMEOUT`; SDK caching and rate-limit waits are disabled.
-Staff retry by rerunning the fixed sequence. Stable organization UUIDs, saved IDs,
-and email lookup reconcile lost responses and local rollbacks; Zendesk search lag
-may require waiting before another attempt. There is no action checkpoint or
-automatic retry policy.
+### Authenticated identity binding
 
-Only the account-email lock spans provider requests; hierarchy and row locks are
-taken afterward for fresh validation and persistence. Concurrently saved
-organization/user links are accepted when they match this run's resolved remote
-IDs, allowing different invitees to provision the same new company. Conflicting
-company, account, mapping, or identity changes, or revoked permissions, stop local
-writes rather than retargeting the results. Successful remote IDs can still be
-recovered on a later valid attempt.
+`ZendeskClient.bind_user_identity(zendesk_id=..., fxa_uid=..., email=...)` attaches
+a verified Mozilla identity to the saved end user. It checks the user's primary
+email, role, and existing identity, and refuses when another Zendesk user already
+owns the external ID. Callers check local ownership first.
 
-Remote writes and local changes are not atomic, and SUMO cannot lock concurrent
-changes made directly in Zendesk. Identity conflicts or missing prepared resources
-require manual correction rather than guessing or overwriting another account.
+Binding updates only `external_id` and `user_fields.user_id`, never upserting or
+creating a user. Other custom fields are preserved, both identities are read back,
+and replaying the same binding after a local rollback is safe.
 
 ## Using `requests` to query the API
 

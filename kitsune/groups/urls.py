@@ -17,6 +17,10 @@ group_patterns = [
 
 urlpatterns = [
     re_path(r"^$", views.list, name="groups.list"),
+    re_path(r"^invitation$", views.invitation, name="groups.invitation"),
     re_path(r"^join-contributors$", views.join_contributors, name="groups.join_contributors"),
     re_path(r"^(?P<group_slug>[^/]+)/", include(group_patterns)),
+    re_path(
+        r"^invitation/(?P<token>[^/]+)$", views.invitation_link, name="groups.invitation_link"
+    ),
 ]

@@ -1,6 +1,5 @@
 import logging
 from datetime import timedelta
-from functools import partial
 
 import requests
 import waffle
@@ -82,12 +81,7 @@ def update_zendesk_user(user_id: int) -> None:
     profile = user.profile
     if not profile.zendesk_id:
         return
-    if (
-        not profile.fxa_uid
-        and user.enterprise_invitations.filter(
-            created_user=True, accepted_at__isnull=True
-        ).exists()
-    ):
+    if profile.is_unclaimed_invitee:
         # Ordinary sync would mark an unclaimed identity verified and replace its name.
         return
     ZendeskClient().update_user(user)
@@ -97,8 +91,7 @@ def update_zendesk_user(user_id: int) -> None:
 def create_zendesk_user(user_id: int) -> None:
     """Give the user a Zendesk user, so later changes to their account reach Zendesk."""
     user = User.objects.filter(pk=user_id).select_related("profile").first()
-    # Another run may have created it since this one was queued.
-    if user and not user.profile.zendesk_id:
+    if user and not user.profile.zendesk_id and not user.profile.is_unclaimed_invitee:
         ZendeskClient().create_user(user)
 
 
@@ -142,7 +135,9 @@ def revoke_chat_tickets(user) -> None:
 
     if zendesk_id:
         # Using robust prevents a queueing failure from ruining the commit.
-        transaction.on_commit(partial(tag_revoked_chat_tickets.delay, zendesk_id), robust=True)
+        transaction.on_commit(
+            lambda remote_id=zendesk_id: tag_revoked_chat_tickets.delay(remote_id), robust=True
+        )
 
 
 @shared_task

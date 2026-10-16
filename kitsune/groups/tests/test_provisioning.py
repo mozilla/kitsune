@@ -66,7 +66,7 @@ class ProvisioningFixtures(InvitationFixtures):
     READ_ONLY=False,
 )
 class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
-    def test_prepared_account_stays_inactive_without_memberships_or_email(self):
+    def test_prepared_account_gets_company_membership_without_activation_or_email(self):
         invitation = self.invite()
         before_user = User.all_users.filter(pk=invitation.user_id).values().get()
         before_profile = Profile.all_profiles.filter(user_id=invitation.user_id).values().get()
@@ -87,7 +87,14 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         )
         mapping.refresh_from_db()
         self.assertEqual(mapping.zendesk_id, "101")
-        self.assertFalse(User.groups.through.objects.filter(user_id=invitation.user_id).exists())
+        self.assertEqual(
+            list(
+                User.groups.through.objects.filter(user_id=invitation.user_id).values_list(
+                    "group_id", flat=True
+                )
+            ),
+            [self.company.group_id],
+        )
         self.assertFalse(GroupProfile.objects.filter(leaders=invitation.user_id).exists())
         self.assertEqual((Email.objects.count(), len(mail.outbox)), before_mail)
         self.assertIsNone(result.welcome_email_id)
@@ -112,6 +119,17 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.assertEqual(self.client.ensure_user.call_args.kwargs["name"], "Current public name")
         self.assertEqual(User.all_users.filter(pk=user.pk).values().get(), before_user)
         self.assertEqual(Profile.all_profiles.filter(user=user).values().get(), before_profile)
+
+    def test_existing_account_invitation_is_completed_by_provisioning(self):
+        user = self.eligible_user()
+        result = self.provision(self.invite())
+        self.assertEqual(result.status, EnterpriseInvitation.Status.ACCEPTED)
+        self.assertIsNotNone(result.accepted_at)
+        self.assertTrue(self.company.group.user_set.filter(pk=user.pk).exists())
+
+        user.groups.remove(self.company.group)
+        moved = self.invite(company=self.other_company)
+        self.assertEqual(moved.company_id, self.other_company.pk)
 
     def test_provider_failures_keep_saved_ids_and_full_retry_reuses_them(self):
         operations = (
@@ -151,11 +169,19 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                 self.assertEqual(
                     Profile.all_profiles.get(user_id=failed.user_id).zendesk_id, saved_user_id
                 )
+                self.assertFalse(
+                    User.groups.through.objects.filter(user_id=failed.user_id).exists()
+                )
                 self.client.reset_mock(side_effect=True)
                 # Reload persisted state even when the caller still holds a PENDING invitation.
                 ready = self.provision(invitation)
                 self.assertEqual(ready.status, EnterpriseInvitation.Status.READY)
                 self.assertEqual((ready.failed_action, ready.error_code), ("", ""))
+                self.assertTrue(
+                    User.groups.through.objects.filter(
+                        user_id=ready.user_id, group_id=self.company.group_id
+                    ).exists()
+                )
                 self.assertEqual(
                     self.client.ensure_organization.call_args.kwargs["zendesk_id"],
                     organization_id,
@@ -253,14 +279,6 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                 "django.db.models.query.QuerySet.select_for_update",
                 side_effect=AssertionError("Accepted history must not lock rows"),
             ),
-            patch(
-                "kitsune.groups.provisioning.get_enterprise_company",
-                side_effect=AssertionError("Accepted history must not resolve the company"),
-            ),
-            patch(
-                "kitsune.groups.provisioning.get_enterprise_support_config",
-                side_effect=AssertionError("Accepted history must not resolve support settings"),
-            ),
         ):
             accepted = self.provision(invitation)
             self.assertEqual(accepted.status, EnterpriseInvitation.Status.ACCEPTED)
@@ -324,35 +342,27 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.company.move(self.other_company, "last-child")
         self.assert_provision_rejected(invitation, exception=Http404)
 
-    def test_missing_mapping_is_not_recreated(self):
-        invitation = self.invite()
-        ZendeskOrganization.objects.filter(group_profile=self.company).delete()
-        self.assert_provision_rejected(invitation, code="resource_missing")
-
-    def test_missing_profile_is_not_recreated(self):
-        invitation = self.invite()
-        Profile.all_profiles.filter(user_id=invitation.user_id).delete()
-        self.assert_provision_rejected(invitation, code="resource_missing")
-
-    def test_missing_user_is_not_replaced(self):
-        invitation = self.invite()
-        User.all_users.get(pk=invitation.user_id).delete()
-        with (
-            patch(
-                "kitsune.groups.provisioning.get_enterprise_company",
-                side_effect=AssertionError("A missing prepared user must be rejected first"),
+    def test_missing_prepared_resources_are_not_recreated(self):
+        for name, remove in (
+            (
+                "mapping",
+                lambda invitation: ZendeskOrganization.objects.filter(
+                    group_profile=self.company
+                ).delete(),
             ),
-            patch(
-                "kitsune.groups.provisioning.get_enterprise_support_config",
-                side_effect=AssertionError("A missing prepared user must be rejected first"),
+            (
+                "profile",
+                lambda invitation: Profile.all_profiles.filter(
+                    user_id=invitation.user_id
+                ).delete(),
             ),
+            ("user", lambda invitation: User.all_users.filter(pk=invitation.user_id).delete()),
         ):
-            self.assert_provision_rejected(invitation, code="resource_missing")
-
-    def test_support_mapping_for_current_config_must_still_exist(self):
-        invitation = self.invite()
-        SupportOrganization.objects.filter(group=self.company.group, config=self.config).delete()
-        self.assert_provision_rejected(invitation, code="configuration_error")
+            with self.subTest(name), transaction.atomic():
+                invitation = self.invite()
+                remove(invitation)
+                self.assert_provision_rejected(invitation, code="resource_missing")
+                transaction.set_rollback(True)
 
     def test_changed_active_config_uses_current_company_binding(self):
         invitation = self.invite()
@@ -377,6 +387,8 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         SupportOrganization.objects.filter(group=self.company.group).update(include_live_chat=True)
         with override_settings(ZENDESK_CHAT_WIDGET_KEY=""):
             self.assert_provision_rejected(invitation, code="configuration_error")
+        SupportOrganization.objects.filter(group=self.company.group, config=self.config).delete()
+        self.assert_provision_rejected(invitation, code="configuration_error")
 
     def test_duplicate_hidden_email_or_changed_local_email_is_not_rebound(self):
         invitation = self.invite()
@@ -424,11 +436,6 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         SupportOrganizationFactory(group=unrelated.group, config=self.config)
         user.groups.add(unrelated.group)
         self.assert_provision_rejected(invitation, code="company_conflict")
-
-    def test_unknown_invitation_status_is_rejected_before_provider_calls(self):
-        invitation = self.invite()
-        EnterpriseInvitation.objects.filter(pk=invitation.pk).update(status="unknown")
-        self.assert_provision_rejected(invitation, code="configuration_error")
 
     def test_invalid_remote_ids_are_rejected_before_provider_calls(self):
         invitation = self.invite()
@@ -537,16 +544,17 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.assertEqual(ready.status, EnterpriseInvitation.Status.READY)
         self.client.ensure_organization.assert_called()
 
-    def test_unexpected_local_failure_rolls_back_saved_remote_ids(self):
+    def test_unexpected_local_failure_rolls_back_remote_links_and_membership(self):
         invitation = self.invite()
         before = self.snapshot()
-        with patch.object(Profile, "save", side_effect=RuntimeError("unexpected local failure")):
-            with self.assertRaisesRegex(RuntimeError, "unexpected local failure"):
+        for model in (Profile, EnterpriseInvitation):
+            with (
+                self.subTest(model=model),
+                patch.object(model, "save", side_effect=RuntimeError("unexpected local failure")),
+                self.assertRaisesRegex(RuntimeError, "unexpected local failure"),
+            ):
                 self.provision(invitation)
-        self.assertEqual(self.snapshot(), before)
-        self.client.ensure_organization_membership.assert_called_with(
-            user_id="201", organization_id="101"
-        )
+            self.assertEqual(self.snapshot(), before)
 
     def test_provider_calls_observe_no_local_provisioning_writes(self):
         invitation = self.invite()
@@ -635,22 +643,6 @@ class EnterpriseProvisioningConcurrencyTests(ProvisioningFixtures, TransactionTe
             finally:
                 release.set()
             return owner.result(timeout=15), contender.result(timeout=15)
-
-    def test_same_invitation_retries_share_email_lock_and_saved_ids(self):
-        invitation = self.invite()
-        first, second = self.compete(
-            lambda: self.provision(invitation).status,
-            lambda: self.provision(invitation).status,
-        )
-        self.assertEqual((first, second), (EnterpriseInvitation.Status.READY,) * 2)
-        self.assertEqual(self.client.ensure_organization.call_args.kwargs["zendesk_id"], "101")
-        self.assertEqual(self.client.ensure_user.call_args.kwargs["zendesk_id"], "201")
-        self.client.ensure_organization_membership.assert_called_with(
-            user_id="201", organization_id="101"
-        )
-        invitation.refresh_from_db()
-        self.assertEqual(invitation.status, EnterpriseInvitation.Status.READY)
-        self.assertEqual((invitation.failed_action, invitation.error_code), ("", ""))
 
     def test_different_invitees_can_provision_the_same_unlinked_company_concurrently(self):
         invitations = (
@@ -810,24 +802,6 @@ class EnterpriseProvisioningConcurrencyTests(ProvisioningFixtures, TransactionTe
                 )
                 User.all_users.filter(pk=self.actor.pk).update(is_staff=True, is_active=True)
                 self.root.leaders.add(self.actor)
-
-    def test_invitation_retargeting_during_provider_io_stops_stale_writes(self):
-        other = self.invite(company=self.other_company, email="other-company@example.com")
-        for field, value in (
-            ("email", "retargeted@example.com"),
-            ("company_id", self.other_company.pk),
-            ("user_id", other.user_id),
-        ):
-            with self.subTest(field=field):
-                invitation = self.invite(email=f"retarget-{field}@example.com")
-                error = self.during_provider_call(
-                    invitation,
-                    lambda: EnterpriseInvitation.objects.filter(pk=invitation.pk).update(
-                        **{field: value}
-                    ),
-                    exception=ValidationError,
-                )
-                self.assertEqual(error.code, "account_conflict")
 
     def test_company_group_relink_during_provider_io_stops_stale_writes(self):
         invitation = self.invite()

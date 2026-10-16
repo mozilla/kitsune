@@ -8,11 +8,16 @@ from django.db import IntegrityError, transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import slugify
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.models import ZendeskOrganization
-from kitsune.customercare.zendesk import ZendeskClient, ZendeskProvisioningConflict
+from kitsune.customercare.zendesk import (
+    ZendeskClient,
+    ZendeskProvisioningConflict,
+    canonical_zendesk_id,
+)
 from kitsune.groups.membership import lock_enterprise_hierarchy, validate_enterprise_memberships
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.products.models import Product, ProductSupportConfig, SupportOrganization
@@ -124,6 +129,10 @@ def require_onboarding_allowed(actor, root):
         raise PermissionDenied(
             _("Company settings cannot be changed while the site is read-only.")
         )
+    require_isolated_root(root)
+
+
+def require_isolated_root(root):
     if (
         root.visibility
         not in (
@@ -139,6 +148,26 @@ def require_onboarding_allowed(actor, root):
             ),
             code="configuration_error",
         )
+
+
+def invitation_settings_valid() -> bool:
+    """Whether the landing path is blank or a local path, and the link lifetime is positive."""
+    path = settings.ENTERPRISE_ONBOARDING_LANDING_PATH
+    max_age = settings.ENTERPRISE_INVITATION_MAX_AGE
+    return (
+        isinstance(path, str)
+        and (
+            not path
+            or (
+                path.startswith("/")
+                and "\\" not in path
+                and path.isprintable()
+                and url_has_allowed_host_and_scheme(path, allowed_hosts=None)
+            )
+        )
+        and type(max_age) is int
+        and max_age > 0
+    )
 
 
 def require_invitation_account(*, user, profile, company, config, invitation=None):
@@ -181,6 +210,83 @@ def require_invitation_account(*, user, profile, company, config, invitation=Non
             _("This account already belongs to another support organization."),
             code="company_conflict",
         )
+
+
+def get_prepared_resources(invitation, *, root, for_update=False):
+    """Validate saved company and account resources before I/O or under final locks."""
+    if invitation.user_id is None:
+        raise ValidationError(
+            _("The account prepared for this invitation no longer exists."),
+            code="resource_missing",
+        )
+    company = get_enterprise_company(root, pk=invitation.company_id, for_update=for_update)
+    supports = SupportOrganization.objects.all()
+    mappings = ZendeskOrganization.objects.all()
+    users = User.all_users.all()
+    profiles = Profile.all_profiles.all()
+    if for_update:
+        supports = supports.select_for_update()
+        mappings = mappings.select_for_update()
+        users = users.select_for_update()
+        profiles = profiles.select_for_update()
+    support = supports.filter(
+        group_id=company.group_id,
+        config__is_active=True,
+        config__product__slug=settings.ENTERPRISE_GROUP_SLUG,
+    ).first()
+    config = get_enterprise_support_config(
+        include_live_chat=bool(support and support.include_live_chat)
+    )
+    if support is None or support.config_id != config.pk:
+        raise ValidationError(
+            _("This company's support settings are incomplete. Contact an administrator."),
+            code="configuration_error",
+        )
+    mapping = mappings.filter(group_profile=company).first()
+    if mapping is None:
+        raise ValidationError(
+            _("A resource prepared for this invitation no longer exists."),
+            code="resource_missing",
+        )
+    users = list(users.filter(email__iexact=invitation.email).order_by("pk")[:2])
+    if len(users) != 1 or users[0].pk != invitation.user_id:
+        raise ValidationError(
+            _("This email cannot be provisioned automatically. Contact an administrator."),
+            code="account_conflict",
+        )
+    user = users[0]
+    profile = profiles.filter(user=user).first()
+    if profile is None:
+        raise ValidationError(
+            _("The account profile prepared for this invitation no longer exists."),
+            code="resource_missing",
+        )
+    require_invitation_account(
+        user=user,
+        profile=profile,
+        company=company,
+        config=config,
+        invitation=invitation,
+    )
+    try:
+        if mapping.zendesk_id:
+            canonical_zendesk_id(mapping.zendesk_id)
+        remote_id = canonical_zendesk_id(profile.zendesk_id) if profile.zendesk_id else None
+    except ZendeskProvisioningConflict:
+        raise ValidationError(
+            _("A provisioned Zendesk resource has an invalid ID. Contact an administrator."),
+            code="configuration_error",
+        ) from None
+    if (
+        remote_id
+        and Profile.all_profiles.filter(zendesk_id=remote_id).exclude(pk=profile.pk).exists()
+    ):
+        raise ValidationError(
+            _("This Zendesk account cannot be linked automatically. Contact an administrator."),
+            code="account_conflict",
+        )
+    user.profile = profile
+    return company, mapping, user, profile
 
 
 def require_unique_company_identity(name, slug):
@@ -407,18 +513,7 @@ def invite_enterprise_user(
                 }
             )
 
-    landing_path = settings.ENTERPRISE_ONBOARDING_LANDING_PATH
-    invalid_landing_path = landing_path and (
-        not landing_path.startswith("/")
-        or landing_path.startswith("//")
-        or "\\" in landing_path
-        or any(ord(char) < 32 or ord(char) == 127 for char in landing_path)
-    )
-    if (
-        invalid_landing_path
-        or not isinstance(settings.ENTERPRISE_INVITATION_MAX_AGE, int)
-        or settings.ENTERPRISE_INVITATION_MAX_AGE <= 0
-    ):
+    if not invitation_settings_valid():
         raise ValidationError(
             _(
                 "Ask an administrator to configure a valid enterprise invitation destination and expiry."

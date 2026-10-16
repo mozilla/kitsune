@@ -129,11 +129,7 @@ class ZendeskClient:
         try:
             self.client.organizations(id=int(organization_id))
         except (APIException, requests.HTTPError) as exc:
-            if isinstance(exc, RecordNotFoundException) or (
-                exc.response is not None and exc.response.status_code == 404
-            ):
-                raise ZendeskProvisioningConflict("resource_missing") from exc
-            raise
+            ZendeskProvisioningConflict.raise_from(exc)
         return organization_id
 
     def ensure_organization(
@@ -216,6 +212,30 @@ class ZendeskClient:
             ZendeskProvisioningConflict.raise_from(exc)
         return self.validate_user(user, email=email, fxa_uid=fxa_uid)
 
+    def bind_user_identity(self, *, zendesk_id: str, fxa_uid: str, email: str) -> None:
+        """Bind a verified Mozilla identity to an existing end user; never create one."""
+        saved_id = canonical_zendesk_id(zendesk_id)
+        try:
+            remote = self.client.users(id=int(saved_id))
+            if self.validate_user(remote, email=email, fxa_uid=fxa_uid) != saved_id:
+                raise ZendeskProvisioningConflict("account_conflict")
+            for owner in self.client.users(external_ids=[fxa_uid]):
+                if canonical_zendesk_id(owner.id) != saved_id:
+                    raise ZendeskProvisioningConflict("account_conflict")
+            fields = {**(remote.user_fields or {}), "user_id": fxa_uid}
+            self.client.users.update(
+                ZendeskUser(id=int(saved_id), external_id=fxa_uid, user_fields=fields)
+            )
+            remote = self.client.users(id=int(saved_id))
+        except (APIException, requests.HTTPError) as exc:
+            ZendeskProvisioningConflict.raise_from(exc)
+        if (
+            self.validate_user(remote, email=email, fxa_uid=fxa_uid) != saved_id
+            or remote.external_id != fxa_uid
+            or (remote.user_fields or {}).get("user_id") != fxa_uid
+        ):
+            raise ZendeskProvisioningConflict("account_conflict")
+
     def ensure_organization_membership(self, *, user_id: str, organization_id: str) -> None:
         """Add the target membership without removing or replacing another company."""
         user_id = canonical_zendesk_id(user_id)
@@ -246,29 +266,18 @@ class ZendeskClient:
 
     def _user_to_zendesk_user(self, user, email):
         """Given a Django user, return a Zendesk user."""
-        # Four possible cases to account for:
-        # 1. No Django User, No ZD User -> Create ZD User From Email
-        # 2. No Django User, ZD User -> Get Existing ZD User Using Email
-        # 3. Django User, No ZD User -> Create ZD User from Django User
-        # 4. Django User, ZD User -> Get ZD User, Update Django User with Zendesk ID
         if not user or not user.is_authenticated:
-            # If the user already exists in Zendesk return
-            # the Zendesk user object
-            # instead of creating a new one
             if zuser := self.get_user_by_email(email):
-                # No Django user, but yes ZD user
                 return zuser
-            # No Django user, no ZD user
             name = "Anonymous User"
             locale = "en-US"
             id = None
             external_id = None
             user_fields = None
-        # Yes Django user
         else:
             fxa_uid = user.profile.fxa_uid
             id_str = user.profile.zendesk_id
-            id = int(id_str) if id_str else None  # Yes Or No ZD User
+            id = int(id_str) if id_str else None
             name = user.profile.display_name
             locale = user.profile.locale
             user_fields = {"user_id": fxa_uid}
@@ -284,10 +293,7 @@ class ZendeskClient:
         )
 
     def get_user_by_email(self, email):
-        """Given an email, return a user from Zendesk."""
-        # This returns a generator, but we only want/expect one user
-        # If it returns more than one, we should fail
-        # Otherwise return the Zendesk user object
+        """Find one Zendesk user by email; reject ambiguous matches."""
         search_results = self.client.search(type="user", query=f"email:{email}")
 
         user_found = None
@@ -308,8 +314,6 @@ class ZendeskClient:
         # call create_or_update to avoid duplicating users FxA previously created
         zendesk_user = self.client.users.create_or_update(zendesk_user)
 
-        # We can't save anything to AnonymousUser Profile
-        # as it has none
         if user and user.is_authenticated:
             user.profile.zendesk_id = str(zendesk_user.id)
             user.profile.save(update_fields=["zendesk_id"])
@@ -319,8 +323,7 @@ class ZendeskClient:
     def update_user(self, user):
         """Given a Django user, update a user in Zendesk."""
         zendesk_user = self._user_to_zendesk_user(user, email=user.email)
-        zendesk_user = self.client.users.update(zendesk_user)
-        return zendesk_user
+        return self.client.users.update(zendesk_user)
 
     def get_primary_email_identity(self, zendesk_user_id):
         """Fetch the identity with the primary email from Zendesk"""
