@@ -378,11 +378,11 @@
             <button type="submit" class="btn helpful-button" name="helpful"
                     data-event-name="article_vote"
                     data-event-parameters='{"vote": "helpful"}'
-            >{{ _('Yes') }}👍</button>
+            >{{ _('Yes') }}<span class="emoji" aria-hidden="true">👍</span></button>
             <button type="submit" class="btn not-helpful-button" name="not-helpful"
                     data-event-name="article_vote"
                     data-event-parameters='{"vote": "not-helpful"}'
-            >{{ _('No') }}👎</button>
+            >{{ _('No') }}<span class="emoji" aria-hidden="true">👎</span></button>
             <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
           </div>
       </form>

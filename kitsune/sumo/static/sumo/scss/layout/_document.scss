@@ -121,7 +121,7 @@
       display: block;
       position: sticky;
       top: 100px;
-      margin-top: 300px;
+      margin-top: p.$spacing-2xl;
     }
 
     .document-vote {
@@ -152,6 +152,9 @@
 
   .helpful-button,
   .not-helpful-button {
+    display: inline-flex;
+    align-items: center;
+    gap: p.$spacing-sm;
     padding: 0;
     margin: 0 p.$spacing-sm;
     font-size: 1.1rem;

@@ -27,6 +27,7 @@
 
 #doc-content .warning {
   @include c.callout(warning);
+  margin-bottom: p.$spacing-lg;
   padding: 16px 20px;
   border-radius: var(--radius-md);
 }
