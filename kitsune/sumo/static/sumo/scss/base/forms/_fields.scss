@@ -179,6 +179,14 @@ label {
   @include c.text-body-sm;
 }
 
+#remaining-characters {
+  color: var(--character-count-text);
+
+  &.is-over-limit {
+    color: var(--character-count-over-limit-text);
+  }
+}
+
 .error-text {
   display: block;
   margin: p.$spacing-sm 0 0 0;

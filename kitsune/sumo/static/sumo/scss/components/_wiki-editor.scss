@@ -24,7 +24,7 @@ body.new #related-docs-list {
 
     /* Taken from Bootstrap V3 */
     .alert {
-      background: #FFE url("../img/warning-stripes.png") repeat-x scroll left top;
+      background: var(--draft-alert-bg) var(--draft-alert-image) repeat-x scroll left top;
       border: 1px solid transparent;
       border-radius: p.$spacing-xs;
       padding: 15px;
@@ -32,21 +32,21 @@ body.new #related-docs-list {
     }
 
     .error {
-      background-color: #f2dede;
-      border-color: #ebccd1;
-      color: #a94442;
+      background-color: var(--draft-alert-error-bg);
+      border-color: var(--draft-alert-error-border);
+      color: var(--draft-alert-error-text);
     }
 
     .info {
-      background-color: #fcf8e3;
-      border-color: #faf2cc;
-      color: #8a6d3b;
+      background-color: var(--draft-alert-info-bg);
+      border-color: var(--draft-alert-info-border);
+      color: var(--draft-alert-info-text);
     }
 
     .success {
-      background-color: #dff0d8;
-      border-color: #d6e9c6;
-      color: #3c763d;
+      background-color: var(--draft-alert-success-bg);
+      border-color: var(--draft-alert-success-border);
+      color: var(--draft-alert-success-text);
     }
   }
 }
@@ -75,27 +75,11 @@ body.new #related-docs-list {
       }
 
       &:nth-child(odd) {
-        background: #f2f2f2;
-      }
-
-      &.current {
-        background: #daedf6;
-        border-bottom: solid 2px #a3b1b8;
-        border-top: solid 2px #a3b1b8;
-
-        .status {
-          color: #223d61;
-          font-weight: bold;
-        }
-      }
-
-      &.rejected *,
-      &.rejected div.creator {
-        color: #999;
+        background: var(--revision-list-row-alt-bg);
       }
 
       &.header {
-        color: #666 !important;
+        color: var(--revision-list-header-text) !important;
         font-weight: bold;
       }
     }
@@ -154,7 +138,7 @@ body.new #related-docs-list {
   }
 
   .creator {
-    color: #333;
+    color: var(--revision-list-creator-text);
     // Long display names/usernames without spaces would otherwise expand this
     // column and force the whole table to overflow horizontally, so allow them
     // to wrap within the column. Keep room for a minimum number of characters
@@ -179,14 +163,19 @@ body.new #related-docs-list {
     .close-diff {
       display: none;
     }
+
+    .show-diff img,
+    .close-diff img {
+      filter: var(--icon-image-filter);
+    }
   }
 
   .title {
     .locale {
-      background: #ddd;
+      background: var(--revision-list-locale-bg);
       padding: 0 2px;
       font-size: 0.7em;
-      box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
+      box-shadow: var(--revision-list-locale-shadow);
       position: relative;
       bottom: 1px;
       margin-right: 5px;
@@ -212,30 +201,35 @@ body.new #related-docs-list {
 
   .edit {
     a {
-      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29.81 29.81"><path fill="#0060DF" d="M0 29.81l8.29-2.22-6.07-6.07L0 29.81zM18.214 5.532l6.067 6.067-15.04 15.04-6.067-6.067zM23.746-.003l6.067 6.067-4.59 4.59-6.066-6.068z"/></svg>');
+      background-image: var(--revision-edit-icon);
+      @include c.forced-colors-icon(var(--revision-edit-icon), contain);
     }
   }
 
   .delete {
     a {
-      background-image: url("protocol/img/icons/delete.svg");
+      background-image: var(--revision-delete-icon);
+      @include c.forced-colors-icon(var(--revision-delete-icon), contain);
     }
   }
 
   .l10n {
     a {
       &.yes {
-        background-image: url("protocol/img/icons/check.svg");
+        background-image: var(--revision-ready-icon);
+        @include c.forced-colors-icon(var(--revision-ready-icon), contain);
       }
 
       &.markasready,
       &.no {
-        background-image: url("protocol/img/icons/close.svg");
+        background-image: var(--close-icon);
+        @include c.forced-colors-icon(var(--close-icon), contain);
       }
 
       &.markasready:hover {
-        background-image: url("protocol/img/icons/check.svg");
+        background-image: var(--revision-ready-icon);
         cursor: pointer;
+        @include c.forced-colors-icon(var(--revision-ready-icon), contain);
       }
     }
 
@@ -249,23 +243,27 @@ body.new #related-docs-list {
       background-repeat: no-repeat;
 
       &.not-approved {
-        background-image: url("protocol/img/icons/warning.svg");
+        background-image: var(--revision-not-approved-icon);
         opacity: 0.6;
+        @include c.forced-colors-icon(var(--revision-not-approved-icon), contain);
       }
 
       &.trivial {
-        background-image: url("protocol/img/icons/info.svg");
+        background-image: var(--revision-trivial-icon);
         opacity: 0.4;
+        @include c.forced-colors-icon(var(--revision-trivial-icon), contain);
       }
 
       &.not-localizable {
-        background-image: url("protocol/img/icons/lockbox.svg");
+        background-image: var(--revision-not-localizable-icon);
         opacity: 0.4;
+        @include c.forced-colors-icon(var(--revision-not-localizable-icon), contain);
       }
 
       &.translated {
-        background-image: url("protocol/img/icons/globe.svg");
+        background-image: var(--revision-translated-icon);
         opacity: 0.6;
+        @include c.forced-colors-icon(var(--revision-translated-icon), contain);
       }
     }
   }
@@ -309,14 +307,6 @@ body.new #related-docs-list {
     padding: 0 0 0 10px;
     text-align: left;
   }
-}
-
-#show-graph {
-  color: #447BC4;
-  cursor: pointer;
-  float: right;
-  font-size: 13px;
-  margin: 1px 0 10px;
 }
 
 /* Revision diffs */
@@ -396,9 +386,8 @@ body.new #related-docs-list {
 
 #preview {
   .showfor {
-    background: #fff;
     border-radius: var(--global-radius);
-    @include c.elevation-01;
+    @include c.elevation-01(var(--card-bg));
     right: 10px;
     margin: 0;
     padding: 20px;
@@ -422,7 +411,7 @@ body.new #related-docs-list {
       z-index: 6;
 
       &:hover {
-        color: #999;
+        color: var(--preview-exit-hover-text);
         cursor: pointer;
       }
     }
@@ -439,9 +428,9 @@ body.new #related-docs-list {
   }
 
   .showfor {
-    background: #fff;
+    background: var(--card-bg);
     border-radius: 10px;
-    box-shadow: 0 p.$spacing-xs 10px #999;
+    box-shadow: var(--review-showfor-shadow);
     display: none;
     left: 10px;
     margin: -90px 0 0;
@@ -561,14 +550,14 @@ div.localized {
   padding: 15px 0;
 
   h3 {
-    color: #333;
+    color: var(--translate-source-heading);
     font-size: 13px;
     font-weight: bold;
     margin: 0 0 5px;
   }
 
   div.val {
-    border: solid 1px #999;
+    border: solid 1px var(--translate-source-border);
     height: 500px;
     overflow: auto;
     padding: 2px;
@@ -665,31 +654,9 @@ body.review {
     padding: 5px;
     position: relative;
 
-    div.help-text {
-      background: #fff;
-      border-radius: 0 0 10px 10px;
-      box-shadow: 0 10px 10px rgba(0, 0, 0, 0.25), inset -1px -1px 1px rgba(0, 0, 0, 0.125), inset 1px 0 1px rgba(255, 255, 255, 0.25);
-      color: #000;
-      display: none;
-      left: 23px;
-      padding: 10px 15px;
-      position: absolute;
-      top: 20px;
-      z-index: 999;
-    }
-
     &:hover {
       border-radius: 10px 10px 0 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.25), inset -1px -1px 1px rgba(0, 0, 0, 0.125), inset 1px 0 1px rgba(255, 255, 255, 0.25);
-
-      label {
-        position: relative;
-        z-index: 1000;
-      }
-
-      div.help-text {
-        display: block;
-      }
+      box-shadow: var(--approve-modal-item-hover-shadow);
     }
   }
 
@@ -697,17 +664,6 @@ body.review {
   div.ready-for-l10n,
   div.needs-change {
     margin: 10px 0;
-  }
-}
-
-.html-rtl {
-  #approve-modal {
-    li {
-      div.help-text {
-        left: auto;
-        right: 23px;
-      }
-    }
   }
 }
 
@@ -745,9 +701,9 @@ body.review {
   }
 
   table {
-    border: 1px solid #ddd;
+    border: 1px solid var(--diff-border);
     width: 100%;
-    color: #666;
+    color: var(--diff-text);
     font-size: 12px;
     font-family: var(--code-font-family);
   }
@@ -758,22 +714,22 @@ body.review {
   }
 
   .output {
-    color: #333;
+    color: var(--diff-output-text);
     font-size: 13px;
   }
 
   .fromLine {
-    background: #ffdddd;
+    background: var(--diff-removed-line-bg);
   }
 
   .toLine {
-    background: #ddffdd;
+    background: var(--diff-added-line-bg);
   }
 
   .num {
-    background: #ececec;
-    border-right: 1px solid #ddd;
-    color: #aaa;
+    background: var(--diff-gutter-bg);
+    border-right: 1px solid var(--diff-border);
+    color: var(--diff-gutter-text);
     padding: 0 p.$spacing-xs 0 6px;
     text-align: right;
     width: 15px;
@@ -786,21 +742,22 @@ body.review {
   }
 
   ins {
-    background: #aaffaa;
-    color: #000;
+    background: var(--diff-added-bg);
+    color: var(--diff-added-text);
     text-decoration: none;
   }
 
   del {
-    background: #ffaaaa;
-    color: #000;
+    background: var(--diff-removed-bg);
+    color: var(--diff-removed-text);
     text-decoration: none;
   }
 }
 
-/* Ace syntax custom CSS */
+/* CodeMirror editor */
+// screen.scss loads CodeMirror's own styles after this file, so these rules win on the #editor id, not by order.
 #editor {
-  border: 2px solid #F7F7F7;
+  border: 2px solid var(--codemirror-border);
   border-radius: p.$border-radius-sm;
   bottom: 0;
   left: 0;
@@ -810,10 +767,86 @@ body.review {
   z-index: 0;
 
   .CodeMirror {
-    color: #666;
+    background-color: var(--codemirror-bg);
+    color: var(--codemirror-text);
     font-size: 12px;
     font-family: var(--code-font-family);
     height: 100%;
+  }
+
+  .CodeMirror-scrollbar-filler,
+  .CodeMirror-gutter-filler {
+    background-color: var(--codemirror-bg);
+  }
+
+  .CodeMirror-gutters {
+    border-right-color: var(--codemirror-gutter-border);
+    background-color: var(--codemirror-gutter-bg);
+  }
+
+  .CodeMirror-linenumber {
+    color: var(--codemirror-line-number);
+  }
+
+  .CodeMirror-cursor {
+    border-left-color: var(--codemirror-cursor);
+  }
+
+  div.CodeMirror-secondarycursor {
+    border-left-color: var(--codemirror-secondary-cursor);
+  }
+
+  .CodeMirror-selected {
+    background: var(--codemirror-selection-bg);
+  }
+
+  .CodeMirror-focused .CodeMirror-selected,
+  .CodeMirror-line::selection,
+  .CodeMirror-line > span::selection,
+  .CodeMirror-line > span > span::selection {
+    background: var(--codemirror-selection-focused-bg);
+  }
+
+  .cm-invalidchar {
+    color: var(--codemirror-invalid-char);
+  }
+
+  .cm-quote {
+    background-color: var(--codemirror-quote-bg);
+    color: var(--codemirror-quote-text);
+  }
+
+  .cm-variable {
+    color: var(--codemirror-variable);
+  }
+
+  .cm-tag {
+    color: var(--codemirror-tag);
+  }
+
+  .cm-other.cm-link {
+    color: var(--codemirror-link);
+  }
+
+  .cm-bold {
+    color: var(--codemirror-bold);
+    font-weight: normal;
+  }
+
+  .cm-strikethrough {
+    text-decoration: line-through;
+  }
+
+  .cm-italic {
+    font-style: italic;
+  }
+
+  .cm-underline {
+    text-decoration: underline;
+  }
+
+  .cm-comment {
+    color: var(--codemirror-comment);
   }
 }
 
@@ -823,43 +856,18 @@ body.review {
   position: relative;
 }
 
-.cm-quote {
-  background-color: black;
-  color: white !important;
-}
+// The hint list is appended to <body>; the ul type selector outranks show-hint's class rules.
+ul.CodeMirror-hints {
+  box-shadow: var(--codemirror-hints-shadow);
+  border-color: var(--codemirror-hints-border);
+  background: var(--codemirror-hints-bg);
 
-.cm-variable,
-.cm-tag {
-  color: #d98484 !important;
-}
+  .CodeMirror-hint {
+    color: var(--codemirror-hint-text);
+  }
 
-.cm-other.cm-link {
-  color: #5757c2 !important;
-}
-
-.cm-bold {
-  color: #000;
-  font-weight: normal !important;
-}
-
-.cm-strikethrough {
-  text-decoration: line-through;
-}
-
-.cm-italic {
-  font-style: italic;
-}
-
-.cm-underline {
-  text-decoration: underline;
-}
-
-.cm-comment {
-  color: #090 !important;
-}
-
-.cm-editor .cm-identifier,
-.cm-editor .cm-italic,
-.cm-editor .cm-underline {
-  color: #666666 !important;
+  li.CodeMirror-hint-active {
+    background: var(--codemirror-hint-active-bg);
+    color: var(--codemirror-hint-active-text);
+  }
 }

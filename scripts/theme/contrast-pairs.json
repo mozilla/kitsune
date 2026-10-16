@@ -178,7 +178,40 @@
         { "fg": "--tom-select-item-text", "bg": "--tom-select-item-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--tom-select-item-text", "bg": "--tom-select-item-active-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--color-text", "bg": "--user-autocomplete-item-bg", "min": 4.5, "themes": ["light", "dark"] },
-        { "fg": "--color-text", "bg": "--user-autocomplete-item-active-bg", "min": 4.5, "themes": ["light", "dark"] }
+        { "fg": "--color-text", "bg": "--user-autocomplete-item-active-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--character-count-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--character-count-over-limit-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--draft-alert-error-text", "bg": "--draft-alert-error-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--draft-alert-info-text", "bg": "--draft-alert-info-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--draft-alert-success-text", "bg": "--draft-alert-success-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--revision-list-header-text", "bg": "--revision-list-row-alt-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--revision-list-creator-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--revision-list-row-alt-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--revision-list-locale-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--preview-exit-hover-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--translate-source-heading", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--editor-autocomplete-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-text", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-variable", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-tag", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-link", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-bold", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-comment", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-invalid-char", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-quote-text", "bg": "--codemirror-quote-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-text", "bg": "--codemirror-selection-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-text", "bg": "--codemirror-selection-focused-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-line-number", "bg": "--codemirror-gutter-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-cursor", "bg": "--codemirror-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-hint-text", "bg": "--codemirror-hints-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-hint-active-text", "bg": "--codemirror-hint-active-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--diff-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--diff-text", "bg": "--diff-removed-line-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--diff-text", "bg": "--diff-added-line-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--diff-removed-text", "bg": "--diff-removed-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--diff-added-text", "bg": "--diff-added-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--diff-gutter-text", "bg": "--diff-gutter-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--diff-output-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] }
     ],
     "exceptions": [
         {
@@ -252,6 +285,72 @@
             "bg": "--tom-select-dropdown-bg",
             "theme": "light",
             "reason": "Light design: Tom Select's half-opacity create option text on white is 2.88:1"
+        },
+        {
+            "fg": "--character-count-over-limit-text",
+            "bg": "--page-bg",
+            "theme": "light",
+            "reason": "Light design: the counter's red over-limit text on white is 4.00:1"
+        },
+        {
+            "fg": "--preview-exit-hover-text",
+            "bg": "--card-bg",
+            "theme": "light",
+            "reason": "Light design: the preview panel's #999 hovered close text on white is 2.85:1"
+        },
+        {
+            "fg": "--codemirror-variable",
+            "bg": "--codemirror-bg",
+            "theme": "light",
+            "reason": "Light design: the editor's #D98484 markup on white is 2.77:1"
+        },
+        {
+            "fg": "--codemirror-tag",
+            "bg": "--codemirror-bg",
+            "theme": "light",
+            "reason": "Light design: the editor's #D98484 tags on white are 2.77:1"
+        },
+        {
+            "fg": "--codemirror-comment",
+            "bg": "--codemirror-bg",
+            "theme": "light",
+            "reason": "Light design: the editor's #090 comments on white are 3.78:1"
+        },
+        {
+            "fg": "--codemirror-invalid-char",
+            "bg": "--codemirror-bg",
+            "theme": "light",
+            "reason": "Light design: CodeMirror's red special-character marker on white is 4.00:1"
+        },
+        {
+            "fg": "--codemirror-text",
+            "bg": "--codemirror-selection-bg",
+            "theme": "light",
+            "reason": "Light design: the editor's #666 text on CodeMirror's unfocused selection is 4.07:1"
+        },
+        {
+            "fg": "--codemirror-text",
+            "bg": "--codemirror-selection-focused-bg",
+            "theme": "light",
+            "reason": "Light design: the editor's #666 text on CodeMirror's focused selection is 3.98:1"
+        },
+        {
+            "fg": "--codemirror-line-number",
+            "bg": "--codemirror-gutter-bg",
+            "theme": "light",
+            "reason": "Light design: CodeMirror's #999 line numbers on its #F7F7F7 gutter are 2.66:1"
+        },
+        {
+            "fg": "--codemirror-hint-active-text",
+            "bg": "--codemirror-hint-active-bg",
+            "theme": "light",
+            "reason": "Light design: show-hint's white active hint on #08F is 3.52:1"
+        },
+        {
+            "fg": "--diff-gutter-text",
+            "bg": "--diff-gutter-bg",
+            "theme": "light",
+            "reason": "Light design: the diff's #AAA line numbers on #ECECEC are 1.97:1"
         }
     ]
 }

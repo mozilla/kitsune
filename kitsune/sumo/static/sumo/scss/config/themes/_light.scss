@@ -522,6 +522,105 @@
 //
 // Style guide: colors.tom-select
 
+// KB editor
+//
+// The KB editing and review pages: the summary and message character counters (`is-over-limit`
+// marks a counter past its limit), the draft-saving bars, the revision lists of the history and
+// recent revisions pages, the preview and review panels, the translation source fields, and the
+// editor toolbar's link type-ahead and media picker. The draft bars keep their Bootstrap colors and
+// striped image in light and use the status colors, flat, in dark. The history icons are images drawn
+// in each theme's colors, as is the toolbar sprite (`--markup-toolbar-image`, a light-gray-02 copy in
+// dark). These images, the striped image, and the shadows appear in the theme maps only.
+//
+// Colors:
+// --character-count-text: #000000 - Dark: #E0E0E6 (light-gray-04)
+// --character-count-over-limit-text: #FF0000 - Dark: #FF9AA2 (red-03)
+// --draft-alert-bg: #FFFFEE - Dark: #3B342B
+// --draft-alert-error-bg: #F2DEDE - Dark: #3C2C32
+// --draft-alert-error-border: #EBCCD1 - Dark: #3C2C32
+// --draft-alert-error-text: #A94442 - Dark: #FF9AA2 (red-03)
+// --draft-alert-info-bg: #FCF8E3 - Dark: #3B342B
+// --draft-alert-info-border: #FAF2CC - Dark: #3B342B
+// --draft-alert-info-text: #8A6D3B - Dark: #F6BC5D
+// --draft-alert-success-bg: #DFF0D8 - Dark: #193729 (sage-02)
+// --draft-alert-success-border: #D6E9C6 - Dark: #193729 (sage-02)
+// --draft-alert-success-text: #3C763D - Dark: #83D5AD (sage-01)
+// --revision-list-row-alt-bg: #F2F2F2 - Dark: #22252A (graphite-04)
+// --revision-list-header-text: #666666 - Dark: #B7BBC1 (graphite-11)
+// --revision-list-creator-text: #333333 - Dark: #E0E0E6 (light-gray-04)
+// --revision-list-locale-bg: #DDDDDD - Dark: #3A3D43 (graphite-08)
+// --preview-exit-hover-text: #999999 - Dark: #B7BBC1 (graphite-11)
+// --translate-source-heading: #333333 - Dark: #F9F9FB (light-gray-02)
+// --translate-source-border: #999999 - Dark: #83868D (graphite-10)
+// --editor-autocomplete-bg: #FFFFFF - Dark: #16181D (graphite-02)
+// --media-picker-item-border: #FFFFFF - Dark: transparent
+// --media-picker-item-hover-bg: #F0F0F0 - Dark: #32353D (graphite-07)
+// --media-picker-item-active-border: #9ACCF7 - Dark: #8FBEFA (azure-03)
+// --media-picker-item-selected-bg: #DAEDF6 - Dark: #2A313D
+//
+// Weight: 36
+//
+// Style guide: colors.kb-editor
+
+// CodeMirror
+//
+// The KB editor's wiki-markup editor and its hint list. The editor keeps CodeMirror's default theme,
+// and SUMO's rules under `#editor` color its surface, gutter, cursor, selections, and the classes of
+// the SUMO markup mode. Italic, underlined, and struck-through text keep `--codemirror-text`. The hint
+// list's shadow appears in the theme maps only.
+//
+// Colors:
+// --codemirror-bg: #FFFFFF - Dark: #16181D (graphite-02)
+// --codemirror-text: #666666 - Dark: #C9CCD2 (graphite-12)
+// --codemirror-border: #F7F7F7 - Dark: #3A3D43 (graphite-08)
+// --codemirror-gutter-bg: #F7F7F7 - Dark: #22252A (graphite-04)
+// --codemirror-gutter-border: #DDDDDD - Dark: #3A3D43 (graphite-08)
+// --codemirror-line-number: #999999 - Dark: #B7BBC1 (graphite-11)
+// --codemirror-cursor: #000000 - Dark: #F9F9FB (light-gray-02)
+// --codemirror-secondary-cursor: #C0C0C0 - Dark: #83868D (graphite-10)
+// --codemirror-selection-bg: #D9D9D9 - Dark: #3A3D43 (graphite-08)
+// --codemirror-selection-focused-bg: #D7D4F0 - Dark: #334052
+// --codemirror-invalid-char: #FF0000 - Dark: #FF9AA2 (red-03)
+// --codemirror-quote-bg: #000000 - Dark: #3A3D43 (graphite-08)
+// --codemirror-quote-text: #FFFFFF - Dark: #F9F9FB (light-gray-02)
+// --codemirror-variable: #D98484 - Dark: #E9A1A1
+// --codemirror-tag: #D98484 - Dark: #E9A1A1
+// --codemirror-link: #5757C2 - Dark: #8FBEFA (azure-03)
+// --codemirror-bold: #000000 - Dark: #F9F9FB (light-gray-02)
+// --codemirror-comment: #009900 - Dark: #83D5AD (sage-01)
+// --codemirror-hints-bg: #FFFFFF - Dark: #32353D (graphite-07)
+// --codemirror-hints-border: #C0C0C0 - Dark: #5A5E66 (graphite-09)
+// --codemirror-hint-text: #000000 - Dark: #E0E0E6 (light-gray-04)
+// --codemirror-hint-active-bg: #0088FF - Dark: #396ED6 (azure-04)
+// --codemirror-hint-active-text: #FFFFFF - Dark: #FFFFFF
+//
+// Weight: 37
+//
+// Style guide: colors.codemirror
+
+// Revision diff
+//
+// The line diffs on the compare, review, and translate pages and in the editor's changes preview.
+// Changed lines are tinted (`--diff-removed-line-bg`, `--diff-added-line-bg`), and the text that
+// changed within them is marked more strongly (`--diff-removed-bg`, `--diff-added-bg`).
+//
+// Colors:
+// --diff-border: #DDDDDD - Dark: #3A3D43 (graphite-08)
+// --diff-text: #666666 - Dark: #C9CCD2 (graphite-12)
+// --diff-output-text: #333333 - Dark: #E0E0E6 (light-gray-04)
+// --diff-gutter-bg: #ECECEC - Dark: #22252A (graphite-04)
+// --diff-gutter-text: #AAAAAA - Dark: #B7BBC1 (graphite-11)
+// --diff-removed-line-bg: #FFDDDD - Dark: #3C2C32
+// --diff-added-line-bg: #DDFFDD - Dark: #193729 (sage-02)
+// --diff-removed-bg: #FFAAAA - Dark: #883736
+// --diff-removed-text: #000000 - Dark: #F9F9FB (light-gray-02)
+// --diff-added-bg: #AAFFAA - Dark: #216133
+// --diff-added-text: #000000 - Dark: #F9F9FB (light-gray-02)
+//
+// Weight: 38
+//
+// Style guide: colors.diff
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -808,6 +907,88 @@ $light: (
   'tom-select-header-close-hover': var(--color-black),
   'user-autocomplete-item-bg': #EFF2F7,
   'user-autocomplete-item-active-bg': #E4E8EE,
+
+  // KB editor
+  'character-count-text': var(--color-black),
+  'character-count-over-limit-text': #FF0000,
+  'draft-alert-bg': #FFE,
+  'draft-alert-image': url("../img/warning-stripes.png"),
+  'draft-alert-error-bg': #F2DEDE,
+  'draft-alert-error-border': #EBCCD1,
+  'draft-alert-error-text': #A94442,
+  'draft-alert-info-bg': #FCF8E3,
+  'draft-alert-info-border': #FAF2CC,
+  'draft-alert-info-text': #8A6D3B,
+  'draft-alert-success-bg': #DFF0D8,
+  'draft-alert-success-border': #D6E9C6,
+  'draft-alert-success-text': #3C763D,
+  'revision-list-row-alt-bg': #F2F2F2,
+  'revision-list-header-text': #666666,
+  'revision-list-creator-text': #333333,
+  'revision-list-locale-bg': #DDDDDD,
+  'revision-list-locale-shadow': 0 0 1px 0 rgba(0, 0, 0, 0.5),
+  'revision-edit-icon': c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29.81 29.81"><path fill="#0060DF" d="M0 29.81l8.29-2.22-6.07-6.07L0 29.81zM18.214 5.532l6.067 6.067-15.04 15.04-6.067-6.067zM23.746-.003l6.067 6.067-4.59 4.59-6.066-6.068z"/></svg>'),
+  'revision-delete-icon': url("protocol/img/icons/delete.svg"),
+  'revision-ready-icon': url("protocol/img/icons/check.svg"),
+  'revision-not-approved-icon': url("protocol/img/icons/warning.svg"),
+  'revision-trivial-icon': url("protocol/img/icons/info.svg"),
+  'revision-not-localizable-icon': url("protocol/img/icons/lockbox.svg"),
+  'revision-translated-icon': url("protocol/img/icons/globe.svg"),
+  'preview-exit-hover-text': #999999,
+  'review-showfor-shadow': 0 p.$spacing-xs 10px #999,
+  'approve-modal-item-hover-shadow': (
+    0 0 10px rgba(0, 0, 0, 0.25),
+    inset -1px -1px 1px rgba(0, 0, 0, 0.125),
+    inset 1px 0 1px rgba(255, 255, 255, 0.25)
+  ),
+  'translate-source-heading': #333333,
+  'translate-source-border': #999999,
+  'markup-toolbar-image': url("sumo/img/markup.svg"),
+  'editor-autocomplete-bg': var(--color-white),
+  'editor-autocomplete-shadow': 0 2px 6px rgba(0, 0, 0, 0.15),
+  'media-picker-item-border': var(--color-white),
+  'media-picker-item-hover-bg': #F0F0F0,
+  'media-picker-item-active-border': #9ACCF7,
+  'media-picker-item-selected-bg': #DAEDF6,
+
+  // CodeMirror
+  'codemirror-bg': var(--color-white),
+  'codemirror-text': #666666,
+  'codemirror-border': #F7F7F7,
+  'codemirror-gutter-bg': #F7F7F7,
+  'codemirror-gutter-border': #DDDDDD,
+  'codemirror-line-number': #999999,
+  'codemirror-cursor': var(--color-black),
+  'codemirror-secondary-cursor': #C0C0C0,
+  'codemirror-selection-bg': #D9D9D9,
+  'codemirror-selection-focused-bg': #D7D4F0,
+  'codemirror-invalid-char': #FF0000,
+  'codemirror-quote-bg': var(--color-black),
+  'codemirror-quote-text': var(--color-white),
+  'codemirror-variable': #D98484,
+  'codemirror-tag': #D98484,
+  'codemirror-link': #5757C2,
+  'codemirror-bold': var(--color-black),
+  'codemirror-comment': #009900,
+  'codemirror-hints-bg': var(--color-white),
+  'codemirror-hints-border': #C0C0C0,
+  'codemirror-hints-shadow': 2px 3px 5px rgba(0, 0, 0, 0.2),
+  'codemirror-hint-text': var(--color-black),
+  'codemirror-hint-active-bg': #0088FF,
+  'codemirror-hint-active-text': var(--color-white),
+
+  // Revision diff
+  'diff-border': #DDDDDD,
+  'diff-text': #666666,
+  'diff-output-text': #333333,
+  'diff-gutter-bg': #ECECEC,
+  'diff-gutter-text': #AAAAAA,
+  'diff-removed-line-bg': #FFDDDD,
+  'diff-added-line-bg': #DDFFDD,
+  'diff-removed-bg': #FFAAAA,
+  'diff-removed-text': var(--color-black),
+  'diff-added-bg': #AAFFAA,
+  'diff-added-text': var(--color-black),
 
   // Buttons
   'button-text': var(--color-marketing-gray-07),

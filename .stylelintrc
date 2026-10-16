@@ -139,13 +139,11 @@
       "files": [
         "kitsune/sumo/static/sumo/scss/_device-migration-wizard.scss",
         "kitsune/sumo/static/sumo/scss/components/_dashboards.scss",
-        "kitsune/sumo/static/sumo/scss/components/_editor-tools.scss",
         "kitsune/sumo/static/sumo/scss/components/_flaggit.scss",
         "kitsune/sumo/static/sumo/scss/components/_groups.scss",
         "kitsune/sumo/static/sumo/scss/components/_kbox--todo-remove.scss",
         "kitsune/sumo/static/sumo/scss/components/_messages.scss",
         "kitsune/sumo/static/sumo/scss/components/_users.autocomplete.scss",
-        "kitsune/sumo/static/sumo/scss/components/_wiki-editor.scss",
         "kitsune/sumo/static/sumo/scss/form-step.styles.scss",
         "kitsune/sumo/static/sumo/scss/form-wizard-configure-step.styles.scss",
         "kitsune/sumo/static/sumo/scss/form-wizard-setup-device-step.styles.scss",
