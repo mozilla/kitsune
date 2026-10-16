@@ -416,6 +416,7 @@
 // in the theme maps.
 //
 // Colors:
+// --rule-color: #42435A - Dark: #3A3D43 (graphite-08)
 // --warning-link: #C50043 - Dark: #FF9AA2 (red-03)
 // --warning-link-hover: #810220 - Dark: #FFBDC5 (red-02)
 // --errorlist-bg: #FFBDC5 - Dark: #3C2C32
@@ -463,13 +464,14 @@
 
 // Icons and media
 //
-// The icons that reader pages draw through the `icon` macro, the header's menu icons, and the
+// The icons that templates draw through the `icon` macro, the header's menu icons, and the
 // expand markers of collapsible sections use `--color-icon`; the "linked in product" info icon uses
-// `--color-icon-info`, the info status color. Content images in KB articles take
+// `--color-icon-info`, the info status color. Content images in KB articles and forum posts take
 // `--media-content-image-filter`, a radius, and a rim; the vertical gap moves from padding to margin
-// in dark so the rim hugs the image. The collapsible KB sections' "+" is an image drawn in each
-// theme's color (`--kb-section-icon`). The logo and the search suggestions that instant_search.js
-// renders keep their images, which `--icon-image-filter` recolors in dark. Everything but the colors
+// in dark so the rim hugs the image. Question and answer images take the filter, radius, and rim
+// only. The collapsible KB sections' "+" is an image drawn in each theme's color
+// (`--kb-section-icon`). The logo and the search suggestions that instant_search.js renders keep
+// their images, which `--icon-image-filter` recolors in dark. Everything but the colors
 // below appears in the theme maps only.
 //
 // Colors:
@@ -621,6 +623,90 @@
 // Weight: 38
 //
 // Style guide: colors.diff
+
+// Forums and questions
+//
+// The support and contributor forums and the Ask a Question flow: the questions list's tag filter,
+// tag chips, the borders and dividers of question lists, threads and answers, the "Chosen Solution"
+// and "Solved" labels (`--solution-label-bg` under heading text; `--color-success` stays the accent
+// and text color), the chosen answer's card, the upload thumbnails, the support-channel badges, and
+// the support switcher.
+// The thread and question dividers keep their light colors (body text and heading) and are
+// graphite-08 in dark. A Tom Select tag link (`--tag-name-text`) is white in light and takes its
+// item's color in dark, so a disabled control dims its tags. The chosen answer's card is a 5% mix of
+// `--color-success` into `--color-shade-bg` in each theme. The focus ring and shadows appear in the
+// theme maps only.
+//
+// Colors:
+// --sidebar-tags-hover-bg: rgba(0, 0, 0, 0.07) - Dark: rgba(255, 255, 255, 0.08)
+// --sidebar-tags-count-bg: #F0F0F4 - Dark: #32353D (graphite-07)
+// --sidebar-tags-count-selected-bg: rgba(0, 96, 223, 0.12) - Dark: rgba(143, 190, 250, 0.16)
+// --sidebar-tag-chip-remove-hover-bg: rgba(0, 96, 223, 0.15) - Dark: rgba(143, 190, 250, 0.2)
+// --tag-chip-bg: #F0F0F4 - Dark: #32353D (graphite-07)
+// --tag-chip-hover-bg: #E0E0E6 - Dark: #3A3D43 (graphite-08)
+// --tag-clear-hover-bg: rgba(255, 0, 0, 0.05) - Dark: #3C2C32
+// --tag-name-text: #FFFFFF - Dark: the Tom Select item's text color
+// --thread-border: #E0E0E6 - Dark: #3A3D43 (graphite-08)
+// --question-divider: #42435A - Dark: #3A3D43 (graphite-08)
+// --karma-titles-divider: #20133A - Dark: #3A3D43 (graphite-08)
+// --solution-label-bg: #3FE1B0 - Dark: #193729 (sage-02)
+// --answer-vote-hover-bg: rgba(0, 96, 223, 0.12) - Dark: rgba(143, 190, 250, 0.16)
+// --answer-pinned-hint-text: #008787 - Dark: #83D5AD (sage-01)
+// --answer-pinned-hint-hover-text: #005E5E - Dark: #83D5AD (sage-01)
+// --attachment-overlay-bg: #CCCCCC - Dark: #3A3D43 (graphite-08)
+// --attachment-delete-bg: #000000 - Dark: #000000
+// --attachment-delete-text: #FFFFFF - Dark: #FFFFFF
+// --attachment-progress-border: #CCCCCC - Dark: #3A3D43 (graphite-08)
+// --channel-badge-support-bg: rgba(63, 225, 176, 0.08) - Dark: #193729 (sage-02)
+// --aaq-form-divider: #CDCDD4 - Dark: #3A3D43 (graphite-08)
+//
+// Weight: 39
+//
+// Style guide: colors.forums
+
+// Community
+//
+// Group pages and their tickets and avatar pages, the "My questions" company tickets widget, the
+// private-messages table, the moderation queue, the top-contributors select, and the KBox dialogs. In
+// the dark theme group cards and sections and KBox dialogs use the elevated surface, and member cards
+// sit transparent on it; the leader cards keep their light gradient and are elevated surfaces in dark
+// with a sage tint. The avatar preview overlay sits on the image and keeps its colors.
+// Remove links, required marks, and the avatar form's errors use `--group-error-text` and
+// `--group-error-text-hover`, which are `initial` in light, so light keeps the inherited text color and
+// dark shows the error red. The select's check mark is an image drawn in each theme's color
+// (`--community-select-check-icon`). The gradients, shadows, and the check mark appear in the theme
+// maps only.
+//
+// Colors:
+// --group-divider: #CDCDD4 - Dark: #3A3D43 (graphite-08)
+// --group-inset-bg: #F9F9FA - Dark: #22252A (graphite-04)
+// --group-badge-bg: #EDEDF0 - Dark: #32353D (graphite-07)
+// --group-visibility-badge-bg: #80EBFF - Dark: #2A313D
+// --group-hierarchy-marker: #9595A2 - Dark: #83868D (graphite-10)
+// --group-tree-leaf: #B1B1BC - Dark: #5A5E66 (graphite-09)
+// --group-leader-badge-bg: #3FE1B0 - Dark: #193729 (sage-02)
+// --group-leader-badge-text: #FFFFFF - Dark: #83D5AD (sage-01)
+// --group-action-hover-bg: #ABF2FF - Dark: rgba(143, 190, 250, 0.16)
+// --group-form-errors-bg: #FFDFE7 - Dark: #3C2C32
+// --group-avatar-overlay-bg: rgba(0, 0, 0, 0.7) - Dark: rgba(0, 0, 0, 0.7)
+// --group-avatar-overlay-text: #FFFFFF - Dark: #FFFFFF
+// --company-tickets-widget-text: #1F2033 - Dark: #F9F9FB (light-gray-02)
+// --messages-table-bg: #FFFFFF - Dark: #1C1E23 (graphite-03)
+// --messages-table-border: #DDDDDD - Dark: #3A3D43 (graphite-08)
+// --messages-table-header-bg: #EEEEFF - Dark: #2A313D
+// --flagged-item-bg: #F0F0F4 - Dark: #22252A (graphite-04)
+// --flagged-content-bg: #F9F9FB - Dark: #282B32 (graphite-05)
+// --flagged-content-heading: #1C1B22 - Dark: #F9F9FB (light-gray-02)
+// --flagged-content-text: #1C1B22 - Dark: #E0E0E6 (light-gray-04)
+// --community-select-border: #D4D4D4 - Dark: #3A3D43 (graphite-08)
+// --community-select-divider: #E0E0E0 - Dark: #3A3D43 (graphite-08)
+// --community-select-option-hover-bg: #005CB8 - Dark: #396ED6 (azure-04)
+// --kbox-overlay-bg: rgba(0, 0, 0, 0.85) - Dark: rgba(0, 0, 0, 0.85)
+// --legacy-blue-text: #2BBAE7 - Dark: #2BBAE7
+//
+// Weight: 40
+//
+// Style guide: colors.community
 
 $light: (
   'page-bg': white,
@@ -993,6 +1079,67 @@ $light: (
   'diff-added-bg': #AAFFAA,
   'diff-added-text': var(--color-black),
 
+  // Forums and questions
+  'sidebar-tags-search-focus-ring': 0 0 0 2px rgba(0, 96, 223, 0.15),
+  'sidebar-tags-hover-bg': rgba(0, 0, 0, 0.07),
+  'sidebar-tags-count-bg': var(--color-light-gray-03),
+  'sidebar-tags-count-selected-bg': rgba(0, 96, 223, 0.12),
+  'sidebar-tag-chip-remove-hover-bg': rgba(0, 96, 223, 0.15),
+  'tag-chip-bg': var(--color-light-gray-03),
+  'tag-chip-hover-bg': var(--color-light-gray-04),
+  'tag-clear-hover-bg': rgba(255, 0, 0, 0.05),
+  'tag-name-text': var(--color-white),
+  'thread-border': var(--color-light-gray-04),
+  'question-divider': var(--color-text),
+  'karma-titles-divider': var(--color-heading),
+  'solution-label-bg': var(--color-success),
+  'answer-solution-bg': color-mix(in srgb, var(--color-success) 5%, var(--color-shade-bg)),
+  'answer-vote-hover-bg': rgba(0, 96, 223, 0.12),
+  'answer-pinned-hint-text': var(--color-green-08),
+  'answer-pinned-hint-hover-text': var(--color-green-09),
+  'attachment-overlay-bg': #CCCCCC,
+  'attachment-delete-bg': var(--color-black),
+  'attachment-delete-text': var(--color-white),
+  'attachment-progress-border': #CCCCCC,
+  'channel-badge-support-bg': rgba(c.color('green', '06'), 0.08),
+  'aaq-form-divider': var(--color-marketing-gray-03),
+  'support-switcher-shadow': (0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)),
+  'support-switcher-hover-shadow': (0 8px 20px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06)),
+
+  // Community
+  'group-divider': var(--color-marketing-gray-03),
+  'group-inset-bg': var(--color-marketing-gray-01),
+  'group-badge-bg': var(--color-marketing-gray-02),
+  'group-visibility-badge-bg': var(--color-blue-02),
+  'group-hierarchy-marker': var(--color-marketing-gray-05),
+  'group-tree-leaf': var(--color-marketing-gray-04),
+  'group-leader-card-bg': linear-gradient(135deg, rgba(12, 175, 89, 0.03) 0%, var(--color-white) 100%),
+  'group-leader-badge-bg': var(--color-success),
+  'group-leader-badge-text': var(--color-white),
+  'group-error-text': initial,
+  'group-error-text-hover': initial,
+  'group-action-hover-bg': var(--color-blue-01),
+  'group-form-errors-bg': var(--color-red-01),
+  'group-avatar-preview-shadow': 0 4px 12px rgba(0, 0, 0, 0.1),
+  'group-avatar-overlay-bg': rgba(0, 0, 0, 0.7),
+  'group-avatar-overlay-text': var(--color-white),
+  'company-tickets-widget-shadow': 0 1px 2px rgba(0, 0, 0, 0.04),
+  'company-tickets-widget-text': var(--color-marketing-gray-09),
+  'messages-table-bg': var(--color-white),
+  'messages-table-border': #DDDDDD,
+  'messages-table-header-bg': #EEEEFF,
+  'flagged-item-bg': var(--color-light-gray-03),
+  'flagged-content-bg': var(--color-light-gray-02),
+  'flagged-content-shadow': 0 1px 5px rgba(0, 0, 0, 0.1),
+  'flagged-content-heading': var(--color-dark-gray-09),
+  'flagged-content-text': var(--color-dark-gray-09),
+  'community-select-border': #D4D4D4,
+  'community-select-divider': #E0E0E0,
+  'community-select-option-hover-bg': #005CB8,
+  'community-select-check-icon': url('protocol/img/icons/check.svg'),
+  'kbox-overlay-bg': rgba(0, 0, 0, 0.85),
+  'legacy-blue-text': #2BBAE7,
+
   // Buttons
   'button-text': var(--color-marketing-gray-07),
   'button-hover-border': var(--color-marketing-gray-04),
@@ -1008,6 +1155,7 @@ $light: (
   'delete-button-hover-text': var(--color-red-10),
 
   // Text components
+  'rule-color': var(--color-text),
   'warning-link': var(--color-red-08),
   'warning-link-hover': var(--color-red-09),
   'errorlist-bg': var(--color-red-02),

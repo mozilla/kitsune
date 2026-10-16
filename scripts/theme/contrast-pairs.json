@@ -211,7 +211,52 @@
         { "fg": "--diff-removed-text", "bg": "--diff-removed-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--diff-added-text", "bg": "--diff-added-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--diff-gutter-text", "bg": "--diff-gutter-bg", "min": 4.5, "themes": ["light", "dark"] },
-        { "fg": "--diff-output-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] }
+        { "fg": "--diff-output-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-heading", "bg": "--solution-label-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-success", "bg": "--channel-badge-support-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-error", "bg": "--tag-clear-hover-bg", "backdrop": "--page-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--tag-chip-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--tag-chip-hover-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-light", "bg": "--tag-chip-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-error", "bg": "--tag-chip-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--color-field-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-heading", "bg": "--sidebar-tags-hover-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-light", "bg": "--sidebar-tags-count-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--color-link-active-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--sidebar-tags-count-selected-bg", "backdrop": "--color-link-active-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--sidebar-tag-chip-remove-hover-bg", "backdrop": "--color-link-active-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--answer-vote-hover-bg", "backdrop": "--color-shade-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--answer-pinned-hint-text", "bg": "--color-shade-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--answer-pinned-hint-hover-text", "bg": "--color-shade-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-light", "bg": "--group-inset-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--group-inset-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--group-badge-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-light", "bg": "--group-badge-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--group-visibility-badge-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--group-leader-badge-text", "bg": "--group-leader-badge-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--group-action-hover-bg", "backdrop": "--color-surface", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--group-error-text", "bg": "--color-surface", "min": 3, "themes": ["dark"] },
+        { "fg": "--group-error-text-hover", "bg": "--color-surface", "min": 3, "themes": ["dark"] },
+        { "fg": "--group-error-text", "bg": "--group-form-errors-bg", "min": 4.5, "themes": ["dark"] },
+        { "fg": "--color-text", "bg": "--group-form-errors-bg", "min": 4.5, "themes": ["light"] },
+        { "fg": "--group-avatar-overlay-text", "bg": "--group-avatar-overlay-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--company-tickets-widget-text", "bg": "--color-link-active-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-secondary", "bg": "--color-link-active-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-light", "bg": "--color-link-active-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-border-interactive", "bg": "--page-bg", "min": 3, "themes": ["dark"] },
+        { "fg": "--color-text", "bg": "--messages-table-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-heading", "bg": "--messages-table-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--messages-table-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--messages-table-header-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--flagged-content-heading", "bg": "--flagged-content-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--flagged-content-text", "bg": "--flagged-content-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--status-success-text", "bg": "--flagged-content-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--flagged-content-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-heading", "bg": "--flagged-item-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--flagged-item-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--flagged-item-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--community-select-option-hover-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--legacy-blue-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] }
     ],
     "exceptions": [
         {
@@ -351,6 +396,66 @@
             "bg": "--diff-gutter-bg",
             "theme": "light",
             "reason": "Light design: the diff's #AAA line numbers on #ECECEC are 1.97:1"
+        },
+        {
+            "fg": "--color-success",
+            "bg": "--channel-badge-support-bg",
+            "theme": "light",
+            "reason": "Light design: the green-06 support-channel badge text on its 8% green tint is 1.60:1"
+        },
+        {
+            "fg": "--color-error",
+            "bg": "--tag-clear-hover-bg",
+            "theme": "light",
+            "reason": "Light design: the red-05 icon of the hovered tag-filter clear button on its 5% red tint is 2.54:1"
+        },
+        {
+            "fg": "--color-error",
+            "bg": "--tag-chip-bg",
+            "theme": "light",
+            "reason": "Light design: the red-05 hovered tag remover on the light-gray-03 chip is 2.44:1"
+        },
+        {
+            "fg": "--color-link",
+            "bg": "--sidebar-tags-count-selected-bg",
+            "theme": "light",
+            "reason": "Light design: the selected tag's blue count on its 12% blue tint is 4.06:1"
+        },
+        {
+            "fg": "--color-link",
+            "bg": "--answer-vote-hover-bg",
+            "theme": "light",
+            "reason": "Light design: the hovered vote button's blue count on its 12% blue tint is 4.49:1"
+        },
+        {
+            "fg": "--answer-pinned-hint-text",
+            "bg": "--color-shade-bg",
+            "theme": "light",
+            "reason": "Light design: the green-08 pinned-solution link on the light-gray-02 answer card is 4.15:1"
+        },
+        {
+            "fg": "--color-link",
+            "bg": "--group-visibility-badge-bg",
+            "theme": "light",
+            "reason": "Light design: the blue group visibility badge text on its blue-02 badge is 4.08:1"
+        },
+        {
+            "fg": "--group-leader-badge-text",
+            "bg": "--group-leader-badge-bg",
+            "theme": "light",
+            "reason": "Light design: the white leader badge text on the green-06 badge is 1.67:1"
+        },
+        {
+            "fg": "--color-secondary",
+            "bg": "--color-link-active-bg",
+            "theme": "light",
+            "reason": "Light design: the marketing-gray-06 company tickets widget title on its marketing-gray-02 card is 3.61:1"
+        },
+        {
+            "fg": "--legacy-blue-text",
+            "bg": "--page-bg",
+            "theme": "light",
+            "reason": "Light design: the legacy cyan KB text color on white is 2.26:1"
         }
     ]
 }

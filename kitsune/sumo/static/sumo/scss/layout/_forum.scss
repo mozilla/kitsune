@@ -129,14 +129,14 @@
     font-family: inherit;
     @include c.text-body-sm;
     color: var(--color-text);
-    background: var(--color-white);
+    background: var(--color-field-bg);
     margin-bottom: p.$spacing-xs;
     outline: none;
     box-sizing: border-box;
 
     &:focus {
       border-color: var(--color-link);
-      box-shadow: 0 0 0 2px rgba(0, 96, 223, 0.15);
+      box-shadow: var(--sidebar-tags-search-focus-ring);
     }
 
     &::placeholder {
@@ -170,7 +170,7 @@
       }
 
       &:hover {
-        background: rgba(0, 0, 0, 0.07);
+        background: var(--sidebar-tags-hover-bg);
         color: var(--color-heading);
       }
     }
@@ -181,7 +181,7 @@
       color: var(--color-heading);
 
       .sidebar-tags--count {
-        background: rgba(0, 96, 223, 0.12);
+        background: var(--sidebar-tags-count-selected-bg);
         color: var(--color-link);
       }
     }
@@ -190,7 +190,7 @@
   &--count {
     @include c.text-body-xs;
     color: var(--color-text-light);
-    background: var(--color-light-gray-03);
+    background: var(--sidebar-tags-count-bg);
     border-radius: 20px;
     padding: 1px p.$spacing-sm;
     min-width: 22px;
@@ -307,7 +307,7 @@
     }
 
     &:hover {
-      background: rgba(0, 96, 223, 0.15);
+      background: var(--sidebar-tag-chip-remove-hover-bg);
     }
   }
 }
@@ -323,7 +323,7 @@
     align-items: center;
     padding: p.$spacing-xs p.$spacing-md;
     margin: 0 p.$spacing-sm p.$spacing-sm 0;
-    background-color: var(--color-light-gray-03);
+    background-color: var(--tag-chip-bg);
     border-radius: 20px;
     white-space: nowrap;
 
@@ -337,7 +337,7 @@
     }
 
     &:hover {
-      background: var(--color-light-gray-04);
+      background: var(--tag-chip-hover-bg);
     }
 
     &.is-spam {
@@ -346,7 +346,7 @@
   }
 
   &.no-hover li:hover {
-    background-color: var(--color-light-gray-03);
+    background-color: var(--tag-chip-bg);
   }
 
   li:has(a) {
@@ -411,7 +411,7 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    border: 1.5px solid var(--color-light-gray-04);
+    border: 1.5px solid var(--thread-border);
     color: var(--color-text-light);
     text-decoration: none;
     transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
@@ -425,7 +425,7 @@
     &:hover {
       color: var(--color-error);
       border-color: var(--color-error);
-      background: rgba(255, 0, 0, 0.05);
+      background: var(--tag-clear-hover-bg);
     }
   }
 }
@@ -581,7 +581,7 @@
     position: relative;
 
     .overlay {
-      background: #ccc url('../img/wait-trans.gif') no-repeat center;
+      background: var(--attachment-overlay-bg) url('../img/wait-trans.gif') no-repeat center;
       bottom: 5px;
       left: 5px;
       opacity: .5;
@@ -598,10 +598,10 @@
     }
 
     input.delete {
-      background: #000;
-      border: 2px solid #fff;
+      background: var(--attachment-delete-bg);
+      border: 2px solid var(--attachment-delete-text);
       border-radius: 1em;
-      color: #fff;
+      color: var(--attachment-delete-text);
       cursor: pointer;
       display: none;
       font-family: Verdana;
@@ -625,7 +625,7 @@
   .upload-progress {
     display: none;
     background: url('../img/wait-trans.gif') no-repeat center;
-    border: 1px solid #ccc;
+    border: 1px solid var(--attachment-progress-border);
     margin: 5px;
     text-align: center;
     vertical-align: top;
@@ -653,7 +653,7 @@
 
   .user-title {
     line-height: 1;
-    border: 1px solid var(--color-text);
+    border: 1px solid var(--question-divider);
     @include p.bidi(((padding, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
         (margin, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
         (border-width, 0 0 0 1px, 0 1px 0 0),
@@ -668,7 +668,7 @@
   margin: 0 0 0 p.$spacing-sm;
   padding-left: p.$spacing-sm;
   line-height: 1;
-  border-left: 1px solid var(--color-heading);
+  border-left: 1px solid var(--karma-titles-divider);
 
   li {
     margin-right: p.$spacing-sm;
@@ -692,7 +692,7 @@
 }
 
 .is-solution {
-  background-color: var(--color-success);
+  background-color: var(--solution-label-bg);
 
   &--icon {
     width: 20px;
@@ -716,7 +716,7 @@
   gap: p.$spacing-md;
   padding-top: p.$spacing-md;
   margin-top: p.$spacing-lg;
-  border-top: 1px solid var(--color-light-gray-04);
+  border-top: 1px solid var(--thread-border);
 }
 
 .answer-footer--actions {
@@ -745,7 +745,7 @@
   gap: p.$spacing-xs;
   padding: 0 p.$spacing-sm;
   line-height: 1;
-  border: 1px solid var(--color-light-gray-04);
+  border: 1px solid var(--thread-border);
   border-radius: 2em;
   background: var(--color-surface);
   cursor: pointer;
@@ -761,7 +761,7 @@
   &:hover:not([disabled]) {
     color: var(--color-link);
     border-color: var(--color-link);
-    background-color: rgba(var(--color-link-rgb, 0, 96, 223), 0.12);
+    background-color: var(--answer-vote-hover-bg);
   }
 
   &[disabled] {
@@ -809,7 +809,7 @@
 }
 
 .answer--solution {
-  background: color-mix(in srgb, var(--color-success) 5%, var(--color-shade-bg));
+  background: var(--answer-solution-bg);
   border-left: 3px solid var(--color-success);
 }
 
@@ -827,7 +827,7 @@
   gap: p.$spacing-xs;
   @include c.text-body-xs;
   font-weight: 600;
-  color: var(--color-green-08);
+  color: var(--answer-pinned-hint-text);
   margin-left: auto;
   align-self: flex-start;
   margin-top: 7px;
@@ -850,7 +850,7 @@
 
   &:hover {
     text-decoration: underline;
-    color: var(--color-green-09);
+    color: var(--answer-pinned-hint-hover-text);
   }
 }
 
@@ -902,52 +902,6 @@
   }
 }
 
-.solution--footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: p.$spacing-md;
-  flex-wrap: wrap;
-  padding-top: p.$spacing-sm;
-  margin-top: p.$spacing-md;
-  border-top: 1px solid var(--color-light-gray-04);
-}
-
-.solution--vote-count {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  @include c.text-body-sm;
-  color: var(--color-text-light);
-
-  svg {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-    color: var(--color-green-08);
-    stroke: var(--color-green-08);
-    transform: rotate(180deg);
-  }
-
-  strong {
-    font-weight: 600;
-    color: var(--color-text);
-  }
-}
-
-.solution--read-more {
-  display: inline-flex;
-  align-items: center;
-  gap: p.$spacing-xs;
-
-  svg {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-  }
-}
-
-
 .system-details-info {
   &.hide {
     .show {
@@ -965,13 +919,13 @@
 }
 
 .item .tag-name {
-  color: rgb(255, 255, 255);
+  color: var(--tag-name-text);
 
   &:hover {
-    color: rgb(255, 255, 255);
+    color: var(--tag-name-text);
   }
 
   &:visited {
-    color: rgb(255, 255, 255);
+    color: var(--tag-name-text);
   }
 }

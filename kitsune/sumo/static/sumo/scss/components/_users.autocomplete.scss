@@ -76,11 +76,10 @@
 
   // Suggestions dropdown.
   .ts-dropdown {
-    @include c.elevation-01;
+    @include c.elevation-01(var(--tom-select-dropdown-bg));
     margin: 0;
     border: 0;
     border-radius: 0 0 var(--global-radius) var(--global-radius);
-    background-color: var(--tom-select-dropdown-bg);
     font-size: 14px;
 
     .option {

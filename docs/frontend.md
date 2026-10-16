@@ -300,7 +300,7 @@ Don't win with `!important` or a longer selector, which would also outrank SUMO'
 #### Icons
 
 * **Templates** use the `icon()` macro from `includes/icons.html`, as in `{{ icon('pencil', class='pencil') }}`.
-It inlines the SVG in `currentColor`, which `.svg-icon` sets from `--color-icon`, and is decorative unless you pass a `label`.
+It inlines the SVG in `currentColor`, which `.svg-icon` sets from `--color-icon`, and is decorative unless you pass a `label` (its accessible name) or a `title` (a tooltip that also names it).
 Add a new icon to the dict at the top of the file.
 * **CSS icons** are per-theme image tokens, such as `--search-icon`.
 The light value is the old URL, byte for byte; the dark one is built with the functions in `config/_mixins.scss` or inline in the dark map.

@@ -1,3 +1,4 @@
+{% from "includes/icons.html" import icon %}
 {% macro thread_list(threads, forum=None) -%}
 {% for thread in threads.object_list %}
 {% if forum %}
@@ -8,18 +9,12 @@
 <tr>
   <td class="type">
     {% if thread.is_locked %}
-    <img src="{{ webpack_static('protocol/img/icons/lockbox.svg') }}"
-         {# L10n: This is a contributor forum thread status. #}
-         alt="{{ pgettext('thread_type', 'Locked') }}"
-         {# L10n: This is a contributor forum thread status. #}
-         title="{{ pgettext('thread_type', 'Locked') }}" />
+    {# L10n: This is a contributor forum thread status. #}
+    {{ icon('lockbox', title=pgettext('thread_type', 'Locked')) }}
     {% endif %}
     {% if thread.is_sticky %}
-    <img src="{{ webpack_static('protocol/img/icons/pin.svg') }}"
-         {# L10n: This is a contributor forum thread status. #}
-         alt="{{ pgettext('thread_type', 'Sticky') }}"
-         {# L10n: This is a contributor forum thread status. #}
-         title="{{ pgettext('thread_type', 'Sticky') }}" />
+    {# L10n: This is a contributor forum thread status. #}
+    {{ icon('pin', title=pgettext('thread_type', 'Sticky')) }}
     {% endif %}
   </td>
   <td class="title"><a

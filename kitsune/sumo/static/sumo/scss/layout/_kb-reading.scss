@@ -214,15 +214,23 @@
     box-shadow: var(--kb-keycap-edge);
     background: var(--kb-keycap-bg);
   }
+}
 
-  // Forum posts share the base `.wiki-image` rule and keep it as is.
-  .wiki-image {
-    margin: var(--content-image-margin);
-    padding: var(--content-image-padding);
-    box-shadow: var(--content-image-rim);
-    border-radius: var(--content-image-radius);
-    filter: var(--media-content-image-filter);
-  }
+#doc-content .wiki-image,
+.forum--entry-content .wiki-image {
+  margin: var(--content-image-margin);
+  padding: var(--content-image-padding);
+  box-shadow: var(--content-image-rim);
+  border-radius: var(--content-image-radius);
+  filter: var(--media-content-image-filter);
+}
+
+// Question and answer images have no padding or margin of their own, so only the frame applies.
+.question .content .wiki-image,
+.answer .content .wiki-image {
+  box-shadow: var(--content-image-rim);
+  border-radius: var(--content-image-radius);
+  filter: var(--media-content-image-filter);
 }
 
 #document_metadata.has-border-bottom {

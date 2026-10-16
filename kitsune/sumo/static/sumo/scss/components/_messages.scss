@@ -11,12 +11,12 @@
     display: flex;
     width: 100%;
     box-sizing: border-box; // Include padding and border in width calculations
-    background-color: #fff;
+    background-color: var(--messages-table-bg);
 
     .email-cell {
         padding: 8px;
-        background-color: #fff;
-        border: 1px solid #ddd;
+        background-color: var(--messages-table-bg);
+        border: 1px solid var(--messages-table-border);
         box-sizing: border-box; // Include padding and border in width calculations
         overflow: hidden; // Hide overflow content
         text-overflow: ellipsis; // Add ellipsis for overflowing text
@@ -35,7 +35,7 @@
     &.header {
         .email-cell {
             font-weight: bold;
-            background-color: #eef;
+            background-color: var(--messages-table-header-bg);
         }
     }
 

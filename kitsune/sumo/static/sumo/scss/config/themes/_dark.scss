@@ -375,6 +375,76 @@ $dark: (
   'diff-added-bg': #216133,
   'diff-added-text': var(--color-light-gray-02),
 
+  // Forums and questions
+  'sidebar-tags-search-focus-ring': 0 0 0 2px rgba(c.color('azure', '03'), 0.3),
+  'sidebar-tags-hover-bg': rgba(255, 255, 255, 0.08),
+  'sidebar-tags-count-bg': var(--color-graphite-07),
+  'sidebar-tags-count-selected-bg': rgba(c.color('azure', '03'), 0.16),
+  'sidebar-tag-chip-remove-hover-bg': rgba(c.color('azure', '03'), 0.2),
+  'tag-chip-bg': var(--color-graphite-07),
+  'tag-chip-hover-bg': var(--color-graphite-08),
+  'tag-clear-hover-bg': var(--status-error-bg),
+  // The link takes its Tom Select item's color, so a disabled control dims its tags.
+  'tag-name-text': currentColor,
+  'thread-border': var(--color-graphite-08),
+  'question-divider': var(--color-graphite-08),
+  'karma-titles-divider': var(--color-graphite-08),
+  'solution-label-bg': var(--status-success-bg),
+  'answer-solution-bg': color-mix(in srgb, var(--color-success) 5%, var(--color-shade-bg)),
+  'answer-vote-hover-bg': rgba(c.color('azure', '03'), 0.16),
+  'answer-pinned-hint-text': var(--status-success-text),
+  'answer-pinned-hint-hover-text': var(--status-success-text),
+  'attachment-overlay-bg': var(--color-graphite-08),
+  // The delete button sits on the thumbnail, so it keeps its light colors.
+  'attachment-delete-bg': var(--color-black),
+  'attachment-delete-text': var(--color-white),
+  'attachment-progress-border': var(--color-border),
+  'channel-badge-support-bg': var(--status-success-bg),
+  'aaq-form-divider': var(--color-border),
+  'support-switcher-shadow': var(--elevation-1),
+  'support-switcher-hover-shadow': var(--elevation-2),
+
+  // Community
+  'group-divider': var(--color-graphite-08),
+  'group-inset-bg': var(--color-shade-bg),
+  'group-badge-bg': var(--color-graphite-07),
+  'group-visibility-badge-bg': var(--status-info-bg),
+  'group-hierarchy-marker': var(--color-graphite-10),
+  'group-tree-leaf': var(--color-graphite-09),
+  'group-leader-card-bg': (
+    linear-gradient(135deg, rgba(c.color('sage', '01'), 0.06) 0%, transparent 100%),
+    var(--surface-elevated-image) var(--surface-elevated-bg)
+  ),
+  'group-leader-badge-bg': var(--status-success-bg),
+  'group-leader-badge-text': var(--status-success-text),
+  'group-error-text': var(--status-error-text),
+  'group-error-text-hover': var(--color-error-hover),
+  'group-action-hover-bg': rgba(c.color('azure', '03'), 0.16),
+  'group-form-errors-bg': var(--status-error-bg),
+  'group-avatar-preview-shadow': var(--elevation-1),
+  // The overlay sits on the avatar image, so it keeps its light colors.
+  'group-avatar-overlay-bg': rgba(0, 0, 0, 0.7),
+  'group-avatar-overlay-text': var(--color-white),
+  'company-tickets-widget-shadow': var(--elevation-rim),
+  'company-tickets-widget-text': var(--color-heading),
+  'messages-table-bg': var(--page-bg),
+  'messages-table-border': var(--color-border),
+  'messages-table-header-bg': var(--status-info-bg),
+  'flagged-item-bg': var(--color-shade-bg),
+  'flagged-content-bg': var(--card-bg),
+  'flagged-content-shadow': var(--elevation-1),
+  'flagged-content-heading': var(--color-heading),
+  'flagged-content-text': var(--color-text),
+  'community-select-border': var(--color-border),
+  'community-select-divider': var(--color-border),
+  'community-select-option-hover-bg': var(--color-accent),
+  // Protocol's check.svg in light-gray-02.
+  'community-select-check-icon': c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="#{c.color('light-gray', '02')}" d="M1.53 7.17.47 8.23l5.4 5.4 9.66-9.67-1.06-1.06-8.6 8.6z"/></svg>'),
+  // The same scrim as Protocol's modal, which is black in both themes.
+  'kbox-overlay-bg': rgba(0, 0, 0, 0.85),
+  // Legacy KB markup; the light cyan already reads at about 7:1 on the dark page.
+  'legacy-blue-text': #2BBAE7,
+
   // Buttons
   'button-text': var(--color-light-gray-04),
   'button-hover-border': var(--color-graphite-11),
@@ -392,6 +462,7 @@ $dark: (
   'delete-button-hover-text': var(--color-red-03),
 
   // Text components
+  'rule-color': var(--color-graphite-08),
   'warning-link': var(--status-error-text),
   'warning-link-hover': var(--color-red-02),
   'errorlist-bg': var(--status-error-bg),
