@@ -58,6 +58,8 @@
   position: relative;
   box-shadow: inset 0 -1px 0 var(--color-marketing-gray-03);
   margin-bottom: p.$spacing-xl;
+  // Take our width from the column, so a long row of tabs can't widen it.
+  contain: inline-size;
 
   &:not(.is-js-enhanced) {
     overflow-x: auto;
@@ -131,6 +133,42 @@
 
   @media #{p.$mq-md} {
     margin-bottom: 40px;
+  }
+}
+
+// Larger tabs for the subtopics on topic pages.
+.tabs.topic-tabs {
+  margin-bottom: p.$spacing-md;
+
+  .tabs--link,
+  .tabs--button {
+    @include c.text-body-md;
+    font-weight: 500;
+    color: var(--color-heading);
+
+    &:hover {
+      color: var(--color-link);
+    }
+  }
+
+  .tabs--button {
+    padding-bottom: 12px;
+  }
+
+  .tabs--list > .tabs--item > .tabs--link {
+    span {
+      margin-right: 28px;
+      padding-bottom: 12px;
+    }
+
+    &.is-active {
+      font-weight: 700;
+      color: var(--color-link);
+
+      span {
+        box-shadow: inset 0 -3px 0 var(--color-link);
+      }
+    }
   }
 }
 

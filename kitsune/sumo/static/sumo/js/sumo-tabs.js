@@ -48,7 +48,17 @@ export default function tabsInit() {
       let stopWidth = moreBtn.offsetWidth;
       let hiddenItems = [];
       const primaryWidth = primary.offsetWidth;
+      // Save room for the selected tab first, so it's never tucked into "More".
+      const selectedItem = [...primaryItems].find((item) =>
+        item.querySelector('.is-active, .selected')
+      );
+      if (selectedItem) {
+        stopWidth += selectedItem.offsetWidth;
+      }
       primaryItems.forEach((item, i) => {
+        if (item === selectedItem) {
+          return;
+        }
         if(primaryWidth >= stopWidth + item.offsetWidth) {
           stopWidth += item.offsetWidth;
         } else {

@@ -159,7 +159,7 @@
 
 
 {% macro topic_tabs(topics, subtopics, product, topic, selected_subtopic=None) -%}
-<nav class="tabs">
+<nav class="tabs topic-tabs">
   <ul class="tabs--list subtopics">
     {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
     <li class="tabs--item">
@@ -192,4 +192,33 @@
     {% endfor %}
   </ul>
 </nav>
+{%- endmacro %}
+
+
+{% macro article_card(document, url) -%}
+<article class="article-card">
+  <img class="article-card--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
+  <div class="article-card--text">
+    <h3 class="article-card--title">
+      <a href="{{ url }}"
+        data-event-name="link_click"
+        data-event-parameters='{"link_name": "kb-article"}'>
+        {{ document['document_title'] }}
+      </a>
+    </h3>
+    {% if document['document_summary'] %}
+      <p class="article-card--summary">{{ document['document_summary'] }}</p>
+    {% endif %}
+    <div class="article-card--footer">
+      {# L10n: A cue at the bottom of each article card on topic pages. The whole card links to the article. #}
+      <span class="article-card--more" aria-hidden="true">{{ _('Read article') }}</span>
+      {% if document['created'] %}
+        <span class="article-card--date">
+          {% if document['is_first_revision'] %}{{ _("Created") }}{% else %}{{ _("Last updated") }}{% endif %}:
+          {{ datetimeformat(document['created'], format="shortdate", use_timesince=True) }}
+        </span>
+      {% endif %}
+    </div>
+  </div>
+</article>
 {%- endmacro %}

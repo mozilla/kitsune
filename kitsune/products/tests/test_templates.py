@@ -175,6 +175,111 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(2, len(pqdoc(".subtopics>li")))
 
 
+class ArticleCardsTests(TestCase):
+    def _get_listing(self, product, topic):
+        url = reverse("products.documents", args=[product.slug, topic.slug])
+        r = self.client.get(url, follow=True)
+        self.assertEqual(200, r.status_code)
+        return pq(r.content)
+
+    def test_enterprise_topic_page_shows_cards(self):
+        p = ProductFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
+        t = TopicFactory(products=[p], visible=True)
+        rev = ApprovedRevisionFactory(
+            summary="Set up your account.", document__products=[p], document__topics=[t]
+        )
+        ApprovedRevisionFactory.create_batch(2, document__products=[p], document__topics=[t])
+
+        doc = self._get_listing(p, t)
+        self.assertEqual(1, len(doc("#document-list.is-enterprise")))
+        self.assertEqual(3, len(doc(".article-grid .article-card")))
+        self.assertEqual(0, len(doc(".topic-article")))
+
+        url = rev.document.get_absolute_url()
+        cards = [
+            pq(c)
+            for c in doc(".article-card")
+            if pq(c)(".article-card--title a").attr("href") == url
+        ]
+        self.assertEqual(1, len(cards))
+        card = cards[0]
+        self.assertEqual(rev.document.title, card(".article-card--title a").text())
+        self.assertEqual("Set up your account.", card(".article-card--summary").text())
+        self.assertEqual("true", card(".article-card--more").attr("aria-hidden"))
+        self.assertIn("Created", card(".article-card--date").text())
+
+    def test_enterprise_card_says_last_updated(self):
+        p = ProductFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
+        t = TopicFactory(products=[p], visible=True)
+        rev = ApprovedRevisionFactory(document__products=[p], document__topics=[t])
+        ApprovedRevisionFactory(document=rev.document)
+
+        doc = self._get_listing(p, t)
+        self.assertIn("Last updated", doc(".article-card--date").text())
+
+    def test_other_products_keep_the_list(self):
+        p = ProductFactory()
+        t = TopicFactory(products=[p], visible=True)
+        ApprovedRevisionFactory.create_batch(2, document__products=[p], document__topics=[t])
+
+        doc = self._get_listing(p, t)
+        self.assertEqual(0, len(doc("#document-list.is-enterprise")))
+        self.assertEqual(2, len(doc(".topic-article")))
+        self.assertEqual(0, len(doc(".article-card")))
+
+
+class TopicHeaderTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory()
+        self.topic = TopicFactory(
+            title="Getting started",
+            description="Set up your account.",
+            products=[self.product],
+            visible=True,
+        )
+        self.subtopic = TopicFactory(
+            title="Submit a ticket",
+            description="Track your support requests.",
+            parent=self.topic,
+            products=[self.product],
+            visible=True,
+        )
+        ApprovedRevisionFactory.create_batch(
+            2, document__products=[self.product], document__topics=[self.topic, self.subtopic]
+        )
+        ApprovedRevisionFactory(document__products=[self.product], document__topics=[self.topic])
+
+    def _get(self, url):
+        r = self.client.get(url, follow=True)
+        self.assertEqual(200, r.status_code)
+        return pq(r.content)
+
+    def test_all_articles_tab(self):
+        doc = self._get(reverse("products.documents", args=[self.product.slug, self.topic.slug]))
+        self.assertEqual("Getting started", doc("header.topic-header h1").text())
+        self.assertEqual(
+            "Set up your account.", doc("header.topic-header .topic-description").text()
+        )
+        self.assertEqual("All articles", doc(".topic-section--title").text())
+        self.assertEqual("3 articles", doc(".topic-section--count").text())
+        self.assertEqual(0, len(doc(".topic-section--description")))
+
+    def test_subtopic_tab_keeps_the_topic_header(self):
+        doc = self._get(
+            reverse(
+                "products.subtopics",
+                args=[self.product.slug, self.topic.slug, self.subtopic.slug],
+            )
+        )
+        self.assertEqual("Getting started", doc("header.topic-header h1").text())
+        self.assertEqual(
+            "Set up your account.", doc("header.topic-header .topic-description").text()
+        )
+        self.assertEqual("Submit a ticket", doc(".topic-section--title").text())
+        self.assertEqual("2 articles", doc(".topic-section--count").text())
+        self.assertEqual("Track your support requests.", doc(".topic-section--description").text())
+
+
 _MZLA_SLUGS = ["thunderbird", "thunderbird-android"]
 _MATOMO_MARKER = "data-matomo-site-id"
 

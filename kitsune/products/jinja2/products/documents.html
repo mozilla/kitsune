@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
+{% from 'products/includes/topic_macros.html' import article_card, topic_sidebar, topic_tabs with context %}
 {% from 'products/includes/product_macros.html' import product_dropdown %}
 {% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
 {% from 'wiki/includes/document_macros.html' import document_metadata with context %}
@@ -51,13 +51,29 @@
 {% endblock %}
 
 {% block content %}
-    <article id="document-list">
+    <article id="document-list"{% if product and product.slug == settings.ENTERPRISE_GROUP_SLUG %} class="is-enterprise"{% endif %}>
       {% if topic_navigation %}
         {% include 'products/includes/topic_documents.html' %}
       {% else %}
         {% include 'products/includes/product_documents.html' %}
       {% endif %}
 
+      {% if article_cards %}
+        <section class="article-grid">
+          {% for document in documents %}
+            {{ article_card(document, document['url']) }}
+          {% endfor %}
+        </section>
+
+        {% if fallback_documents %}
+          <h2 class="sumo-page-subheading">{{ _('In English') }}</h2>
+          <section class="article-grid">
+            {% for document in fallback_documents %}
+              {{ article_card(document, document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/')) }}
+            {% endfor %}
+          </section>
+        {% endif %}
+      {% else %}
       <section class="topic-list">
         {% for document in documents %}
           <article class="topic-article no-bottom-margin">
@@ -92,6 +108,7 @@
           </article>
         {% endfor %}
         </section>
+      {% endif %}
       {% endif %}
     </article>
 
