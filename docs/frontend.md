@@ -393,7 +393,7 @@ A component shown outside a product's pages can carry the class itself,
 as the Enterprise banner does.
 
 To theme a product, add one entry. Every key is optional,
-and the values apply in both themes:
+and the values apply in both themes; for a per-theme value, point a key at a theme token, as Enterprise's `callout-base` does:
 
 * `callout-ring`, `callout-base`, and `callout-glows` set the hooks the `brand-callout` mixin reads:
 `--product-callout-ring` (a 1px gradient border just outside the callout),

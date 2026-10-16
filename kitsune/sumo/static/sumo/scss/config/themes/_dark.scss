@@ -157,6 +157,8 @@ $dark: (
   'brand-callout-action-text': var(--color-ink-09),
   'brand-callout-action-hover-bg': #EEEAFB,
   'brand-callout-action-shadow': 0 6px 16px -6px rgba(0, 0, 0, 0.45),
+  'enterprise-callout-base': linear-gradient(120deg, #24163F 0%, #26164C 100%),
+  'enterprise-callout-glow': radial-gradient(50% 150% at 0% 50%, rgba(117, 67, 227, 0.2), transparent 70%),
 
   // Header
   'header-bg': var(--color-graphite-01),

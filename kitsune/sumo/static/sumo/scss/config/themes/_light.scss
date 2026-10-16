@@ -240,7 +240,8 @@
 // The support callout ("Still need help?"), built by the `brand-callout` mixin. It looks the same
 // in both themes except for its shadow. The theme maps compose the surface from the three stop colors
 // and the glow, so text is checked against each stop. The gradients, rim, shadows, and chip ring
-// can't be shown as swatches, so they appear only in the theme maps.
+// can't be shown as swatches, so they appear only in the theme maps. The Enterprise theme's base and
+// icon-side glow (`--enterprise-callout-base`, `--enterprise-callout-glow`) are lighter in light.
 //
 // Colors:
 // --brand-callout-stop-start: #20123A - Dark: #20123A
@@ -778,6 +779,8 @@ $light: (
   'brand-callout-action-text': var(--color-ink-09),
   'brand-callout-action-hover-bg': #EEEAFB,
   'brand-callout-action-shadow': 0 6px 16px -6px rgba(0, 0, 0, 0.45),
+  'enterprise-callout-base': linear-gradient(120deg, #3A2470 0%, #39217D 100%),
+  'enterprise-callout-glow': radial-gradient(50% 150% at 0% 50%, rgba(130, 84, 235, 0.32), transparent 70%),
 
   // Header
   'header-bg': p.$color-white,

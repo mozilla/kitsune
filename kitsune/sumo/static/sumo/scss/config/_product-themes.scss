@@ -12,8 +12,9 @@ $product-themes: (
       rgba(184, 51, 225, 0.95) 55%,
       rgba(252, 64, 85, 0.95)
     ),
-    'callout-base': linear-gradient(120deg, #1C1035 0%, #241447 100%),
+    'callout-base': var(--enterprise-callout-base),
     'callout-glows': (
+      var(--enterprise-callout-glow),
       radial-gradient(70% 140% at 100% 0%, rgba(117, 67, 227, 0.55), transparent 60%),
       radial-gradient(45% 120% at 88% 125%, rgba(252, 64, 85, 0.38), transparent 65%),
       radial-gradient(40% 110% at 62% 130%, rgba(184, 51, 225, 0.36), transparent 65%)
