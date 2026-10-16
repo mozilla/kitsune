@@ -54,6 +54,114 @@
   }
 }
 
+.article-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: p.$spacing-md;
+  margin-bottom: p.$spacing-xl;
+
+  // Two columns only once the main column is wide enough, next to the sidebar.
+  @media #{p.$mq-lg} {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.article-card {
+  position: relative;
+  display: flex;
+  gap: p.$spacing-md;
+  padding: p.$spacing-md;
+  border: 1px solid var(--color-border);
+  border-radius: p.$border-radius-md;
+  background-color: var(--color-white);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  @media #{p.$mq-md} {
+    padding: p.$spacing-md p.$spacing-lg;
+  }
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-color: var(--color-link);
+  }
+
+  &:has(a:focus-visible) {
+    box-shadow: var(--focus-shadow);
+  }
+
+  &--icon {
+    flex: 0 0 auto;
+    width: p.$spacing-lg;
+    height: p.$spacing-lg;
+  }
+
+  &--text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  &--title {
+    @include c.sumo-card-heading;
+    margin: 0 0 p.$spacing-xs;
+
+    a,
+    a:visited {
+      text-decoration: none;
+      color: var(--color-heading);
+    }
+
+    // Stretch the link over the whole card.
+    a::after {
+      position: absolute;
+      inset: 0;
+      content: "";
+    }
+
+    a:focus {
+      outline: none;
+    }
+  }
+
+  &:hover &--title a {
+    text-decoration: underline;
+  }
+
+  &--summary {
+    margin: 0 0 p.$spacing-xs;
+  }
+
+  // Pinned to the bottom so cards in the same row line up.
+  &--footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: p.$spacing-xs p.$spacing-md;
+    margin-top: auto;
+    @include c.text-body-sm;
+  }
+
+  &--more {
+    font-weight: 600;
+    color: var(--color-link);
+
+    &::after {
+      content: " →";
+    }
+
+    [dir='rtl'] &::after {
+      content: " ←";
+    }
+  }
+
+  &--date {
+    color: var(--color-text-light);
+  }
+}
+
 .sumo-article-header {
   display: flex;
   flex-direction: column-reverse;
@@ -107,6 +215,95 @@
 
   @media #{p.$mq-lg} {
     margin: 40px 0 56px;
+  }
+}
+
+// Tighter header on topic pages.
+.sumo-article-header.topic-header {
+  margin: 0 0 p.$spacing-lg;
+
+  .documents-product-title {
+    margin-bottom: 12px;
+
+    img {
+      width: p.$spacing-xl;
+      height: auto;
+    }
+  }
+
+  .topic-title {
+    margin-bottom: p.$spacing-sm;
+  }
+}
+
+// Names the selected tab, above the list of articles.
+.topic-section {
+  margin-bottom: p.$spacing-md;
+
+  &--head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: p.$spacing-md;
+  }
+
+  &--title {
+    margin: 0;
+    @include c.text-display-xs;
+  }
+
+  &--count {
+    flex: 0 0 auto;
+    @include c.text-body-sm;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  &--description {
+    margin: p.$spacing-xs 0 0;
+  }
+}
+
+// Firefox for Enterprise colors on its topic pages.
+$ffe-violet: #6132bc;
+
+#document-list.is-enterprise {
+  .tabs.topic-tabs {
+    .tabs--link:hover,
+    .tabs--button:hover {
+      color: $ffe-violet;
+    }
+
+    .tabs--list > .tabs--item > .tabs--link.is-active {
+      color: $ffe-violet;
+
+      span {
+        box-shadow: inset 0 -3px 0 $ffe-violet;
+      }
+    }
+  }
+
+  .topic-section--count,
+  .article-card--more {
+    color: $ffe-violet;
+  }
+
+  .article-card {
+    border-color: #ebdffa;
+    background-color: #fcf5f0;
+
+    &:hover {
+      border-color: $ffe-violet;
+    }
+  }
+
+  .article-card--icon {
+    box-sizing: content-box;
+    padding: p.$spacing-sm;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #e4d7fc, #c8b2f6);
   }
 }
 

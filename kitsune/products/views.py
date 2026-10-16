@@ -198,6 +198,9 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             "fallback_documents": fallback_documents,
             "search_params": {"product": product_slug},
             "topic_navigation": topic_navigation,
+            "article_cards": bool(
+                product and not topic_navigation and product.slug == settings.ENTERPRISE_GROUP_SLUG
+            ),
             "topic_list": topic_list,
             "products": relevant_products,
         },
