@@ -21,9 +21,9 @@ preserve the original unfiltered manager and avoid wrapping monitoring again.
 
 Enterprise preparation can create an inactive SUMO account before its first
 Mozilla sign-in, or reuse an eligible account without changing its existing
-identity. Intake is service-only and does not deliver invitations, activate
-accounts, or grant company membership. Successful Zendesk provisioning grants the
-company membership required before issuing a first-login link.
+identity. Staff do this with **Add person** on the company page, which also
+provisions Zendesk and grants company membership; the account stays inactive until
+first login.
 
 Ordinary Mozilla sign-in cannot claim an unclaimed, invitation-created account by
 matching its email address, and does not apply Mozilla profile updates to that

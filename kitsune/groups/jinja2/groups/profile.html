@@ -203,6 +203,10 @@
         {{ members|paginator }}
       {% endif %}
     </div>
+
+    {% if enterprise_is_company %}
+      {% include "groups/includes/enterprise_invitations.html" %}
+    {% endif %}
   </article>
 {% endblock %}
 

@@ -15,10 +15,11 @@ from django.core import mail
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import connections, transaction
 from django.http import Http404
-from django.test import TransactionTestCase, override_settings
+from django.test import Client, TransactionTestCase, override_settings
 from django.utils import timezone
 from kombu.exceptions import OperationalError
 from post_office.models import STATUS, Email
+from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RatelimitBudgetExceeded
 
@@ -29,9 +30,11 @@ from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.groups.provisioning import provision_enterprise_invitation
 from kitsune.groups.tests import GroupProfileFactory
 from kitsune.groups.tests.test_invitations import InvitationFixtures
+from kitsune.groups.views import INVITATION_FAILURES
 from kitsune.products.models import ProductSupportConfig, SupportOrganization
 from kitsune.products.tests import ProductSupportConfigFactory, SupportOrganizationFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
 from kitsune.users.tests import GroupFactory, UserFactory
 
@@ -1030,3 +1033,138 @@ class EnterpriseProvisioningConcurrencyTests(ProvisioningFixtures, TransactionTe
         self.assertEqual(Profile.all_profiles.get(user_id=invitation.user_id).zendesk_id, "201")
         owner.refresh_from_db()
         self.assertEqual(owner.zendesk_id, "101")
+
+
+@override_settings(
+    TESTING=True,
+    ENTERPRISE_GROUP_SLUG="invitation-view-enterprise-root",
+    ENTERPRISE_ONBOARDING_LANDING_PATH="",
+    ENTERPRISE_INVITATION_MAX_AGE=604800,
+    READ_ONLY=False,
+)
+class EnterpriseInvitationViewTests(ProvisioningFixtures, TestCase):
+    def setUp(self):
+        super().setUp()
+        # ProvisioningFixtures uses self.client for the mocked Zendesk client.
+        self.http = Client()
+        self.http.force_login(self.actor)
+        self.page_url = self.company.get_absolute_url()
+        self.invite_url = reverse("groups.invite_user", args=[self.company.slug])
+        self.person = {"email": "jamie@example.com", "first_name": "Jamie", "last_name": "Rivera"}
+
+    def resend_url(self, invitation, company=None):
+        return reverse(
+            "groups.resend_invitation", args=[(company or self.company).slug, invitation.pk]
+        )
+
+    def rows(self):
+        page = pq(self.http.get(self.page_url).content)
+        return [
+            (cells.eq(1).text(), cells.eq(2).text())
+            for row in page("#enterprise-invitations tbody tr")
+            for cells in [pq(row).find("td")]
+        ]
+
+    def test_adding_a_person_provisions_and_welcomes_them(self):
+        response = self.http.post(self.invite_url, self.person)
+        self.assertRedirects(response, self.page_url, fetch_redirect_response=False)
+        invitation = EnterpriseInvitation.objects.get(email=self.person["email"])
+        self.assertEqual(invitation.company_id, self.company.pk)
+        self.assertEqual(invitation.status, EnterpriseInvitation.Status.READY)
+        self.assertIsNotNone(invitation.welcome_email_id)
+        self.assertEqual(
+            self.rows(), [(self.person["email"], str(EnterpriseInvitation.Status.READY.label))]
+        )
+
+    def test_resend_finishes_failed_setup_then_sends_a_fresh_link(self):
+        self.client.ensure_user.side_effect = requests.Timeout("Zendesk is down")
+        self.http.post(self.invite_url, self.person)
+        invitation = EnterpriseInvitation.objects.get(email=self.person["email"])
+        self.assertEqual(invitation.status, EnterpriseInvitation.Status.FAILED)
+        self.assertIsNone(invitation.welcome_email_id)
+        # The reason stays visible after the flash message is gone.
+        self.assertIn(str(INVITATION_FAILURES["zendesk_unavailable"]), self.rows()[0][1])
+
+        self.client.ensure_user.side_effect = None
+        response = self.http.post(self.resend_url(invitation))
+        self.assertRedirects(response, self.page_url, fetch_redirect_response=False)
+        invitation.refresh_from_db()
+        self.assertEqual(invitation.status, EnterpriseInvitation.Status.READY)
+        first_welcome = invitation.welcome_email_id
+        self.assertIsNotNone(first_welcome)
+
+        self.http.post(self.resend_url(invitation))
+        invitation.refresh_from_db()
+        self.assertEqual(invitation.token_version, 2)
+        self.assertNotEqual(invitation.welcome_email_id, first_welcome)
+
+    def test_resend_reports_an_unsendable_welcome_and_changes_nothing(self):
+        self.http.post(self.invite_url, self.person)
+        invitation = EnterpriseInvitation.objects.get(email=self.person["email"])
+        before = (list(EnterpriseInvitation.objects.values()), Email.objects.count())
+        # post-office rejects the sender with a field-error dict that carries no code.
+        with override_settings(DEFAULT_FROM_EMAIL="not-an-address"):
+            response = self.http.post(self.resend_url(invitation))
+        self.assertRedirects(response, self.page_url, fetch_redirect_response=False)
+        self.assertEqual(
+            (list(EnterpriseInvitation.objects.values()), Email.objects.count()), before
+        )
+
+    def test_accepted_people_leave_the_list_and_a_stale_resend_is_harmless(self):
+        self.eligible_user(email="existing@example.com")
+        self.http.post(self.invite_url, {**self.person, "email": "existing@example.com"})
+        invitation = EnterpriseInvitation.objects.get(email="existing@example.com")
+        self.assertEqual(invitation.status, EnterpriseInvitation.Status.ACCEPTED)
+        self.assertEqual(self.rows(), [])
+        before = self.snapshot()
+        self.client_class.reset_mock()
+        self.http.post(self.resend_url(invitation))
+        self.assertEqual(self.snapshot(), before)
+        self.client_class.assert_not_called()
+
+    def test_invalid_input_is_redisplayed_without_creating_anything(self):
+        before = self.snapshot()
+        response = self.http.post(self.invite_url, {**self.person, "last_name": "  "})
+        self.assertEqual(response.status_code, 200)
+        form = pq(response.content)("#enterprise-invite-form")
+        self.assertEqual(form.find("#id_email").val(), self.person["email"])
+        self.assertEqual(len(form.find(".has-error")), 1)
+        self.assertEqual(self.snapshot(), before)
+        self.client_class.assert_not_called()
+
+    def test_only_onboarding_staff_see_or_use_the_controls(self):
+        invitation = self.invite(email=self.person["email"])
+        member = UserFactory()
+        member.groups.add(self.company.group)
+        company_leader = UserFactory(is_staff=True)
+        self.company.leaders.add(company_leader)
+        nonstaff_root_leader = UserFactory()
+        self.root.leaders.add(nonstaff_root_leader)
+        # Signing each user in updates last_login, so compare invitations and mail only.
+        before = (list(EnterpriseInvitation.objects.values()), Email.objects.count())
+        for user in (member, company_leader, nonstaff_root_leader):
+            with self.subTest(user=user.username):
+                self.http.force_login(user)
+                page = pq(self.http.get(self.page_url).content)
+                self.assertFalse(page("#enterprise-invitations, #enterprise-invite-form"))
+                self.assertEqual(self.http.post(self.invite_url, self.person).status_code, 403)
+                self.assertEqual(self.http.post(self.resend_url(invitation)).status_code, 403)
+        self.http.logout()
+        self.assertEqual(self.http.post(self.resend_url(invitation)).status_code, 302)
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.actor)
+        self.assertEqual(csrf_client.post(self.resend_url(invitation)).status_code, 403)
+        self.assertEqual(
+            (list(EnterpriseInvitation.objects.values()), Email.objects.count()), before
+        )
+        self.client_class.assert_not_called()
+
+    def test_other_companies_and_departments_cannot_be_targeted(self):
+        elsewhere = self.invite(email="elsewhere@example.com", company=self.other_company)
+        department = self.child(self.company)
+        before = self.snapshot()
+        self.assertEqual(self.http.post(self.resend_url(elsewhere)).status_code, 404)
+        department_url = reverse("groups.invite_user", args=[department.slug])
+        self.assertEqual(self.http.post(department_url, self.person).status_code, 404)
+        self.assertEqual(self.snapshot(), before)
+        self.client_class.assert_not_called()

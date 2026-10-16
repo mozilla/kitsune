@@ -207,14 +207,19 @@ outside the configured root cannot be targeted.
 
 ## Enterprise account preparation
 
-Account preparation is a service-only intake operation that prepares a SUMO
-account and records invitation state. There is no invitation form or HTTP
-action. It requires the same operator permissions and company/support prerequisites
-as company setup and is unavailable in read-only mode.
+Staff add people with **Add person** on a company's page. It prepares the SUMO
+account, records the invitation, and provisions it in the same request (see below).
+It requires the same operator permissions and company/support prerequisites as
+company setup and is unavailable in read-only mode.
 
-Preparation does not provision Zendesk users or organizations, grant company
-membership, activate accounts, or send email. Prepared accounts are not ready for
-ordinary sign-in; they are claimed through an invitation link.
+The preparation step itself (`kitsune.groups.onboarding.invite_enterprise_user`)
+only creates or reuses the account and records the invitation. Prepared accounts are
+not ready for ordinary sign-in; they are claimed through the invitation link.
+
+Below the member list, the company page lists invitations that are not accepted
+yet, with their status, the reason for a failure, and a **Resend** button. Accepted
+people appear in the member list instead. Only onboarding staff see the form and
+invitations.
 
 ### Required information and account eligibility
 
@@ -265,9 +270,11 @@ company membership and queues the welcome email described below.
 
 ## Enterprise Zendesk provisioning
 
-Call `kitsune.groups.provisioning.provision_enterprise_invitation(actor=..., invitation=...)`
-to create or link the Zendesk organization, user, and organization membership. No
-endpoint or background task calls it.
+**Add person** calls
+`kitsune.groups.provisioning.provision_enterprise_invitation(actor=..., invitation=...)`
+in the request to create or link the Zendesk organization, user, and organization
+membership. The organization is created once per company; later people only get a
+user and membership.
 
 Provisioning rechecks operator permissions, the prepared account, the current
 enterprise support configuration, and company membership rules. It refuses
@@ -289,7 +296,7 @@ SUMO profile, need administrator resolution.
   leadership, or activate accounts.
 - Expected provider failures return `failed` with the failed step and a safe error
   code. Unexpected failures raise and roll back local changes.
-- Staff retry by calling the service again. It reruns the full sequence using saved
+- Staff retry with the **Resend** button, which reruns the full sequence using saved
   IDs, the organization UUID, and the invited email, so earlier partial remote work
   is reconciled. A rerun never sends a second welcome, but queues one for a `ready`
   invitation that has none. There is no automatic retry.
@@ -311,9 +318,9 @@ fails, the scheduled queue run delivers it.
   enterprise support destination and carries no token.
 
 The link is a credential; it only appears in the email, so keep it out of logs and
-analytics. To replace an unused or expired link, authorized staff call
-`kitsune.groups.invitations.resend_enterprise_invitation(actor=..., invitation=...)`.
-It applies to `ready` invitations that are not accepted, revalidates the account
+analytics. For a `ready` invitation, **Resend** calls
+`kitsune.groups.invitations.resend_enterprise_invitation(actor=..., invitation=...)`
+to replace an unused or expired link. It revalidates the account
 and company like first login, and invalidates every earlier link. An unsent earlier
 email is expired so it is never delivered; one already in flight may still arrive,
 but its link no longer works.
