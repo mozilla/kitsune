@@ -30,7 +30,7 @@
           <li class="mzp-c-notification-bar mzp-t-info info">
             <button class="mzp-c-notification-bar-button" type="button"></button>
             <div>
-            <p><strong>{{ _('You have a draft revision for this article saved on {date_time}')|f(date_time=draft_revision.created) }}</strong></p>
+            <p><strong>{{ _('You have a draft revision for this article saved on {date_time}')|f(date_time=draft_revision.updated|default(draft_revision.created)) }}</strong></p>
             <form action="{{ url('wiki.translate', parent.slug) }}" method="post">
               {% csrf_token %}
               <input class="btn" name="restore" value={{ _('Restore') }} type="submit">

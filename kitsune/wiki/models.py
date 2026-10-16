@@ -1074,6 +1074,7 @@ class DraftRevision(ModelBase, AbstractRevision):  # type: ignore
     slug = models.CharField(max_length=255, blank=True)
     summary = models.TextField(blank=True)
     title = models.CharField(max_length=255, blank=True)
+    updated = models.DateTimeField(auto_now=True)
 
 
 class RevisionAnchorRecord(ModelBase):
