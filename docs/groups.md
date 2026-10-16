@@ -260,9 +260,8 @@ Intake also validates these deployment settings:
   path starting with a single slash, not a full URL, and contain neither backslashes
   nor control characters.
 
-Intake does not send links or activate accounts. Successful remote provisioning
-adds company membership; the separate link-issuance and first-login services
-described below make a prepared account claimable.
+Intake does not send mail or activate accounts. Successful remote provisioning adds
+company membership and queues the welcome email described below.
 
 ## Enterprise Zendesk provisioning
 
@@ -284,30 +283,40 @@ SUMO profile, need administrator resolution.
 ### Status and recovery
 
 - Success saves the Zendesk IDs and adds both the Zendesk membership and membership
-  in the company's SUMO group. Invitations for accounts created by intake become
-  `ready` for a first-login link; invitations for existing accounts become
-  `accepted`. It does not add root membership or leadership, activate accounts, or
-  send mail.
+  in the company's SUMO group, then queues the welcome email in the same transaction.
+  Invitations for accounts created by intake become `ready`; invitations for
+  existing accounts become `accepted`. It does not add root membership or
+  leadership, or activate accounts.
 - Expected provider failures return `failed` with the failed step and a safe error
   code. Unexpected failures raise and roll back local changes.
 - Staff retry by calling the service again. It reruns the full sequence using saved
   IDs, the organization UUID, and the invited email, so earlier partial remote work
-  is reconciled. There is no automatic retry.
+  is reconciled. A rerun never sends a second welcome, but queues one for a `ready`
+  invitation that has none. There is no automatic retry.
 
 See [Zendesk provisioning](zendesk.md#enterprise-provisioning) for provider
 permissions and identity rules.
 
-## Enterprise invitation links and first login
+## Enterprise welcome email and first login
 
-Links are only for accounts created by intake. Existing accounts gain access when
-provisioning succeeds, which also completes their invitations, so they need no link.
+The welcome email names the company and lists ticket support, the company's shared
+tickets, and live chat when the company has it. It is built as a post-office
+`Email` row, linked from the invitation, and sent after commit; if publishing
+fails, the scheduled queue run delivers it.
 
-After provisioning, authorized staff call
-`kitsune.groups.invitations.issue_enterprise_invitation(actor=..., invitation=...)`
-and build the URL with `reverse("groups.invitation_link", args=[token])`.
-Treat the URL as a credential and keep it out of logs and analytics. Issuance sends
-no mail. The first issue sets `expires_at` from `ENTERPRISE_INVITATION_MAX_AGE`;
-reissuing keeps that expiry, so expired links cannot be renewed.
+- Accounts created by intake get a personal link to start first login. Queuing it
+  starts a fresh `ENTERPRISE_INVITATION_MAX_AGE` window, and the email itself
+  expires with the link.
+- Existing accounts are already accepted, so their email links straight to the
+  enterprise support destination and carries no token.
+
+The link is a credential; it only appears in the email, so keep it out of logs and
+analytics. To replace an unused or expired link, authorized staff call
+`kitsune.groups.invitations.resend_enterprise_invitation(actor=..., invitation=...)`.
+It applies to `ready` invitations that are not accepted, revalidates the account
+and company like first login, and invalidates every earlier link. An unsent earlier
+email is expired so it is never delivered; one already in flight may still arrive,
+but its link no longer works.
 
 Opening the link moves the token into the session and redirects to the
 `groups.invitation` page, which shows the company and invited email. Continuing

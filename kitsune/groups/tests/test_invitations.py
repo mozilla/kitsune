@@ -47,6 +47,13 @@ class InvitationFixtures:
         )
         self.enterContext(patch("kitsune.customercare.signals.update_zendesk_user.delay"))
         self.enterContext(patch("kitsune.users.auth.update_zendesk_identity.delay"))
+        # Django names a failed on-commit callback by its qualified name when logging it.
+        self.send_queued_mail = self.enterContext(
+            patch(
+                "kitsune.groups.invitations.send_queued_mail.delay",
+                __qualname__="send_queued_mail.delay",
+            )
+        )
         self.root = GroupProfileFactory(
             slug=settings.ENTERPRISE_GROUP_SLUG,
             visibility=GroupProfile.Visibility.PRIVATE,
