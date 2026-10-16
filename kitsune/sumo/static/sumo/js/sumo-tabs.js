@@ -45,10 +45,25 @@ export default function tabsInit() {
       });
 
       // is-hidden items that won't fit in the Primary
-      let stopWidth = moreBtn.offsetWidth;
-      let hiddenItems = [];
       const primaryWidth = primary.offsetWidth;
+      let tabsWidth = 0;
+      primaryItems.forEach((item) => {
+        tabsWidth += item.offsetWidth;
+      });
+      // Only save room for "More" when some tabs won't fit without it.
+      let stopWidth = tabsWidth > primaryWidth ? moreBtn.offsetWidth : 0;
+      let hiddenItems = [];
+      // Save room for the selected tab first, so it's never tucked into "More".
+      const selectedItem = [...primaryItems].find((item) =>
+        item.querySelector('.is-active, .selected')
+      );
+      if (selectedItem) {
+        stopWidth += selectedItem.offsetWidth;
+      }
       primaryItems.forEach((item, i) => {
+        if (item === selectedItem) {
+          return;
+        }
         if(primaryWidth >= stopWidth + item.offsetWidth) {
           stopWidth += item.offsetWidth;
         } else {

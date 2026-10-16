@@ -158,8 +158,8 @@
 {%- endmacro %}
 
 
-{% macro topic_tabs(topics, subtopics, product, topic, selected_subtopic=None) -%}
-<nav class="tabs">
+{% macro topic_tabs(subtopics, product, topic, selected_subtopic=None) -%}
+<nav class="tabs topic-tabs">
   <ul class="tabs--list subtopics">
     {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
     <li class="tabs--item">
@@ -192,4 +192,39 @@
     {% endfor %}
   </ul>
 </nav>
+{%- endmacro %}
+
+
+{% macro article_count(documents, fallback_documents) -%}
+{% set count = documents|length + (fallback_documents|length if fallback_documents else 0) %}
+{# L10n: The number of help articles listed on a topic page, such as https://support.mozilla.org/products/firefox/browse #}
+<p class="topic-count">{{ ngettext('{n} article', '{n} articles', count)|f(n=count) }}</p>
+{%- endmacro %}
+
+
+{% macro article_card(document, url, show_products=False, heading='h2') -%}
+<article class="article-card">
+  <img class="article-card--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
+  <div class="article-card--text">
+    {% if show_products and document['product_titles'] %}
+      <p class="article-card--products">{{ document['product_titles'] }}</p>
+    {% endif %}
+    <{{ heading }} class="article-card--title">
+      <a href="{{ url }}"
+        data-event-name="link_click"
+        data-event-parameters='{"link_name": "kb-article"}'>
+        {{ document['document_title'] }}
+      </a>
+    </{{ heading }}>
+    {% if document['document_summary'] %}
+      <p class="article-card--summary">{{ document['document_summary'] }}</p>
+    {% endif %}
+    {% if document['created'] %}
+      <p class="article-card--date">
+        {% if document['is_first_revision'] %}{{ _("Created") }}{% else %}{{ _("Last updated") }}{% endif %}:
+        {{ datetimeformat(document['created'], format="shortdate", use_timesince=True) }}
+      </p>
+    {% endif %}
+  </div>
+</article>
 {%- endmacro %}

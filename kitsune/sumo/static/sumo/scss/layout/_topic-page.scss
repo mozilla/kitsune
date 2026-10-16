@@ -5,10 +5,6 @@
   display: flex;
   margin-bottom: p.$spacing-xl;
 
-  &.no-bottom-margin {
-    margin-bottom: 0;
-  }
-
   &--icon-wrap {
     flex: 0 0 auto;
     @include p.bidi((
@@ -51,6 +47,103 @@
 
   @media #{p.$mq-md} {
     margin-bottom: p.$spacing-xl;
+  }
+}
+
+.article-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: p.$spacing-md;
+  margin-bottom: p.$spacing-xl;
+
+  // Two columns only once the main column is wide enough, next to the sidebar.
+  @media #{p.$mq-lg} {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.article-card {
+  position: relative;
+  display: flex;
+  gap: p.$spacing-md;
+  padding: p.$spacing-md;
+  // Transparent so the hover color doesn't shift the card.
+  border: 1px solid transparent;
+  border-radius: p.$border-radius-md;
+  background-color: var(--color-white);
+  @include c.elevation-01;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  @media #{p.$mq-md} {
+    padding: p.$spacing-md p.$spacing-lg;
+  }
+
+  &:hover {
+    @include c.elevation-02;
+    border-color: var(--color-link);
+  }
+
+  &:has(a:focus-visible) {
+    box-shadow: var(--focus-shadow);
+  }
+
+  &--icon {
+    flex: 0 0 auto;
+    width: p.$spacing-lg;
+    height: p.$spacing-lg;
+  }
+
+  &--text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  // Which product the article is for, on pages that mix products.
+  &--products {
+    margin: 0 0 2px;
+    @include c.text-body-sm;
+    font-weight: 600;
+    color: var(--color-text-light);
+  }
+
+  &--title {
+    @include c.sumo-card-heading;
+    margin: 0 0 p.$spacing-xs;
+
+    a,
+    a:visited {
+      text-decoration: none;
+      color: var(--color-heading);
+    }
+
+    // Stretch the link over the whole card.
+    a::after {
+      position: absolute;
+      inset: 0;
+      content: "";
+    }
+
+    a:focus {
+      outline: none;
+    }
+  }
+
+  &:hover &--title a {
+    text-decoration: underline;
+  }
+
+  &--summary {
+    margin: 0 0 p.$spacing-xs;
+  }
+
+  // Pinned to the bottom so cards in the same row line up.
+  &--date {
+    margin: auto 0 0;
+    @include c.text-body-sm;
+    color: var(--color-text-light);
   }
 }
 
@@ -110,13 +203,30 @@
   }
 }
 
-// disabling visited color on subtopic page bheadings
-.is-subtopic {
-  margin-bottom: 20px;
+// Tighter header on topic pages.
+.sumo-article-header.topic-header {
+  margin: 0 0 p.$spacing-lg;
 
-  a:visited {
-    color: var(--color-heading);
+  .documents-product-title {
+    margin-bottom: 12px;
+
+    img {
+      width: p.$spacing-xl;
+      height: auto;
+    }
   }
+
+  .topic-title {
+    margin-bottom: p.$spacing-sm;
+  }
+}
+
+// The number of articles, above the cards.
+.topic-count {
+  margin: 0 0 p.$spacing-md;
+  @include c.text-body-sm;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 // pull search up inline with breadcrumbs on large

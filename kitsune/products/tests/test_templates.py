@@ -86,7 +86,7 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
-        self.assertEqual(3, len(doc("#document-list > section > article")))
+        self.assertEqual(3, len(doc(".article-grid > .article-card")))
         self.assertEqual(p.slug, doc("#support-search input[name=product]").attr["value"])
 
     def test_document_listing_order(self):
@@ -110,7 +110,7 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
         self.assertEqual(
-            doc("#document-list > section > article:first-child > div > h2 > a").text(),
+            doc(".article-grid > .article-card:first-child .article-card--title a").text(),
             docs[1].title,
         )
 
@@ -124,7 +124,7 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
         self.assertEqual(
-            doc("#document-list > section > article:nth-child(2) > div > h2> a").text(),
+            doc(".article-grid > .article-card:nth-child(2) .article-card--title a").text(),
             docs[2].title,
         )
 
@@ -138,7 +138,8 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
         self.assertEqual(
-            doc("#document-list > section > article:nth-child(2) > div > h2").text(), docs[0].title
+            doc(".article-grid > .article-card:nth-child(2) .article-card--title a").text(),
+            docs[0].title,
         )
 
     def test_subtopics(self):
@@ -173,6 +174,107 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(200, r.status_code)
         pqdoc = pq(r.content)
         self.assertEqual(2, len(pqdoc(".subtopics>li")))
+
+
+class TopicPageTestCase(TestCase):
+    def _get(self, url):
+        r = self.client.get(url, follow=True)
+        self.assertEqual(200, r.status_code)
+        return pq(r.content)
+
+
+class ArticleCardsTests(TopicPageTestCase):
+    def test_card_content(self):
+        p = ProductFactory()
+        t = TopicFactory(products=[p], visible=True)
+        rev = ApprovedRevisionFactory(
+            summary="Set up your account.", document__products=[p], document__topics=[t]
+        )
+
+        doc = self._get(reverse("products.documents", args=[p.slug, t.slug]))
+        card = doc(".article-grid .article-card")
+        self.assertEqual(1, len(card))
+        self.assertEqual(0, len(card(".article-card--products")))
+        link = card("h2.article-card--title a")
+        self.assertEqual(rev.document.get_absolute_url(), link.attr("href"))
+        self.assertEqual(rev.document.title, link.text())
+        self.assertEqual("Set up your account.", card(".article-card--summary").text())
+        self.assertIn("Created", card(".article-card--date").text())
+
+    def test_card_says_last_updated(self):
+        p = ProductFactory()
+        t = TopicFactory(products=[p], visible=True)
+        rev = ApprovedRevisionFactory(document__products=[p], document__topics=[t])
+        ApprovedRevisionFactory(document=rev.document)
+
+        doc = self._get(reverse("products.documents", args=[p.slug, t.slug]))
+        self.assertIn("Last updated", doc(".article-card--date").text())
+
+
+class TopicNavigationCardsTests(TopicPageTestCase):
+    def setUp(self):
+        self.firefox = ProductFactory(title="Firefox")
+        self.android = ProductFactory(title="Firefox for Android")
+        self.topic = TopicFactory(products=[self.firefox, self.android], visible=True)
+        ApprovedRevisionFactory(document__products=[self.firefox], document__topics=[self.topic])
+        ApprovedRevisionFactory(document__products=[self.android], document__topics=[self.topic])
+
+    def test_mixed_products_show_the_product(self):
+        doc = self._get(reverse("products.topic_documents", args=[self.topic.slug]))
+        self.assertEqual(2, len(doc(".article-card")))
+        labels = sorted(pq(p).text() for p in doc(".article-card--products"))
+        self.assertEqual(["Firefox", "Firefox for Android"], labels)
+        self.assertEqual("2 articles", doc(".topic-count").text())
+
+    def test_one_product_hides_the_product(self):
+        doc = self._get(
+            reverse("products.topic_product_documents", args=[self.topic.slug, self.firefox.slug])
+        )
+        self.assertEqual(1, len(doc(".article-card")))
+        self.assertEqual(0, len(doc(".article-card--products")))
+
+
+class TopicHeaderTests(TopicPageTestCase):
+    def setUp(self):
+        self.product = ProductFactory()
+        self.topic = TopicFactory(
+            title="Getting started",
+            description="Set up your account.",
+            products=[self.product],
+            visible=True,
+        )
+        self.subtopic = TopicFactory(
+            title="Submit a ticket",
+            description="Track your support requests.",
+            parent=self.topic,
+            products=[self.product],
+            visible=True,
+        )
+        ApprovedRevisionFactory.create_batch(
+            2, document__products=[self.product], document__topics=[self.topic, self.subtopic]
+        )
+        ApprovedRevisionFactory(document__products=[self.product], document__topics=[self.topic])
+
+    def test_all_articles_tab(self):
+        doc = self._get(reverse("products.documents", args=[self.product.slug, self.topic.slug]))
+        self.assertEqual("Getting started", doc("header.topic-header h1").text())
+        self.assertEqual(
+            "Set up your account.", doc("header.topic-header .topic-description").text()
+        )
+        self.assertEqual("3 articles", doc(".topic-count").text())
+
+    def test_subtopic_tab_keeps_the_topic_header(self):
+        doc = self._get(
+            reverse(
+                "products.subtopics",
+                args=[self.product.slug, self.topic.slug, self.subtopic.slug],
+            )
+        )
+        self.assertEqual("Getting started", doc("header.topic-header h1").text())
+        self.assertEqual(
+            "Set up your account.", doc("header.topic-header .topic-description").text()
+        )
+        self.assertEqual("2 articles", doc(".topic-count").text())
 
 
 _MZLA_SLUGS = ["thunderbird", "thunderbird-android"]

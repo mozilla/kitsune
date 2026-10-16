@@ -198,6 +198,8 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             "fallback_documents": fallback_documents,
             "search_params": {"product": product_slug},
             "topic_navigation": topic_navigation,
+            # Only pages that mix products need to say which product each article is for.
+            "show_products": topic_navigation and not product,
             "topic_list": topic_list,
             "products": relevant_products,
         },

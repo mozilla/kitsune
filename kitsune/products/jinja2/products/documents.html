@@ -1,8 +1,7 @@
 {% extends "base.html" %}
-{% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
+{% from 'products/includes/topic_macros.html' import article_card, article_count, topic_sidebar, topic_tabs with context %}
 {% from 'products/includes/product_macros.html' import product_dropdown %}
 {% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
-{% from 'wiki/includes/document_macros.html' import document_metadata with context %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 
 {% if product %}
@@ -58,39 +57,18 @@
         {% include 'products/includes/product_documents.html' %}
       {% endif %}
 
-      <section class="topic-list">
+      <section class="article-grid">
         {% for document in documents %}
-          <article class="topic-article no-bottom-margin">
-            <div class="topic-article--icon-wrap">
-              <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
-            </div>
-            <div class="topic-article--text">
-              <h2 class="sumo-card-heading">
-                <a href="{{ document['url'] }}"
-                  data-event-name="link_click"
-                  data-event-parameters='{"link_name": "kb-article"}'>
-                  {{ document['document_title'] }}
-                </a>
-              </h2>
-              <p>{{ document['document_summary'] }}</p>
-             {{ document_metadata(document['created'], document['is_first_revision'], document['product_titles'], helpful_votes=None, metadata_type="list") }}
-            </div>
-          </article>
+          {{ article_card(document, document['url'], show_products=show_products) }}
         {% endfor %}
       </section>
 
       {% if fallback_documents %}
         <h2 class="sumo-page-subheading">{{ _('In English') }}</h2>
-        <section class="topic-list">
-        {% for document in fallback_documents %}
-          <article>
-            <h3 class="sumo-card-heading">
-              <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">
-                {{ document['document_title'] }}
-              </a>
-            </h3>
-          </article>
-        {% endfor %}
+        <section class="article-grid">
+          {% for document in fallback_documents %}
+            {{ article_card(document, document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/'), show_products=show_products, heading='h3') }}
+          {% endfor %}
         </section>
       {% endif %}
     </article>
