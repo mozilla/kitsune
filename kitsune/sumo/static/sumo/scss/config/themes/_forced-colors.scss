@@ -23,4 +23,11 @@ $forced-colors: (
   'brand-callout-chip-bg': none,
   'brand-callout-chip-ring': none,
   'brand-callout-action-shadow': none,
+  'header-shadow': none,
+  // Forced colors don't recolor images, so the logo keeps its light rendering in both themes.
+  'header-logo-filter': none,
+  'dropdown-shadow': none,
+  'dropdown-item-hover-ring': none,
+  'menu-list-shadow': none,
+  'footer-edge': none,
 );

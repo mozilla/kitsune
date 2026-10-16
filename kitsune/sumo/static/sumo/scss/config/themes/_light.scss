@@ -249,6 +249,122 @@
 //
 // Style guide: colors.brand-callout
 
+// Header
+//
+// The site header: its bar, icons, menu titles and their active underline, the mobile menu
+// separators, the "Download Firefox" and "Sign In/Up" buttons, and the unread message badge.
+// The light values are Protocol's and the buttons' own. "Download Firefox" uses
+// `--header-button-text` on `--header-cta-bg`, and both buttons use `--header-button-hover-bg`
+// and `--header-button-active-bg` when hovered and pressed. The logo stays an image that
+// `--header-logo-filter` recolors in dark. The logo filter, the bottom shadow, and the button
+// highlight appear in the theme maps only.
+//
+// Colors:
+// --header-bg: #FFFFFF - Dark: #101318 (graphite-01)
+// --header-text: #000000 - Dark: #F9F9FB (light-gray-02)
+// --header-underline: #000000 - Dark: #8FBEFA (azure-03)
+// --header-separator: #CDCDD4 - Dark: #3A3D43 (graphite-08)
+// --header-divider: #EDEDF0 - Dark: rgba(255, 255, 255, 0.07)
+// --header-icon: #000000 - Dark: #F9F9FB (light-gray-02)
+// --header-skip-link-bg: rgba(255, 255, 255, 0.9) - Dark: rgba(16, 19, 24, 0.9)
+// --header-cta-bg: #0060DF - Dark: #282B32 (graphite-05)
+// --header-secondary-border: #0060DF - Dark: #5A5E66 (graphite-09)
+// --header-secondary-bg: #FFFFFF - Dark: transparent
+// --header-secondary-text: #0060DF - Dark: #F9F9FB (light-gray-02)
+// --header-button-text: #FFFFFF - Dark: #F9F9FB (light-gray-02)
+// --header-button-hover-bg: #0250BB - Dark: #3A3D43 (graphite-08)
+// --header-button-active-bg: #073072 - Dark: #3A3D43 (graphite-08)
+// --unread-badge-bg: #FF0000 - Dark: #E12850 (red-07)
+// --unread-badge-text: #FFFFFF - Dark: #FFFFFF
+//
+// Weight: 24
+//
+// Style guide: colors.header
+
+// Dropdown menus
+//
+// The header's menu panels and the `mzp-c-menu-list` menus (the "more options" menus on posts).
+// Panel links use `--dropdown-link`, item titles keep `--color-heading` and turn
+// `--dropdown-title-hover` when hovered, and "View all" links keep `--color-link`. Below the
+// medium breakpoint a panel opens inside the mobile menu on `--header-bg`. The `mzp-c-menu-list`
+// menus sit on `--color-surface` with a `--color-link-active-bg` hover. The panel edge is its top
+// border. The shadows and the item hover ring appear in the theme maps only.
+//
+// Colors:
+// --dropdown-bg: #FFFFFF - Dark: #16181D (graphite-02)
+// --dropdown-edge: #EDEDF0 - Dark: rgba(255, 255, 255, 0.06)
+// --dropdown-title-hover: #000000 - Dark: #F9F9FB (light-gray-02)
+// --dropdown-link: #000000 - Dark: #C9CCD2 (graphite-12)
+// --dropdown-link-hover: #000000 - Dark: #F9F9FB (light-gray-02)
+//
+// Weight: 25
+//
+// Style guide: colors.dropdown
+
+// Footer
+//
+// The footer is a dark surface in both themes: Protocol paints it black with white text, and in
+// the dark theme it takes graphite-01 under a faint top edge (`--footer-edge`, in the theme maps
+// only). The text keeps Protocol's colors on both surfaces.
+//
+// Colors:
+// --footer-bg: #000000 - Dark: #101318 (graphite-01)
+// --footer-text: #FFFFFF - Dark: #FFFFFF
+// --footer-text-muted: #BFBFC9 - Dark: #BFBFC9
+//
+// Weight: 26
+//
+// Style guide: colors.footer
+
+// Notification bar
+//
+// The Protocol notification bar behind flash messages and page notices. A bar with no variant
+// or with `mzp-t-info` uses the plain tokens, and the dismiss strip beside the text uses the
+// `-button-bg` and `-button-hover-bg` tokens. In the dark theme the variants use the status
+// colors and the strip is a translucent white overlay on the bar. The dismiss icon
+// (`--notification-close-icon`) is a white image in the dark theme and appears in the theme maps
+// only, and the lighter red (`--notification-error-soft-bg`) is the report abuse modal's error.
+//
+// Colors:
+// --notification-bg: #EDEDF0 - Dark: #2E3035
+// --notification-text: #000000 - Dark: #B7BBC1 (graphite-11)
+// --notification-button-bg: #B1B1BC - Dark: rgba(255, 255, 255, 0.08)
+// --notification-button-hover-bg: #9595A2 - Dark: rgba(255, 255, 255, 0.14)
+// --notification-success-bg: #88FFD1 - Dark: #193729 (sage-02)
+// --notification-success-text: #000000 - Dark: #83D5AD (sage-01)
+// --notification-success-button-bg: #2AC3A2 - Dark: rgba(255, 255, 255, 0.08)
+// --notification-success-button-hover-bg: #008787 - Dark: rgba(255, 255, 255, 0.14)
+// --notification-error-bg: #FF848B - Dark: #3C2C32
+// --notification-error-text: #000000 - Dark: #FF9AA2 (red-03)
+// --notification-error-button-bg: #E22850 - Dark: rgba(255, 255, 255, 0.08)
+// --notification-error-button-hover-bg: #C50042 - Dark: rgba(255, 255, 255, 0.14)
+// --notification-error-soft-bg: #FF9AA2 - Dark: #3C2C32
+// --notification-warning-bg: #FFEA80 - Dark: #3B342B
+// --notification-warning-text: #000000 - Dark: #F6BC5D
+// --notification-warning-button-bg: #FFBD4F - Dark: rgba(255, 255, 255, 0.08)
+// --notification-warning-button-hover-bg: #FFA436 - Dark: rgba(255, 255, 255, 0.14)
+// --notification-click-bg: #0060DF - Dark: #2A313D
+// --notification-click-text: #FFFFFF - Dark: #8FBEFA (azure-03)
+// --notification-click-button-bg: #054096 - Dark: rgba(255, 255, 255, 0.08)
+// --notification-click-button-hover-bg: #073072 - Dark: rgba(255, 255, 255, 0.14)
+//
+// Weight: 27
+//
+// Style guide: colors.notification
+
+// Modal and details
+//
+// The icons Protocol draws in black: the modal's close button and the expand marker of
+// collapsible sections.
+//
+// Colors:
+// --modal-icon: #000000 - Dark: #F9F9FB (light-gray-02)
+// --details-icon: #000000 - Dark: #F9F9FB (light-gray-02)
+//
+// Weight: 28
+//
+// Style guide: colors.modal
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -400,6 +516,71 @@ $light: (
   'brand-callout-action-text': var(--color-ink-09),
   'brand-callout-action-hover-bg': #EEEAFB,
   'brand-callout-action-shadow': 0 6px 16px -6px rgba(0, 0, 0, 0.45),
+
+  // Header
+  'header-bg': p.$color-white,
+  'header-text': p.$color-black,
+  'header-underline': p.$color-black,
+  'header-separator': p.$color-marketing-gray-30,
+  'header-divider': var(--color-border),
+  'header-shadow': none,
+  'header-logo-filter': none,
+  'header-icon': #000000,
+  'header-skip-link-bg': rgba(255, 255, 255, 0.9),
+  'header-cta-bg': var(--color-accent),
+  'header-cta-highlight': 0 0 #0000,
+  'header-secondary-border': var(--color-link),
+  'header-secondary-bg': var(--color-surface),
+  'header-secondary-text': var(--color-link),
+  'header-button-text': var(--color-text-on-accent),
+  'header-button-hover-bg': var(--color-accent-hover),
+  'header-button-active-bg': var(--color-accent-active),
+  'unread-badge-bg': #FF0000,
+  'unread-badge-text': var(--color-white),
+
+  // Dropdown menus
+  'dropdown-bg': p.$color-white,
+  'dropdown-edge': p.$color-marketing-gray-20,
+  'dropdown-shadow': 0 16px 16px -16px rgba(0, 0, 0, 0.3),
+  'dropdown-title-hover': p.$color-black,
+  'dropdown-link': p.$color-black,
+  'dropdown-link-hover': p.$color-black,
+  'dropdown-item-hover-ring': 0 0 0 4px p.$color-marketing-gray-20,
+  'menu-list-shadow': 0 0 6px 0 rgba(0, 0, 0, 0.3),
+
+  // Footer
+  'footer-bg': p.$color-black,
+  'footer-edge': none,
+  'footer-text': p.$color-white,
+  'footer-text-muted': p.$color-light-gray-50,
+
+  // Notification bar
+  'notification-bg': p.$color-marketing-gray-20,
+  'notification-text': p.$color-black,
+  'notification-button-bg': p.$color-marketing-gray-40,
+  'notification-button-hover-bg': p.$color-marketing-gray-50,
+  'notification-success-bg': p.$color-green-30,
+  'notification-success-text': p.$color-black,
+  'notification-success-button-bg': p.$color-green-60,
+  'notification-success-button-hover-bg': p.$color-green-70,
+  'notification-error-bg': p.$color-red-30,
+  'notification-error-text': p.$color-black,
+  'notification-error-button-bg': p.$color-red-60,
+  'notification-error-button-hover-bg': p.$color-red-70,
+  'notification-error-soft-bg': p.$color-red-20,
+  'notification-warning-bg': p.$color-yellow-20,
+  'notification-warning-text': p.$color-black,
+  'notification-warning-button-bg': p.$color-yellow-40,
+  'notification-warning-button-hover-bg': p.$color-yellow-50,
+  'notification-click-bg': p.$color-blue-50,
+  'notification-click-text': p.$color-white,
+  'notification-click-button-bg': p.$color-blue-70,
+  'notification-click-button-hover-bg': p.$color-blue-80,
+  'notification-close-icon': url('protocol/img/icons/close.svg'),
+
+  // Modal and details
+  'modal-icon': #000000,
+  'details-icon': #000000,
 
   'elevation-rim': 0 0 #0000,
   'elevation-1': (

@@ -190,6 +190,22 @@
   }
 }
 
+// Paints a monochrome SVG in a theme color: the image is the mask and $color fills it.
+@mixin icon-mask($url, $color, $size: auto, $position: center) {
+  background-image: none;
+  background-color: $color;
+  mask-image: $url;
+  mask-position: $position;
+  mask-repeat: no-repeat;
+  mask-size: $size;
+
+  // Forced colors would repaint the fill with the page background and hide the icon.
+  @media (forced-colors: active) {
+    background-color: CanvasText;
+    forced-color-adjust: none;
+  }
+}
+
 @mixin ulol {
   ul {
     list-style: disc;

@@ -3,7 +3,7 @@
 
 
 .mzp-c-modal-inner {
-  background: var(--page-bg);
+  background: var(--card-bg);
 }
 
 .mzp-c-modal-overlay-contents {
@@ -11,7 +11,22 @@
 }
 
 .mzp-c-modal-close .mzp-c-modal-button-close {
-  background: transparent url("protocol/img/icons/close.svg") center center no-repeat;
+  @include c.icon-mask(url("protocol/img/icons/close.svg"), var(--modal-icon));
+
+  // The mask would clip the focus ring, so focus moves the icon onto a pseudo-element.
+  &:focus {
+    position: relative;
+    forced-color-adjust: auto;
+    background-color: transparent;
+    mask-image: none;
+
+    &::before {
+      position: absolute;
+      inset: 0;
+      @include c.icon-mask(url("protocol/img/icons/close.svg"), var(--modal-icon));
+      content: '';
+    }
+  }
 }
 
 

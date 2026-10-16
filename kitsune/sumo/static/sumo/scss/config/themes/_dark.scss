@@ -150,6 +150,73 @@ $dark: (
   'brand-callout-action-hover-bg': #EEEAFB,
   'brand-callout-action-shadow': 0 6px 16px -6px rgba(0, 0, 0, 0.45),
 
+  // Header
+  'header-bg': var(--color-graphite-01),
+  'header-text': var(--color-light-gray-02),
+  'header-underline': var(--color-azure-03),
+  'header-separator': var(--color-graphite-08),
+  'header-divider': rgba(255, 255, 255, 0.07),
+  'header-shadow': 0 12px 32px -18px rgba(0, 0, 0, 0.9),
+  // Inverts the black logo image to about light-gray-02.
+  'header-logo-filter': invert(97.6%),
+  'header-icon': var(--color-light-gray-02),
+  'header-skip-link-bg': rgba(c.color('graphite', '01'), 0.9),
+  'header-cta-bg': var(--color-graphite-05),
+  'header-cta-highlight': inset 0 1px 0 rgba(255, 255, 255, 0.06),
+  'header-secondary-border': var(--color-graphite-09),
+  'header-secondary-bg': transparent,
+  'header-secondary-text': var(--color-light-gray-02),
+  'header-button-text': var(--color-light-gray-02),
+  'header-button-hover-bg': var(--color-graphite-08),
+  'header-button-active-bg': var(--color-graphite-08),
+  'unread-badge-bg': var(--color-red-07),
+  'unread-badge-text': var(--color-white),
+
+  // Dropdown menus
+  'dropdown-bg': var(--color-graphite-02),
+  'dropdown-edge': rgba(255, 255, 255, 0.06),
+  'dropdown-shadow': 0 28px 56px -16px rgba(0, 0, 0, 0.8),
+  'dropdown-title-hover': var(--color-light-gray-02),
+  'dropdown-link': var(--color-graphite-12),
+  'dropdown-link-hover': var(--color-light-gray-02),
+  'dropdown-item-hover-ring': 0 0 0 4px var(--color-graphite-05),
+  'menu-list-shadow': var(--elevation-2),
+
+  // Footer
+  'footer-bg': var(--color-graphite-01),
+  'footer-edge': inset 0 1px 0 rgba(255, 255, 255, 0.05),
+  // The footer stays a dark surface, so its text keeps Protocol's colors.
+  'footer-text': p.$color-white,
+  'footer-text-muted': p.$color-light-gray-50,
+
+  // Notification bar
+  'notification-bg': var(--status-neutral-bg),
+  'notification-text': var(--status-neutral-text),
+  'notification-button-bg': rgba(255, 255, 255, 0.08),
+  'notification-button-hover-bg': rgba(255, 255, 255, 0.14),
+  'notification-success-bg': var(--status-success-bg),
+  'notification-success-text': var(--status-success-text),
+  'notification-success-button-bg': rgba(255, 255, 255, 0.08),
+  'notification-success-button-hover-bg': rgba(255, 255, 255, 0.14),
+  'notification-error-bg': var(--status-error-bg),
+  'notification-error-text': var(--status-error-text),
+  'notification-error-button-bg': rgba(255, 255, 255, 0.08),
+  'notification-error-button-hover-bg': rgba(255, 255, 255, 0.14),
+  'notification-error-soft-bg': var(--status-error-bg),
+  'notification-warning-bg': var(--status-pending-bg),
+  'notification-warning-text': var(--status-pending-text),
+  'notification-warning-button-bg': rgba(255, 255, 255, 0.08),
+  'notification-warning-button-hover-bg': rgba(255, 255, 255, 0.14),
+  'notification-click-bg': var(--status-info-bg),
+  'notification-click-text': var(--status-info-text),
+  'notification-click-button-bg': rgba(255, 255, 255, 0.08),
+  'notification-click-button-hover-bg': rgba(255, 255, 255, 0.14),
+  'notification-close-icon': url('protocol/img/icons/close-white.svg'),
+
+  // Modal and details
+  'modal-icon': var(--color-light-gray-02),
+  'details-icon': var(--color-light-gray-02),
+
   'elevation-rim': (
     inset 0 1px 0 rgba(255, 255, 255, 0.07),
     inset 0 0 0 1px rgba(255, 255, 255, 0.035)
