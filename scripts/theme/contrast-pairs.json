@@ -167,7 +167,18 @@
         { "fg": "--color-icon", "bg": "--callout-warning-bg-start", "min": 3, "themes": ["light", "dark"] },
         { "fg": "--color-icon", "bg": "--callout-warning-bg-mid", "min": 3, "themes": ["light", "dark"] },
         { "fg": "--color-icon", "bg": "--callout-warning-bg-end", "min": 3, "themes": ["light", "dark"] },
-        { "fg": "--color-icon-info", "bg": "--page-bg", "min": 3, "themes": ["light", "dark"] }
+        { "fg": "--color-icon-info", "bg": "--page-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--tom-select-text", "bg": "--tom-select-control-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--tom-select-text", "bg": "--tom-select-dropdown-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--tom-select-text", "bg": "--tom-select-highlight", "backdrop": "--tom-select-dropdown-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--tom-select-option-active-text", "bg": "--tom-select-option-active-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--tom-select-create-text", "bg": "--tom-select-dropdown-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--tom-select-border", "bg": "--tom-select-control-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--tom-select-caret", "bg": "--tom-select-control-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--tom-select-item-text", "bg": "--tom-select-item-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--tom-select-item-text", "bg": "--tom-select-item-active-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--user-autocomplete-item-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text", "bg": "--user-autocomplete-item-active-bg", "min": 4.5, "themes": ["light", "dark"] }
     ],
     "exceptions": [
         {
@@ -217,6 +228,30 @@
             "bg": "--page-bg",
             "theme": "light",
             "reason": "Light design: red-05 error text on white is 2.77:1"
+        },
+        {
+            "fg": "--tom-select-item-text",
+            "bg": "--tom-select-item-bg",
+            "theme": "light",
+            "reason": "Light design: Tom Select's white tag text on its blue item is 2.69:1"
+        },
+        {
+            "fg": "--tom-select-item-text",
+            "bg": "--tom-select-item-active-bg",
+            "theme": "light",
+            "reason": "Light design: Tom Select's white tag text on its green active item is 1.99:1"
+        },
+        {
+            "fg": "--tom-select-border",
+            "bg": "--tom-select-control-bg",
+            "theme": "light",
+            "reason": "Light design: Tom Select's #D0D0D0 control border on white is 1.54:1"
+        },
+        {
+            "fg": "--tom-select-create-text",
+            "bg": "--tom-select-dropdown-bg",
+            "theme": "light",
+            "reason": "Light design: Tom Select's half-opacity create option text on white is 2.88:1"
         }
     ]
 }

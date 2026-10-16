@@ -479,6 +479,49 @@
 //
 // Style guide: colors.icons-media
 
+// Tom Select
+//
+// The tag, group, related-document, and recipient pickers built on Tom Select: the control, its
+// items, and the dropdown. Light keeps Tom Select's default theme, in which items and the single-select
+// control are gradients (`--tom-select-item-image`, `--tom-select-item-active-image`,
+// `--tom-select-single-image`), so the item swatches show the color under the gradient. Dark is
+// flat: the gradients are `none` and items are accent pills. The `-disabled-active-` colors show on
+// an active item of a disabled control. The recipient autocomplete keeps its grey chips
+// (`--user-autocomplete-item-*`). The gradients and shadows appear in the theme maps only.
+//
+// Colors:
+// --tom-select-text: #303030 - Dark: #E0E0E6 (light-gray-04)
+// --tom-select-control-bg: #FFFFFF - Dark: #16181D (graphite-02)
+// --tom-select-border: #D0D0D0 - Dark: #83868D (graphite-10)
+// --tom-select-control-disabled-bg: #FAFAFA - Dark: #22252A (graphite-04)
+// --tom-select-single-border: #B8B8B8 - Dark: #83868D (graphite-10)
+// --tom-select-caret: #808080 - Dark: #B7BBC1 (graphite-11)
+// --tom-select-item-bg: #1DA7EE - Dark: #396ED6 (azure-04)
+// --tom-select-item-text: #FFFFFF - Dark: #FFFFFF
+// --tom-select-item-border: #0073BB - Dark: #2D60C3 (azure-05)
+// --tom-select-item-active-bg: #92C836 - Dark: #2D60C3 (azure-05)
+// --tom-select-item-active-border: #00578D - Dark: #8FBEFA (azure-03)
+// --tom-select-item-disabled-text: #999999 - Dark: #5A5E66 (graphite-09)
+// --tom-select-item-disabled-border: #E6E6E6 - Dark: #3A3D43 (graphite-08)
+// --tom-select-item-disabled-active-text: #FFFFFF - Dark: #5A5E66 (graphite-09)
+// --tom-select-item-disabled-active-bg: #D2D2D2 - Dark: #22252A (graphite-04)
+// --tom-select-item-disabled-active-border: #AAAAAA - Dark: #3A3D43 (graphite-08)
+// --tom-select-remove-hover-bg: rgba(0, 0, 0, 0.05) - Dark: rgba(0, 0, 0, 0.15)
+// --tom-select-dropdown-bg: #FFFFFF - Dark: #16181D (graphite-02)
+// --tom-select-highlight: rgba(125, 168, 208, 0.2) - Dark: rgba(143, 190, 250, 0.2)
+// --tom-select-option-active-bg: #F5FAFD - Dark: #32353D (graphite-07)
+// --tom-select-option-active-text: #495C68 - Dark: #F9F9FB (light-gray-02)
+// --tom-select-create-text: rgba(48, 48, 48, 0.5) - Dark: #B7BBC1 (graphite-11)
+// --tom-select-optgroup-border: #F0F0F0 - Dark: #3A3D43 (graphite-08)
+// --tom-select-optgroup-column-border: #F2F2F2 - Dark: #3A3D43 (graphite-08)
+// --tom-select-header-close-hover: #000000 - Dark: #F9F9FB (light-gray-02)
+// --user-autocomplete-item-bg: #EFF2F7 - Dark: #32353D (graphite-07)
+// --user-autocomplete-item-active-bg: #E4E8EE - Dark: #3A3D43 (graphite-08)
+//
+// Weight: 35
+//
+// Style guide: colors.tom-select
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -727,6 +770,44 @@ $light: (
   'range-slider-pip-color-disabled': var(--color-marketing-gray-04),
   'range-slider-bg': rgba(c.color('blue', '06'), 0.3),
   'range-slider-bg-disabled': var(--color-marketing-gray-02),
+
+  // Tom Select
+  'tom-select-text': #303030,
+  'tom-select-control-bg': var(--color-white),
+  'tom-select-border': #D0D0D0,
+  'tom-select-control-shadow': inset 0 1px 1px rgba(0, 0, 0, 0.1),
+  'tom-select-control-focus-shadow': inset 0 1px 2px rgba(0, 0, 0, 0.15),
+  'tom-select-control-disabled-bg': #FAFAFA,
+  'tom-select-single-border': #B8B8B8,
+  'tom-select-single-image': linear-gradient(to bottom, #FEFEFE, #F2F2F2),
+  'tom-select-single-shadow': (0 1px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8)),
+  'tom-select-caret': #808080,
+  'tom-select-item-bg': #1DA7EE,
+  'tom-select-item-image': linear-gradient(to bottom, #1DA7EE, #178EE9),
+  'tom-select-item-text': var(--color-white),
+  'tom-select-item-border': #0073BB,
+  'tom-select-item-shadow': (0 1px 0 rgba(0, 0, 0, 0.2), inset 0 1px rgba(255, 255, 255, 0.03)),
+  'tom-select-item-text-shadow': 0 1px 0 rgba(0, 51, 83, 0.3),
+  'tom-select-item-active-bg': #92C836,
+  'tom-select-item-active-image': linear-gradient(to bottom, #008FD8, #0075CF),
+  'tom-select-item-active-border': #00578D,
+  'tom-select-item-disabled-text': #999999,
+  'tom-select-item-disabled-border': #E6E6E6,
+  'tom-select-item-disabled-active-text': var(--color-white),
+  'tom-select-item-disabled-active-bg': #D2D2D2,
+  'tom-select-item-disabled-active-border': #AAAAAA,
+  'tom-select-remove-hover-bg': rgba(0, 0, 0, 0.05),
+  'tom-select-dropdown-bg': var(--color-white),
+  'tom-select-dropdown-shadow': 0 1px 3px rgba(0, 0, 0, 0.1),
+  'tom-select-highlight': rgba(125, 168, 208, 0.2),
+  'tom-select-option-active-bg': #F5FAFD,
+  'tom-select-option-active-text': #495C68,
+  'tom-select-create-text': rgba(48, 48, 48, 0.5),
+  'tom-select-optgroup-border': #F0F0F0,
+  'tom-select-optgroup-column-border': #F2F2F2,
+  'tom-select-header-close-hover': var(--color-black),
+  'user-autocomplete-item-bg': #EFF2F7,
+  'user-autocomplete-item-active-bg': #E4E8EE,
 
   // Buttons
   'button-text': var(--color-marketing-gray-07),
