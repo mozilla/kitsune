@@ -11,7 +11,6 @@
 
 :root {
   @include c.cssvars(c.$colors);
-  @include tokens.emit-theme(light.$light);
 
   --base-font-size: 1rem;
   --heading-font-family: var(--title-font-family);
@@ -24,7 +23,12 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
   --global-radius: var(--radius-sm);
+}
 
+// Also on [data-theme="light"], so any element can carry either theme, as the charts' forced-colors probe does.
+:root,
+[data-theme="light"] {
+  @include tokens.emit-theme(light.$light);
   color-scheme: light;
   accent-color: var(--control-accent, auto);
 }
@@ -46,6 +50,7 @@
 // After both themes, so these win at equal specificity.
 @media (forced-colors: active) {
   :root,
+  [data-theme="light"],
   [data-theme="dark"] {
     @include tokens.emit-theme(forced-colors.$forced-colors);
   }

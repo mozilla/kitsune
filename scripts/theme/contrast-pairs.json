@@ -192,8 +192,7 @@
         { "fg": "--translate-source-heading", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--color-text", "bg": "--editor-autocomplete-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--codemirror-text", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
-        { "fg": "--codemirror-variable", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
-        { "fg": "--codemirror-tag", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--codemirror-syntax", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--codemirror-link", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--codemirror-bold", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--codemirror-comment", "bg": "--codemirror-bg", "min": 4.5, "themes": ["light", "dark"] },
@@ -235,10 +234,9 @@
         { "fg": "--color-link", "bg": "--group-visibility-badge-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--group-leader-badge-text", "bg": "--group-leader-badge-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--color-link", "bg": "--group-action-hover-bg", "backdrop": "--color-surface", "min": 4.5, "themes": ["light", "dark"] },
-        { "fg": "--group-error-text", "bg": "--color-surface", "min": 3, "themes": ["dark"] },
-        { "fg": "--group-error-text-hover", "bg": "--color-surface", "min": 3, "themes": ["dark"] },
-        { "fg": "--group-error-text", "bg": "--group-form-errors-bg", "min": 4.5, "themes": ["dark"] },
-        { "fg": "--color-text", "bg": "--group-form-errors-bg", "min": 4.5, "themes": ["light"] },
+        { "fg": "--group-error-text", "bg": "--color-surface", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--group-error-text-hover", "bg": "--color-surface", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--status-error-text", "bg": "--group-form-errors-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--group-avatar-overlay-text", "bg": "--group-avatar-overlay-bg", "backdrop": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--company-tickets-widget-text", "bg": "--color-link-active-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--color-secondary", "bg": "--color-link-active-bg", "min": 4.5, "themes": ["light", "dark"] },
@@ -419,16 +417,10 @@
             "reason": "Light design: the preview panel's #999 hovered close text on white is 2.85:1"
         },
         {
-            "fg": "--codemirror-variable",
+            "fg": "--codemirror-syntax",
             "bg": "--codemirror-bg",
             "theme": "light",
             "reason": "Light design: the editor's #D98484 markup on white is 2.77:1"
-        },
-        {
-            "fg": "--codemirror-tag",
-            "bg": "--codemirror-bg",
-            "theme": "light",
-            "reason": "Light design: the editor's #D98484 tags on white are 2.77:1"
         },
         {
             "fg": "--codemirror-comment",

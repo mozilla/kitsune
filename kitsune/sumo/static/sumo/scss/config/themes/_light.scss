@@ -314,12 +314,14 @@
 //
 // The footer is a dark surface in both themes: Protocol paints it black with white text, and in
 // the dark theme it takes graphite-01 under a faint top edge (`--footer-edge`, in the theme maps
-// only). The text keeps Protocol's colors on both surfaces.
+// only). The text keeps Protocol's colors on both surfaces, and the divider under the link sections
+// is graphite-08 in dark.
 //
 // Colors:
 // --footer-bg: #000000 - Dark: #101318 (graphite-01)
 // --footer-text: #FFFFFF - Dark: #FFFFFF
 // --footer-text-muted: #BFBFC9 - Dark: #BFBFC9
+// --footer-divider: #BFBFC9 - Dark: #3A3D43 (graphite-08)
 //
 // Weight: 26
 //
@@ -569,8 +571,9 @@
 //
 // The KB editor's wiki-markup editor and its hint list. The editor keeps CodeMirror's default theme,
 // and SUMO's rules under `#editor` color its surface, gutter, cursor, selections, and the classes of
-// the SUMO markup mode. Italic, underlined, and struck-through text keep `--codemirror-text`. The hint
-// list's shadow appears in the theme maps only.
+// the SUMO markup mode: `--codemirror-syntax` colors the markup's delimiters and tag names. Italic,
+// underlined, and struck-through text keep `--codemirror-text`. The hint list's shadow appears in the
+// theme maps only.
 //
 // Colors:
 // --codemirror-bg: #FFFFFF - Dark: #16181D (graphite-02)
@@ -586,8 +589,7 @@
 // --codemirror-invalid-char: #FF0000 - Dark: #FF9AA2 (red-03)
 // --codemirror-quote-bg: #000000 - Dark: #3A3D43 (graphite-08)
 // --codemirror-quote-text: #FFFFFF - Dark: #F9F9FB (light-gray-02)
-// --codemirror-variable: #D98484 - Dark: #E9A1A1
-// --codemirror-tag: #D98484 - Dark: #E9A1A1
+// --codemirror-syntax: #D98484 - Dark: #E9A1A1
 // --codemirror-link: #5757C2 - Dark: #8FBEFA (azure-03)
 // --codemirror-bold: #000000 - Dark: #F9F9FB (light-gray-02)
 // --codemirror-comment: #009900 - Dark: #83D5AD (sage-01)
@@ -632,10 +634,9 @@
 // and text color), the chosen answer's card, the upload thumbnails, the support-channel badges, and
 // the support switcher.
 // The thread and question dividers keep their light colors (body text and heading) and are
-// graphite-08 in dark. A Tom Select tag link (`--tag-name-text`) is white in light and takes its
-// item's color in dark, so a disabled control dims its tags. The chosen answer's card is a 5% mix of
-// `--color-success` into `--color-shade-bg` in each theme. The focus ring and shadows appear in the
-// theme maps only.
+// graphite-08 in dark. A Tom Select tag link takes its item's color, so a disabled control dims its
+// tags. The chosen answer's card is a 5% mix of `--color-success` into `--color-shade-bg` in each
+// theme. The focus ring and shadows appear in the theme maps only.
 //
 // Colors:
 // --sidebar-tags-hover-bg: rgba(0, 0, 0, 0.07) - Dark: rgba(255, 255, 255, 0.08)
@@ -645,7 +646,6 @@
 // --tag-chip-bg: #F0F0F4 - Dark: #32353D (graphite-07)
 // --tag-chip-hover-bg: #E0E0E6 - Dark: #3A3D43 (graphite-08)
 // --tag-clear-hover-bg: rgba(255, 0, 0, 0.05) - Dark: #3C2C32
-// --tag-name-text: #FFFFFF - Dark: the Tom Select item's text color
 // --thread-border: #E0E0E6 - Dark: #3A3D43 (graphite-08)
 // --question-divider: #42435A - Dark: #3A3D43 (graphite-08)
 // --karma-titles-divider: #20133A - Dark: #3A3D43 (graphite-08)
@@ -671,9 +671,8 @@
 // the dark theme group cards and sections and KBox dialogs use the elevated surface, and member cards
 // sit transparent on it; the leader cards keep their light gradient and are elevated surfaces in dark
 // with a sage tint. The avatar preview overlay sits on the image and keeps its colors.
-// Remove links, required marks, and the avatar form's errors use `--group-error-text` and
-// `--group-error-text-hover`, which are `initial` in light, so light keeps the inherited text color and
-// dark shows the error red. The select's check mark is an image drawn in each theme's color
+// Remove links, required marks, and the avatar form's error edge are `--group-error-text`; the error
+// messages take `--status-error-text`. The select's check mark is an image drawn in each theme's color
 // (`--community-select-check-icon`). The gradients, shadows, and the check mark appear in the theme
 // maps only.
 //
@@ -686,6 +685,8 @@
 // --group-tree-leaf: #B1B1BC - Dark: #5A5E66 (graphite-09)
 // --group-leader-badge-bg: #3FE1B0 - Dark: #193729 (sage-02)
 // --group-leader-badge-text: #FFFFFF - Dark: #83D5AD (sage-01)
+// --group-error-text: #E12850 - Dark: #FF9AA2 (red-03)
+// --group-error-text-hover: #C50043 - Dark: #FFBDC5 (red-02)
 // --group-action-hover-bg: #ABF2FF - Dark: rgba(143, 190, 250, 0.16)
 // --group-form-errors-bg: #FFDFE7 - Dark: #3C2C32
 // --group-avatar-overlay-bg: rgba(0, 0, 0, 0.7) - Dark: rgba(0, 0, 0, 0.7)
@@ -1011,6 +1012,7 @@ $light: (
   'footer-edge': none,
   'footer-text': p.$color-white,
   'footer-text-muted': p.$color-light-gray-50,
+  'footer-divider': p.$color-light-gray-50,
 
   // Notification bar
   'notification-bg': p.$color-marketing-gray-20,
@@ -1073,7 +1075,6 @@ $light: (
   'tom-select-control-bg': var(--color-white),
   'tom-select-border': #D0D0D0,
   'tom-select-control-shadow': inset 0 1px 1px rgba(0, 0, 0, 0.1),
-  'tom-select-control-focus-shadow': inset 0 1px 2px rgba(0, 0, 0, 0.15),
   'tom-select-control-disabled-bg': #FAFAFA,
   'tom-select-single-border': #B8B8B8,
   'tom-select-single-image': linear-gradient(to bottom, #FEFEFE, #F2F2F2),
@@ -1163,8 +1164,7 @@ $light: (
   'codemirror-invalid-char': #FF0000,
   'codemirror-quote-bg': var(--color-black),
   'codemirror-quote-text': var(--color-white),
-  'codemirror-variable': #D98484,
-  'codemirror-tag': #D98484,
+  'codemirror-syntax': #D98484,
   'codemirror-link': #5757C2,
   'codemirror-bold': var(--color-black),
   'codemirror-comment': #009900,
@@ -1197,7 +1197,6 @@ $light: (
   'tag-chip-bg': var(--color-light-gray-03),
   'tag-chip-hover-bg': var(--color-light-gray-04),
   'tag-clear-hover-bg': rgba(255, 0, 0, 0.05),
-  'tag-name-text': var(--color-white),
   'thread-border': var(--color-light-gray-04),
   'question-divider': var(--color-text),
   'karma-titles-divider': var(--color-heading),
@@ -1225,8 +1224,8 @@ $light: (
   'group-leader-card-bg': linear-gradient(135deg, rgba(12, 175, 89, 0.03) 0%, var(--color-white) 100%),
   'group-leader-badge-bg': var(--color-success),
   'group-leader-badge-text': var(--color-white),
-  'group-error-text': initial,
-  'group-error-text-hover': initial,
+  'group-error-text': var(--color-red-07),
+  'group-error-text-hover': var(--color-red-08),
   'group-action-hover-bg': var(--color-blue-01),
   'group-form-errors-bg': var(--color-red-01),
   'group-avatar-preview-shadow': 0 4px 12px rgba(0, 0, 0, 0.1),

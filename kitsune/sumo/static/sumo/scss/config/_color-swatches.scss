@@ -10,8 +10,8 @@
 //
 // **Semantic tokens.** `--color-text` or `--page-bg` shows intent, where
 // `--color-ink-09` doesn't. Each token has a light and a dark value, defined in the
-// two maps in `config/themes/` and emitted by `_theme.scss`: the light map on `:root`,
-// the dark map on `[data-theme="dark"]`. The build fails if the maps don't have the
+// two maps in `config/themes/` and emitted by `_theme.scss`: the light map on `:root` and
+// `[data-theme="light"]`, the dark map on `[data-theme="dark"]`. The build fails if the maps don't have the
 // same keys.
 //
 // Components read semantic tokens only. Outside `config/`, stylelint rejects hex and

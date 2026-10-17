@@ -110,7 +110,7 @@ emitted on `:root` and documented in the KSS styleguide.
 The palette is the same in both themes.
 * **Semantic tokens**, in `config/themes/_light.scss` and `config/themes/_dark.scss`.
 Each file is one Sass map from token name to value.
-`scss/_theme.scss` emits the light map on `:root` and the dark map on `[data-theme="dark"]`.
+`scss/_theme.scss` emits the light map on `:root` and `[data-theme="light"]` and the dark map on `[data-theme="dark"]`, so any element can carry either theme.
 Tokens say what a color is for (`--color-text`, `--page-bg`, `--color-border`),
 and cover surfaces, text, links, accent fills, borders, form fields, status colors, elevation shadows, and media filters.
 * **Component tokens**, in the same two maps.
@@ -209,22 +209,14 @@ because the palette, the theme maps, and the Protocol bridge hold raw values by 
 because it emits the dark theme.
 No other file is exempt.
 
-`.stylelintrc` is written as JSON,
-so the patterns are explained here:
+In short, the guard rejects these in every other file:
 
-* `function-disallowed-list`: `/^(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|light-dark)$/i` matches a function name that is exactly one of the color functions.
-* `declaration-property-value-disallowed-list` applies these patterns to the value of every property:
-  * `var\(\s*--color-(?:[a-z-]+-\d+|white|black|lavender)(?![\w-])` matches a `var()` of a palette property, meaning a ramp step ending in digits or one of the three single-value colors.
-  The lookahead keeps it from matching a longer token name that merely starts the same way.
-  It rejects any `var(--color-<word>-<digits>)`, so don't name a semantic token that way.
-  Adding a single-value palette entry, like `white`, `black`, or `lavender`, means adding its name to this pattern in `.stylelintrc`.
-  * `\w\.color\(` matches a call to the Sass palette function through a module namespace, such as `c.color(`.
-  * `\$color-` matches a Sass variable named `$color-<name>`, with or without a module namespace, such as Protocol's `p.$color-white`.
-  * `\$colors(?![\w-])` matches the `$colors` map as a whole word, so `map.get(c.$colors, 'blue')` is caught but a longer name such as `$colors-foo` is not.
-  * `\$(?:link-color|background-color|body-text-color|title-text-color|field-border(?!-radius)|select-bg|box-shadow-|button-border-color-focus)` matches Protocol's color-bearing Sass variables by prefix, with or without a module namespace.
-  The `(?!-radius)` lookahead lets `$field-border-radius` through, because it isn't a color.
-  * `var\(\s*[^,)]*,\s*(?!\s|var\(|(?:transparent|currentcolor|none|inherit|initial|unset|revert|auto|normal|-?[\d.]+(?:%|[a-z]+)?)\s*\))` matches a `var()` with a fallback, unless the fallback starts with another `var(` or is exactly one of the allowed keywords, a number, a percentage, or a length.
-* `selector-disallowed-list`: `/\[\s*data-theme/i` matches any attribute selector on `data-theme`.
+* hex and named colors, and the color functions (`rgb()`, `hsl()`, `oklch()`, `color-mix()`, `light-dark()` and the rest);
+* palette properties: `var(--color-<name>-<step>)` and `--color-white`, `-black` and `-lavender`.
+Don't name a semantic token `--color-<word>-<digits>`, and add a new single-value palette entry's name to that pattern in `.stylelintrc`;
+* Sass palette access (`c.color(…)`, `$color-*`, `$colors`) and Protocol's color-bearing variables, such as `$link-color` and `$field-border`;
+* a `var()` fallback that isn't another `var()`, a keyword, a number, a percentage or a length;
+* `[data-theme]` selectors.
 
 The guard reads declaration values and selectors.
 It deliberately does not read at-rule parameters,
@@ -322,6 +314,9 @@ When upgrading tom-select, compare the vendor stylesheet against it for new or c
 `sumo/js/charts/theme.js` themes the Chart.js charts from `--chart-*` tokens.
 `renderLineChart` sets the text, grid, and tooltip colors on `Chart.defaults` and resolves the dataset colors before it creates a chart.
 Charts redraw on `sumo:themechange` and when printing, without fetching their data again.
+Under forced colors, text, grid, and tooltips take the system colors,
+and the series come from whichever theme suits the system background,
+so charts also redraw when forced colors or the OS color scheme change.
 
 * Set a dataset's `borderColor` and `backgroundColor` with `seriesColor(index, alpha)`,
 which cycles through the categorical tokens `--chart-1` to `--chart-11`,
@@ -365,7 +360,7 @@ Decorative tokens follow a second path.
 Decorative layers, such as the ring and shadow of a callout, become `none`.
 An icon's color becomes `currentColor`,
 because an `svg` keeps an authored `color` instead of taking the forced one.
-`_theme.scss` emits the map inside `@media (forced-colors: active)` on `:root` and `[data-theme="dark"]`,
+`_theme.scss` emits the map inside `@media (forced-colors: active)` on `:root` and both `[data-theme]` values,
 after both themes,
 so system colors are never painted over decoration.
 A key that isn't a theme token fails the build.
@@ -449,6 +444,7 @@ The `dark-mode` waffle flag turns the runtime on or off; templates read it as `D
 With it off, pages render exactly as they do without the feature.
 Anonymous HTML is cached and shared,
 so for anonymous traffic the flag must be on or off for everyone: no percentage rollout and no testing mode.
+A flip reaches cached anonymous pages as their cache entries expire, about five minutes for KB articles.
 
 #### Attributes
 

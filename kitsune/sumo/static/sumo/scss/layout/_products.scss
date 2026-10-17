@@ -67,6 +67,10 @@
   .searchbox {
     box-shadow: var(--hero-art-searchbox-shadow);
     background: var(--hero-art-searchbox-bg);
+
+    &:focus {
+      box-shadow: var(--focus-shadow), var(--hero-art-searchbox-shadow);
+    }
   }
 }
 

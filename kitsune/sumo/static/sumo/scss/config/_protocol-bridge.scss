@@ -161,6 +161,10 @@ $mappings: (
     }
   }
 
+  .mzp-c-footer-sections {
+    border-bottom-color: var(--footer-divider);
+  }
+
   .mzp-c-footer-heading {
     &,
     & button {
@@ -221,6 +225,11 @@ $mappings: (
         }
       }
     }
+  }
+
+  // The site focus ring marks the button, and Protocol's dotted outline would draw over it.
+  .mzp-c-modal-close .mzp-c-modal-button-close:focus {
+    outline: none;
   }
 
   summary,

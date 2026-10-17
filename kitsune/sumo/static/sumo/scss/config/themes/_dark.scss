@@ -195,6 +195,7 @@ $dark: (
   // The footer stays a dark surface, so its text keeps Protocol's colors.
   'footer-text': p.$color-white,
   'footer-text-muted': p.$color-light-gray-50,
+  'footer-divider': var(--color-graphite-08),
 
   // Notification bar
   'notification-bg': var(--status-neutral-bg),
@@ -258,7 +259,6 @@ $dark: (
   'tom-select-control-bg': var(--color-field-bg),
   'tom-select-border': var(--field-border-color-default),
   'tom-select-control-shadow': var(--field-inset),
-  'tom-select-control-focus-shadow': var(--focus-shadow),
   'tom-select-control-disabled-bg': var(--field-background-color-disabled),
   'tom-select-single-border': var(--field-border-color-default),
   'tom-select-single-image': none,
@@ -348,8 +348,7 @@ $dark: (
   'codemirror-quote-bg': var(--color-graphite-08),
   'codemirror-quote-text': var(--color-light-gray-02),
   // The light markup's salmon, lightened for the dark editor; red-03 would read as the special-character red.
-  'codemirror-variable': #E9A1A1,
-  'codemirror-tag': #E9A1A1,
+  'codemirror-syntax': #E9A1A1,
   'codemirror-link': var(--color-azure-03),
   'codemirror-bold': var(--color-light-gray-02),
   'codemirror-comment': var(--color-sage-01),
@@ -384,8 +383,6 @@ $dark: (
   'tag-chip-bg': var(--color-graphite-07),
   'tag-chip-hover-bg': var(--color-graphite-08),
   'tag-clear-hover-bg': var(--status-error-bg),
-  // The link takes its Tom Select item's color, so a disabled control dims its tags.
-  'tag-name-text': currentColor,
   'thread-border': var(--color-graphite-08),
   'question-divider': var(--color-graphite-08),
   'karma-titles-divider': var(--color-graphite-08),

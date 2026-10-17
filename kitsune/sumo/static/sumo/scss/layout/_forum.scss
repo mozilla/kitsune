@@ -340,6 +340,10 @@
       background: var(--tag-chip-hover-bg);
     }
 
+    &.is-active:hover {
+      background-color: var(--color-accent-hover);
+    }
+
     &.is-spam {
       background-color: var(--color-warning);
     }
@@ -919,13 +923,13 @@
 }
 
 .item .tag-name {
-  color: var(--tag-name-text);
+  color: inherit;
 
   &:hover {
-    color: var(--tag-name-text);
+    color: inherit;
   }
 
   &:visited {
-    color: var(--tag-name-text);
+    color: inherit;
   }
 }

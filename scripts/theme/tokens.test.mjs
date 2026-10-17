@@ -192,7 +192,7 @@ describe("theme entry point", () => {
         const css = sass.compile(path.join(scssDir, "_theme.scss"), { loadPaths, style: "expanded" }).css;
         const root = postcss.parse(css);
         const themeRoot = root.nodes.find(
-            (node) => node.type === "rule" && node.selector === ":root" && customPropertyNames(node).includes("--page-bg"),
+            (node) => node.type === "rule" && node.selectors.includes(":root") && customPropertyNames(node).includes("--page-bg"),
         );
         const dark = root.nodes.find(
             (node) => node.type === "rule" && node.selector.replace(/["']/g, "") === "[data-theme=dark]",
@@ -202,9 +202,9 @@ describe("theme entry point", () => {
         assert.ok(root.index(forced) > root.index(dark), "forced-colors overrides must come after the dark theme");
 
         const overrides = forced.nodes.find(
-            (node) => node.type === "rule" && node.selectors.map((selector) => selector.replace(/["']/g, "")).join() === ":root,[data-theme=dark]",
+            (node) => node.type === "rule" && node.selectors.map((selector) => selector.replace(/["']/g, "")).join() === ":root,[data-theme=light],[data-theme=dark]",
         );
-        assert.ok(overrides, "no :root, [data-theme=dark] rule inside the forced-colors block");
+        assert.ok(overrides, "no :root, [data-theme=light], [data-theme=dark] rule inside the forced-colors block");
 
         const themeTokens = customPropertyNames(themeRoot);
         const names = customPropertyNames(overrides);
@@ -221,7 +221,7 @@ describe("theme entry point", () => {
         const css = sass.compile(path.join(scssDir, "_theme.scss"), { loadPaths, style: "expanded" }).css;
         const rootRules = [];
         postcss.parse(css).walkRules((rule) => {
-            if (rule.selector === ":root" && rule.parent.type === "root") {
+            if (rule.selectors.includes(":root") && rule.parent.type === "root") {
                 rootRules.push(rule);
             }
         });

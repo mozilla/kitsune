@@ -105,6 +105,10 @@ ul.ts-options {
     background-color: var(--community-select-option-hover-bg);
     color: var(--color-text-on-accent);
 }
+// The panel's overflow clips anything drawn outside the options.
+.ts-options a:focus-visible {
+    outline-offset: -2px;
+}
 .ts-options li {
     border-top: 1px solid var(--community-select-divider);
     margin-bottom: 0;

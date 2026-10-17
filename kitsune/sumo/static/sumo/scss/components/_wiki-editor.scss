@@ -816,12 +816,9 @@ body.review {
     color: var(--codemirror-quote-text);
   }
 
-  .cm-variable {
-    color: var(--codemirror-variable);
-  }
-
+  .cm-variable,
   .cm-tag {
-    color: var(--codemirror-tag);
+    color: var(--codemirror-syntax);
   }
 
   .cm-other.cm-link {

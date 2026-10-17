@@ -3,12 +3,15 @@ import { color } from "chart.js/helpers";
 
 const SERIES_COUNT = 11;
 const TOKEN = Symbol("chart color token");
+const FORCED_COLORS = "(forced-colors: active)";
 const resolved = new Map();
 const datasetTokens = new WeakMap();
 let chartJsDefaults = null;
+let paletteProbe = null;
 
 function readColor(name) {
-  const value = window.getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const source = paletteProbe ?? document.documentElement;
+  const value = window.getComputedStyle(source).getPropertyValue(name).trim();
   return value && color(value).valid ? value : undefined;
 }
 
@@ -44,6 +47,31 @@ export function resolveChartColors(datasets) {
   });
 }
 
+// Canvas content isn't forced, so the charts need the system colors and the series palette that suits them.
+function readSystemColors() {
+  paletteProbe?.remove();
+  paletteProbe = null;
+  if (!window.matchMedia?.(FORCED_COLORS)?.matches) {
+    return null;
+  }
+  const probe = document.createElement("span");
+  probe.hidden = true;
+  probe.style.cssText =
+    "forced-color-adjust: none; color: CanvasText; background-color: Canvas; border-color: GrayText";
+  document.body.append(probe);
+  const style = window.getComputedStyle(probe);
+  const system = { text: style.color, canvas: style.backgroundColor, grid: style.borderTopColor };
+  if (!Object.values(system).every((value) => value && color(value).valid)) {
+    probe.remove();
+    return null;
+  }
+  const gray = (value) => color(value).greyscale().rgb.r;
+  // The probe's data-theme gives it that theme's tokens, so the series suit the system background.
+  probe.setAttribute("data-theme", gray(system.canvas) > gray(system.text) ? "light" : "dark");
+  paletteProbe = probe;
+  return system;
+}
+
 export function applyChartTheme() {
   const tooltip = Chart.defaults.plugins.tooltip;
   // Chart.js's own defaults stand in for a token that is missing or isn't a color.
@@ -55,6 +83,22 @@ export function applyChartTheme() {
     };
   }
   resolved.clear();
+
+  const system = readSystemColors();
+  if (system) {
+    Chart.defaults.color = system.text;
+    Chart.defaults.borderColor = system.grid;
+    Object.assign(tooltip, {
+      backgroundColor: system.canvas,
+      titleColor: system.text,
+      bodyColor: system.text,
+      footerColor: system.text,
+      borderColor: system.text,
+      multiKeyBackground: system.canvas,
+      borderWidth: 1,
+    });
+    return;
+  }
 
   const tooltipText = readColor("--chart-tooltip-text");
   Chart.defaults.color = readColor("--chart-text") ?? chartJsDefaults.color;
@@ -90,3 +134,11 @@ function redrawCharts() {
 document.addEventListener("sumo:themechange", redrawCharts);
 // Print uses the light theme, and a canvas only shows it once it is drawn again.
 window.matchMedia?.("print")?.addEventListener?.("change", redrawCharts);
+const forcedColors = window.matchMedia?.(FORCED_COLORS);
+forcedColors?.addEventListener?.("change", redrawCharts);
+// The system palette can change without a theme change.
+window.matchMedia?.("(prefers-color-scheme: dark)")?.addEventListener?.("change", () => {
+  if (forcedColors?.matches) {
+    redrawCharts();
+  }
+});

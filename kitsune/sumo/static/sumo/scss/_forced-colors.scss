@@ -38,6 +38,16 @@
     border-color: Highlight !important;
   }
 
+  .ts-dropdown .active {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .file-input-wrapper input[type='file']:focus-visible + .file-input-label {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
   :is(.checkbox, .radio, .toggle) :is([type='checkbox'], [type='radio']):focus-visible + label:before {
     outline: 2px solid Highlight;
     outline-offset: 2px;

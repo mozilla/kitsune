@@ -19,7 +19,7 @@ describe("chart theme", () => {
     };
     style = document.createElement("style");
     style.textContent = `
-      :root {
+      :root, [data-theme="light"] {
         --chart-text: #111111;
         --chart-grid: #cccccc;
         --chart-tooltip-bg: #222222;
@@ -38,6 +38,7 @@ describe("chart theme", () => {
 
   afterEach(() => {
     style.remove();
+    delete window.matchMedia;
     root.removeAttribute("data-theme");
     delete Chart.instances.stub;
     Chart.defaults.color = saved.color;
@@ -45,7 +46,11 @@ describe("chart theme", () => {
     Object.assign(tooltip, saved.tooltip);
   });
 
-  it("reads the tokens and re-applies them to live charts on sumo:themechange", () => {
+  it("reads the tokens, or the system colors under forced colors, and re-applies them on sumo:themechange", () => {
+    const redraw = () =>
+      document.dispatchEvent(
+        new CustomEvent("sumo:themechange", { detail: { theme: "dark", preference: "dark" } })
+      );
     const dataset = { borderColor: seriesColor(0), backgroundColor: seriesColor(11, 0.15) };
     // Chart.js copies the default scale colors into each scale config when a chart is built.
     const scale = { ticks: { color: "#111111" }, grid: { color: "#cccccc" } };
@@ -72,9 +77,7 @@ describe("chart theme", () => {
     expect(dataset.backgroundColor).to.equal("rgba(170, 0, 0, 0.15)");
 
     root.setAttribute("data-theme", "dark");
-    document.dispatchEvent(
-      new CustomEvent("sumo:themechange", { detail: { theme: "dark", preference: "dark" } })
-    );
+    redraw();
 
     expect(Chart.defaults.color).to.equal("#eeeeee");
     expect(Chart.defaults.borderColor).to.equal("#444444");
@@ -84,5 +87,20 @@ describe("chart theme", () => {
     expect(dataset.backgroundColor).to.equal("rgba(0, 170, 0, 0.15)");
     expect(chart.update.calledOnceWithExactly("none")).to.equal(true);
     expect(atUpdate).to.deep.equal({ line: "#00aa00", staleScaleColors: [] });
+
+    // jsdom's system colors are light, so forced colors pick the light series under the dark theme.
+    window.matchMedia = (query) => ({ matches: query === "(forced-colors: active)" });
+    redraw();
+    expect(Chart.defaults.color).to.equal("rgb(0, 0, 0)");
+    expect(Chart.defaults.borderColor).to.equal("rgb(102, 102, 102)");
+    expect(tooltip.backgroundColor).to.equal("rgb(255, 255, 255)");
+    expect(tooltip.bodyColor).to.equal("rgb(0, 0, 0)");
+    expect(dataset.borderColor).to.equal("#aa0000");
+    expect(dataset.backgroundColor).to.equal("rgba(170, 0, 0, 0.15)");
+
+    delete window.matchMedia;
+    redraw();
+    expect(Chart.defaults.color).to.equal("#eeeeee");
+    expect(dataset.borderColor).to.equal("#00aa00");
   });
 });

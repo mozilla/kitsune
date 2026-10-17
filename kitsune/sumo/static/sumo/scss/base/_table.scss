@@ -139,6 +139,13 @@ table {
       content: none;
     }
   }
+
+  // Paper can't scroll, so a scrolling wrapper would cut off the columns that don't fit.
+  @media print {
+    margin-right: 0;
+    max-width: none;
+    overflow: visible;
+  }
 }
 
 // These are used at /contributors

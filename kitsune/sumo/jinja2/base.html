@@ -112,7 +112,7 @@
 
 {% if settings.STAGE %}
 <div id="stage-banner"  class="mzp-c-notification-bar mzp-t-warning">
-  <button class="mzp-c-notification-bar-button close-button" type="button"></button>
+  <button class="mzp-c-notification-bar-button close-button" type="button" aria-label="{{ _('Close') }}"></button>
   <p>{{ _('This is a staging site, the content gets overwritten on the 1st of every month.<br>The production site is <a href="https://support.mozilla.org">here</a>.') }}</p>
 </div>
 {% endif %}

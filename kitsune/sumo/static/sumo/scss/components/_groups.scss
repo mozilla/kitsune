@@ -467,19 +467,20 @@ body:has(#group-profile) {
       transition: opacity 150ms ease;
 
       a {
-        color: var(--group-error-text, inherit);
+        color: var(--group-error-text);
         text-decoration: none;
         font-size: 1.25rem;
         padding: p.$spacing-xs;
         display: block;
 
         &:hover {
-          color: var(--group-error-text-hover, inherit);
+          color: var(--group-error-text-hover);
         }
       }
     }
 
-    > li:hover .remove {
+    > li:hover .remove,
+    .remove:focus-within {
       opacity: 1;
     }
   }
@@ -695,14 +696,14 @@ body:has(#group-profile) {
 
     .form-errors {
       background: var(--group-form-errors-bg);
-      // The token is initial in light, which drops this edge there as before.
       border-left: 4px solid var(--group-error-text);
       padding: p.$spacing-md;
       margin-bottom: p.$spacing-lg;
       border-radius: p.$border-radius-sm;
 
       .error-message {
-        color: var(--group-error-text, inherit);
+        // The edge's lighter red falls short of 4.5:1 on the error box.
+        color: var(--status-error-text);
         margin: 0;
         @include c.text-body-sm;
 
@@ -724,7 +725,7 @@ body:has(#group-profile) {
       color: var(--color-heading);
 
       .required {
-        color: var(--group-error-text, inherit);
+        color: var(--group-error-text);
         margin-left: 2px;
       }
     }
@@ -736,6 +737,10 @@ body:has(#group-profile) {
         position: absolute;
         left: -9999px;
         opacity: 0;
+
+        &:focus-visible + .file-input-label {
+          box-shadow: var(--focus-shadow);
+        }
       }
 
       // Hide the widget's built-in image preview since we have our own

@@ -3,6 +3,12 @@ const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const svelteScssPreprocess = require("./webpack/svelte-scss-preprocess");
 
+// Silences deprecations from dependencies' stylesheets, such as tom-select's @import; SUMO's own still print.
+const sassLoader = {
+  loader: "sass-loader",
+  options: { sassOptions: { quietDeps: true } },
+};
+
 module.exports = {
   mode: "development",
   resolve: {
@@ -69,14 +75,14 @@ module.exports = {
           MiniCssExtractPlugin.loader,
           "css-loader",
           "postcss-loader",
-          "sass-loader",
+          sassLoader,
         ],
       },
       {
         test: /\.styles.scss$/,
         exclude: /node_modules/,
         type: "asset/resource",
-        use: ["sass-loader"],
+        use: [sassLoader],
         generator: {
           filename: "[name].[contenthash].css"
         }

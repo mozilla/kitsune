@@ -1,4 +1,5 @@
 @use "./config/elevation" as c;
+@use "./config/mixins";
 @use "./forced-colors-focus";
 
 :root,
@@ -186,6 +187,15 @@ li::before {
   content: var(--wizard-step-icon);
   height: 24px;
   position: absolute;
+}
+
+// Forced colors keep the theme's image, which can vanish on the system palette.
+@media (forced-colors: active) {
+  li:not([status="done"])::before {
+    width: 24px;
+    @include mixins.icon-mask(url("sumo/img/list-active.svg"), CanvasText);
+    content: "";
+  }
 }
 
 li[status="active"] {
