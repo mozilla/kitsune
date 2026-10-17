@@ -13,7 +13,7 @@
 
 #header {
   padding-block-end: 12px;
-  border-bottom: 1px solid var(--color-light-gray-03);
+  border-bottom: 1px solid var(--wizard-divider);
   font-size: 0.75rem;
 }
 
@@ -21,6 +21,11 @@
   height: 24px;
   width: 24px;
   margin-inline-end: 12px;
+  filter: var(--icon-image-filter);
+}
+
+#header > .icon {
+  filter: var(--wizard-info-icon-filter);
 }
 
 #header > a {
@@ -70,7 +75,7 @@ h3 {
 .warning {
   display: flex;
   align-items: start;
-  background-color: rgba(255, 234, 128, 0.4);
+  background-color: var(--wizard-warning-bg);
   padding-inline: 16px;
   padding-block: 8px;
   border-radius: 8px;
@@ -81,4 +86,5 @@ h3 {
   width: 16px;
   height: 16px;
   margin-inline-end: 11px;
+  filter: var(--icon-image-filter);
 }

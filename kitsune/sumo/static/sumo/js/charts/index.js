@@ -14,6 +14,8 @@ import {
 // Side-effect import: registers the date-fns adapter with Chart.js
 import "chartjs-adapter-date-fns";
 
+import { applyChartTheme, resolveChartColors } from "sumo/js/charts/theme";
+
 Chart.register(
   LineController,
   LineElement,
@@ -36,5 +38,7 @@ Tooltip.positioners.cursor = function (active, eventPosition) {
 };
 
 export function renderLineChart(el, config) {
+  applyChartTheme();
+  resolveChartColors(config.data.datasets);
   return new Chart(el, config);
 }

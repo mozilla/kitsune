@@ -134,24 +134,6 @@
       "rules": {
         "selector-disallowed-list": null
       }
-    },
-    {
-      "files": [
-        "kitsune/sumo/static/sumo/scss/_device-migration-wizard.scss",
-        "kitsune/sumo/static/sumo/scss/components/_dashboards.scss",
-        "kitsune/sumo/static/sumo/scss/form-step.styles.scss",
-        "kitsune/sumo/static/sumo/scss/form-wizard-configure-step.styles.scss",
-        "kitsune/sumo/static/sumo/scss/form-wizard-setup-device-step.styles.scss",
-        "kitsune/sumo/static/sumo/scss/form-wizard.styles.scss",
-        "kitsune/sumo/static/sumo/scss/reminder-dialog.styles.scss",
-        "svelte/contribute/Contribute.svelte"
-      ],
-      "rules": {
-        "color-no-hex": null,
-        "color-named": null,
-        "function-disallowed-list": null,
-        "declaration-property-value-disallowed-list": null
-      }
     }
   ]
 }

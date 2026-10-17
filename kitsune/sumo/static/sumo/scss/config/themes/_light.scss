@@ -708,6 +708,115 @@
 //
 // Style guide: colors.community
 
+// Dashboards and charts
+//
+// The KB and localization dashboards (readout tables, progress bars, status glyphs and readout mode
+// tabs), the Chart.js charts on the KPI, metrics and article history pages, and the retention grid.
+// `sumo/js/charts/theme.js` reads the `--chart-*` tokens into Chart.js (text, grid, tooltip and series
+// colors) and redraws live charts on `sumo:themechange`. `--chart-1` to `--chart-11` are the
+// categorical series, cycled in order; the vote tokens color the article history chart. The retention
+// grid's cells use `--chart-heat-1` (0–9%) to `--chart-heat-10` (90% and up). The dark ramp inverts
+// the light one: the ends are vivid and the middle is dark and muted, as the light middle is pale.
+//
+// Colors:
+// --dashboard-muted-text: #999999 - Dark: #B7BBC1 (graphite-11)
+// --dashboard-percent-track: #F3F3F3 - Dark: #32353D (graphite-07)
+// --dashboard-percent-fill: #DFDFDF - Dark: #83868D (graphite-10)
+// --dashboard-absolute-bar: #2AC3A2 (green-07) - Dark: #008787 (green-08)
+// --dashboard-status-update: #F8E687 - Dark: #F8E687
+// --dashboard-status-out-of-date: #FFA500 - Dark: #F6BC5D
+// --dashboard-status-untranslated: #FF0000 - Dark: #FF9AA2 (red-03)
+// --dashboard-status-ok: #ADD575 - Dark: #ADD575
+// --readout-mode-bg: #EDEDF0 - Dark: #32353D (graphite-07)
+// --readout-mode-hover-bg: #F9F9FA - Dark: #3A3D43 (graphite-08)
+// --readout-mode-active-hover-bg: #4978BC - Dark: #2D60C3 (azure-05)
+// --chart-text: #666666 - Dark: #B7BBC1 (graphite-11)
+// --chart-grid: rgba(0, 0, 0, 0.1) - Dark: rgba(255, 255, 255, 0.1)
+// --chart-tooltip-bg: rgba(0, 0, 0, 0.8) - Dark: #32353D (graphite-07)
+// --chart-tooltip-text: #FFFFFF - Dark: #F9F9FB (light-gray-02)
+// --chart-tooltip-border: rgba(0, 0, 0, 0) - Dark: #5A5E66 (graphite-09)
+// --chart-tooltip-swatch-bg: #FFFFFF - Dark: #32353D (graphite-07)
+// --chart-1: #5D84B2 - Dark: #87ACD7
+// --chart-2: #AA4643 - Dark: #D97A74
+// --chart-3: #89A54E - Dark: #AAC476
+// --chart-4: #80699B - Dark: #AA95C5
+// --chart-5: #3D96AE - Dark: #6FBAD1
+// --chart-6: #DB843D - Dark: #F6A669
+// --chart-7: #92A8CD - Dark: #AFC3E5
+// --chart-8: #A47D7C - Dark: #C8A3A2
+// --chart-9: #B5CA92 - Dark: #C6DAA7
+// --chart-10: #C98531 - Dark: #E7A862
+// --chart-11: #DB75C2 - Dark: #F698DD
+// --chart-votes-yes: #21DE2B - Dark: #65EC63
+// --chart-votes-no: #DE2B21 - Dark: #FF6F5E
+// --chart-votes-helpful: #2B21DE - Dark: #7195FF
+// --chart-heat-1: #EE2820 - Dark: #BF3B35
+// --chart-heat-2: #F25743 - Dark: #A6371F
+// --chart-heat-3: #F58667 - Dark: #8A3606
+// --chart-heat-4: #F9B58B - Dark: #683904
+// --chart-heat-5: #FDE4AF - Dark: #4B3703
+// --chart-heat-6: #E3F1B6 - Dark: #3A3E03
+// --chart-heat-7: #AADA9F - Dark: #2B5214
+// --chart-heat-8: #72C489 - Dark: #0C652B
+// --chart-heat-9: #39AD72 - Dark: #0B7446
+// --chart-heat-10: #00975C - Dark: #0E8259
+// --retention-grid-line: #DDDDDD - Dark: #3A3D43 (graphite-08)
+// --retention-heading-bg: #FFFFFF - Dark: #1C1E23 (graphite-03)
+// --retention-empty-bg: #F4F4F4 - Dark: #22252A (graphite-04)
+// --retention-cell-text: #222222 - Dark: #F9F9FB (light-gray-02)
+// --retention-legend-text: #333333 - Dark: #F9F9FB (light-gray-02)
+//
+// Weight: 41
+//
+// Style guide: colors.dashboards
+
+// Contribute app
+//
+// The Svelte contribute pages: their text, the step and link tiles, the pink step numbers, and the
+// fact panel. In the dark theme the tiles are cards and the fact panel is the inverse surface, with
+// `--surface-inverse-image` on top. The tile shadow appears in the theme maps only.
+//
+// Colors:
+// --contribute-text: #15141A - Dark: #E0E0E6 (light-gray-04)
+// --contribute-tile-bg: #FFFFFF - Dark: #282B32 (graphite-05)
+// --contribute-accent: #FF298A - Dark: #FF298A
+// --contribute-accent-text: #FFFFFF - Dark: #FFFFFF
+// --contribute-fact-bg: #241541 - Dark: #322F5A
+// --contribute-fact-text: #FFFFFF - Dark: #F9F9FB (light-gray-02)
+//
+// Weight: 42
+//
+// Style guide: colors.contribute
+
+// Device-migration wizard
+//
+// The wizard in KB articles and its reminder dialog. Its shadow-DOM sheets compile Protocol's form
+// and button styles, which the wizard overrides with these tokens and the field, button and focus
+// tokens; in the dark theme the wizard and the dialog are elevated surfaces. The step marker and the
+// select caret are images drawn in each theme's color. The black icons take `--icon-image-filter`,
+// and the blue info icon `--wizard-info-icon-filter`, which recolors it to about azure-03 in dark. The
+// shadows, focus ring, images, and filters appear in the theme maps only.
+//
+// Colors:
+// --wizard-text: #15141A - Dark: #E0E0E6 (light-gray-04)
+// --wizard-step-active-bg: rgba(0, 96, 223, 0.1) - Dark: rgba(143, 190, 250, 0.16)
+// --wizard-progress-track: #F0F0F4 - Dark: #22252A (graphite-04)
+// --wizard-disqualified-overlay-bg: rgba(240, 240, 244, 0.3) - Dark: rgba(40, 43, 50, 0.3)
+// --wizard-disqualification-bg: #F0F0F4 - Dark: #32353D (graphite-07)
+// --wizard-divider: #F0F0F4 - Dark: #3A3D43 (graphite-08)
+// --wizard-warning-bg: rgba(255, 234, 128, 0.4) - Dark: #3B342B
+// --wizard-error: #E22850 - Dark: #E22850
+// --wizard-error-border: #E22850 - Dark: #FF9AA2 (red-03)
+// --wizard-error-text: #FFFFFF - Dark: #FFFFFF
+// --wizard-success-text: #2AC3A2 - Dark: #83D5AD (sage-01)
+// --wizard-success-button-bg: #2AC3A2 - Dark: #005E5E (green-09)
+// --wizard-field-text: #000000 - Dark: #E0E0E6 (light-gray-04)
+// --wizard-select-focus-text: #222222 - Dark: #E0E0E6 (light-gray-04)
+//
+// Weight: 43
+//
+// Style guide: colors.wizard
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -1139,6 +1248,88 @@ $light: (
   'community-select-check-icon': url('protocol/img/icons/check.svg'),
   'kbox-overlay-bg': rgba(0, 0, 0, 0.85),
   'legacy-blue-text': #2BBAE7,
+
+  // Dashboards and charts
+  'dashboard-muted-text': #999999,
+  'dashboard-percent-track': #F3F3F3,
+  'dashboard-percent-fill': #DFDFDF,
+  'dashboard-absolute-bar': var(--color-green-07),
+  'dashboard-status-update': #F8E687,
+  'dashboard-status-out-of-date': #FFA500,
+  'dashboard-status-untranslated': #FF0000,
+  'dashboard-status-ok': #ADD575,
+  'readout-mode-bg': var(--color-marketing-gray-02),
+  'readout-mode-hover-bg': var(--color-marketing-gray-01),
+  'readout-mode-active-hover-bg': #4978BC,
+  'chart-text': #666666,
+  'chart-grid': rgba(0, 0, 0, 0.1),
+  'chart-tooltip-bg': rgba(0, 0, 0, 0.8),
+  'chart-tooltip-text': #FFFFFF,
+  'chart-tooltip-border': rgba(0, 0, 0, 0),
+  'chart-tooltip-swatch-bg': #FFFFFF,
+  'chart-1': #5D84B2,
+  'chart-2': #AA4643,
+  'chart-3': #89A54E,
+  'chart-4': #80699B,
+  'chart-5': #3D96AE,
+  'chart-6': #DB843D,
+  'chart-7': #92A8CD,
+  'chart-8': #A47D7C,
+  'chart-9': #B5CA92,
+  'chart-10': #C98531,
+  'chart-11': #DB75C2,
+  'chart-votes-yes': #21DE2B,
+  'chart-votes-no': #DE2B21,
+  'chart-votes-helpful': #2B21DE,
+  'chart-heat-1': #EE2820,
+  'chart-heat-2': #F25743,
+  'chart-heat-3': #F58667,
+  'chart-heat-4': #F9B58B,
+  'chart-heat-5': #FDE4AF,
+  'chart-heat-6': #E3F1B6,
+  'chart-heat-7': #AADA9F,
+  'chart-heat-8': #72C489,
+  'chart-heat-9': #39AD72,
+  'chart-heat-10': #00975C,
+  'retention-grid-line': #DDDDDD,
+  'retention-heading-bg': #FFFFFF,
+  'retention-empty-bg': #F4F4F4,
+  'retention-cell-text': #222222,
+  'retention-legend-text': #333333,
+
+  // Contribute app
+  'contribute-text': var(--color-dark-gray-10),
+  'contribute-tile-bg': var(--page-bg),
+  'contribute-tile-shadow': 0 2px 6px rgba(58, 57, 68, 0.2),
+  'contribute-accent': #FF298A,
+  'contribute-accent-text': var(--color-white),
+  'contribute-fact-bg': #241541,
+  'contribute-fact-text': var(--color-white),
+
+  // Device-migration wizard
+  'wizard-text': var(--color-dark-gray-10),
+  'wizard-shadow': 0 2px 6px rgba(58, 57, 68, 0.2),
+  'wizard-step-icon': url('sumo/img/list-active.svg'),
+  'wizard-step-active-bg': rgba(0, 96, 223, 0.1),
+  'wizard-progress-track': var(--color-light-gray-03),
+  'wizard-disqualified-overlay-bg': rgba(240, 240, 244, 0.3),
+  'wizard-disqualification-bg': var(--color-light-gray-03),
+  'wizard-disqualification-glow': 0 0 50px 70px var(--color-light-gray-03),
+  'wizard-divider': var(--color-light-gray-03),
+  'wizard-warning-bg': rgba(255, 234, 128, 0.4),
+  'wizard-error': #E22850,
+  'wizard-error-border': #E22850,
+  'wizard-error-text': var(--color-white),
+  'wizard-error-ring': 0 0 0 2px rgba(226, 40, 80, 0.5),
+  'wizard-success-text': var(--color-green-07),
+  'wizard-success-button-bg': var(--color-green-07),
+  'wizard-field-text': var(--color-black),
+  'wizard-select-focus-text': #222222,
+  'wizard-focus-ring': 0 0 0 2px rgba(0, 144, 237, 0.5),
+  'wizard-select-caret': p.$url-image-caret-down-form,
+  'wizard-select-caret-hover': p.$url-image-caret-down-link-hover,
+  'wizard-select-caret-focus': p.$url-image-caret-down-link,
+  'wizard-info-icon-filter': none,
 
   // Buttons
   'button-text': var(--color-marketing-gray-07),

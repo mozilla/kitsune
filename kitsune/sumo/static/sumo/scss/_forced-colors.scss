@@ -1,10 +1,7 @@
+@use './forced-colors-focus';
+
 @media (forced-colors: active) {
   // Author rules set outlines and field borders at higher specificity, and forced-colors focus must win.
-  :focus-visible {
-    outline: 2px solid Highlight !important;
-    outline-offset: 2px;
-  }
-
   .ts-wrapper .ts-control > input:focus-visible {
     outline: 2px solid Highlight !important;
     outline-offset: 0;

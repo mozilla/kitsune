@@ -207,10 +207,7 @@ Outside `config/`, they reject:
 because the palette, the theme maps, and the Protocol bridge hold raw values by definition.
 `scss/_theme.scss` is the only other file that may use `[data-theme]`,
 because it emits the dark theme.
-
-Files listed in the exemptions `overrides` block of `.stylelintrc`
-are not checked for colors, palette access, or fallbacks.
-The `[data-theme]` ban applies to them too.
+No other file is exempt.
 
 `.stylelintrc` is written as JSON,
 so the patterns are explained here:
@@ -297,6 +294,41 @@ An override repeats Protocol's selector and sets a token, and wins by source ord
 the bridge is emitted after Protocol and before `base/`, `layout/` and `components/`.
 Don't win with `!important` or a longer selector, which would also outrank SUMO's own Protocol overrides and can change light.
 
+#### Shadow DOM and the Svelte app
+
+Custom properties inherit into shadow roots,
+so the device-migration wizard's `*.styles.scss` sheets read theme tokens like any component.
+Rules in `screen.css` don't reach them, though.
+Two of them compile Protocol's form and button styles, with colors baked in,
+so `_wizard-protocol.scss` repeats Protocol's selectors after those imports and sets the colors from tokens.
+After changing what those sheets import, check the compiled `dist/*.styles.*.css` for colors that no override covers.
+
+The contribute app in `svelte/contribute/` has no shadow root.
+Its root component, `Contribute.svelte`, points the properties its children read (`--tile-bg`, `--fact-bg`, and the rest) at `--contribute-*` tokens.
+The pre-rendered pages inline the component CSS,
+so rebuild them with `npm run webpack:build:pre-render` after changing it;
+the build reads the catalogs that `./manage.py compilejsi18n` writes to `jsi18n/`.
+
+#### Tom Select
+
+The scripts that create a Tom Select import `components/_tom-select.scss` instead of the vendor's CSS.
+It compiles the vendor's default theme with the vendor's colors,
+then repeats each color-bearing vendor rule with `--tom-select-*` tokens.
+Light keeps the vendor's gradients as image tokens, and dark is flat.
+When upgrading tom-select, compare the vendor stylesheet against it for new or changed color rules.
+
+#### Charts
+
+`sumo/js/charts/theme.js` themes the Chart.js charts from `--chart-*` tokens.
+`renderLineChart` sets the text, grid, and tooltip colors on `Chart.defaults` and resolves the dataset colors before it creates a chart.
+Charts redraw on `sumo:themechange` and when printing, without fetching their data again.
+
+* Set a dataset's `borderColor` and `backgroundColor` with `seriesColor(index, alpha)`,
+which cycles through the categorical tokens `--chart-1` to `--chart-11`,
+or with `chartColor(name, alpha)` for a named token such as `--chart-votes-yes`.
+Don't use color literals.
+* The retention grid's cells use classes that read `--chart-heat-1` to `--chart-heat-10`.
+
 #### Icons
 
 * **Templates** use the `icon()` macro from `includes/icons.html`, as in `{{ icon('pencil', class='pencil') }}`.
@@ -306,8 +338,9 @@ Add a new icon to the dict at the top of the file.
 The light value is the old URL, byte for byte; the dark one is built with the functions in `config/_mixins.scss` or inline in the dark map.
 Add `forced-colors-icon($url)` where the image could vanish on the system palette.
 `icon-mask($url, $color)` is for pseudo-elements only, because a mask clips focus rings and hover fills.
-* **Images you can't replace**, such as the logo and the `<img>` icons instant search renders, take `filter: var(--icon-image-filter)`:
+* **Images you can't replace**, such as the logo and the `<img>` icons that instant search and the device-migration wizard render, take `filter: var(--icon-image-filter)`:
 `none` in light, an `invert()` in dark.
+A colored image gets its own filter token, as the wizard's info icon does with `--wizard-info-icon-filter`.
 
 #### Forced colors
 
@@ -320,6 +353,8 @@ and marks selected states (checked controls, active tabs, the current page) with
 
 It is loaded last in `screen.scss`,
 so it wins over every earlier rule at equal specificity.
+Its `:focus-visible` rule lives in `_forced-colors-focus.scss`,
+which the wizard's shadow-DOM sheets also use, because `screen.css` doesn't reach into shadow roots.
 The existing rules that remove outlines and make field borders transparent are more specific,
 so the layer uses `!important`.
 This is the one place theming code uses it,

@@ -9,7 +9,7 @@ ul {
 }
 
 label[for="email"] {
-  color: var(--color-marketing-gray-07);
+  color: var(--color-text-light);
 }
 
 #email {
@@ -51,6 +51,6 @@ label[for="email"] {
 }
 
 #submit[success] {
-  background-color: var(--color-green-07);
+  background-color: var(--wizard-success-button-bg);
   opacity: 1.0;
 }

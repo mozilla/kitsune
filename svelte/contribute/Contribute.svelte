@@ -221,19 +221,18 @@
 </Router>
 
 <style lang="scss">
-    @use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
     @use "../../kitsune/sumo/static/sumo/scss/config/typography-mixins";
 
     :global(#svelte) {
-        --color: var(--color-dark-gray-10);
+        --color: var(--contribute-text);
         --header-bg: var(--color-shade-bg);
-        --tile-bg: var(--page-bg);
-        --tile-shadow: 0px 2px 6px rgba(58, 57, 68, 0.2);
-        --step-number-bg: #{p.$color-pink-50};
-        --step-number-color: var(--color-white);
-        --fact-bg: #241541;
-        --fact-number: #{p.$color-pink-50};
-        --fact-color: var(--color-white);
+        --tile-bg: var(--contribute-tile-bg);
+        --tile-shadow: var(--contribute-tile-shadow);
+        --step-number-bg: var(--contribute-accent);
+        --step-number-color: var(--contribute-accent-text);
+        --fact-bg: var(--surface-inverse-image) var(--contribute-fact-bg);
+        --fact-number: var(--contribute-accent);
+        --fact-color: var(--contribute-fact-text);
         --spacing-sm: 16px;
         --spacing-md: 32px;
         --spacing-lg: 64px;

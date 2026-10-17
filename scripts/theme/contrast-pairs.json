@@ -256,7 +256,82 @@
         { "fg": "--color-text", "bg": "--flagged-item-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--color-link", "bg": "--flagged-item-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--color-text-on-accent", "bg": "--community-select-option-hover-bg", "min": 4.5, "themes": ["light", "dark"] },
-        { "fg": "--legacy-blue-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] }
+        { "fg": "--legacy-blue-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-muted-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-muted-text", "bg": "--color-shade-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-percent-fill", "bg": "--dashboard-percent-track", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-absolute-bar", "bg": "--page-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-absolute-bar", "bg": "--color-shade-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-status-update", "bg": "--page-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-status-update", "bg": "--color-shade-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-status-untranslated", "bg": "--page-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-status-untranslated", "bg": "--color-shade-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-status-ok", "bg": "--page-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-status-ok", "bg": "--color-shade-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--dashboard-status-out-of-date", "bg": "--color-warning", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--readout-mode-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--readout-mode-hover-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--readout-mode-active-hover-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--chart-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--chart-tooltip-text", "bg": "--chart-tooltip-bg", "backdrop": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--chart-1", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-2", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-3", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-4", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-5", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-6", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-7", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-8", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-9", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-10", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-11", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-votes-yes", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-votes-no", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--chart-votes-helpful", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--retention-cell-text", "bg": "--chart-heat-1", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-cell-text", "bg": "--chart-heat-2", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-cell-text", "bg": "--chart-heat-3", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-cell-text", "bg": "--chart-heat-4", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-cell-text", "bg": "--chart-heat-5", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-cell-text", "bg": "--chart-heat-6", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-cell-text", "bg": "--chart-heat-7", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-cell-text", "bg": "--chart-heat-8", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-cell-text", "bg": "--chart-heat-9", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-cell-text", "bg": "--chart-heat-10", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-legend-text", "bg": "--chart-heat-1", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-legend-text", "bg": "--chart-heat-2", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-legend-text", "bg": "--chart-heat-3", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-legend-text", "bg": "--chart-heat-4", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-legend-text", "bg": "--chart-heat-5", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-legend-text", "bg": "--chart-heat-6", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-legend-text", "bg": "--chart-heat-7", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-legend-text", "bg": "--chart-heat-8", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-legend-text", "bg": "--chart-heat-9", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--retention-legend-text", "bg": "--chart-heat-10", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--contribute-text", "bg": "--contribute-tile-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--contribute-text", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--contribute-text", "bg": "--color-shade-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--contribute-accent-text", "bg": "--contribute-accent", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--contribute-accent", "bg": "--contribute-tile-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--contribute-accent", "bg": "--contribute-fact-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--contribute-fact-text", "bg": "--contribute-fact-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--wizard-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--wizard-text", "bg": "--color-graphite-06", "min": 4.5, "themes": ["dark"] },
+        { "fg": "--wizard-text", "bg": "--wizard-step-active-bg", "backdrop": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--wizard-text", "bg": "--wizard-warning-bg", "backdrop": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-link", "bg": "--wizard-warning-bg", "backdrop": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--wizard-text", "bg": "--wizard-disqualification-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--wizard-error", "bg": "--card-bg", "min": 3, "themes": ["dark"] },
+        { "fg": "--color-accent", "bg": "--wizard-progress-track", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--wizard-error-text", "bg": "--wizard-error", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--wizard-error-border", "bg": "--color-field-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--wizard-field-text", "bg": "--color-field-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--wizard-select-focus-text", "bg": "--color-field-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--wizard-success-button-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--wizard-success-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--wizard-success-text", "bg": "--color-graphite-06", "min": 4.5, "themes": ["dark"] },
+        { "fg": "--color-moz-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-moz-text", "bg": "--color-graphite-06", "min": 4.5, "themes": ["dark"] }
     ],
     "exceptions": [
         {
@@ -456,6 +531,156 @@
             "bg": "--page-bg",
             "theme": "light",
             "reason": "Light design: the legacy cyan KB text color on white is 2.26:1"
+        },
+        {
+            "fg": "--dashboard-muted-text",
+            "bg": "--page-bg",
+            "theme": "light",
+            "reason": "Light design: the #999 dashboard captions and change notes on white are 2.85:1"
+        },
+        {
+            "fg": "--dashboard-muted-text",
+            "bg": "--color-shade-bg",
+            "theme": "light",
+            "reason": "Light design: the #999 dashboard captions on the light-gray-02 table rows are 2.71:1"
+        },
+        {
+            "fg": "--dashboard-percent-fill",
+            "bg": "--dashboard-percent-track",
+            "theme": "light",
+            "reason": "Light design: the #DFDFDF localization progress bar on its #F3F3F3 track is 1.20:1, next to the percentage it shows"
+        },
+        {
+            "fg": "--dashboard-absolute-bar",
+            "bg": "--page-bg",
+            "theme": "light",
+            "reason": "Light design: the green-07 visits bar on white is 2.23:1"
+        },
+        {
+            "fg": "--dashboard-absolute-bar",
+            "bg": "--color-shade-bg",
+            "theme": "light",
+            "reason": "Light design: the green-07 visits bar on the light-gray-02 table rows is 2.12:1"
+        },
+        {
+            "fg": "--dashboard-status-update",
+            "bg": "--page-bg",
+            "theme": "light",
+            "reason": "Light design: the pale yellow update glyph on white is 1.26:1, next to its status text"
+        },
+        {
+            "fg": "--dashboard-status-update",
+            "bg": "--color-shade-bg",
+            "theme": "light",
+            "reason": "Light design: the pale yellow update glyph on the light-gray-02 rows is 1.20:1, next to its status text"
+        },
+        {
+            "fg": "--dashboard-status-ok",
+            "bg": "--page-bg",
+            "theme": "light",
+            "reason": "Light design: the light green up-to-date glyph on white is 1.67:1, next to its status text"
+        },
+        {
+            "fg": "--dashboard-status-ok",
+            "bg": "--color-shade-bg",
+            "theme": "light",
+            "reason": "Light design: the light green up-to-date glyph on the light-gray-02 rows is 1.59:1, next to its status text"
+        },
+        {
+            "fg": "--dashboard-status-out-of-date",
+            "bg": "--color-warning",
+            "theme": "light",
+            "reason": "Light design: the orange out-of-date glyph on the yellow-03 status cell is 1.63:1, next to its status text"
+        },
+        {
+            "fg": "--color-text-on-accent",
+            "bg": "--readout-mode-active-hover-bg",
+            "theme": "light",
+            "reason": "Light design: white text on the #4978BC hovered readout mode is 4.47:1"
+        },
+        {
+            "fg": "--chart-3",
+            "bg": "--card-bg",
+            "theme": "light",
+            "reason": "Light design: the #89A54E chart series on white is 2.78:1"
+        },
+        {
+            "fg": "--chart-6",
+            "bg": "--card-bg",
+            "theme": "light",
+            "reason": "Light design: the #DB843D chart series on white is 2.85:1"
+        },
+        {
+            "fg": "--chart-7",
+            "bg": "--card-bg",
+            "theme": "light",
+            "reason": "Light design: the #92A8CD chart series on white is 2.41:1"
+        },
+        {
+            "fg": "--chart-9",
+            "bg": "--card-bg",
+            "theme": "light",
+            "reason": "Light design: the #B5CA92 chart series on white is 1.78:1"
+        },
+        {
+            "fg": "--chart-11",
+            "bg": "--card-bg",
+            "theme": "light",
+            "reason": "Light design: the #DB75C2 chart series on white is 2.86:1"
+        },
+        {
+            "fg": "--chart-votes-yes",
+            "bg": "--card-bg",
+            "theme": "light",
+            "reason": "Light design: the #21DE2B helpful-votes series on white is 1.82:1"
+        },
+        {
+            "fg": "--retention-cell-text",
+            "bg": "--chart-heat-1",
+            "theme": "light",
+            "reason": "Light design: #222 retention counts on the #EE2820 heat cell are 3.76:1"
+        },
+        {
+            "fg": "--retention-cell-text",
+            "bg": "--chart-heat-10",
+            "theme": "light",
+            "reason": "Light design: #222 retention counts on the #00975C heat cell are 4.23:1"
+        },
+        {
+            "fg": "--retention-legend-text",
+            "bg": "--chart-heat-1",
+            "theme": "light",
+            "reason": "Light design: the #333 retention legend label on #EE2820 is 2.98:1"
+        },
+        {
+            "fg": "--retention-legend-text",
+            "bg": "--chart-heat-2",
+            "theme": "light",
+            "reason": "Light design: the #333 retention legend label on #F25743 is 3.74:1"
+        },
+        {
+            "fg": "--retention-legend-text",
+            "bg": "--chart-heat-9",
+            "theme": "light",
+            "reason": "Light design: the #333 retention legend label on #39AD72 is 4.45:1"
+        },
+        {
+            "fg": "--retention-legend-text",
+            "bg": "--chart-heat-10",
+            "theme": "light",
+            "reason": "Light design: the #333 retention legend label on #00975C is 3.36:1"
+        },
+        {
+            "fg": "--color-text-on-accent",
+            "bg": "--wizard-success-button-bg",
+            "theme": "light",
+            "reason": "Light design: the wizard's white Sent label on the #2AC3A2 button is 2.23:1"
+        },
+        {
+            "fg": "--wizard-success-text",
+            "bg": "--card-bg",
+            "theme": "light",
+            "reason": "Light design: the reminder dialog's #2AC3A2 Copied! message on white is 2.23:1"
         }
     ]
 }
