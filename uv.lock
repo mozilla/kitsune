@@ -2006,7 +2006,7 @@ dev = [
     { name = "pytest-rerunfailures", specifier = "~=16.4" },
     { name = "pytest-xdist", specifier = ">=3.6.1,<4" },
     { name = "q", specifier = "~=2.7" },
-    { name = "rope", specifier = ">=1.11.0,<2" },
+    { name = "rope", specifier = ">=1.15.0,<2" },
     { name = "ruff", specifier = ">=0.4.0,<1" },
     { name = "tabulate", specifier = ">=0.10.0,<0.11" },
     { name = "tblib", specifier = ">=3,<4" },
@@ -3534,14 +3534,14 @@ wheels = [
 
 [[package]]
 name = "rope"
-version = "1.14.0"
+version = "1.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pytoolconfig", extra = ["global"] },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/74/3a/85e60d154f26ecdc1d47a63ac58bd9f32a5a9f3f771f6672197f02a00ade/rope-1.14.0.tar.gz", hash = "sha256:8803e3b667315044f6270b0c69a10c0679f9f322ed8efe6245a93ceb7658da69", size = 296801, upload-time = "2025-07-12T17:46:07.786Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3d/6e/1dcdea174f5e704bd94a2dfba3445d53c8bc416360c9e3d805807584c9a7/rope-1.15.0.tar.gz", hash = "sha256:a9e82c9f5ca5a1054387c22fdf6c9de9e948af556138bda57d4da81d3378793a", size = 303258, upload-time = "2026-09-26T14:29:53.538Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/35/130469d1901da2b3a5a377539b4ffcd8a5c983f1c9e3ba5ffdd8d71ae314/rope-1.14.0-py3-none-any.whl", hash = "sha256:00a7ea8c0c376fc0b053b2f2f8ef3bfb8b50fecf1ebf3eb80e4f8bd7f1941918", size = 207143, upload-time = "2025-07-12T17:46:05.928Z" },
+    { url = "https://files.pythonhosted.org/packages/53/c8/143c8eda4f075a6c3ff343c19c8d3c98d7fc07fc54ec4953ef9c39674fd3/rope-1.15.0-py3-none-any.whl", hash = "sha256:1445f5c6eb3c2c6eda9f9532ed02513a09c1694bfee4a9291f7a86a990ac44a1", size = 209396, upload-time = "2026-09-26T14:29:50.358Z" },
 ]
 
 [[package]]
