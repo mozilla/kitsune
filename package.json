@@ -42,7 +42,7 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "codemirror": "^5.65.21",
     "date-fns": "^4.4.0",
-    "htmx.org": "^1.9.12",
+    "htmx.org": "^2.0.11",
     "nunjucks": "^3.2.4",
     "svelte": "^5.55.7",
     "tom-select": "^2.5.2",
