@@ -70,9 +70,9 @@ from kitsune.users.tasks import (
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.theme import (
     THEME_PREFERENCE_SETTING,
-    get_theme_preference,
     set_theme_preference,
     theme_owner_key,
+    theme_preference_or_default,
 )
 from kitsune.users.utils import (
     deactivate_user,
@@ -400,8 +400,10 @@ def edit_settings(request):
     # Pass the current user's settings as the initial values.
     values = list(request.user.settings.values())
     initial = {}
+    stored_theme_preference = None
     for val in values:
         if val["name"] == THEME_PREFERENCE_SETTING:
+            stored_theme_preference = val["value"]
             continue
         try:
             # Uses ast.literal_eval to convert 'False' => False etc.
@@ -412,7 +414,7 @@ def edit_settings(request):
             # but failed so leave it a string.
             initial[val["name"]] = val["value"]
     if theme_enabled:
-        initial[THEME_PREFERENCE_SETTING] = get_theme_preference(request.user)
+        initial[THEME_PREFERENCE_SETTING] = theme_preference_or_default(stored_theme_preference)
     settings_form = SettingsForm(initial=initial, theme_enabled=theme_enabled)
     return render(request, template, {"settings_form": settings_form})
 

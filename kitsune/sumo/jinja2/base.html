@@ -88,7 +88,7 @@
   {% endif %}
 </head>
 
-<body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }}{% if product_theme %} product-theme--{{ product_theme }}{% endif %} {{ request.LANGUAGE_CODE }}"
+<body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }}{% if product_theme == 'firefox-enterprise' %} product-theme--enterprise{% endif %} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-messages-api="{{ url('messages.api.get_autocomplete_suggestions') }}"

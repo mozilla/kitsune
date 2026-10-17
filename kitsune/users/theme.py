@@ -9,6 +9,10 @@ THEME_PREFERENCE_SETTING = "theme_preference"
 THEME_OWNER_SALT = "kitsune.users.theme.owner"
 
 
+def theme_preference_or_default(value) -> str:
+    return value if value in THEME_PREFERENCES else DEFAULT_THEME_PREFERENCE
+
+
 def get_theme_preference(user) -> str:
     """Unlike Setting.get_for_user, never creates a row."""
     if user.pk is None:
@@ -19,7 +23,7 @@ def get_theme_preference(user) -> str:
         .values_list("value", flat=True)
         .first()
     )
-    return value if value in THEME_PREFERENCES else DEFAULT_THEME_PREFERENCE
+    return theme_preference_or_default(value)
 
 
 def set_theme_preference(user, preference) -> None:

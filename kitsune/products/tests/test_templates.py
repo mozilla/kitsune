@@ -223,57 +223,55 @@ class MatomoMzlaProductLandingTests(TestCase):
         self.assertNotContains(r, _MATOMO_MARKER)
 
 
-_THEMED_SLUG = "themed-product"
-_THEMED_BODY = f"body.product-theme--{_THEMED_SLUG}"
+_ENTERPRISE_SLUG = "firefox-enterprise"
+_ENTERPRISE_BODY = "body.product-theme--enterprise"
+_ENTERPRISE_BANNER = ".enterprise-banner.product-theme--enterprise"
 
 
 class ProductThemeClassTests(TestCase):
-    """Pages with a product context carry its theme class; the Enterprise banner carries its own."""
+    """Enterprise pages carry the Enterprise theme class; the Enterprise banner carries its own."""
 
     def setUp(self):
         super().setUp()
-        product = ProductFactory(slug=_THEMED_SLUG)
-        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
+        # Ordered first, so an article without a product falls back to Enterprise.
+        enterprise = ProductFactory(slug=_ENTERPRISE_SLUG, display_order=-1)
         ProductSupportConfigFactory(
-            product=product,
-            is_active=True,
-            forum_config=AAQConfigFactory(enabled_locales=[locale]),
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
-        )
-        self.topic = TopicFactory(products=[product])
-        self.document = ApprovedRevisionFactory(
-            document__products=[product], document__topics=[self.topic]
-        ).document
-        self.question = QuestionFactory(product=product, topic=self.topic)
-        self.unthemed_document = ApprovedRevisionFactory(document__products=[]).document
-
-        # The base TestCase clears the cache, so the banner check reads this setup.
-        enterprise = GroupProfileFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
-        ProductSupportConfigFactory(
-            product=ProductFactory(slug="firefox-enterprise"),
+            product=enterprise,
             is_active=True,
             default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
             zendesk_config=ZendeskConfigFactory(),
         )
-        user = UserFactory(groups=[enterprise.group])
+        self.topic = TopicFactory(products=[enterprise])
+        self.document = ApprovedRevisionFactory(
+            document__products=[enterprise], document__topics=[self.topic]
+        ).document
+        self.question = QuestionFactory(product=enterprise, topic=self.topic)
+        self.unthemed_document = ApprovedRevisionFactory(document__products=[]).document
+        self.other_product = ProductFactory()
+
+        # The base TestCase clears the cache, so the banner check reads this setup.
+        group = GroupProfileFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
+        user = UserFactory(groups=[group.group])
         self.client.login(username=user.username, password="testpass")
 
     @parameterized.expand(
         [
             (
                 "product_landing",
-                lambda test: reverse("products.product", args=[_THEMED_SLUG]),
-                _THEMED_BODY,
+                lambda test: reverse("products.product", args=[_ENTERPRISE_SLUG]),
+                _ENTERPRISE_BODY,
             ),
             (
                 "topic_of_product",
-                lambda test: reverse("products.documents", args=[_THEMED_SLUG, test.topic.slug]),
-                _THEMED_BODY,
+                lambda test: reverse(
+                    "products.documents", args=[_ENTERPRISE_SLUG, test.topic.slug]
+                ),
+                _ENTERPRISE_BODY,
             ),
             (
                 "kb_article",
                 lambda test: test.document.get_absolute_url(),
-                _THEMED_BODY,
+                _ENTERPRISE_BODY,
             ),
             (
                 "kb_article_without_product",
@@ -282,13 +280,13 @@ class ProductThemeClassTests(TestCase):
             ),
             (
                 "aaq_step",
-                lambda test: reverse("questions.aaq_step2", args=[_THEMED_SLUG]),
-                _THEMED_BODY,
+                lambda test: reverse("questions.aaq_step2", args=[_ENTERPRISE_SLUG]),
+                _ENTERPRISE_BODY,
             ),
             (
                 "question_details",
                 lambda test: reverse("questions.details", args=[test.question.id]),
-                _THEMED_BODY,
+                _ENTERPRISE_BODY,
             ),
             (
                 "topic_without_product",
@@ -296,14 +294,19 @@ class ProductThemeClassTests(TestCase):
                 None,
             ),
             (
+                "other_product_landing",
+                lambda test: reverse("products.product", args=[test.other_product.slug]),
+                None,
+            ),
+            (
                 "home_banner",
                 lambda test: reverse("home"),
-                ".enterprise-banner.product-theme--firefox-enterprise",
+                _ENTERPRISE_BANNER,
             ),
             (
                 "products_banner",
                 lambda test: reverse("products"),
-                ".enterprise-banner.product-theme--firefox-enterprise",
+                _ENTERPRISE_BANNER,
             ),
         ]
     )

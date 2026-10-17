@@ -313,7 +313,7 @@ When upgrading tom-select, compare the vendor stylesheet against it for new or c
 
 `sumo/js/charts/theme.js` themes the Chart.js charts from `--chart-*` tokens.
 `renderLineChart` sets the text, grid, and tooltip colors on `Chart.defaults` and resolves the dataset colors before it creates a chart.
-Charts redraw on `sumo:themechange` and when printing, without fetching their data again.
+Charts redraw when `sumo:themechange` changes the theme and when printing, without fetching their data again.
 Under forced colors, text, grid, and tooltips take the system colors,
 and the series come from whichever theme suits the system background,
 so charts also redraw when forced colors or the OS color scheme change.
@@ -413,30 +413,20 @@ light keeps it and dark paints the elevated surface; without `$bg` the component
 
 #### Product themes
 
-`config/_product-themes.scss` is one Sass map keyed by product slug,
-and `_theme.scss` emits each entry as a `.product-theme--<slug>` class that sets custom properties.
-Templates with a product context set `product_theme` to the product's slug,
-and `base.html` adds `product-theme--<slug>` to `<body>`.
-Only slugs in the map match any CSS,
-so other products keep the default look.
-A component shown outside a product's pages can carry the class itself,
-as the Enterprise banner does.
+`config/_enterprise-theme.scss` holds one class, `.product-theme--enterprise`, which `_theme.scss` emits.
+A page opts in on `<body>`:
+templates with a product context set `product_theme` to the product's slug,
+and `base.html` adds the class when it is `firefox-enterprise`.
+A component opts in by carrying the class itself, as the Enterprise banner does on the home and products pages.
 
-To theme a product, add one entry. Every key is optional,
-and the values apply in both themes; for a per-theme value, point a key at a theme token, as Enterprise's `callout-base` does:
+The class sets:
 
-* `callout-ring`, `callout-base`, and `callout-glows` set the hooks the `brand-callout` mixin reads:
-`--product-callout-ring` (a 1px gradient border just outside the callout),
-`--product-callout-base`, and `--product-callout-glows` (any number of comma-separated layers).
-Forced colors ignore them.
-* `hero-text` sets `--product-hero-text`, the text color over the product's hero artwork.
-* `has-art: true` marks a hero with its own artwork and turns the aurora off.
-
-The artwork itself, and the rules that read `--product-hero-text`, live in `layout/_products.scss` under the product's hero class,
-so a product with artwork needs those rules as well as its registry entry.
-
-Values may be raw colors, because the file is in `config/`.
-An unknown key, a non-boolean `has-art`, or an empty value fails the build.
+* `--product-callout-ring`, `--product-callout-base`, and `--product-callout-glows`, the hooks the `brand-callout` mixin reads:
+a 1px gradient border just outside the callout, its surface, and its glow layers.
+The base and the first glow are the per-theme `--enterprise-callout-base` and `--enterprise-callout-glow` tokens.
+Forced colors ignore the hooks.
+* `--product-hero-text`, the text color over the Enterprise hero artwork, which `layout/_products.scss` draws.
+* `--hero-aurora: none`, which turns the hero's aurora off behind that artwork.
 
 #### Runtime and the flag
 

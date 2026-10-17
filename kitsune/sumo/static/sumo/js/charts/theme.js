@@ -8,6 +8,7 @@ const resolved = new Map();
 const datasetTokens = new WeakMap();
 let chartJsDefaults = null;
 let paletteProbe = null;
+let currentTheme = document.documentElement.getAttribute("data-theme");
 
 function readColor(name) {
   const source = paletteProbe ?? document.documentElement;
@@ -131,7 +132,13 @@ function redrawCharts() {
   });
 }
 
-document.addEventListener("sumo:themechange", redrawCharts);
+// The event also fires when only the preference changes, which leaves the charts as they are.
+document.addEventListener("sumo:themechange", ({ detail }) => {
+  if (detail?.theme !== currentTheme) {
+    currentTheme = detail?.theme;
+    redrawCharts();
+  }
+});
 // Print uses the light theme, and a canvas only shows it once it is drawn again.
 window.matchMedia?.("print")?.addEventListener?.("change", redrawCharts);
 const forcedColors = window.matchMedia?.(FORCED_COLORS);

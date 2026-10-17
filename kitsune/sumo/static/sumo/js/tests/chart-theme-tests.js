@@ -46,10 +46,10 @@ describe("chart theme", () => {
     Object.assign(tooltip, saved.tooltip);
   });
 
-  it("reads the tokens, or the system colors under forced colors, and re-applies them on sumo:themechange", () => {
-    const redraw = () =>
+  it("reads the tokens, or the system colors under forced colors, and re-applies them when sumo:themechange changes the theme", () => {
+    const darkThemeChange = (preference) =>
       document.dispatchEvent(
-        new CustomEvent("sumo:themechange", { detail: { theme: "dark", preference: "dark" } })
+        new CustomEvent("sumo:themechange", { detail: { theme: "dark", preference } })
       );
     const dataset = { borderColor: seriesColor(0), backgroundColor: seriesColor(11, 0.15) };
     // Chart.js copies the default scale colors into each scale config when a chart is built.
@@ -77,7 +77,7 @@ describe("chart theme", () => {
     expect(dataset.backgroundColor).to.equal("rgba(170, 0, 0, 0.15)");
 
     root.setAttribute("data-theme", "dark");
-    redraw();
+    darkThemeChange("dark");
 
     expect(Chart.defaults.color).to.equal("#eeeeee");
     expect(Chart.defaults.borderColor).to.equal("#444444");
@@ -88,9 +88,14 @@ describe("chart theme", () => {
     expect(chart.update.calledOnceWithExactly("none")).to.equal(true);
     expect(atUpdate).to.deep.equal({ line: "#00aa00", staleScaleColors: [] });
 
+    // Dark to System on a dark OS keeps the theme.
+    darkThemeChange("system");
+    expect(chart.update.calledOnce).to.equal(true);
+
     // jsdom's system colors are light, so forced colors pick the light series under the dark theme.
     window.matchMedia = (query) => ({ matches: query === "(forced-colors: active)" });
-    redraw();
+    applyChartTheme();
+    resolveChartColors([dataset]);
     expect(Chart.defaults.color).to.equal("rgb(0, 0, 0)");
     expect(Chart.defaults.borderColor).to.equal("rgb(102, 102, 102)");
     expect(tooltip.backgroundColor).to.equal("rgb(255, 255, 255)");
@@ -99,7 +104,8 @@ describe("chart theme", () => {
     expect(dataset.backgroundColor).to.equal("rgba(170, 0, 0, 0.15)");
 
     delete window.matchMedia;
-    redraw();
+    applyChartTheme();
+    resolveChartColors([dataset]);
     expect(Chart.defaults.color).to.equal("#eeeeee");
     expect(dataset.borderColor).to.equal("#00aa00");
   });
