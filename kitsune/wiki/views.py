@@ -89,6 +89,8 @@ from kitsune.wiki.utils import (
     update_kb_visited,
 )
 
+DRAFT_DOES_NOT_EXIST = _lazy("The draft you are trying to restore no longer exists.")
+
 log = logging.getLogger("k.wiki")
 l10n_factory = TranslationStrategyFactory()
 
@@ -584,26 +586,34 @@ def edit_document(request, document_slug, revision_id=None):
     # POST
     if request.method == "POST":
         # Use POST for restoring and deleting drafts to avoid CSRF
-        restore_draft = "restore" in request.POST and bool(draft)
-        discard_draft = "discard" in request.POST and bool(draft)
+        restore_draft = "restore" in request.POST
+        discard_draft = "discard" in request.POST
         # Make sure that one of the two is True but not both
         if discard_draft ^ restore_draft:
-            if discard_draft and content_manager.discard_draft(draft.id, user):
-                return HttpResponseRedirect(
-                    urlparams(reverse("wiki.edit_document", args=[document_slug]))
-                )
-            elif restore_draft:
-                draft_data = content_manager.restore_draft(draft.id, user)
+            edit_url = urlparams(reverse("wiki.edit_document", args=[document_slug]))
+            if discard_draft:
+                if draft:
+                    content_manager.discard_draft(draft.id, user)
+                return HttpResponseRedirect(edit_url)
+            # If we haven't returned yet, restore_draft is True
+            try:
+                draft_data = content_manager.restore_draft(draft.id, user) if draft else None
+            except ValueError:
+                draft_data = None
 
-                rev_initial.update(
-                    {
-                        "content": draft_data.get("content", ""),
-                        "summary": draft_data.get("summary", ""),
-                        "keywords": draft_data.get("keywords", ""),
-                        "based_on": draft_data.get("based_on"),
-                    }
-                )
-                rev_form = RevisionForm(instance=rev, initial=rev_initial)
+            if draft_data is None:
+                messages.error(request, DRAFT_DOES_NOT_EXIST)
+                return HttpResponseRedirect(edit_url)
+
+            rev_initial.update(
+                {
+                    "content": draft_data.get("content", ""),
+                    "summary": draft_data.get("summary", ""),
+                    "keywords": draft_data.get("keywords", ""),
+                    "based_on": draft_data.get("based_on"),
+                }
+            )
+            rev_form = RevisionForm(instance=rev, initial=rev_initial)
         else:
             rev_form = RevisionForm(request.POST)
             rev_form.instance.document = doc  # for rev_form.clean()
@@ -1083,33 +1093,41 @@ def translate(request, document_slug, revision_id=None):
 
     if request.method == "POST":
         # Use POST for restoring and deleting drafts to avoid CSRF
-        restore_draft = "restore" in request.POST and bool(draft)
-        discard_draft = "discard" in request.POST and bool(draft)
+        restore_draft = "restore" in request.POST
+        discard_draft = "discard" in request.POST
         # Make sure that one of the two is True but not both
         if discard_draft ^ restore_draft:
-            if discard_draft and content_manager.discard_draft(draft.id, user):
-                return HttpResponseRedirect(
-                    urlparams(reverse("wiki.translate", args=[document_slug]))
-                )
-            elif restore_draft:
-                draft_data = content_manager.restore_draft(draft.id, user)
+            edit_url = urlparams(reverse("wiki.translate", args=[document_slug]))
+            if discard_draft:
+                if draft:
+                    content_manager.discard_draft(draft.id, user)
+                return HttpResponseRedirect(edit_url)
+            # If we haven't returned yet, restore_draft is True
+            try:
+                draft_data = content_manager.restore_draft(draft.id, user) if draft else None
+            except ValueError:
+                draft_data = None
 
-                if user_has_doc_perm:
-                    doc_initial.update(
-                        {"title": draft_data.get("title", ""), "slug": draft_data.get("slug", "")}
-                    )
-                    doc_form = DocumentForm(initial=doc_initial, locale=request.LANGUAGE_CODE)
-                if user_has_rev_perm:
-                    rev_initial.update(
-                        {
-                            "content": draft_data.get("content", ""),
-                            "summary": draft_data.get("summary", ""),
-                            "keywords": draft_data.get("keywords", ""),
-                            "based_on": draft_data.get("based_on"),
-                        }
-                    )
-                    based_on_rev = draft.based_on
-                    rev_form = RevisionForm(instance=instance, initial=rev_initial)
+            if draft_data is None:
+                messages.error(request, DRAFT_DOES_NOT_EXIST)
+                return HttpResponseRedirect(edit_url)
+
+            if user_has_doc_perm:
+                doc_initial.update(
+                    {"title": draft_data.get("title", ""), "slug": draft_data.get("slug", "")}
+                )
+                doc_form = DocumentForm(initial=doc_initial, locale=request.LANGUAGE_CODE)
+            if user_has_rev_perm:
+                rev_initial.update(
+                    {
+                        "content": draft_data.get("content", ""),
+                        "summary": draft_data.get("summary", ""),
+                        "keywords": draft_data.get("keywords", ""),
+                        "based_on": draft_data.get("based_on"),
+                    }
+                )
+                based_on_rev = draft.based_on
+                rev_form = RevisionForm(instance=instance, initial=rev_initial)
         else:
             which_form = request.POST.get("form", "both")
             doc_form_invalid = False
