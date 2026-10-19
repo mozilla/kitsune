@@ -1,8 +1,11 @@
+import re
 from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta
 from queue import Queue
 from threading import Barrier, Event
 from time import monotonic
 from unittest.mock import patch
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 import psycopg
@@ -12,20 +15,30 @@ from django.core import mail
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import connections, transaction
 from django.http import Http404
-from django.test import TransactionTestCase, override_settings
+from django.test import Client, TransactionTestCase, override_settings
 from django.utils import timezone
-from post_office.models import Email
+from kombu.exceptions import OperationalError
+from post_office.models import STATUS, Email
+from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RatelimitBudgetExceeded
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.customercare.zendesk import ZendeskProvisioningConflict
+from kitsune.groups.invitations import (
+    invitation_landing_path,
+    invitation_token,
+    load_enterprise_invitation,
+)
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.groups.provisioning import provision_enterprise_invitation
 from kitsune.groups.tests import GroupProfileFactory
 from kitsune.groups.tests.test_invitations import InvitationFixtures
+from kitsune.groups.views import INVITATION_FAILURES
 from kitsune.products.models import ProductSupportConfig, SupportOrganization
 from kitsune.products.tests import ProductSupportConfigFactory, SupportOrganizationFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
 from kitsune.users.tests import GroupFactory, UserFactory
 
@@ -57,6 +70,11 @@ class ProvisioningFixtures(InvitationFixtures):
         if code:
             self.assertEqual(raised.exception.code, code)
 
+    def welcome(self, invitation):
+        """Return the queued welcome and the link it asks the invitee to open."""
+        email = Email.objects.get(pk=invitation.welcome_email_id)
+        return email, re.search(r"https://\S+", email.message).group(0)
+
 
 @override_settings(
     TESTING=True,
@@ -66,17 +84,20 @@ class ProvisioningFixtures(InvitationFixtures):
     READ_ONLY=False,
 )
 class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
-    def test_prepared_account_gets_company_membership_without_activation_or_email(self):
+    def test_prepared_account_gets_membership_and_one_secure_welcome_without_activation(self):
         invitation = self.invite()
         before_user = User.all_users.filter(pk=invitation.user_id).values().get()
         before_profile = Profile.all_profiles.filter(user_id=invitation.user_id).values().get()
-        before_mail = (Email.objects.count(), len(mail.outbox))
+        outbox_before = len(mail.outbox)
         mapping = ZendeskOrganization.objects.get(group_profile=self.company)
+        # Publishing fails, yet the welcome stays queued for the scheduled delivery run.
+        self.send_queued_mail.side_effect = OperationalError("broker unavailable")
         with (
             patch("kitsune.customercare.signals.update_zendesk_user.delay") as sync,
             self.captureOnCommitCallbacks(execute=True),
         ):
             result = self.provision(invitation)
+        self.send_queued_mail.assert_called_once_with()
         self.assertEqual(result.status, EnterpriseInvitation.Status.READY)
         self.assertEqual((result.failed_action, result.error_code), ("", ""))
         self.assertEqual(self.client.ensure_user.call_args.kwargs["name"], "Jamie Rivera")
@@ -96,11 +117,18 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
             [self.company.group_id],
         )
         self.assertFalse(GroupProfile.objects.filter(leaders=invitation.user_id).exists())
-        self.assertEqual((Email.objects.count(), len(mail.outbox)), before_mail)
-        self.assertIsNone(result.welcome_email_id)
-        self.assertIsNone(result.email_queued_at)
         self.assertIsNone(result.accepted_at)
         sync.assert_not_called()
+        self.assertEqual(len(mail.outbox), outbox_before)
+        email, link = self.welcome(result)
+        self.assertEqual((email.to, email.status), ([invitation.email], STATUS.queued))
+        self.assertIsNotNone(result.email_queued_at)
+        self.assertGreater(result.expires_at, timezone.now() + timedelta(days=6))
+        self.assertEqual(email.expires_at, result.expires_at)
+        self.assertIn(self.company.group.name, email.message)
+        self.assertIn(link, email.html_message)
+        token = urlsplit(link).path.rsplit("/", 1)[1]
+        self.assertEqual(load_enterprise_invitation(token).pk, invitation.pk)
 
     def test_existing_identity_uses_public_name_and_preserves_account_fields(self):
         user = self.eligible_user(
@@ -126,10 +154,32 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.assertEqual(result.status, EnterpriseInvitation.Status.ACCEPTED)
         self.assertIsNotNone(result.accepted_at)
         self.assertTrue(self.company.group.user_set.filter(pk=user.pk).exists())
+        email, link = self.welcome(result)
+        self.assertEqual(urlsplit(link).path, invitation_landing_path(result))
+        self.assertNotIn("/groups/invitation/", email.message)
+        self.assertIsNone(email.expires_at)
 
         user.groups.remove(self.company.group)
         moved = self.invite(company=self.other_company)
         self.assertEqual(moved.company_id, self.other_company.pk)
+
+    def test_welcome_mentions_chat_only_when_the_company_has_it(self):
+        chat = "Chat live with a support agent"
+        email, _link = self.welcome(self.provision(self.invite(email="no-chat@example.com")))
+        self.assertNotIn(chat, email.message)
+        SupportOrganization.objects.filter(group=self.company.group).update(include_live_chat=True)
+        self.client.ensure_user.return_value = "202"
+        with (
+            override_switch("zendesk-chat", active=True),
+            override_settings(
+                ZENDESK_CHAT_WIDGET_KEY="widget",
+                ZENDESK_CHAT_SIGNING_KEY_ID="key",
+                ZENDESK_CHAT_SIGNING_SECRET="secret",
+            ),
+        ):
+            email, _link = self.welcome(self.provision(self.invite(email="chat@example.com")))
+        self.assertIn(chat, email.message)
+        self.assertIn(chat, email.html_message)
 
     def test_provider_failures_keep_saved_ids_and_full_retry_reuses_them(self):
         operations = (
@@ -172,6 +222,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                 self.assertFalse(
                     User.groups.through.objects.filter(user_id=failed.user_id).exists()
                 )
+                self.assertIsNone(failed.welcome_email_id)
                 self.client.reset_mock(side_effect=True)
                 # Reload persisted state even when the caller still holds a PENDING invitation.
                 ready = self.provision(invitation)
@@ -182,6 +233,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                         user_id=ready.user_id, group_id=self.company.group_id
                     ).exists()
                 )
+                self.assertIsNotNone(ready.welcome_email_id)
                 self.assertEqual(
                     self.client.ensure_organization.call_args.kwargs["zendesk_id"],
                     organization_id,
@@ -256,6 +308,36 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
             user_id="201", organization_id="101"
         )
         self.assertEqual(self.snapshot(), before)
+
+    def test_rerun_welcomes_a_ready_invitation_provisioned_before_welcomes_existed(self):
+        invitation = self.invite()
+        self.provision(invitation)
+        Email.objects.all().delete()
+        EnterpriseInvitation.objects.filter(pk=invitation.pk).update(
+            welcome_email=None, email_queued_at=None, expires_at=None
+        )
+        invitation.user.groups.remove(self.company.group)
+        ready = self.provision(invitation)
+        self.assertEqual(ready.status, EnterpriseInvitation.Status.READY)
+        self.assertTrue(self.company.group.user_set.filter(pk=invitation.user_id).exists())
+        _email, link = self.welcome(ready)
+        token = urlsplit(link).path.rsplit("/", 1)[1]
+        self.assertEqual(load_enterprise_invitation(token).pk, invitation.pk)
+
+    def test_skip_ready_uses_fresh_state_when_the_caller_saw_pending(self):
+        # A double-submitted request read the invitation before the first one finished it.
+        stale = self.invite()
+        self.provision(stale)
+        self.assertEqual(stale.status, EnterpriseInvitation.Status.PENDING)
+        before = self.snapshot()
+        self.client_class.reset_mock()
+        self.client.ensure_user.side_effect = requests.Timeout("Zendesk is down")
+        result = provision_enterprise_invitation(
+            actor=self.actor, invitation=stale, skip_ready=True
+        )
+        self.assertEqual(result.status, EnterpriseInvitation.Status.READY)
+        self.assertEqual(self.snapshot(), before)
+        self.client_class.assert_not_called()
 
     def test_accepted_history_is_immutable_even_after_prepared_resources_disappear(self):
         invitation = self.invite()
@@ -970,3 +1052,154 @@ class EnterpriseProvisioningConcurrencyTests(ProvisioningFixtures, TransactionTe
         self.assertEqual(Profile.all_profiles.get(user_id=invitation.user_id).zendesk_id, "201")
         owner.refresh_from_db()
         self.assertEqual(owner.zendesk_id, "101")
+
+
+@override_settings(
+    TESTING=True,
+    ENTERPRISE_GROUP_SLUG="invitation-view-enterprise-root",
+    ENTERPRISE_ONBOARDING_LANDING_PATH="",
+    ENTERPRISE_INVITATION_MAX_AGE=604800,
+    READ_ONLY=False,
+)
+class EnterpriseInvitationViewTests(ProvisioningFixtures, TestCase):
+    def setUp(self):
+        super().setUp()
+        # ProvisioningFixtures uses self.client for the mocked Zendesk client.
+        self.http = Client()
+        self.http.force_login(self.actor)
+        self.page_url = self.company.get_absolute_url()
+        self.invite_url = reverse("groups.invite_user", args=[self.company.slug])
+        self.person = {"email": "jamie@example.com", "first_name": "Jamie", "last_name": "Rivera"}
+
+    def resend_url(self, invitation, company=None):
+        return reverse(
+            "groups.resend_invitation", args=[(company or self.company).slug, invitation.pk]
+        )
+
+    def rows(self):
+        page = pq(self.http.get(self.page_url).content)
+        return [
+            (cells.eq(1).text(), cells.eq(2).text())
+            for row in page("#enterprise-invitations tbody tr")
+            for cells in [pq(row).find("td")]
+        ]
+
+    def test_adding_a_person_provisions_and_welcomes_them(self):
+        response = self.http.post(self.invite_url, self.person)
+        self.assertRedirects(response, self.page_url, fetch_redirect_response=False)
+        invitation = EnterpriseInvitation.objects.get(email=self.person["email"])
+        self.assertEqual(invitation.company_id, self.company.pk)
+        self.assertEqual(invitation.status, EnterpriseInvitation.Status.READY)
+        self.assertIsNotNone(invitation.welcome_email_id)
+        self.assertEqual(
+            self.rows(), [(self.person["email"], str(EnterpriseInvitation.Status.READY.label))]
+        )
+
+    def test_adding_an_invited_person_again_leaves_their_invitation_alone(self):
+        self.http.post(self.invite_url, self.person)
+        invitation = EnterpriseInvitation.objects.get(email=self.person["email"])
+        before = (list(EnterpriseInvitation.objects.values()), Email.objects.count())
+        self.client_class.reset_mock()
+        # Even with Zendesk down, the link they already have must keep working.
+        self.client.ensure_user.side_effect = requests.Timeout("Zendesk is down")
+        self.http.post(self.invite_url, self.person)
+        self.assertEqual(
+            load_enterprise_invitation(invitation_token(invitation)).pk, invitation.pk
+        )
+        self.assertEqual(
+            (list(EnterpriseInvitation.objects.values()), Email.objects.count()), before
+        )
+        self.client_class.assert_not_called()
+
+    def test_resend_finishes_failed_setup_then_sends_a_fresh_link(self):
+        self.client.ensure_user.side_effect = requests.Timeout("Zendesk is down")
+        self.http.post(self.invite_url, self.person)
+        invitation = EnterpriseInvitation.objects.get(email=self.person["email"])
+        self.assertEqual(invitation.status, EnterpriseInvitation.Status.FAILED)
+        self.assertIsNone(invitation.welcome_email_id)
+        # The reason stays visible after the flash message is gone.
+        self.assertIn(str(INVITATION_FAILURES["zendesk_unavailable"]), self.rows()[0][1])
+
+        self.client.ensure_user.side_effect = None
+        response = self.http.post(self.resend_url(invitation))
+        self.assertRedirects(response, self.page_url, fetch_redirect_response=False)
+        invitation.refresh_from_db()
+        self.assertEqual(invitation.status, EnterpriseInvitation.Status.READY)
+        first_welcome = invitation.welcome_email_id
+        self.assertIsNotNone(first_welcome)
+
+        self.http.post(self.resend_url(invitation))
+        invitation.refresh_from_db()
+        self.assertEqual(invitation.token_version, 2)
+        self.assertNotEqual(invitation.welcome_email_id, first_welcome)
+
+    def test_resend_reports_an_unsendable_welcome_and_changes_nothing(self):
+        self.http.post(self.invite_url, self.person)
+        invitation = EnterpriseInvitation.objects.get(email=self.person["email"])
+        before = (list(EnterpriseInvitation.objects.values()), Email.objects.count())
+        # post-office rejects the sender with a field-error dict that carries no code.
+        with override_settings(DEFAULT_FROM_EMAIL="not-an-address"):
+            response = self.http.post(self.resend_url(invitation))
+        self.assertRedirects(response, self.page_url, fetch_redirect_response=False)
+        self.assertEqual(
+            (list(EnterpriseInvitation.objects.values()), Email.objects.count()), before
+        )
+
+    def test_accepted_people_leave_the_list_and_a_stale_resend_is_harmless(self):
+        self.eligible_user(email="existing@example.com")
+        self.http.post(self.invite_url, {**self.person, "email": "existing@example.com"})
+        invitation = EnterpriseInvitation.objects.get(email="existing@example.com")
+        self.assertEqual(invitation.status, EnterpriseInvitation.Status.ACCEPTED)
+        self.assertEqual(self.rows(), [])
+        before = self.snapshot()
+        self.client_class.reset_mock()
+        self.http.post(self.resend_url(invitation))
+        self.assertEqual(self.snapshot(), before)
+        self.client_class.assert_not_called()
+
+    def test_invalid_input_is_redisplayed_without_creating_anything(self):
+        before = self.snapshot()
+        response = self.http.post(self.invite_url, {**self.person, "last_name": "  "})
+        self.assertEqual(response.status_code, 200)
+        form = pq(response.content)("#enterprise-invite-form")
+        self.assertEqual(form.find("#id_email").val(), self.person["email"])
+        self.assertEqual(len(form.find(".has-error")), 1)
+        self.assertEqual(self.snapshot(), before)
+        self.client_class.assert_not_called()
+
+    def test_only_onboarding_staff_see_or_use_the_controls(self):
+        invitation = self.invite(email=self.person["email"])
+        member = UserFactory()
+        member.groups.add(self.company.group)
+        company_leader = UserFactory(is_staff=True)
+        self.company.leaders.add(company_leader)
+        nonstaff_root_leader = UserFactory()
+        self.root.leaders.add(nonstaff_root_leader)
+        # Signing each user in updates last_login, so compare invitations and mail only.
+        before = (list(EnterpriseInvitation.objects.values()), Email.objects.count())
+        for user in (member, company_leader, nonstaff_root_leader):
+            with self.subTest(user=user.username):
+                self.http.force_login(user)
+                page = pq(self.http.get(self.page_url).content)
+                self.assertFalse(page("#enterprise-invitations, #enterprise-invite-form"))
+                self.assertEqual(self.http.post(self.invite_url, self.person).status_code, 403)
+                self.assertEqual(self.http.post(self.resend_url(invitation)).status_code, 403)
+        self.http.logout()
+        self.assertEqual(self.http.post(self.resend_url(invitation)).status_code, 302)
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.actor)
+        self.assertEqual(csrf_client.post(self.resend_url(invitation)).status_code, 403)
+        self.assertEqual(
+            (list(EnterpriseInvitation.objects.values()), Email.objects.count()), before
+        )
+        self.client_class.assert_not_called()
+
+    def test_other_companies_and_departments_cannot_be_targeted(self):
+        elsewhere = self.invite(email="elsewhere@example.com", company=self.other_company)
+        department = self.child(self.company)
+        before = self.snapshot()
+        self.assertEqual(self.http.post(self.resend_url(elsewhere)).status_code, 404)
+        department_url = reverse("groups.invite_user", args=[department.slug])
+        self.assertEqual(self.http.post(department_url, self.person).status_code, 404)
+        self.assertEqual(self.snapshot(), before)
+        self.client_class.assert_not_called()

@@ -7,6 +7,7 @@ from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.customercare.zendesk import ZendeskClient, ZendeskProvisioningConflict
+from kitsune.groups.invitations import queue_welcome_email
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import EnterpriseInvitation
 from kitsune.groups.onboarding import (
@@ -27,12 +28,21 @@ def get_provisioning_resources(*, actor, invitation, for_update=False):
     return get_prepared_resources(invitation, root=root, for_update=for_update)
 
 
-def provision_enterprise_invitation(*, actor, invitation) -> EnterpriseInvitation:
-    """Provision remotely before locking and revalidating local resources for persistence."""
+def provision_enterprise_invitation(
+    *, actor, invitation, skip_ready=False
+) -> EnterpriseInvitation:
+    """Provision remotely before locking and revalidating local resources for persistence.
+
+    With skip_ready, an invitation that is already ready is returned unchanged.
+    """
     # Lock on the saved email, never on a possibly stale caller object.
     email = EnterpriseInvitation.objects.values_list("email", flat=True).get(pk=invitation.pk)
     with lock_account_email(email):
         invitation = EnterpriseInvitation.objects.get(pk=invitation.pk)
+        # Checked under the email gate: a request that read the invitation before another
+        # run finished it must not redo setup, since a Zendesk failure would mark it failed.
+        if skip_ready and invitation.status == EnterpriseInvitation.Status.READY:
+            return invitation
         resources = get_provisioning_resources(actor=actor, invitation=invitation)
         if resources is None:
             return invitation
@@ -142,6 +152,9 @@ def provision_enterprise_invitation(*, actor, invitation) -> EnterpriseInvitatio
                     # Existing accounts need no link, so the membership grant completes them.
                     invitation.status = EnterpriseInvitation.Status.ACCEPTED
                     invitation.accepted_at = timezone.now()
+                # Reruns never queue a second welcome; resend_enterprise_invitation replaces it.
+                if invitation.email_queued_at is None:
+                    queue_welcome_email(invitation, company=company, user=user)
             invitation.failed_action = failed_action
             invitation.error_code = error_code
             invitation.save(update_fields=["status", "failed_action", "error_code", "accepted_at"])

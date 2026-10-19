@@ -1,3 +1,4 @@
+import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from unittest.mock import patch
@@ -11,7 +12,8 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import connections, transaction
 from django.test import Client, TransactionTestCase, override_settings
 from django.utils import timezone
-from post_office.models import Email
+from post_office.mail import get_queued
+from post_office.models import STATUS, Email
 from pyquery import PyQuery as pq
 
 from kitsune.customercare.models import ZendeskOrganization
@@ -21,8 +23,9 @@ from kitsune.groups.invitations import (
     INVITATION_SALT,
     claim_enterprise_invitation,
     invitation_landing_path,
-    issue_enterprise_invitation,
+    invitation_token,
     load_enterprise_invitation,
+    resend_enterprise_invitation,
 )
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
@@ -50,9 +53,11 @@ class EnterpriseClaimTests(InvitationFixtures, TestCase):
         Profile.all_profiles.filter(user=self.user).update(zendesk_id="123")
         self.user.groups.add(self.company.group)
         self.invitation.status = EnterpriseInvitation.Status.READY
-        self.invitation.save(update_fields=["status"])
-        self.token = issue_enterprise_invitation(actor=self.actor, invitation=self.invitation)
-        self.invitation.refresh_from_db()
+        self.invitation.expires_at = timezone.now() + timedelta(
+            seconds=settings.ENTERPRISE_INVITATION_MAX_AGE
+        )
+        self.invitation.save(update_fields=["status", "expires_at"])
+        self.token = invitation_token(self.invitation)
         self.claims = {"uid": "authenticated-uid", "email": self.invitation.email}
         self.bind = self.enterContext(
             patch("kitsune.groups.invitations.ZendeskClient.bind_user_identity")
@@ -73,30 +78,61 @@ class EnterpriseClaimTests(InvitationFixtures, TestCase):
             code,
         )
 
-    def test_issuance_starts_expiry_once_without_mail(self):
-        EnterpriseInvitation.objects.filter(pk=self.invitation.pk).update(expires_at=None)
-        self.invitation.refresh_from_db()
-        before_mail = Email.objects.count()
-        before = timezone.now()
-        token = issue_enterprise_invitation(actor=self.actor, invitation=self.invitation)
-        self.invitation.refresh_from_db()
-        expiry = self.invitation.expires_at
-        self.assertGreaterEqual(
-            expiry, before + timedelta(seconds=settings.ENTERPRISE_INVITATION_MAX_AGE)
+    def link_token(self, email):
+        return re.search(r"/groups/invitation/(\S+)", email.message).group(1)
+
+    def test_resend_replaces_the_welcome_and_invalidates_earlier_links(self):
+        EnterpriseInvitation.objects.filter(pk=self.invitation.pk).update(
+            expires_at=timezone.now() - timedelta(seconds=1)
         )
-        self.assertEqual(load_enterprise_invitation(token).pk, self.invitation.pk)
-        issue_enterprise_invitation(actor=self.actor, invitation=self.invitation)
-        self.invitation.refresh_from_db()
-        self.assertEqual(self.invitation.expires_at, expiry)
-        self.assertEqual(Email.objects.count(), before_mail)
-        self.assertIsNone(self.invitation.email_queued_at)
+        first = resend_enterprise_invitation(actor=self.actor, invitation=self.invitation)
+        # A failed delivery waiting for its retry must be cancelled too.
+        Email.objects.filter(pk=first.welcome_email_id).update(
+            status=STATUS.requeued, scheduled_time=timezone.now() + timedelta(hours=1)
+        )
+        second = resend_enterprise_invitation(actor=self.actor, invitation=self.invitation)
+        self.assertEqual(second.token_version, 3)
+        self.assertGreater(second.expires_at, timezone.now())
+        first_email = Email.objects.get(pk=first.welcome_email_id)
+        second_email = Email.objects.get(pk=second.welcome_email_id)
+        # Only the replacement can still be delivered, and the cancelled one stays valid.
+        self.assertEqual(list(get_queued()), [second_email])
+        first_email.full_clean()
+        for token in (self.token, self.link_token(first_email)):
+            with self.subTest(token=token), self.assertRaises(ValidationError):
+                load_enterprise_invitation(token)
+        self.assertEqual(
+            load_enterprise_invitation(self.link_token(second_email)).pk, self.invitation.pk
+        )
         self.bind.assert_not_called()
 
-    def test_issuance_reauthorizes_actor(self):
+    def test_resend_requires_authorized_staff_and_an_unaccepted_ready_invitation(self):
         outsider = UserFactory(is_staff=True)
+        before = self.snapshot()
         for actor in (outsider, self.user):
             with self.subTest(actor=actor.pk), self.assertRaises(PermissionDenied):
-                issue_enterprise_invitation(actor=actor, invitation=self.invitation)
+                resend_enterprise_invitation(actor=actor, invitation=self.invitation)
+        self.assertEqual(self.snapshot(), before)
+        for fields in (
+            {"status": EnterpriseInvitation.Status.PENDING},
+            {"status": EnterpriseInvitation.Status.FAILED},
+            {"status": EnterpriseInvitation.Status.ACCEPTED, "accepted_at": timezone.now()},
+            {"created_user": False},
+        ):
+            with self.subTest(fields=fields), transaction.atomic():
+                EnterpriseInvitation.objects.filter(pk=self.invitation.pk).update(**fields)
+                self.assert_rejected_without_changes(
+                    lambda: resend_enterprise_invitation(
+                        actor=self.actor, invitation=self.invitation
+                    ),
+                    "invalid_invitation",
+                )
+                transaction.set_rollback(True)
+        self.user.groups.remove(self.company.group)
+        self.assert_rejected_without_changes(
+            lambda: resend_enterprise_invitation(actor=self.actor, invitation=self.invitation),
+            "company_conflict",
+        )
 
     def test_only_open_invitations_for_prepared_accounts_are_usable(self):
         for fields, code in (
@@ -108,9 +144,6 @@ class EnterpriseClaimTests(InvitationFixtures, TestCase):
             with self.subTest(fields=fields), transaction.atomic():
                 EnterpriseInvitation.objects.filter(pk=self.invitation.pk).update(**fields)
                 for operation in (
-                    lambda: issue_enterprise_invitation(
-                        actor=self.actor, invitation=self.invitation
-                    ),
                     lambda: load_enterprise_invitation(self.token),
                     lambda: claim_enterprise_invitation(self.token, self.claims),
                 ):
@@ -344,8 +377,9 @@ class EnterpriseClaimLockTests(InvitationFixtures, TransactionTestCase):
         Profile.all_profiles.filter(user_id=invitation.user_id).update(zendesk_id="123")
         invitation.user.groups.add(self.company.group)
         invitation.status = EnterpriseInvitation.Status.READY
-        invitation.save(update_fields=["status"])
-        token = issue_enterprise_invitation(actor=self.actor, invitation=invitation)
+        invitation.expires_at = timezone.now() + timedelta(days=1)
+        invitation.save(update_fields=["status", "expires_at"])
+        token = invitation_token(invitation)
 
         def lock_resources():
             try:

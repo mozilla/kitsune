@@ -1,6 +1,6 @@
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
@@ -106,3 +106,13 @@ class EnterpriseCompanyForm(forms.Form):
         if value and int(value) <= 0:
             raise forms.ValidationError(_("Enter a positive numeric organization ID."))
         return value or None
+
+
+class EnterpriseInvitationForm(forms.Form):
+    email = forms.EmailField(label=_lazy("Email"), max_length=254)
+    first_name = forms.CharField(
+        label=_lazy("First name"), max_length=User._meta.get_field("first_name").max_length
+    )
+    last_name = forms.CharField(
+        label=_lazy("Last name"), max_length=User._meta.get_field("last_name").max_length
+    )
