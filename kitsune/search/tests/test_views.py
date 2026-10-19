@@ -237,7 +237,7 @@ class TestHybridSearchSwitch(TestCase):
 
         doc = pq(response.content)
         self.assertIn(
-            "Showing the most relevant results for firefox in All Products "
+            "Showing the most relevant results for ‘firefox’ "
             "from about 23 potential matches",
             doc(".sumo-page-intro").text(),
         )
