@@ -28,12 +28,21 @@ def get_provisioning_resources(*, actor, invitation, for_update=False):
     return get_prepared_resources(invitation, root=root, for_update=for_update)
 
 
-def provision_enterprise_invitation(*, actor, invitation) -> EnterpriseInvitation:
-    """Provision remotely before locking and revalidating local resources for persistence."""
+def provision_enterprise_invitation(
+    *, actor, invitation, skip_ready=False
+) -> EnterpriseInvitation:
+    """Provision remotely before locking and revalidating local resources for persistence.
+
+    With skip_ready, an invitation that is already ready is returned unchanged.
+    """
     # Lock on the saved email, never on a possibly stale caller object.
     email = EnterpriseInvitation.objects.values_list("email", flat=True).get(pk=invitation.pk)
     with lock_account_email(email):
         invitation = EnterpriseInvitation.objects.get(pk=invitation.pk)
+        # Checked under the email gate: a request that read the invitation before another
+        # run finished it must not redo setup, since a Zendesk failure would mark it failed.
+        if skip_ready and invitation.status == EnterpriseInvitation.Status.READY:
+            return invitation
         resources = get_provisioning_resources(actor=actor, invitation=invitation)
         if resources is None:
             return invitation

@@ -25,7 +25,11 @@ from zenpy.lib.exception import APIException, RatelimitBudgetExceeded
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.customercare.zendesk import ZendeskProvisioningConflict
-from kitsune.groups.invitations import invitation_landing_path, load_enterprise_invitation
+from kitsune.groups.invitations import (
+    invitation_landing_path,
+    invitation_token,
+    load_enterprise_invitation,
+)
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.groups.provisioning import provision_enterprise_invitation
 from kitsune.groups.tests import GroupProfileFactory
@@ -319,6 +323,21 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         _email, link = self.welcome(ready)
         token = urlsplit(link).path.rsplit("/", 1)[1]
         self.assertEqual(load_enterprise_invitation(token).pk, invitation.pk)
+
+    def test_skip_ready_uses_fresh_state_when_the_caller_saw_pending(self):
+        # A double-submitted request read the invitation before the first one finished it.
+        stale = self.invite()
+        self.provision(stale)
+        self.assertEqual(stale.status, EnterpriseInvitation.Status.PENDING)
+        before = self.snapshot()
+        self.client_class.reset_mock()
+        self.client.ensure_user.side_effect = requests.Timeout("Zendesk is down")
+        result = provision_enterprise_invitation(
+            actor=self.actor, invitation=stale, skip_ready=True
+        )
+        self.assertEqual(result.status, EnterpriseInvitation.Status.READY)
+        self.assertEqual(self.snapshot(), before)
+        self.client_class.assert_not_called()
 
     def test_accepted_history_is_immutable_even_after_prepared_resources_disappear(self):
         invitation = self.invite()
@@ -1075,6 +1094,22 @@ class EnterpriseInvitationViewTests(ProvisioningFixtures, TestCase):
         self.assertEqual(
             self.rows(), [(self.person["email"], str(EnterpriseInvitation.Status.READY.label))]
         )
+
+    def test_adding_an_invited_person_again_leaves_their_invitation_alone(self):
+        self.http.post(self.invite_url, self.person)
+        invitation = EnterpriseInvitation.objects.get(email=self.person["email"])
+        before = (list(EnterpriseInvitation.objects.values()), Email.objects.count())
+        self.client_class.reset_mock()
+        # Even with Zendesk down, the link they already have must keep working.
+        self.client.ensure_user.side_effect = requests.Timeout("Zendesk is down")
+        self.http.post(self.invite_url, self.person)
+        self.assertEqual(
+            load_enterprise_invitation(invitation_token(invitation)).pk, invitation.pk
+        )
+        self.assertEqual(
+            (list(EnterpriseInvitation.objects.values()), Email.objects.count()), before
+        )
+        self.client_class.assert_not_called()
 
     def test_resend_finishes_failed_setup_then_sends_a_fresh_link(self):
         self.client.ensure_user.side_effect = requests.Timeout("Zendesk is down")

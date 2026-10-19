@@ -291,7 +291,9 @@ def manage_company(request, group_slug):
 
 def _provision_and_report(request, invitation):
     queued_before = invitation.email_queued_at
-    invitation = provision_enterprise_invitation(actor=request.user, invitation=invitation)
+    invitation = provision_enterprise_invitation(
+        actor=request.user, invitation=invitation, skip_ready=True
+    )
     if invitation.status == EnterpriseInvitation.Status.FAILED:
         messages.error(
             request,
@@ -304,6 +306,13 @@ def _provision_and_report(request, invitation):
         messages.success(
             request,
             _("{email} is set up and the welcome email was sent.").format(email=invitation.email),
+        )
+    elif invitation.status == EnterpriseInvitation.Status.READY:
+        messages.info(
+            request,
+            _("{email} was already invited. Use Resend to send a new link.").format(
+                email=invitation.email
+            ),
         )
     else:
         messages.info(request, _("{email} is already set up.").format(email=invitation.email))

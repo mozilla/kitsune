@@ -247,6 +247,12 @@ invitation's user still belongs to that company, the accepted record is reused.
 An eligible former member can receive a new invitation record without deleting
 accepted history.
 
+Adding a person who is already invited and `ready` leaves their invitation and
+link unchanged and points staff to **Resend**; pending or failed invitations are
+provisioned again. Provisioning checks this against the invitation's current state
+under the account-email lock, so a double-submitted Add person or Resend does not
+redo setup.
+
 Repeated intake refuses an unlinked, invitation-created account if it has been
 activated, given a usable password, migrated to Mozilla accounts, or used to sign
 in.
