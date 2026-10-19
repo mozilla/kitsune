@@ -51,7 +51,7 @@
               <option value="2">{{ _('Content is appropriately categorized.') }}</option>
             </select>
             <input id="update-status-button-{{ object.content_object.id }}" type="submit"
-                   class="sumo-button primary-button button-lg btn" value={{ _('Update') }} />
+                   class="sumo-button primary-button button-lg btn" value="{{ _('Update') }}" />
             <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
           </form>
         </div>
