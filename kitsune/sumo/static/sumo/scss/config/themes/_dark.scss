@@ -83,6 +83,14 @@ $dark: (
   'landing-card-desc-text': var(--color-graphite-11),
   'landing-card-divider': var(--color-graphite-08),
 
+  // Card (topic)
+  'topic-card-title': var(--color-light-gray-02),
+  'topic-card-link': var(--color-graphite-12),
+  'topic-card-border': var(--color-graphite-08),
+  'topic-card-divider': var(--color-border),
+  'topic-card-plate-bg': rgba(255, 255, 255, 0.07),
+  'topic-card-shadow': var(--elevation-1),
+
   'elevation-rim': (
     inset 0 1px 0 rgba(255, 255, 255, 0.07),
     inset 0 0 0 1px rgba(255, 255, 255, 0.035)

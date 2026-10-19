@@ -156,6 +156,23 @@
 //
 // Style guide: colors.card-landing
 
+// Topic card
+//
+// The topic cards on product pages and in the AAQ topic step. The title, article link, and
+// divider colors, the card border, and the icon plate can be shown as swatches; the shadow
+// appears in the theme maps only.
+//
+// Colors:
+// --topic-card-title: #20133A - Dark: #F9F9FB (light-gray-02)
+// --topic-card-link: #42435A - Dark: #C9CCD2 (graphite-12)
+// --topic-card-border: #DDDDDD - Dark: #3A3D43 (graphite-08)
+// --topic-card-divider: #EDEDF0 - Dark: #3A3D43 (graphite-08)
+// --topic-card-plate-bg: #F3F3F7 - Dark: rgba(255, 255, 255, 0.07)
+//
+// Weight: 19
+//
+// Style guide: colors.topic-card
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -240,6 +257,14 @@ $light: (
   'landing-card-hover-shadow': var(--elevation-2),
   'landing-card-desc-text': var(--color-marketing-gray-07),
   'landing-card-divider': var(--color-light-gray-04),
+
+  // Card (topic)
+  'topic-card-title': var(--color-ink-09),
+  'topic-card-link': var(--color-marketing-gray-08),
+  'topic-card-border': #DDDDDD,
+  'topic-card-divider': var(--color-border),
+  'topic-card-plate-bg': #F3F3F7,
+  'topic-card-shadow': p.$box-shadow-sm,
 
   'elevation-rim': 0 0 #0000,
   'elevation-1': (

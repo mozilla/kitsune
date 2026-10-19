@@ -147,7 +147,6 @@
         "kitsune/sumo/static/sumo/scss/base/forms/_range.scss",
         "kitsune/sumo/static/sumo/scss/base/forms/_toggles.scss",
         "kitsune/sumo/static/sumo/scss/components/_breadcrumbs.scss",
-        "kitsune/sumo/static/sumo/scss/components/_card-topic.scss",
         "kitsune/sumo/static/sumo/scss/components/_dashboards.scss",
         "kitsune/sumo/static/sumo/scss/components/_editor-tools.scss",
         "kitsune/sumo/static/sumo/scss/components/_flaggit.scss",

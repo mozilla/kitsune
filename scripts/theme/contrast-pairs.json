@@ -47,7 +47,9 @@
         { "fg": "--callout-warning-action-text", "bg": "--callout-warning-bg-end", "min": 4.5, "themes": ["dark"] },
         { "fg": "--callout-warning-action-text", "bg": "--callout-warning-action-hover-bg", "backdrop": "--callout-warning-bg-start", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--callout-warning-action-border", "bg": "--callout-warning-bg-start", "min": 3, "themes": ["light"] },
-        { "fg": "--landing-card-desc-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] }
+        { "fg": "--landing-card-desc-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--topic-card-title", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--topic-card-link", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] }
     ],
     "exceptions": [
         {
