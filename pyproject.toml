@@ -72,7 +72,7 @@ dependencies = [
     "dockerflow>=2022.8.0,<2023",
     "google-analytics-data>=0.23.0,<1",
     "pyparsing==3.3.2",
-    "django-silk>=5.1.0,<6",
+    "django-silk>=5.6.0,<6",
     "requests>=2.34.2,<3",
     "httpx>=0.28.1,<1",
     "fuzzywuzzy>=0.18.0,<0.19",
