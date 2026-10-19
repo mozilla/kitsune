@@ -66,8 +66,6 @@
         { "fg": "--brand-callout-action-text", "bg": "--brand-callout-action-hover-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--header-text", "bg": "--header-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--header-underline", "bg": "--header-bg", "min": 3, "themes": ["light", "dark"] },
-        { "fg": "--header-icon", "bg": "--header-bg", "min": 3, "themes": ["light", "dark"] },
-        { "fg": "--header-icon", "bg": "--dropdown-bg", "min": 3, "themes": ["light", "dark"] },
         { "fg": "--color-link", "bg": "--header-skip-link-bg", "backdrop": "--header-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--header-button-text", "bg": "--header-cta-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--header-button-text", "bg": "--header-button-hover-bg", "min": 4.5, "themes": ["light", "dark"] },
@@ -106,8 +104,6 @@
         { "fg": "--color-white", "bg": "--notification-warning-button-hover-bg", "backdrop": "--notification-warning-bg", "min": 3, "themes": ["dark"] },
         { "fg": "--color-white", "bg": "--notification-click-button-bg", "backdrop": "--notification-click-bg", "min": 3, "themes": ["dark"] },
         { "fg": "--color-white", "bg": "--notification-click-button-hover-bg", "backdrop": "--notification-click-bg", "min": 3, "themes": ["dark"] },
-        { "fg": "--modal-icon", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
-        { "fg": "--details-icon", "bg": "--page-bg", "min": 3, "themes": ["light", "dark"] },
         { "fg": "--field-text", "bg": "--color-field-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--field-placeholder", "bg": "--color-field-bg", "min": 4.5, "themes": ["dark"] },
         { "fg": "--field-error-color", "bg": "--page-bg", "min": 4.5, "themes": ["light", "dark"] },
@@ -163,7 +159,15 @@
         { "fg": "--color-error-hover", "bg": "--page-bg", "min": 4.5, "themes": ["dark"] },
         { "fg": "--color-success", "bg": "--page-bg", "min": 4.5, "themes": ["dark"] },
         { "fg": "--color-link-inverse-visited", "bg": "--color-inverse-bg", "min": 4.5, "themes": ["light", "dark"] },
-        { "fg": "--color-inverse", "bg": "--color-link-inverse-active-bg", "backdrop": "--color-inverse-bg", "min": 4.5, "themes": ["light", "dark"] }
+        { "fg": "--color-inverse", "bg": "--color-link-inverse-active-bg", "backdrop": "--color-inverse-bg", "min": 4.5, "themes": ["light", "dark"] },
+        { "fg": "--color-icon", "bg": "--page-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-icon", "bg": "--card-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-icon", "bg": "--header-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-icon", "bg": "--dropdown-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-icon", "bg": "--callout-warning-bg-start", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-icon", "bg": "--callout-warning-bg-mid", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-icon", "bg": "--callout-warning-bg-end", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-icon-info", "bg": "--page-bg", "min": 3, "themes": ["light", "dark"] }
     ],
     "exceptions": [
         {

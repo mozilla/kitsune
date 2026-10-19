@@ -42,14 +42,14 @@
     width: 96px;
     height: auto;
 
-    a,
-    img {
+    a {
       display: block;
     }
 
     // An inline SVG or a mask would repaint the light logo's antialiasing, so dark recolors the image.
     img {
-      filter: var(--header-logo-filter);
+      display: block;
+      filter: var(--icon-image-filter);
     }
   }
 
@@ -211,31 +211,24 @@
   &--search-button,
   &--toggle-button {
     appearance: none;
-    position: relative;
     @include p.bidi(((margin, 0 0 0 10px, 0 10px 0 0), ));
     width: p.$spacing-xl;
     height: p.$spacing-xl;
     border: none;
     border-radius: p.$spacing-xs;
-    @include c.icon-mask(url('protocol/img/icons/menu.svg'), var(--header-icon));
+    background-image: var(--menu-icon);
+    background-color: transparent;
+    background-position: center center;
+    background-repeat: no-repeat;
     font: 0/0 a;
     color: transparent;
+    @include c.forced-colors-icon(url('protocol/img/icons/menu.svg'));
 
-    // A mask can't keep the filled square, so these states move the icon onto a pseudo-element.
     &:hover,
     &:active,
     &:focus,
     &.mzp-is-active {
-      forced-color-adjust: auto;
       background-color: var(--color-link-active-bg);
-      mask-image: none;
-
-      &::before {
-        position: absolute;
-        inset: 0;
-        @include c.icon-mask(url('protocol/img/icons/menu.svg'), var(--header-icon));
-        content: '';
-      }
     }
 
     @media #{p.$mq-md} {
@@ -247,18 +240,8 @@
     @include p.bidi(((margin-left, auto, 0),
         (margin-right, 0, auto),
       ));
-    mask-image: url('protocol/img/icons/search.svg');
-
-    &:hover,
-    &:active,
-    &:focus,
-    &.mzp-is-active {
-      mask-image: none;
-
-      &::before {
-        mask-image: url('protocol/img/icons/search.svg');
-      }
-    }
+    background-image: var(--search-icon);
+    @include c.forced-colors-icon(url('protocol/img/icons/search.svg'));
   }
 
   .simple-search-form {
@@ -391,7 +374,7 @@
   }
 
   .mzp-c-menu-item-icon {
-    color: var(--header-icon);
+    color: var(--color-icon);
   }
 
   .mzp-c-menu-category {

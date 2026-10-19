@@ -91,6 +91,10 @@ When building a production bundle,
 Components and layouts are documented in [SUMO Styleguide](https://mozilla.github.io/kitsune/_kss/) using `kss-node`
 automation to generate the documentation from SCSS sources.
 
+The **Dark examples** button in the styleguide's top bar switches every example to the dark theme by setting `data-theme="dark"` on it
+(on the page itself in the full-screen item view), and the choice is kept across pages.
+The styleguide's own chrome stays light.
+
 ### Theming
 
 Colors reach components through tokens,
@@ -289,6 +293,22 @@ The build fails if the token doesn't exist.
 Protocol styles that bake in a Sass color at compile time can't be reached through custom properties.
 They need component-level overrides in the bridge file.
 
+An override repeats Protocol's selector and sets a token, and wins by source order:
+the bridge is emitted after Protocol and before `base/`, `layout/` and `components/`.
+Don't win with `!important` or a longer selector, which would also outrank SUMO's own Protocol overrides and can change light.
+
+#### Icons
+
+* **Templates** use the `icon()` macro from `includes/icons.html`, as in `{{ icon('pencil', class='pencil') }}`.
+It inlines the SVG in `currentColor`, which `.svg-icon` sets from `--color-icon`, and is decorative unless you pass a `label`.
+Add a new icon to the dict at the top of the file.
+* **CSS icons** are per-theme image tokens, such as `--search-icon`.
+The light value is the old URL, byte for byte; the dark one is built with the functions in `config/_mixins.scss` or inline in the dark map.
+Add `forced-colors-icon($url)` where the image could vanish on the system palette.
+`icon-mask($url, $color)` is for pseudo-elements only, because a mask clips focus rings and hover fills.
+* **Images you can't replace**, such as the logo and the `<img>` icons instant search renders, take `filter: var(--icon-image-filter)`:
+`none` in light, an `invert()` in dark.
+
 #### Forced colors
 
 `scss/_forced-colors.scss` makes keyboard focus visible when the browser forces its own colors.
@@ -354,6 +374,12 @@ The icon takes its color through `currentColor`.
 * `-action-bg`, `-action-border`, `-action-text`, and `-action-hover-bg` style the action.
 * Add `-ring`, `-shadow`, `-icon-bg`, and `-icon` to `config/themes/_forced-colors.scss`.
 The mixin removes the gradient itself under forced colors.
+
+#### Elevation
+
+`elevation-01` to `elevation-03` in `config/_elevation.scss` set the shadow.
+Pass the component's background as `$bg`, as in `@include c.elevation-01(var(--card-bg))`:
+light keeps it and dark paints the elevated surface; without `$bg` the component keeps its own background in dark.
 
 #### Product themes
 

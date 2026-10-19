@@ -45,6 +45,14 @@
   overflow-wrap: anywhere;
 }
 
+// instant_search.js renders these icons as images, so they can't use the icon macro.
+#instant-search-content {
+  img.topic-article--icon,
+  img.card--icon-sm {
+    filter: var(--icon-image-filter);
+  }
+}
+
 .home-search-section {
   text-align: center;
 

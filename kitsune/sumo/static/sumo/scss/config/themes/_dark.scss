@@ -165,9 +165,6 @@ $dark: (
   'header-separator': var(--color-graphite-08),
   'header-divider': rgba(255, 255, 255, 0.07),
   'header-shadow': 0 12px 32px -18px rgba(0, 0, 0, 0.9),
-  // Inverts the black logo image to about light-gray-02.
-  'header-logo-filter': invert(97.6%),
-  'header-icon': var(--color-light-gray-02),
   'header-skip-link-bg': rgba(c.color('graphite', '01'), 0.9),
   'header-cta-bg': var(--color-graphite-05),
   'header-cta-highlight': inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -221,10 +218,6 @@ $dark: (
   'notification-click-button-hover-bg': rgba(255, 255, 255, 0.14),
   'notification-close-icon': url('protocol/img/icons/close-white.svg'),
 
-  // Modal and details
-  'modal-icon': var(--color-light-gray-02),
-  'details-icon': var(--color-light-gray-02),
-
   // Form controls
   'field-text': var(--color-light-gray-04),
   'field-inset': inset 0 1px 2px rgba(0, 0, 0, 0.45),
@@ -267,8 +260,10 @@ $dark: (
   'button-warning-hover-bg': var(--color-red-07),
   'button-primary-shadow': inset 0 1px 0 rgba(255, 255, 255, 0.18),
   'button-primary-hover-shadow': (var(--button-primary-shadow), 0 8px 20px -8px rgba(c.color('azure', '04'), 0.7)),
-  // Protocol's search.svg and more-vertical.svg in light-gray-02.
+  // Protocol's search.svg, menu.svg, close.svg and more-vertical.svg in light-gray-02.
   'search-icon': c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="#{c.color('light-gray', '02')}" d="M12 6c0-3.31-2.69-6-6-6S0 2.69 0 6s2.69 6 6 6c1.39 0 2.66-.47 3.68-1.26l5.29 5.29 1.06-1.06-5.29-5.29A5.98 5.98 0 0 0 12 6m-6 4.5c-2.48 0-4.5-2.02-4.5-4.5S3.52 1.5 6 1.5s4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5"/></svg>'),
+  'menu-icon': c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><clipPath id="a"><path d="M0 0h16v16H0z"/></clipPath><g fill="#{c.color('light-gray', '02')}" clip-path="url(#a)"><path d="M16 7.25H0v1.5h16zM16 0H0v1.5h16zm0 14.5H0V16h16z"/></g></svg>'),
+  'close-icon': c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="#{c.color('light-gray', '02')}" d="M3.58 13.48 8 9.06l4.42 4.42 1.06-1.06L9.06 8l4.42-4.42-1.06-1.06L8 6.94 3.58 2.52 2.52 3.58 6.94 8l-4.42 4.42z"/></svg>'),
   'more-options-icon': c.svg-url('<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g transform="translate(11.000000, 4.000000)" stroke="#{c.color('light-gray', '02')}" stroke-width="2"><circle cx="1" cy="15" r="1"></circle><circle cx="1" cy="8" r="1"></circle><circle cx="1" cy="1" r="1"></circle></g></g></svg>'),
   'delete-button-hover-text': var(--color-red-03),
 
@@ -328,8 +323,19 @@ $dark: (
   'elevation-3': var(--elevation-2),
   'elevation-0-border': 1px solid rgba(255, 255, 255, 0.08),
 
+  'kb-section-icon': c.plus-mark(c.color('light-gray', '02')),
   'media-uploaded-icon-filter': invert(1) brightness(0.9),
   'media-content-image-filter': brightness(0.9),
+  // The rim and radius frame the image itself, so the 5px gap moves out of the padding.
+  'content-image-padding': 0,
+  'content-image-margin': 5px 0,
+  // The percentage keeps small inline images from turning into circles.
+  'content-image-radius': min(var(--radius-md), 8%),
+  'content-image-rim': 0 0 0 1px rgba(255, 255, 255, 0.08),
+  'color-icon': var(--color-light-gray-02),
+  'color-icon-info': var(--status-info-text),
+  // Inverts black images, such as the logo, to about light-gray-02.
+  'icon-image-filter': invert(97.6%),
 
   'protocol-background-color-tertiary': var(--color-callout-bg),
   'protocol-body-text-color-secondary': var(--color-text-light),

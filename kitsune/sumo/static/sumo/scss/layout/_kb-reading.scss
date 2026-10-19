@@ -208,6 +208,15 @@
     box-shadow: var(--kb-keycap-edge);
     background: var(--kb-keycap-bg);
   }
+
+  // Forum posts share the base `.wiki-image` rule and keep it as is.
+  .wiki-image {
+    margin: var(--content-image-margin);
+    padding: var(--content-image-padding);
+    box-shadow: var(--content-image-rim);
+    border-radius: var(--content-image-radius);
+    filter: var(--media-content-image-filter);
+  }
 }
 
 #document_metadata.has-border-bottom {

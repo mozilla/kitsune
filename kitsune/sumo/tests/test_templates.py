@@ -3,6 +3,8 @@ from django.template.loader import render_to_string
 from django.test import override_settings
 from django.test.client import RequestFactory
 from django.utils import translation
+from jinja2 import UndefinedError
+from parameterized import parameterized
 from pyquery import PyQuery as pq
 
 from kitsune.announcements.tests import AnnouncementFactory
@@ -130,3 +132,37 @@ class ErrorListTests(MockRequestTests):
         assert '<"evil&ness' not in html
         assert "&lt;&#34;evil&amp;ness-field&#34;&gt;" in html
         assert "&lt;&#34;evil&amp;ness-non-field&#34;&gt;" in html
+
+
+class IconMacroTests(TestCase):
+    @parameterized.expand(
+        [
+            (
+                "labeled",
+                "close",
+                'a"b<c',
+                {"role": "img", "aria-label": 'a"b<c', "aria-hidden": None},
+            ),
+            (
+                "decorative",
+                "close",
+                None,
+                {"role": None, "aria-label": None, "aria-hidden": "true"},
+            ),
+            ("unknown", "no-such-icon", None, None),
+        ]
+    )
+    def test_icon(self, _case, name, label, attributes):
+        source = "{% from 'includes/icons.html' import icon %}{{ icon(name, label=label) }}"
+        template = template_engines["jinja2"].from_string(source)
+
+        if attributes is None:
+            with self.assertRaises(UndefinedError):
+                template.render({"name": name, "label": label})
+            return
+
+        svg = pq(template.render({"name": name, "label": label}), parser="html")("svg")
+
+        self.assertEqual(1, len(svg))
+        for attribute, value in attributes.items():
+            self.assertEqual(value, svg.attr(attribute))

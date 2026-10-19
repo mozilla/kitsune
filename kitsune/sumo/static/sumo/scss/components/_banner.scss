@@ -67,6 +67,16 @@
     position: absolute;
     top: 6px;
     right: 6px;
+
+    svg {
+      margin: 0;
+      padding: 0;
+      width: 16px;
+      height: 16px;
+      border-radius: 0;
+      background: none;
+      color: var(--color-icon);
+    }
   }
 
   @media #{p.$mq-md} {

@@ -50,7 +50,7 @@ $mappings: (
     }
 
     &.mzp-has-drop-down .mzp-c-menu-title::before {
-      @include c.icon-mask(p.$url-image-expand-black, var(--header-icon), 20px 20px, top left);
+      @include c.icon-mask(p.$url-image-expand-black, var(--color-icon), 20px 20px, top left);
     }
   }
 
@@ -75,21 +75,9 @@ $mappings: (
     background: var(--header-bg);
 
     .mzp-c-menu-button-close {
-      @include c.icon-mask(url('protocol/img/icons/close.svg'), var(--header-icon), 125%);
-
-      // The mask would clip the focus ring, so focus moves the icon onto a pseudo-element.
-      &:focus {
-        forced-color-adjust: auto;
-        background-color: transparent;
-        mask-image: none;
-
-        &::before {
-          position: absolute;
-          inset: 0;
-          @include c.icon-mask(url('protocol/img/icons/close.svg'), var(--header-icon), 125%);
-          content: '';
-        }
-      }
+      background-image: var(--close-icon);
+      // Protocol positions the button absolutely, which also anchors the pseudo-element.
+      @include c.forced-colors-icon(url('protocol/img/icons/close.svg'), 125%, $position: null);
     }
 
     @media #{p.$mq-md} {
@@ -239,7 +227,7 @@ $mappings: (
   details .is-summary button,
   .mzp-c-details .is-summary button {
     &::before {
-      @include c.icon-mask(p.$url-image-expand-black, var(--details-icon), 20px 20px, top left);
+      @include c.icon-mask(p.$url-image-expand-black, var(--color-icon), 20px 20px, top left);
     }
   }
 }

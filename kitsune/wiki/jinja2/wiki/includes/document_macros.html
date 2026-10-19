@@ -1,3 +1,4 @@
+{% from "includes/icons.html" import icon %}
 {% macro contributor_list(contributors) -%}
   <section id="doc-contributors" class="document--contributors sumo-page-section">
     {% trans contributors=user_list(contributors), link=url('landings.contribute') %}
@@ -21,7 +22,7 @@
     </span>
     {% if created_date %}
       <span class="last-updated">
-       <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" />
+       {{ icon('pencil', class='pencil') }}
        <strong>{% if is_first_revision %}{{ _("Created") }}{% else %}{{ _("Last updated") }}{% endif %}:</strong>
         <span class="time">
           {{ datetimeformat(created_date, format="shortdate", use_timesince=True) }}
@@ -30,7 +31,7 @@
     {% endif %}
     {% if helpful_votes %}
       <span class="helpful-info">
-        <img class="thumbsup" src="{{ webpack_static('sumo/img/thumbs-up.svg') }}"/>{# L10n: {0} is 'helpful-count', {1} is the actual percentage and {2} is the percent sign. #}{{ _('<span class="{0}">{1}{2}</span> of users voted this helpful')|fe("helpful-count", helpful_votes, "%") }}
+        {{ icon('thumbs-up', class='thumbsup') }}{# L10n: {0} is 'helpful-count', {1} is the actual percentage and {2} is the percent sign. #}{{ _('<span class="{0}">{1}{2}</span> of users voted this helpful')|fe("helpful-count", helpful_votes, "%") }}
       </span>
     {% endif %}
   </div>
@@ -427,7 +428,7 @@
         <div class="scroll-wrap">
           {% for related in related_docs %}
             <div class="card card--article">
-                <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
+                {{ icon('reader-mode', class='card--icon-sm') }}
                 <div class="card--details">
                   <h3 class="card--title">
                     <a class="expand-this-link" href="{{ url('wiki.document', related.slug) }}"

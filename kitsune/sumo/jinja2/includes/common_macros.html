@@ -1,3 +1,4 @@
+{% from "includes/icons.html" import icon %}
 {% macro search_box(settings, id=False, prefix=None, target=None,
                     placeholder=_('Search questions, articles, or topics (example: saving passwords in Firefox)'),
                     params=None) %}
@@ -46,7 +47,7 @@
     <a href="https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams"
       class="sumo-button primary-button button-lg">{{ _('Learn More') }}</a>
     <button class="sumo-close-button close-button" data-close-id="id_scam_alert" data-close-memory="remember">
-      <img src="{{ webpack_static('protocol/img/icons/close.svg') }}" />
+      {{ icon('close') }}
     </button>
   </div>
 </div>
@@ -957,7 +958,7 @@
   <div class="scroll-wrap">
     {% for doc in articles %}
     <div class="card card--article">
-      <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="{{ doc.title }}" />
+      {{ icon('reader-mode', class='card--icon-sm') }}
       <div class="card--details">
         <h3 class="card--title">
           <a class="expand-this-link" href="{{ url('wiki.document', doc.slug) }}"{% if new_tab %} target="_blank"{% endif %}

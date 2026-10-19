@@ -116,6 +116,12 @@
   background: var(--light-grey-bg);
 }
 
+.svg-icon {
+  // Unlike an <img>, an <svg> flex item shrinks below its size.
+  flex-shrink: 0;
+  color: var(--color-icon);
+}
+
 .tooltip-container {
   position: relative;
   display: flex;

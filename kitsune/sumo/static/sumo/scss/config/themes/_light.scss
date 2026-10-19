@@ -260,13 +260,13 @@
 
 // Header
 //
-// The site header: its bar, icons, menu titles and their active underline, the mobile menu
+// The site header: its bar, menu titles and their active underline, the mobile menu
 // separators, the "Download Firefox" and "Sign In/Up" buttons, and the unread message badge.
 // The light values are Protocol's and the buttons' own. "Download Firefox" uses
 // `--header-button-text` on `--header-cta-bg`, and both buttons use `--header-button-hover-bg`
-// and `--header-button-active-bg` when hovered and pressed. The logo stays an image that
-// `--header-logo-filter` recolors in dark. The logo filter, the bottom shadow, and the button
-// highlight appear in the theme maps only.
+// and `--header-button-active-bg` when hovered and pressed. The menu icons use `--color-icon`, and
+// the logo stays an image that `--icon-image-filter` recolors in dark. The bottom shadow and the
+// button highlight appear in the theme maps only.
 //
 // Colors:
 // --header-bg: #FFFFFF - Dark: #101318 (graphite-01)
@@ -274,7 +274,6 @@
 // --header-underline: #000000 - Dark: #8FBEFA (azure-03)
 // --header-separator: #CDCDD4 - Dark: #3A3D43 (graphite-08)
 // --header-divider: #EDEDF0 - Dark: rgba(255, 255, 255, 0.07)
-// --header-icon: #000000 - Dark: #F9F9FB (light-gray-02)
 // --header-skip-link-bg: rgba(255, 255, 255, 0.9) - Dark: rgba(16, 19, 24, 0.9)
 // --header-cta-bg: #0060DF - Dark: #282B32 (graphite-05)
 // --header-secondary-border: #0060DF - Dark: #5A5E66 (graphite-09)
@@ -361,19 +360,6 @@
 //
 // Style guide: colors.notification
 
-// Modal and details
-//
-// The icons Protocol draws in black: the modal's close button and the expand marker of
-// collapsible sections.
-//
-// Colors:
-// --modal-icon: #000000 - Dark: #F9F9FB (light-gray-02)
-// --details-icon: #000000 - Dark: #F9F9FB (light-gray-02)
-//
-// Weight: 28
-//
-// Style guide: colors.modal
-
 // Form controls
 //
 // Text fields, selects, checkboxes, radios, toggles, and range inputs. A field's validation color
@@ -406,8 +392,8 @@
 //
 // The default, secondary, and warning buttons; primary buttons use the accent tokens. The icon-only
 // buttons show Protocol's black icons in light and light-gray-02 copies in dark (`--search-icon`,
-// `--more-options-icon`); they, the primary button's dark highlight, and its hover glow appear in
-// the theme maps only.
+// `--menu-icon`, `--close-icon`, `--more-options-icon`); they, the primary button's dark highlight,
+// and its hover glow appear in the theme maps only.
 //
 // Colors:
 // --button-text: #5E5E72 - Dark: #E0E0E6 (light-gray-04)
@@ -473,6 +459,25 @@
 // Weight: 33
 //
 // Style guide: colors.navigation
+
+// Icons and media
+//
+// The icons that reader pages draw through the `icon` macro, the header's menu icons, and the
+// expand markers of collapsible sections use `--color-icon`; the "linked in product" info icon uses
+// `--color-icon-info`, the info status color. Content images in KB articles take
+// `--media-content-image-filter`, a radius, and a rim; the vertical gap moves from padding to margin
+// in dark so the rim hugs the image. The collapsible KB sections' "+" is an image drawn in each
+// theme's color (`--kb-section-icon`). The logo and the search suggestions that instant_search.js
+// renders keep their images, which `--icon-image-filter` recolors in dark. Everything but the colors
+// below appears in the theme maps only.
+//
+// Colors:
+// --color-icon: #000000 - Dark: #F9F9FB (light-gray-02)
+// --color-icon-info: #0060DF - Dark: #8FBEFA (azure-03)
+//
+// Weight: 34
+//
+// Style guide: colors.icons-media
 
 $light: (
   'page-bg': white,
@@ -639,8 +644,6 @@ $light: (
   'header-separator': p.$color-marketing-gray-30,
   'header-divider': var(--color-border),
   'header-shadow': none,
-  'header-logo-filter': none,
-  'header-icon': #000000,
   'header-skip-link-bg': rgba(255, 255, 255, 0.9),
   'header-cta-bg': var(--color-accent),
   'header-cta-highlight': 0 0 #0000,
@@ -693,10 +696,6 @@ $light: (
   'notification-click-button-hover-bg': p.$color-blue-80,
   'notification-close-icon': url('protocol/img/icons/close.svg'),
 
-  // Modal and details
-  'modal-icon': #000000,
-  'details-icon': #000000,
-
   // Form controls
   'field-text': #0C0C0D,
   'field-inset': none,
@@ -738,6 +737,8 @@ $light: (
   'button-primary-shadow': none,
   'button-primary-hover-shadow': none,
   'search-icon': url('protocol/img/icons/search.svg'),
+  'menu-icon': url('protocol/img/icons/menu.svg'),
+  'close-icon': url('protocol/img/icons/close.svg'),
   'more-options-icon': url('protocol/img/icons/more-vertical.svg'),
   'delete-button-hover-text': var(--color-red-10),
 
@@ -792,8 +793,16 @@ $light: (
   ),
   'elevation-0-border': solid 1px rgba(21, 20, 26, 0.26),
 
+  'kb-section-icon': c.plus-mark('#000'),
   'media-uploaded-icon-filter': none,
   'media-content-image-filter': none,
+  'content-image-padding': 5px 0,
+  'content-image-margin': 0,
+  'content-image-radius': 0,
+  'content-image-rim': none,
+  'color-icon': #000000,
+  'color-icon-info': var(--status-info-text),
+  'icon-image-filter': none,
 
   'protocol-background-color-tertiary': p.$background-color-tertiary,
   'protocol-body-text-color-secondary': p.$body-text-color-secondary,

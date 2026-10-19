@@ -209,10 +209,10 @@
 }
 
 // Forced colors keep authored images; this masks the icon in the system text color, on a pseudo-element clear of the focus outline.
-@mixin forced-colors-icon($url, $size: auto) {
+@mixin forced-colors-icon($url, $size: auto, $position: relative) {
   @media (forced-colors: active) {
     &:not(input) { // inputs have no pseudo-elements, so they keep the image
-      position: relative;
+      position: $position;
       background-image: none;
 
       &::before {
@@ -327,6 +327,11 @@
 // Kept in its original hand-encoded form, which svg-url() doesn't reproduce.
 @function menu-list-chevron($color) {
   @return url("data:image/svg+xml,%3Csvg width='24px' height='24px' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='none' stroke-width='1' fill='none' fill-rule='evenodd' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline stroke='#{str-replace('#{$color}', '#', '%23')}' stroke-width='2' points='5 9 12 16 19 9'%3E%3C/polyline%3E%3C/g%3E%3C/svg%3E");
+}
+
+// Kept in its original hand-encoded form, which svg-url() doesn't reproduce.
+@function plus-mark($color) {
+  @return url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 3.515v16.97M3.515 12h16.97' stroke='#{str-replace('#{$color}', '#', '%23')}' stroke-width='2' fill='none' fill-rule='evenodd' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 //  Helper function to replace characters in a string

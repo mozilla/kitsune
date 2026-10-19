@@ -6,10 +6,11 @@ figure {
     display: flex;
     margin-bottom: p.$spacing-xl;
 
-    img {
+    svg {
       width: 24px;
       height: 24px;
       margin-inline-end: p.$spacing-sm;
+      color: var(--color-icon-info);
     }
 
     figcaption {
@@ -409,9 +410,15 @@ article {
       @include c.sumo-card-heading;
 
       &:before {
-        background: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 3.515v16.97M3.515 12h16.97' stroke='%23000' stroke-width='2' fill='none' fill-rule='evenodd' stroke-linecap='round'/%3E%3C/svg%3E") 0 0 no-repeat;
+        background: var(--kb-section-icon) 0 0 no-repeat;
         background-size: auto;
         background-size: 20px, 20px;
+
+        // Forced colors keep the theme's image, which can vanish on the system palette.
+        @media (forced-colors: active) {
+          @include c.icon-mask(var(--kb-section-icon), CanvasText, 20px 20px, 0 0);
+        }
+
         -webkit-transition: transform .1s ease-in-out;
         -webkit-transition: -webkit-transform .1s ease-in-out;
         transition: -webkit-transform .1s ease-in-out;

@@ -24,8 +24,6 @@ $forced-colors: (
   'brand-callout-chip-ring': none,
   'brand-callout-action-shadow': none,
   'header-shadow': none,
-  // Forced colors don't recolor images, so the logo keeps its light rendering in both themes.
-  'header-logo-filter': none,
   'dropdown-shadow': none,
   'dropdown-item-hover-ring': none,
   'menu-list-shadow': none,
@@ -36,4 +34,8 @@ $forced-colors: (
   'surface-inverse-image': none,
   'surface-elevated-image': none,
   'hero-art-searchbox-shadow': none,
+  // An svg keeps an authored color in forced colors, so the icons follow the text color.
+  'color-icon': currentColor,
+  'color-icon-info': currentColor,
+  'content-image-rim': none,
 );
