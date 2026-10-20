@@ -219,11 +219,11 @@
 // Hero
 //
 // The home and product landing heroes that carry `has-aurora`. Links in the hero use
-// `--hero-link` so they stay readable over the glow. A hero on product art (the Enterprise
-// hero) keeps white text in both themes, with the translucent `--hero-art-*` link hover and
-// underline, and lifts its searchbox with a shadow; in the dark theme the searchbox takes the
-// field surface. The aurora background, the hero bottom edge, and the searchbox shadow can't be
-// shown as swatches, so they appear only in the theme maps.
+// `--hero-link` so they stay readable over the glow. The `--hero-art-*` tokens are for a hero
+// drawn over product art, which keeps white text in both themes, with a translucent link hover
+// and underline, and lifts its searchbox with a shadow; in the dark theme the searchbox takes
+// the field surface. No hero uses them yet. The aurora background, the hero bottom edge, and
+// the searchbox shadow can't be shown as swatches, so they appear only in the theme maps.
 //
 // Colors:
 // --hero-link: #0250BB - Dark: #8FBEFA (azure-03)

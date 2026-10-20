@@ -24,10 +24,6 @@
   margin: p.$spacing-2xl 0;
   position: relative;
 
-  &.enterprise-banner {
-    @include c.brand-callout;
-  }
-
   .content {
     display: flex;
     align-items: center;

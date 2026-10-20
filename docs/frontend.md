@@ -417,7 +417,6 @@ light keeps it and dark paints the elevated surface; without `$bg` the component
 A page opts in on `<body>`:
 templates with a product context set `product_theme` to the product's slug,
 and `base.html` adds the class when it is `firefox-enterprise`.
-A component opts in by carrying the class itself, as the Enterprise banner does on the home and products pages.
 
 The class sets:
 
@@ -425,8 +424,10 @@ The class sets:
 a 1px gradient border just outside the callout, its surface, and its glow layers.
 The base and the first glow are the per-theme `--enterprise-callout-base` and `--enterprise-callout-glow` tokens.
 Forced colors ignore the hooks.
-* `--product-hero-text`, the text color over the Enterprise hero artwork, which `layout/_products.scss` draws.
-* `--hero-aurora: none`, which turns the hero's aurora off behind that artwork.
+* `--product-hero-text`, the text color for a hero drawn over product art.
+* `--hero-aurora: none`, which turns the hero's aurora off behind that art.
+
+No page uses the last two yet.
 
 #### Runtime and the flag
 
