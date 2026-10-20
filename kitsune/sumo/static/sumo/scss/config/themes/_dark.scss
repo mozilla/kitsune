@@ -160,6 +160,34 @@ $dark: (
   'enterprise-callout-base': linear-gradient(120deg, #24163F 0%, #26164C 100%),
   'enterprise-callout-glow': radial-gradient(50% 150% at 0% 50%, rgba(117, 67, 227, 0.2), transparent 70%),
 
+  // Professional support
+  'pro-support-masthead-bg': #190F2E,
+  'pro-support-masthead-image': url('../../sumo/img/pro-support-bubbles-dark.webp'),
+  'pro-support-searchbox-shadow': (var(--field-inset), 0 4px 20px rgba(0, 0, 0, 0.35)),
+  'pro-support-card-bg': rgba(59, 9, 118, 0.35),
+  'pro-support-card-border': #3B0976,
+  'pro-support-card-border-hover': #AD8DF0,
+  'pro-support-badge-icon': #210340,
+  'pro-support-badge-contact-bg': linear-gradient(160deg, #6132BC, #6B00D5),
+  'pro-support-badge-contact-icon': var(--color-white),
+  'pro-support-badge-getting-started-bg': linear-gradient(135deg, #E4D7FC, #C8B2F6),
+  'pro-support-badge-account-bg': linear-gradient(to bottom, #FEC583, #FD845A),
+  'pro-support-banner-stop-start': #21033F,
+  'pro-support-banner-stop-mid': #2E0957,
+  'pro-support-banner-stop-end': #3B0976,
+  'pro-support-banner-glow': rgba(253, 132, 90, 0.2),
+  'pro-support-banner-bg': (
+    radial-gradient(45% 160% at 0% 50%, var(--pro-support-banner-glow), transparent 70%),
+    linear-gradient(
+      110deg,
+      var(--pro-support-banner-stop-start) 0%,
+      var(--pro-support-banner-stop-mid) 50%,
+      var(--pro-support-banner-stop-end) 100%
+    )
+  ),
+  'pro-support-banner-title': var(--color-heading),
+  'pro-support-banner-text': var(--color-text),
+
   // Header
   'header-bg': var(--color-graphite-01),
   'header-text': var(--color-light-gray-02),

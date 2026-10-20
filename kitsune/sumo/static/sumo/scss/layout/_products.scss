@@ -1,13 +1,17 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
-// Cream shows while the image loads.
+// The color shows while the image loads.
 .home-search-section.pro-support-masthead {
-  background: #fcf5f0 url('../../sumo/img/pro-support-bubbles.webp') center / cover no-repeat;
+  background: var(--pro-support-masthead-bg) var(--pro-support-masthead-image) center / cover no-repeat;
 
   .searchbox {
-    box-shadow: p.$box-shadow-sm;
-    background: var(--color-white);
+    box-shadow: var(--pro-support-searchbox-shadow);
+    background: var(--color-field-bg);
+
+    &:focus {
+      box-shadow: var(--focus-shadow), var(--pro-support-searchbox-shadow);
+    }
   }
 }
 
@@ -52,15 +56,15 @@ body.product-landing {
   display: flex;
   flex-direction: column;
   padding: p.$spacing-md;
-  border: 1px solid #ebdffa;
+  border: 1px solid var(--pro-support-card-border);
   border-radius: p.$border-radius-md;
-  background-color: #fcf5f0;
+  background-color: var(--pro-support-card-bg);
   @include c.elevation-01;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
   &:hover {
     @include c.elevation-02;
-    border-color: #6132bc;
+    border-color: var(--pro-support-card-border-hover);
 
     .get-support--title a {
       text-decoration: underline;
@@ -86,19 +90,19 @@ body.product-landing {
   width: p.$layout-md;
   height: p.$layout-md;
   border-radius: p.$border-radius-md;
-  color: #210340;
+  color: var(--pro-support-badge-icon);
 
   &.is-contact {
-    background: linear-gradient(160deg, #210340, #3a0f6e);
-    color: #ffffff;
+    background: var(--pro-support-badge-contact-bg);
+    color: var(--pro-support-badge-contact-icon);
   }
 
   &.is-getting-started {
-    background: linear-gradient(135deg, #e4d7fc, #c8b2f6);
+    background: var(--pro-support-badge-getting-started-bg);
   }
 
   &.is-account {
-    background: linear-gradient(to bottom, #fec583, #fd845a);
+    background: var(--pro-support-badge-account-bg);
   }
 }
 
@@ -137,11 +141,14 @@ body.product-landing {
 }
 
 .card.is-pro-support {
-  background: linear-gradient(110deg, #ffedd5 0%, #fde5ca 25%, #f6e7e5 50%, #eee2f8 75%, #e0d2f6 100%);
+  background: var(--pro-support-banner-bg);
 
-  .card--title,
+  .card--title {
+    color: var(--pro-support-banner-title);
+  }
+
   .card--desc {
-    color: #000000;
+    color: var(--pro-support-banner-text);
   }
 }
 

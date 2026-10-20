@@ -818,6 +818,30 @@
 //
 // Style guide: colors.wizard
 
+// Professional support
+//
+// The pro-support masthead, the Get help cards, and the Firefox Professional Support banner, in the
+// Firefox for Enterprise palette. The masthead shows a bubbles image over its color: cream in light,
+// a dark purple version of the image in dark. The cards are cream in light and a purple-10 tint over
+// the page in dark. The badges look the same in both themes, except Contact support, which brightens
+// in dark to stand out on the card. The dark banner gradient is built from three stop tokens and a
+// faint warm glow, which are `initial` in light because the light gradient is one value. The image,
+// gradients, glow and searchbox shadow appear in the theme maps only.
+//
+// Colors:
+// --pro-support-masthead-bg: #FCF5F0 - Dark: #190F2E
+// --pro-support-card-bg: #FCF5F0 - Dark: rgba(59, 9, 118, 0.35)
+// --pro-support-card-border: #EBDFFA - Dark: #3B0976
+// --pro-support-card-border-hover: #6132BC - Dark: #AD8DF0
+// --pro-support-badge-icon: #210340 - Dark: #210340
+// --pro-support-badge-contact-icon: #FFFFFF - Dark: #FFFFFF
+// --pro-support-banner-title: #000000 - Dark: #F9F9FB (light-gray-02)
+// --pro-support-banner-text: #000000 - Dark: #E0E0E6 (light-gray-04)
+//
+// Weight: 44
+//
+// Style guide: colors.pro-support
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -977,6 +1001,26 @@ $light: (
   'brand-callout-action-shadow': 0 6px 16px -6px rgba(0, 0, 0, 0.45),
   'enterprise-callout-base': linear-gradient(120deg, #3A2470 0%, #39217D 100%),
   'enterprise-callout-glow': radial-gradient(50% 150% at 0% 50%, rgba(130, 84, 235, 0.32), transparent 70%),
+
+  // Professional support
+  'pro-support-masthead-bg': #FCF5F0,
+  'pro-support-masthead-image': url('../../sumo/img/pro-support-bubbles.webp'),
+  'pro-support-searchbox-shadow': p.$box-shadow-sm,
+  'pro-support-card-bg': #FCF5F0,
+  'pro-support-card-border': #EBDFFA,
+  'pro-support-card-border-hover': #6132BC,
+  'pro-support-badge-icon': #210340,
+  'pro-support-badge-contact-bg': linear-gradient(160deg, #210340, #3A0F6E),
+  'pro-support-badge-contact-icon': var(--color-white),
+  'pro-support-badge-getting-started-bg': linear-gradient(135deg, #E4D7FC, #C8B2F6),
+  'pro-support-badge-account-bg': linear-gradient(to bottom, #FEC583, #FD845A),
+  'pro-support-banner-stop-start': initial,
+  'pro-support-banner-stop-mid': initial,
+  'pro-support-banner-stop-end': initial,
+  'pro-support-banner-glow': initial,
+  'pro-support-banner-bg': linear-gradient(110deg, #FFEDD5 0%, #FDE5CA 25%, #F6E7E5 50%, #EEE2F8 75%, #E0D2F6 100%),
+  'pro-support-banner-title': var(--color-black),
+  'pro-support-banner-text': var(--color-black),
 
   // Header
   'header-bg': p.$color-white,
