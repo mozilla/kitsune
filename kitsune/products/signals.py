@@ -1,24 +1,7 @@
-from django.core.cache import cache
-from django.db.models.signals import post_delete, post_save, pre_save
+from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from kitsune.products.models import (
-    Product,
-    ProductSupportConfig,
-    Topic,
-    TopicSlugHistory,
-    ZendeskConfig,
-)
-from kitsune.products.utils import ENTERPRISE_ZENDESK_CACHE_KEY
-
-
-@receiver(post_save, sender=ProductSupportConfig)
-@receiver(post_delete, sender=ProductSupportConfig)
-@receiver(post_save, sender=Product)
-@receiver(post_delete, sender=Product)
-@receiver(post_delete, sender=ZendeskConfig)
-def clear_enterprise_banner_cache(sender, **kwargs):
-    cache.delete(ENTERPRISE_ZENDESK_CACHE_KEY)
+from kitsune.products.models import Topic, TopicSlugHistory
 
 
 @receiver(pre_save, sender=Topic)

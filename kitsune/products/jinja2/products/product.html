@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles %}
-{% from 'products/includes/topic_macros.html' import help_topics, support_callout with context %}
+{% from 'products/includes/topic_macros.html' import help_topics, support_callout, professional_support_callout with context %}
 {% set announcement_product = product %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title)|forceescape)] %}
 {% set classes = 'product-landing' %}
@@ -11,6 +11,10 @@
 {% set ga_content_group = "product-home" %}
 {% set matomo_mzla = matomo_mzla_enabled([product]) %}
 {% set show_chat = chat_is_available(request, product) %}
+{# Pro support goes at the top; the product's own callout goes in the middle, or at the top on the enterprise page. #}
+{% set own_callout_at_top = product.slug == settings.ENTERPRISE_GROUP_SLUG and not professional_support_products %}
+{% set own_callout_in_middle = product not in professional_support_products and not own_callout_at_top %}
+{% set pro_support_masthead = product.slug == settings.ENTERPRISE_GROUP_SLUG or product in professional_support_products %}
 
 {% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
@@ -19,7 +23,7 @@
 {% block hidden_search_masthead %}{% endblock %}
 
 {% block masthead %}
-<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg product-{{ product.slug }}">
+<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg product-{{ product.slug }}{% if pro_support_masthead %} pro-support-masthead{% endif %}">
 
   <div class="mzp-l-content">
 
@@ -117,8 +121,10 @@
   </div>
 </section>
 
-{% if product.slug == 'firefox-enterprise' %}
+{% if own_callout_at_top %}
   {{ support_callout(product=product, aaq_context=aaq_context, extra_class='support-callouts--top') }}
+{% else %}
+  {{ professional_support_callout(product=product, extra_class='support-callouts--top') }}
 {% endif %}
 
 {% endblock %}
@@ -156,7 +162,7 @@
     {{ help_topics(topics) }}
   </div>
 
-  {% if product.slug != 'firefox-enterprise' %}
+  {% if own_callout_in_middle %}
   {{ support_callout(product=product, aaq_context=aaq_context) }}
   {% endif %}
 
@@ -172,8 +178,10 @@
   </section>
 </div>
 
-{% if product.slug == 'firefox-enterprise' %}
+{% if own_callout_at_top %}
   {{ support_callout(product=product, aaq_context=aaq_context, extra_class='support-callouts--bottom') }}
+{% else %}
+  {{ professional_support_callout(product=product, extra_class='support-callouts--bottom') }}
 {% endif %}
 
 {% endblock %}
