@@ -124,7 +124,7 @@
 {% if own_callout_at_top %}
   {{ support_callout(product=product, aaq_context=aaq_context, extra_class='support-callouts--top') }}
 {% else %}
-  {{ professional_support_callout(product=product, aaq_context=aaq_context, extra_class='support-callouts--top') }}
+  {{ professional_support_callout(product=product, extra_class='support-callouts--top') }}
 {% endif %}
 
 {% endblock %}
@@ -181,7 +181,7 @@
 {% if own_callout_at_top %}
   {{ support_callout(product=product, aaq_context=aaq_context, extra_class='support-callouts--bottom') }}
 {% else %}
-  {{ professional_support_callout(product=product, aaq_context=aaq_context, extra_class='support-callouts--bottom') }}
+  {{ professional_support_callout(product=product, extra_class='support-callouts--bottom') }}
 {% endif %}
 
 {% endblock %}

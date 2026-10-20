@@ -10,7 +10,7 @@ from kitsune.customercare.utils import resolve_org_group
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
 from kitsune.products.managers import ProductSupportConfigManager
-from kitsune.products.models import Product, Topic, TopicSlugHistory
+from kitsune.products.models import Product, ProductSupportConfig, Topic, TopicSlugHistory
 from kitsune.products.utils import get_professional_support_products
 from kitsune.sumo.utils import get_aaq_context, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
@@ -70,11 +70,13 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
     topics = topics_for(request.user, product=product, parent=None)
     aaq_context = get_aaq_context(request, product)
     professional_support_products = get_professional_support_products(request.user)
-    support_org_group = (
-        resolve_org_group(request.user, product)
-        if product in professional_support_products
-        else None
-    )
+    support_org_group = None
+    getting_started_topic = None
+    if product in professional_support_products:
+        support_org_group = resolve_org_group(request.user, product)
+        getting_started_topic = Topic.active.filter(
+            slug="getting-started", products=product, parent__isnull=True
+        ).first()
 
     return render(
         request,
@@ -92,6 +94,8 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             "aaq_context": aaq_context,
             "professional_support_products": professional_support_products,
             "support_org_group": support_org_group,
+            "getting_started_topic": getting_started_topic,
+            "SUPPORT_TYPE_ZENDESK": ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
         },
     )
 

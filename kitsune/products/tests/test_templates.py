@@ -4,6 +4,7 @@ from django.test.utils import override_settings
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 
+from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupProfileFactory
 from kitsune.products.models import HOT_TOPIC_SLUG, ProductSupportConfig
 from kitsune.products.tests import (
@@ -18,7 +19,7 @@ from kitsune.questions.tests import AAQConfigFactory
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory
+from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
 
 
@@ -196,14 +197,24 @@ class ProfessionalSupportTestCase(TestCase):
             default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
             group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
         )
-        self.org = GroupProfileFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
-        self.group = self.org.group
-        SupportOrganizationFactory(config=self.config, group=self.group)
+        self.root = GroupProfileFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
+        self.org = self.add_org(self.config, "acme")
+        self.team = GroupProfile.objects.add_child(
+            self.org, create_kwargs={"group": GroupFactory(), "slug": "acme-it"}
+        )
         self.url = reverse("products.product", args=[self.product.slug])
 
-    def login_member(self):
+    def add_org(self, config, slug):
+        """Add a company under the enterprise group and make it a support organization."""
+        org = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": GroupFactory(), "slug": slug}
+        )
+        SupportOrganizationFactory(config=config, group=org.group).full_clean()
+        return org
+
+    def login_member(self, group_profile=None):
         user = UserFactory()
-        user.groups.add(self.group)
+        user.groups.add((group_profile or self.team).group)
         self.client.login(username=user.username, password="testpass")
 
 
@@ -212,6 +223,7 @@ class EnterpriseGetSupportTests(ProfessionalSupportTestCase):
     everyone else gets a banner."""
 
     def test_member_sees_get_support(self):
+        TopicFactory(slug="getting-started", products=[self.product])
         self.login_member()
 
         doc = pq(self.client.get(self.url, follow=True).content)
@@ -224,12 +236,32 @@ class EnterpriseGetSupportTests(ProfessionalSupportTestCase):
         self.assertEqual(
             links,
             [
-                reverse("questions.aaq_step3", kwargs={"product_slug": self.product.slug}),
+                reverse("questions.aaq_step3", kwargs={"product_slug": self.product.slug})
+                + f"?support_type={ProductSupportConfig.SUPPORT_TYPE_ZENDESK}",
                 reverse("products.documents", args=[self.product.slug, "getting-started"]),
                 reverse("groups.profile", args=[self.org.slug]),
             ],
         )
         self.assertEqual("Get help", section("h2").text())
+
+    def test_direct_company_member_sees_get_support(self):
+        self.login_member(self.org)
+
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        section = doc(".get-support.support-callouts--top")
+        self.assertEqual(1, len(section))
+        links = [pq(a).attr("href") for a in section(".get-support--title a")]
+        self.assertIn(reverse("groups.profile", args=[self.org.slug]), links)
+
+    def test_get_started_card_hidden_without_topic(self):
+        self.login_member()
+
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        section = doc(".get-support.support-callouts--top")
+        self.assertEqual(2, len(section(".get-support--item")))
+        self.assertEqual(0, len(section(".get-support--badge.is-getting-started")))
 
     def test_member_without_zendesk_sees_still_need_help(self):
         self.config.zendesk_config = None
@@ -366,11 +398,7 @@ class ProMastheadTests(ProfessionalSupportTestCase):
     def test_other_product_with_pro_support_does(self):
         other = ProductFactory()
         config = ProductSupportConfigFactory(product=other, zendesk_config=ZendeskConfigFactory())
-        org = GroupProfileFactory(slug="other-org").group
-        SupportOrganizationFactory(config=config, group=org)
-        user = UserFactory()
-        user.groups.add(org)
-        self.client.login(username=user.username, password="testpass")
+        self.login_member(self.add_org(config, "globex"))
 
         doc = pq(
             self.client.get(reverse("products.product", args=[other.slug]), follow=True).content

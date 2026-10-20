@@ -6,8 +6,8 @@
   background: #fcf5f0 url('../../sumo/img/pro-support-bubbles.webp') center / cover no-repeat;
 
   .searchbox {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    background: #ffffff;
+    box-shadow: p.$box-shadow-sm;
+    background: var(--color-white);
   }
 }
 
@@ -40,8 +40,10 @@ body.product-landing {
   gap: p.$spacing-lg;
   margin-top: p.$spacing-lg;
 
+  // Cards share the row equally, since some may be hidden.
   @media #{p.$mq-md} {
-    grid-template-columns: repeat(3, 1fr);
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
   }
 }
 
@@ -49,15 +51,14 @@ body.product-landing {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: p.$spacing-md;
   border: 1px solid #ebdffa;
-  border-radius: 12px;
+  border-radius: p.$border-radius-md;
   background-color: #fcf5f0;
   @include c.elevation-01;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
-  // Only cards with a link are clickable, so only they react to hover.
-  &:has(a):hover {
+  &:hover {
     @include c.elevation-02;
     border-color: #6132bc;
 
@@ -73,18 +74,18 @@ body.product-landing {
 
 .get-support--head {
   display: flex;
-  gap: 12px;
+  gap: p.$spacing-md;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: p.$spacing-sm;
 }
 
 .get-support--badge {
   display: grid;
   flex: none;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: p.$layout-md;
+  height: p.$layout-md;
+  border-radius: p.$border-radius-md;
   color: #210340;
 
   &.is-contact {
@@ -102,8 +103,8 @@ body.product-landing {
 }
 
 .get-support--icon {
-  width: 22px;
-  height: 22px;
+  width: p.$spacing-lg;
+  height: p.$spacing-lg;
 }
 
 .get-support--title {

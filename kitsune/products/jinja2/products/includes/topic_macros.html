@@ -53,7 +53,7 @@
     <div class="card card--ribbon is-inverse heading-is-one-line">
       <div class="card--details">
         <h3 class="card--title">
-          <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
               <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
                 <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
@@ -99,10 +99,10 @@
 {% endif %}
 {%- endmacro %}
 
-{% macro professional_support_callout(product, aaq_context=None, extra_class=None) %}
+{% macro professional_support_callout(product, extra_class=None) %}
 {% if not settings.READ_ONLY %}
   {% if product in professional_support_products %}
-    {{ professional_support_section(product=product, aaq_context=aaq_context, extra_class=extra_class) }}
+    {{ professional_support_section(product=product, extra_class=extra_class) }}
   {% elif professional_support_products %}
     {{ professional_support_banner(professional_support_products[0], extra_class=extra_class) }}
   {% endif %}
@@ -115,7 +115,7 @@
     <div class="card card--ribbon is-pro-support heading-is-one-line">
       <div class="card--details">
         <h3 class="card--title">
-          <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
               <g transform="translate(2.000000, 1.878680)" stroke="currentColor" stroke-width="2">
                 <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
@@ -146,7 +146,7 @@
 {% endif %}
 {%- endmacro %}
 
-{% macro professional_support_section(product, aaq_context=None, extra_class=None) %}
+{% macro professional_support_section(product, extra_class=None) %}
   <section class="get-support mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
     <h2 class="sumo-page-subheading">{{ _('Get help') }}</h2>
     <div class="get-support--grid">
@@ -161,7 +161,7 @@
             </svg>
           </div>
           <h3 class="get-support--title">
-            <a href="{{ get_aaq_url(aaq_context or {}) }}"
+            <a href="{{ url('questions.aaq_step3', product_slug=product.slug) | urlparams(support_type=SUPPORT_TYPE_ZENDESK) }}"
               data-event-name="link_click"
               data-event-parameters='{
                 "link_name": "pro-support-section.contact-support",
@@ -172,10 +172,11 @@
         {# L10n: Attention: Firefox Professional Support is a brand name that should not be translated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
         <p class="get-support--desc">{{ _("Get dedicated technical assistance from our Firefox Professional Support team.") }}</p>
       </div>
+      {% if getting_started_topic %}
       <div class="get-support--item">
         <div class="get-support--head">
           <div class="get-support--badge is-getting-started" aria-hidden="true">
-            <svg class="get-support--icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+            <svg class="get-support--icon" viewBox="2 1.75 20 20" overflow="visible" fill="none" stroke="currentColor" stroke-width="1.667" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 2C14.8 4.2 16 7.6 16 11.5V16H8V11.5C8 7.6 9.2 4.2 12 2Z"></path>
               <circle cx="12" cy="9.5" r="1.75"></circle>
               <path d="M8 12.5L5 15.5V19L8 17"></path>
@@ -184,7 +185,7 @@
             </svg>
           </div>
           <h3 class="get-support--title">
-            <a href="{{ url('products.documents', product_slug=product.slug, topic_slug='getting-started') }}"
+            <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=getting_started_topic.slug) }}"
               data-event-name="link_click"
               data-event-parameters='{
                 "link_name": "pro-support-section.getting-started",
@@ -195,6 +196,7 @@
         {# L10n: Attention: Firefox Professional Support is a brand name that should not be translated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
         <p class="get-support--desc">{{ _("Learn more about what’s included in Firefox Professional Support.") }}</p>
       </div>
+      {% endif %}
       <div class="get-support--item">
         <div class="get-support--head">
           <div class="get-support--badge is-account" aria-hidden="true">
@@ -206,16 +208,12 @@
             </svg>
           </div>
           <h3 class="get-support--title">
-            {% if support_org_group %}
             <a href="{{ url('groups.profile', support_org_group.slug) }}"
               data-event-name="link_click"
               data-event-parameters='{
                 "link_name": "pro-support-section.org-group",
                 "link_detail": "{{ product.slug }}"
               }'>{{ _('Manage your account') }}</a>
-            {% else %}
-            {{ _('Manage your account') }}
-            {% endif %}
           </h3>
         </div>
         <p class="get-support--desc">{{ _("View your organization’s support ticket history and manage users.") }}</p>
