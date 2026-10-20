@@ -1159,3 +1159,65 @@ body:has(#group-tickets) {
     background: var(--group-form-errors-bg);
   }
 }
+
+// ── Enterprise company pending invitations ───────────────────────────────
+.enterprise-invitations--table {
+  td {
+    vertical-align: middle;
+  }
+
+  // Emails and long single-word names have no natural break points; without
+  // this one widens the table past its card and the page scrolls sideways.
+  .enterprise-invitations--cell-name,
+  .enterprise-invitations--cell-email {
+    overflow-wrap: anywhere;
+  }
+
+  // On phones each invitation collapses into a card: name and email stack as
+  // full-width lines above the status, with the Resend button on the right.
+  @media (max-width: 767px) {
+    thead {
+      @include c.sr-only;
+    }
+
+    tr {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: p.$spacing-xs p.$spacing-sm;
+      padding: p.$spacing-md;
+      border-radius: p.$border-radius-md;
+      background: var(--color-shade-bg);
+
+      &:not(:last-child) {
+        margin-bottom: p.$spacing-md;
+      }
+    }
+
+    td {
+      padding: 0;
+      border-bottom: 0;
+    }
+
+    .enterprise-invitations--cell-name {
+      flex: 1 0 100%;
+      font-weight: 700;
+
+      // Invitations for people without an account yet have no name.
+      &:empty {
+        display: none;
+      }
+    }
+
+    .enterprise-invitations--cell-email {
+      flex: 1 0 100%;
+    }
+
+    .enterprise-invitations--cell-status {
+      flex: 1 1 0;
+      min-width: 0;
+      @include c.text-body-sm;
+      color: var(--color-text-light);
+    }
+  }
+}

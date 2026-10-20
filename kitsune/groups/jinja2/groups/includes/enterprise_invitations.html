@@ -3,7 +3,7 @@
     <h2>{{ _('Pending invitations') }}</h2>
   </div>
   {% if invitations %}
-    <table>
+    <table class="enterprise-invitations--table">
       <thead>
         <tr>
           <th>{{ _('Name') }}</th>
@@ -15,15 +15,15 @@
       <tbody>
         {% for invitation in invitations %}
           <tr>
-            <td>{{ invitation.user.get_full_name() if invitation.user else '' }}</td>
-            <td>{{ invitation.email }}</td>
-            <td>
+            <td class="enterprise-invitations--cell-name">{{ invitation.user.get_full_name() if invitation.user else '' }}</td>
+            <td class="enterprise-invitations--cell-email">{{ invitation.email }}</td>
+            <td class="enterprise-invitations--cell-status">
               {{ invitation.get_status_display() }}
               {% if invitation.error_code %}
                 <br>{{ invitation_failures.get(invitation.error_code, '') }}
               {% endif %}
             </td>
-            <td>
+            <td class="enterprise-invitations--cell-action">
               <form method="POST" action="{{ url('groups.resend_invitation', profile.slug, invitation.pk) }}">
                 {% csrf_token %}
                 <button type="submit" class="sumo-button secondary-button button-sm">{{ _('Resend') }}</button>

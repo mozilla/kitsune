@@ -10,12 +10,17 @@
     }
 
     .card--title {
-      @include c.sumo-callout-heading;
+      @include p.text-title-2xs;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       margin: 0 0 p.$spacing-md 0;
+      font-family: var(--heading-font-family);
+      font-weight: bold;
+      color: var(--color-heading);
+      // Wraps only when there's no room, and evenly when it does.
+      text-wrap: balance;
 
       @media #{p.$mq-lg} {
         margin-bottom: 0;
@@ -71,30 +76,34 @@
     &--ribbon {
       text-align: left;
 
+      // Full width, so the description fills the row instead of leaving space at each end.
       .card--details {
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto;
+        width: 100%;
+      }
+
+      .card--icon-sm {
+        @include p.bidi(((margin-right, p.$spacing-sm, 0), (margin-left, 0, p.$spacing-sm)));
       }
 
       .card--title {
-        margin-right: 40px;
-        line-height: 1.2;
+        @include p.bidi(((margin-right, p.$spacing-lg, 0), (margin-left, 0, p.$spacing-lg)));
         flex: 0 1 auto;
         text-align: center;
       }
 
       .sumo-button {
-        flex: 0 1 auto;
+        flex: none;
+        white-space: nowrap;
       }
 
       .card--desc {
-        min-width: 25ch;
-        max-width: 45ch;
         flex: 1 1 0;
-        @include p.bidi(((margin, 0 40px 0 0, 0 0 0 40px),
-          ));
+        min-width: 25ch;
+        @include p.bidi(((margin, 0 p.$spacing-md 0 0, 0 0 0 p.$spacing-md),));
       }
     }
   }

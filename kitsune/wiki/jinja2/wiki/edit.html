@@ -30,8 +30,8 @@
         <p><strong>{{ _('You have a draft revision for this article saved on {date_time}')|f(date_time=draft_revision.created) }}</strong></p>
         <form action="{{ url('wiki.edit_document', document.slug) }}" method="post">
           {% csrf_token %}
-          <input class="btn" name="restore" value={{ _('Restore') }} type="submit">
-          <input class="btn" name="discard" value={{ _('Discard') }} type="submit">
+          <input class="btn" name="restore" value="{{ _('Restore') }}" type="submit">
+          <input class="btn" name="discard" value="{{ _('Discard') }}" type="submit">
         </form>
         </div>
       </li>

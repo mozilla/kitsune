@@ -5,11 +5,13 @@ from parameterized import parameterized
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 
+from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupProfileFactory
 from kitsune.products.models import HOT_TOPIC_SLUG, ProductSupportConfig
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportOrganizationFactory,
     TopicFactory,
     ZendeskConfigFactory,
 )
@@ -18,7 +20,7 @@ from kitsune.questions.tests import AAQConfigFactory, QuestionFactory
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory
+from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
 
 
@@ -183,6 +185,228 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(2, len(pqdoc(".subtopics>li")))
 
 
+class ProfessionalSupportTestCase(TestCase):
+    """Sets up a product with professional support and an organization that has it."""
+
+    def setUp(self):
+        self.product = ProductFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
+        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
+        self.config = ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=AAQConfigFactory(enabled_locales=[locale]),
+            zendesk_config=ZendeskConfigFactory(),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+            group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
+        )
+        self.root = GroupProfileFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
+        self.org = self.add_org(self.config, "acme")
+        self.team = GroupProfile.objects.add_child(
+            self.org, create_kwargs={"group": GroupFactory(), "slug": "acme-it"}
+        )
+        self.url = reverse("products.product", args=[self.product.slug])
+
+    def add_org(self, config, slug):
+        """Add a company under the enterprise group and make it a support organization."""
+        org = GroupProfile.objects.add_child(
+            self.root, create_kwargs={"group": GroupFactory(), "slug": slug}
+        )
+        SupportOrganizationFactory(config=config, group=org.group).full_clean()
+        return org
+
+    def login_member(self, group_profile=None):
+        user = UserFactory()
+        user.groups.add((group_profile or self.team).group)
+        self.client.login(username=user.username, password="testpass")
+
+
+class EnterpriseGetSupportTests(ProfessionalSupportTestCase):
+    """Users with professional support for the product get the Get help section;
+    everyone else gets a banner."""
+
+    def test_member_sees_get_support(self):
+        TopicFactory(slug="getting-started", products=[self.product])
+        self.login_member()
+
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        self.assertEqual(0, len(doc(".support-callouts")))
+        section = doc(".get-support.support-callouts--top")
+        self.assertEqual(3, len(section(".get-support--item")))
+        # Each card's title is its link.
+        links = [pq(a).attr("href") for a in section(".get-support--title a")]
+        self.assertEqual(
+            links,
+            [
+                reverse("questions.aaq_step3", kwargs={"product_slug": self.product.slug})
+                + f"?support_type={ProductSupportConfig.SUPPORT_TYPE_ZENDESK}",
+                reverse("products.documents", args=[self.product.slug, "getting-started"]),
+                reverse("groups.profile", args=[self.org.slug]),
+            ],
+        )
+        self.assertEqual("Get help", section("h2").text())
+
+    def test_direct_company_member_sees_get_support(self):
+        self.login_member(self.org)
+
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        section = doc(".get-support.support-callouts--top")
+        self.assertEqual(1, len(section))
+        links = [pq(a).attr("href") for a in section(".get-support--title a")]
+        self.assertIn(reverse("groups.profile", args=[self.org.slug]), links)
+
+    def test_get_started_card_hidden_without_topic(self):
+        self.login_member()
+
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        section = doc(".get-support.support-callouts--top")
+        self.assertEqual(2, len(section(".get-support--item")))
+        self.assertEqual(0, len(section(".get-support--badge.is-getting-started")))
+
+    def test_member_without_zendesk_sees_still_need_help(self):
+        self.config.zendesk_config = None
+        self.config.save()
+        self.login_member()
+
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        self.assertEqual(0, len(doc(".get-support")))
+        self.assertIn("Still need help?", doc(".support-callouts--top .card--title").text())
+
+    def test_member_on_other_product_is_sent_to_their_support_page(self):
+        other = ProductFactory()
+        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
+        ProductSupportConfigFactory(
+            product=other,
+            forum_config=AAQConfigFactory(enabled_locales=[locale]),
+            zendesk_config=None,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
+        self.login_member()
+
+        url = reverse("products.product", args=[other.slug])
+        doc = pq(self.client.get(url, follow=True).content)
+
+        self.assertEqual(0, len(doc(".get-support")))
+        self.assertEqual(1, len(doc(".support-callouts--top")))
+        self.assertEqual(1, len(doc(".support-callouts--bottom")))
+        # The product's own support stays available alongside the pro banner.
+        middle = doc(
+            ".support-callouts:not(.support-callouts--top):not(.support-callouts--bottom)"
+        )
+        self.assertEqual(1, len(middle))
+        self.assertEqual("Still need help?", middle(".card--title").text())
+        banner = doc(".support-callouts--top")
+        self.assertEqual("Firefox Professional Support", banner(".card--title").text())
+        self.assertEqual(
+            "Visit your organization’s dedicated support page to contact our team and access "
+            "your support services.",
+            banner(".card--desc").text(),
+        )
+        button = banner("a.sumo-button")
+        self.assertEqual("Access Support", button.text())
+        self.assertEqual(self.url, button.attr("href"))
+
+    def test_member_on_product_without_support_config_is_sent_to_their_support_page(self):
+        other = ProductFactory()
+        self.login_member()
+
+        url = reverse("products.product", args=[other.slug])
+        doc = pq(self.client.get(url, follow=True).content)
+
+        banner = doc(".support-callouts--top")
+        self.assertEqual("Firefox Professional Support", banner(".card--title").text())
+        self.assertEqual(self.url, banner("a.sumo-button").attr("href"))
+
+    def test_logged_out_sees_talk_to_an_expert(self):
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        self.assertEqual(0, len(doc(".get-support")))
+        banner = doc(".support-callouts--top")
+        self.assertEqual("Need dedicated support?", banner(".card--title").text())
+        self.assertIn(
+            "firefox.com/en-US/browsers/enterprise/contact/", banner("a.sumo-button").attr("href")
+        )
+
+    def test_non_member_sees_still_need_help(self):
+        user = UserFactory()
+        self.client.login(username=user.username, password="testpass")
+
+        doc = pq(self.client.get(self.url, follow=True).content)
+
+        self.assertEqual(0, len(doc(".get-support")))
+        banner = doc(".support-callouts--top")
+        self.assertIn("Still need help?", banner(".card--title").text())
+        self.assertEqual(
+            reverse("questions.aaq_step3", kwargs={"product_slug": self.product.slug}),
+            banner("a.sumo-button").attr("href"),
+        )
+
+
+class ProfessionalSupportBannerTests(ProfessionalSupportTestCase):
+    """The home page and the product list point members to their support page."""
+
+    pages = ("home", "products")
+
+    def test_member_sees_banner(self):
+        self.login_member()
+
+        for page in self.pages:
+            with self.subTest(page=page):
+                doc = pq(self.client.get(reverse(page), follow=True).content)
+
+                banner = doc(".support-callouts")
+                self.assertEqual(1, len(banner))
+                self.assertEqual("Firefox Professional Support", banner(".card--title").text())
+                self.assertEqual(self.url, banner("a.sumo-button").attr("href"))
+
+    def test_non_member_sees_no_banner(self):
+        user = UserFactory()
+        self.client.login(username=user.username, password="testpass")
+
+        for page in self.pages:
+            with self.subTest(page=page):
+                doc = pq(self.client.get(reverse(page), follow=True).content)
+                self.assertEqual(0, len(doc(".support-callouts")))
+
+    def test_logged_out_sees_no_banner(self):
+        for page in self.pages:
+            with self.subTest(page=page):
+                doc = pq(self.client.get(reverse(page), follow=True).content)
+                self.assertEqual(0, len(doc(".support-callouts")))
+
+
+class ProMastheadTests(ProfessionalSupportTestCase):
+    """The enterprise page always gets the pro support masthead; other products only for
+    users with professional support for them."""
+
+    masthead = ".home-search-section.pro-support-masthead"
+
+    def test_enterprise_page_always_has_it(self):
+        doc = pq(self.client.get(self.url, follow=True).content)
+        self.assertEqual(1, len(doc(self.masthead)))
+
+    def test_other_product_without_pro_support_does_not(self):
+        other = ProductFactory()
+        self.login_member()
+
+        doc = pq(
+            self.client.get(reverse("products.product", args=[other.slug]), follow=True).content
+        )
+        self.assertEqual(0, len(doc(self.masthead)))
+
+    def test_other_product_with_pro_support_does(self):
+        other = ProductFactory()
+        config = ProductSupportConfigFactory(product=other, zendesk_config=ZendeskConfigFactory())
+        self.login_member(self.add_org(config, "globex"))
+
+        doc = pq(
+            self.client.get(reverse("products.product", args=[other.slug]), follow=True).content
+        )
+        self.assertEqual(1, len(doc(self.masthead)))
+
+
 _MZLA_SLUGS = ["thunderbird", "thunderbird-android"]
 _MATOMO_MARKER = "data-matomo-site-id"
 
@@ -225,11 +449,10 @@ class MatomoMzlaProductLandingTests(TestCase):
 
 _ENTERPRISE_SLUG = "firefox-enterprise"
 _ENTERPRISE_BODY = "body.product-theme--enterprise"
-_ENTERPRISE_BANNER = ".enterprise-banner.product-theme--enterprise"
 
 
 class ProductThemeClassTests(TestCase):
-    """Enterprise pages carry the Enterprise theme class; the Enterprise banner carries its own."""
+    """Enterprise pages carry the Enterprise theme class."""
 
     def setUp(self):
         super().setUp()
@@ -249,7 +472,7 @@ class ProductThemeClassTests(TestCase):
         self.unthemed_document = ApprovedRevisionFactory(document__products=[]).document
         self.other_product = ProductFactory()
 
-        # The base TestCase clears the cache, so the banner check reads this setup.
+        # The AAQ step needs a signed-in user.
         group = GroupProfileFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
         user = UserFactory(groups=[group.group])
         self.client.login(username=user.username, password="testpass")
@@ -297,16 +520,6 @@ class ProductThemeClassTests(TestCase):
                 "other_product_landing",
                 lambda test: reverse("products.product", args=[test.other_product.slug]),
                 None,
-            ),
-            (
-                "home_banner",
-                lambda test: reverse("home"),
-                _ENTERPRISE_BANNER,
-            ),
-            (
-                "products_banner",
-                lambda test: reverse("products"),
-                _ENTERPRISE_BANNER,
             ),
         ]
     )
