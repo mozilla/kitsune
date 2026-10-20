@@ -1,3 +1,5 @@
+import re
+
 from django_jinja import library
 from markupsafe import Markup
 
@@ -5,6 +7,8 @@ from kitsune.wiki.content_managers import HybridContentManager
 from kitsune.wiki.diff import BetterHtmlDiff
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document
+
+TABLE_TAG = re.compile(r"<table(?=[\s/>])|</table\s*>", re.IGNORECASE)
 
 
 @library.global_function
@@ -28,3 +32,33 @@ def is_auto_published_translation(doc: Document) -> bool:
     reviewed by a human.
     """
     return HybridContentManager().is_auto_published_translation(doc.current_revision)
+
+
+@library.filter
+def scrollable_tables(html):
+    """Wrap each top-level table in a horizontal scroll container."""
+    if not isinstance(html, str) or not TABLE_TAG.search(html):
+        return html
+
+    parts = []
+    depth = 0
+    cursor = 0
+    for match in TABLE_TAG.finditer(html):
+        if match.group().startswith("</"):
+            if depth == 0:
+                continue
+            depth -= 1
+            if depth == 0:
+                parts += [html[cursor : match.end()], "</div>"]
+                cursor = match.end()
+        else:
+            if depth == 0:
+                parts += [html[cursor : match.start()], '<div class="table-scroll">']
+                cursor = match.start()
+            depth += 1
+
+    # Leave malformed markup with an unclosed table as it is.
+    if depth:
+        return html
+    parts.append(html[cursor:])
+    return "".join(parts)

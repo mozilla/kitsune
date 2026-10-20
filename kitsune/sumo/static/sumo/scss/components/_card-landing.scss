@@ -1,0 +1,104 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+.card {
+  &--article,
+  &--product {
+    @include c.elevation-01(var(--card-bg), var(--landing-card-highlight));
+    border-radius: var(--radius-lg);
+    transition: transform .2s ease, box-shadow .2s ease;
+
+    // Ring last so this shadow list pairs up with the resting elevation and the transition interpolates.
+    &:hover,
+    &:focus-within {
+      box-shadow: var(--landing-card-hover-shadow), var(--landing-card-hover-ring);
+    }
+
+    &:hover {
+      @media (prefers-reduced-motion: no-preference) {
+        transform: translateY(-2px);
+      }
+    }
+
+    .card--desc {
+      color: var(--landing-card-desc-text);
+    }
+  }
+
+  &--article {
+    display: flex;
+    flex-direction: column;
+
+    .card--title {
+      margin-bottom: auto;
+      padding-bottom: p.$spacing-xl;
+
+      a {
+        white-space: pre-line;
+        word-wrap: break-word;
+
+        // Surface the visited state so users can tell which featured articles
+        // they've already read (issue #7459).
+        &:visited {
+          color: var(--color-link-visited);
+        }
+      }
+    }
+
+    .card--desc {
+      display: -webkit-box;
+      margin-top: p.$spacing-lg;
+      margin-bottom: p.$spacing-md;
+      padding-top: p.$spacing-lg;
+      min-height: 88px;
+      overflow: hidden;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      border-top: 1px solid var(--landing-card-divider);
+    }
+
+    .card--details {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+  }
+
+  &--product {
+    display: flex;
+    flex-direction: column;
+    gap: 10px 20px;
+    min-height: 144px;
+
+    .card--icon-plate {
+      display: flex;
+      flex: 0 0 auto;
+      padding: 10px;
+      width: fit-content;
+      box-shadow: var(--landing-card-plate-ring);
+      border-radius: var(--radius-lg);
+      background: var(--landing-card-plate-bg);
+
+      .card--icon {
+        margin: 0;
+      }
+    }
+
+    // Clamp the description so a single verbose product can't stretch every
+    // card in the uniform grid into a tall box full of empty space.
+    .card--desc {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+  }
+
+  @media #{p.$mq-lg} {
+    &--product {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+}

@@ -1,0 +1,242 @@
+// Emitted through a mixin so the :root block lands after the theme blocks, not where this module is first loaded.
+@use 'sass:map';
+@use '@mozilla-protocol/core/protocol/css/includes/lib' as p;
+@use 'mixins' as c;
+@use 'themes/light';
+
+$mappings: (
+  'background-color': 'page-bg',
+  'background-color-secondary': 'color-shade-bg',
+  'background-color-tertiary': 'protocol-background-color-tertiary',
+  'body-text-color': 'color-moz-text',
+  'body-text-color-secondary': 'protocol-body-text-color-secondary',
+  'title-text-color': 'color-moz-heading',
+  'link-color': 'color-link',
+  'link-color-hover': 'color-link-hover',
+  'link-color-visited': 'protocol-link-color-visited',
+
+  'background-color-inverse': 'protocol-background-color-inverse',
+  'background-color-secondary-inverse': 'protocol-background-color-secondary-inverse',
+  'background-color-tertiary-inverse': 'protocol-background-color-tertiary-inverse',
+  'body-text-color-inverse': 'color-inverse',
+  'body-text-color-secondary-inverse': 'protocol-body-text-color-secondary-inverse',
+  'title-text-color-inverse': 'color-inverse',
+  'link-color-inverse': 'protocol-link-color-inverse',
+  'link-color-hover-inverse': 'protocol-link-color-hover-inverse',
+  'link-color-visited-inverse': 'protocol-link-color-visited-inverse',
+);
+
+@mixin emit {
+  :root {
+    @each $property, $token in $mappings {
+      @if not map.has-key(light.$light, $token) {
+        @error 'Protocol property "#{$property}" maps to "#{$token}", which is not a theme token.';
+      }
+
+      --#{$property}: var(--#{$token});
+    }
+  }
+
+  // Protocol compiles its colors in; these repeat its selectors and win by source order.
+  .mzp-c-navigation {
+    background: var(--header-bg);
+    color: var(--header-text);
+  }
+
+  .mzp-c-menu-category {
+    .mzp-c-menu-title {
+      border-bottom-color: var(--header-separator);
+      color: var(--header-text);
+    }
+
+    &.mzp-has-drop-down .mzp-c-menu-title::before {
+      @include c.icon-mask(p.$url-image-expand-black, var(--color-icon), 20px 20px, top left);
+    }
+  }
+
+  @media #{p.$mq-md} {
+    .mzp-c-menu.mzp-is-basic .mzp-c-menu-category {
+      &.mzp-has-drop-down:hover,
+      &.mzp-has-drop-down:focus,
+      &.mzp-has-drop-down:focus-within {
+        .mzp-c-menu-title::after {
+          background: var(--header-underline);
+        }
+      }
+    }
+
+    .mzp-c-menu.mzp-is-enhanced .mzp-c-menu-category.mzp-is-selected .mzp-c-menu-title::after {
+      background: var(--header-underline);
+    }
+  }
+
+  .mzp-c-menu-panel {
+    // Below md the panel opens inside the mobile menu, so it shares the header's surface.
+    background: var(--header-bg);
+
+    .mzp-c-menu-button-close {
+      background-image: var(--close-icon);
+      // Protocol positions the button absolutely, which also anchors the pseudo-element.
+      @include c.forced-colors-icon(url('protocol/img/icons/close.svg'), 125%, $position: null);
+    }
+
+    @media #{p.$mq-md} {
+      box-shadow: var(--dropdown-shadow);
+      border-top-color: var(--dropdown-edge);
+      background: var(--dropdown-bg);
+    }
+  }
+
+  .mzp-c-menu-item {
+    .mzp-c-menu-item-link {
+      color: var(--dropdown-link);
+
+      &:hover,
+      &:active,
+      &:focus {
+        .mzp-c-menu-item-title {
+          border-bottom-color: var(--dropdown-title-hover);
+          color: var(--dropdown-title-hover);
+        }
+      }
+    }
+
+    .mzp-c-menu-item-list a {
+      color: var(--dropdown-link);
+
+      &:hover,
+      &:active,
+      &:focus {
+        color: var(--dropdown-link-hover);
+      }
+    }
+
+    @media #{p.$mq-md} {
+      &:hover {
+        box-shadow: var(--dropdown-item-hover-ring);
+      }
+    }
+  }
+
+  .mzp-c-menu-list-list {
+    box-shadow: var(--menu-list-shadow);
+    background-color: var(--color-surface);
+  }
+
+  .mzp-c-menu-list-item a {
+    color: var(--color-link);
+
+    &:hover,
+    &:focus {
+      background-color: var(--color-link-active-bg);
+      color: var(--color-link-hover);
+    }
+  }
+
+  .is-details .mzp-c-menu-list-title button {
+    color: var(--color-link);
+
+    &:hover,
+    &:focus {
+      color: var(--color-link-hover);
+    }
+  }
+
+  html {
+    background: var(--page-bg);
+  }
+
+  .mzp-c-footer {
+    box-shadow: var(--footer-edge);
+    background: var(--footer-bg);
+    color: var(--footer-text);
+
+    a {
+      color: var(--footer-text);
+
+      &:hover,
+      &:active {
+        color: var(--footer-text);
+      }
+    }
+  }
+
+  .mzp-c-footer-sections {
+    border-bottom-color: var(--footer-divider);
+  }
+
+  .mzp-c-footer-heading {
+    &,
+    & button {
+      color: var(--footer-text-muted);
+    }
+
+    & button {
+      color: var(--footer-text);
+    }
+  }
+
+  .mzp-c-footer-secondary {
+    color: var(--footer-text-muted);
+
+    a {
+      color: var(--footer-text-muted);
+    }
+  }
+
+  .mzp-c-footer-links-social li a {
+    &:hover,
+    &:focus {
+      border-bottom-color: var(--footer-text);
+    }
+  }
+
+  .mzp-c-notification-bar {
+    background-color: var(--notification-bg);
+    color: var(--notification-text);
+
+    .mzp-c-notification-bar-button {
+      background-image: var(--notification-close-icon);
+
+      @media #{p.$mq-sm} {
+        background-color: var(--notification-button-bg);
+
+        &:hover,
+        &:focus {
+          background-color: var(--notification-button-hover-bg);
+        }
+      }
+    }
+
+    @each $variant in (success, error, warning, click) {
+      &.mzp-t-#{$variant} {
+        background-color: var(--notification-#{$variant}-bg);
+        color: var(--notification-#{$variant}-text);
+
+        @media #{p.$mq-sm} {
+          .mzp-c-notification-bar-button {
+            background-color: var(--notification-#{$variant}-button-bg);
+
+            &:hover,
+            &:focus {
+              background-color: var(--notification-#{$variant}-button-hover-bg);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // The site focus ring marks the button, and Protocol's dotted outline would draw over it.
+  .mzp-c-modal-close .mzp-c-modal-button-close:focus {
+    outline: none;
+  }
+
+  summary,
+  details .is-summary button,
+  .mzp-c-details .is-summary button {
+    &::before {
+      @include c.icon-mask(p.$url-image-expand-black, var(--color-icon), 20px 20px, top left);
+    }
+  }
+}

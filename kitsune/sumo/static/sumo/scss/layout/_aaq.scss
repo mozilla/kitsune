@@ -28,7 +28,7 @@
 
   .aaq-form-buttons {
     padding-top: p.$spacing-2xl;
-    border-top: 1px solid var(--color-marketing-gray-03);
+    border-top: 1px solid var(--aaq-form-divider);
   }
 
   // Make the community card more compact
@@ -71,7 +71,7 @@ aside .aaq-widget {
   position: relative;
   margin-bottom: p.$spacing-lg;
   padding: p.$spacing-xl;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--support-switcher-shadow);
   background: var(--color-callout-bg);
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -98,7 +98,7 @@ aside .aaq-widget {
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--support-switcher-hover-shadow);
   }
 
   // Header with icon and title

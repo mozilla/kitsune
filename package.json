@@ -13,7 +13,7 @@
     "install-dev": "npm install",
     "install-prod": "npm ci",
     "development": "npm run install-dev",
-    "stylelint": "npx stylelint kitsune/sumo/static/sumo/scss/**/*",
+    "stylelint": "npx stylelint \"kitsune/sumo/static/sumo/scss/**/*.scss\" \"svelte/**/*.svelte\"",
     "watch:stylelint": "onchange 'kitsune/sumo/static/sumo/scss/**/*' -- npm run stylelint",
     "build:styleguide:copy": "mkdir -p styleguide/build/static && cp -r dist/. styleguide/build/static/",
     "build:styleguide:styles": "sass styleguide/kss-template/kss-assets/scss/kss.scss styleguide/build/css/kss.css",
@@ -30,7 +30,9 @@
     "webpack:watch": "env-cmd -- npx concurrently npm:webpack:watch:*",
     "webpack:watch:dev": "npx webpack watch --config webpack.dev.js",
     "webpack:watch:pre-render": "npx webpack watch --config webpack.pre-render.js",
-    "webpack:test": "npx webpack build --config webpack.test.js && npx mocha --require ./webpack/mocha-require dist/tests.js"
+    "webpack:test": "npx webpack build --config webpack.test.js && npx mocha --require ./webpack/mocha-require dist/tests.js",
+    "theme:test": "node --test \"scripts/theme/*.test.mjs\"",
+    "theme:contrast": "node scripts/theme/check-contrast.mjs"
   },
   "license": "MPL-2.0",
   "dependencies": {
@@ -85,6 +87,7 @@
     "path-parse": "^1.0.7",
     "postcss": "^8.5.30",
     "postcss-custom-properties": "^15.0.1",
+    "postcss-html": "^2.0.0",
     "postcss-loader": "^8.2.1",
     "sass": "^1.98.0",
     "sass-loader": "^16.0.7",

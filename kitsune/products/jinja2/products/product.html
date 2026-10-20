@@ -4,6 +4,7 @@
 {% set announcement_product = product %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title)|forceescape)] %}
 {% set classes = 'product-landing' %}
+{% set product_theme = product.slug %}
 {% set search_params = {'product': product.slug} %}
 {% set extra_body_attrs = {'data-product-slug': product.slug} %}
 {% set canonical_url = canonicalize(model_url=product.get_absolute_url()) %}
@@ -23,7 +24,7 @@
 {% block hidden_search_masthead %}{% endblock %}
 
 {% block masthead %}
-<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg product-{{ product.slug }}{% if pro_support_masthead %} pro-support-masthead{% endif %}">
+<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg product-{{ product.slug }}{% if pro_support_masthead %} pro-support-masthead{% else %} has-aurora{% endif %}">
 
   <div class="mzp-l-content">
 

@@ -1,0 +1,18 @@
+@use '../config' as c;
+
+.elevation-00 {
+  @include c.elevation-00;
+}
+
+// Cards that carry these classes have no background of their own; tinted and inverse cards override it.
+.elevation-01 {
+  @include c.elevation-01(transparent);
+}
+
+.elevation-02 {
+  @include c.elevation-02(transparent);
+}
+
+.elevation-03 {
+  @include c.elevation-03(transparent);
+}

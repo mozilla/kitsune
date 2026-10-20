@@ -22,8 +22,8 @@
     box-shadow: none;
     border: 2px solid var(--field-border-color-default);
     border-radius: var(--global-radius);
-    background-color: var(--color-white);
-    color: #0c0c0d;
+    background-color: var(--color-field-bg);
+    color: var(--field-text);
     flex-wrap: wrap;
     transition: border-color 150ms;
     @include p.font-size(16px);
@@ -53,13 +53,13 @@
     box-shadow: none;
     border: 0;
     border-radius: var(--global-radius);
-    background: #eff2f7;
+    background: var(--user-autocomplete-item-bg);
     color: var(--color-text);
     text-shadow: none;
     @include c.text-body-sm;
 
     &.active {
-      background: #e4e8ee;
+      background: var(--user-autocomplete-item-active-bg);
       color: var(--color-text);
     }
 
@@ -76,11 +76,10 @@
 
   // Suggestions dropdown.
   .ts-dropdown {
-    @include c.elevation-01;
+    @include c.elevation-01(var(--tom-select-dropdown-bg));
     margin: 0;
     border: 0;
     border-radius: 0 0 var(--global-radius) var(--global-radius);
-    background-color: var(--color-white);
     font-size: 14px;
 
     .option {
@@ -97,8 +96,8 @@
 
     .active {
       border-radius: var(--global-radius);
-      background-color: var(--color-link);
-      color: var(--color-white);
+      background-color: var(--color-accent);
+      color: var(--color-text-on-accent);
     }
 
     .no-results {

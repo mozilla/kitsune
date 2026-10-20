@@ -1,6 +1,6 @@
 @use './protocol';
 
-@use 'config';
+@use './theme';
 @use 'base';
 @use 'layout';
 @use 'components';
@@ -11,3 +11,5 @@
 
 @use "../../../../../node_modules/codemirror/lib/codemirror";
 @use "../../../../../node_modules/codemirror/addon/hint/show-hint";
+
+@use './forced-colors';

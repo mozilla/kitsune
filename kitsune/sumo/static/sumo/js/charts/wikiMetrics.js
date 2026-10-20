@@ -1,11 +1,6 @@
 import { renderLineChart } from "sumo/js/charts";
+import { seriesColor } from "sumo/js/charts/theme";
 import { parseISO } from "date-fns";
-
-const COLORS = [
-  "#5d84b2", "#aa4643", "#89a54e", "#80699b",
-  "#3d96ae", "#db843d", "#92a8cd", "#a47d7c",
-  "#b5ca92", "#c98531", "#db75c2",
-];
 
 const CHART_CONFIGS = [
   { id: "percent-localized-top100", code: "percent_localized_top100", yLabel: () => gettext("% Localized"), max: 100 },
@@ -147,9 +142,9 @@ function replaceWithCanvas(section, height = 320) {
 function renderLocaleLocalizationChart(section, byCode) {
   const canvas = replaceWithCanvas(section);
   const codes = [
-    { code: "percent_localized_top100", label: gettext("Top 100 Articles"), color: "#5d84b2" },
-    { code: "percent_localized_top20",  label: gettext("Top 20 Articles"),  color: "#aa4643" },
-    { code: "percent_localized_all",    label: gettext("All Articles"),     color: "#89a54e" },
+    { code: "percent_localized_top100", label: gettext("Top 100 Articles"), color: seriesColor(0) },
+    { code: "percent_localized_top20",  label: gettext("Top 20 Articles"),  color: seriesColor(1) },
+    { code: "percent_localized_all",    label: gettext("All Articles"),     color: seriesColor(2) },
   ];
 
   const datasets = codes.map(({ code, label, color }) => ({
@@ -173,8 +168,8 @@ function renderLocaleContributorsChart(section, byCode) {
   const canvas = replaceWithCanvas(section);
   const dataset = {
     label: gettext("Active Contributors"),
-    borderColor: "#5d84b2",
-    backgroundColor: "rgba(93,132,178,0.15)",
+    borderColor: seriesColor(0),
+    backgroundColor: seriesColor(0, 0.15),
     pointRadius: 0,
     borderWidth: 1.5,
     fill: true,
@@ -192,8 +187,8 @@ function renderHelpfulVotesChart(section, objects) {
   const sorted = [...objects].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   const dataset = {
     label: gettext("Article Votes: % Helpful"),
-    borderColor: "#aa4643",
-    backgroundColor: "rgba(170,70,67,0.15)",
+    borderColor: seriesColor(1),
+    backgroundColor: seriesColor(1, 0.15),
     pointRadius: 0,
     borderWidth: 1.5,
     fill: true,
@@ -259,8 +254,8 @@ function renderMultiLocaleChart(section, byLocale, allLocales, visibleLocales, c
 
   const datasets = allLocales.map((locale, i) => ({
     label: locale,
-    borderColor: COLORS[i % COLORS.length],
-    backgroundColor: COLORS[i % COLORS.length],
+    borderColor: seriesColor(i),
+    backgroundColor: seriesColor(i),
     pointRadius: 0,
     borderWidth: 1.2,
     fill: false,

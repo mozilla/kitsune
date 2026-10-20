@@ -35,7 +35,7 @@
       <p class="character-counter">
         <span x-text="remainingChars"></span> {{ _('characters remaining.') }}
       </p>
-      <p class="error-text" x-show="hasError" style="display: none; color: red;">{{ _('Please provide more details.') }}
+      <p class="error-text required-text" x-show="hasError" style="display: none;">{{ _('Please provide more details.') }}
       </p>
       <div class="sumo-button-wrap align-full">
         <button class="sumo-button button-sm secondary-button" type="button" @click="cancelSurvey">

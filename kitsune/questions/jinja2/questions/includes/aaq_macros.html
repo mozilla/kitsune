@@ -1,5 +1,6 @@
 {% from 'products/includes/topic_macros.html' import help_topics with context %}
 {% from 'includes/common_macros.html' import featured_articles, scam_banner %}
+{% from 'includes/icons.html' import icon %}
 
 {% macro select_product(products) -%}
   {# L10n: A header, displayed when asking a new question (on https://support.mozilla.org/questions/new and in Premium product question forms). #}
@@ -10,10 +11,12 @@
     <div id="product-picker" class="sumo-card-grid stack-on-mobile">
       <div class="scroll-wrap">
         {% for product in products %}
-          <div class="card card--product zoom-on-hover">
-          <img src="{{ product.image_alternate_url }}"
-              alt="{{ pgettext('DB: products.Product.title', product.title)|forceescape }}"
-              class="card--icon">
+          <div class="card card--product">
+            <div class="card--icon-plate">
+              <img src="{{ product.image_alternate_url }}"
+                  alt="{{ pgettext('DB: products.Product.title', product.title)|forceescape }}"
+                  class="card--icon">
+            </div>
 
             <div class="card--details">
               <h3 class="card--title">
@@ -210,7 +213,7 @@
   {% set switch_to_type = SUPPORT_TYPE_FORUM if is_zendesk else SUPPORT_TYPE_ZENDESK %}
   <div class="support-type-switcher-widget {{ css_class }}">
     <div class="switcher-header">
-      <img class="switcher-icon" src="{{ webpack_static('sumo/img/megaphone.svg') }}" alt="" />
+      {{ icon('megaphone', class='switcher-icon') }}
       <span class="switcher-title">
         {% if is_zendesk %}
           {{ _('Ask the community') }}
@@ -274,8 +277,8 @@
 
 {% macro helpful_tip() %}
   <h3 class="sumo-card-heading">
-    {# L10n: Alt text for the helpful tip icon displayed when filing a new question form (e.g., on https://support.mozilla.org/questions/new/firefox/form). Source: https://assets-prod.sumo.prod.webservices.mozgcp.net/static/highlight.975d9eebb1f0b621.svg #}
-    <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/highlight.svg') }}" alt="{{ _('Helpful Tip icon') }}" />
+    {# L10n: Accessible name for the helpful tip icon displayed when filing a new question form (e.g., on https://support.mozilla.org/questions/new/firefox/form). #}
+    {{ icon('highlight', label=_('Helpful Tip icon'), class='card--icon-sm') }}
     {# L10n: A header for the Helpful Tip card displayed when filing a new question form (e.g., on https://support.mozilla.org/questions/new/firefox/form). #}
     {{ _('Helpful Tip!')}}
   </h3>

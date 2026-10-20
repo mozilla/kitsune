@@ -158,3 +158,6 @@ jobs:
 
       - name: Run JavaScript tests
         run: npm run webpack:test
+
+      - name: Run theme tests
+        run: npm run theme:test

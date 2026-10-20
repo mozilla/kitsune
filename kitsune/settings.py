@@ -1,6 +1,8 @@
 """Django settings for kitsune project."""
 
+import base64
 import datetime
+import hashlib
 import json
 import logging
 import os
@@ -516,6 +518,7 @@ _CONTEXT_PROCESSORS = [
     "kitsune.sumo.context_processors.aaq_languages",
     "kitsune.sumo.context_processors.current_year",
     "kitsune.sumo.context_processors.static_url_webpack",
+    "kitsune.sumo.context_processors.dark_mode",
     "kitsune.messages.context_processors.unread_message_count",
 ]
 
@@ -1479,6 +1482,14 @@ CONTENT_SECURITY_POLICY = {
     },
 }
 
+# Inlined only with the dark-mode flag on; always hashed because doc cache keys use it.
+with open(path("kitsune", "sumo", "theme_head.js"), "rb") as head_script_file:
+    _head_script_bytes = head_script_file.read()
+HEAD_SCRIPT = _head_script_bytes.decode("utf-8")
+HEAD_SCRIPT_CSP_SOURCE = (
+    f"'sha256-{base64.b64encode(hashlib.sha256(_head_script_bytes).digest()).decode('ascii')}'"
+)
+
 if DEBUG:
     # The nonce has to go, or browsers ignore UNSAFE_INLINE in the same directive.
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"].remove(NONCE)
@@ -1490,6 +1501,9 @@ if DEBUG:
     # /gh/ repo scripts can't be loaded.
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].append("https://cdn.jsdelivr.net/npm/")
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"].append("https://cdn.jsdelivr.net/npm/")
+else:
+    # Only here: a hash beside UNSAFE_INLINE would make browsers ignore UNSAFE_INLINE.
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].append(HEAD_SCRIPT_CSP_SOURCE)
 
 # Trusted Contributor Groups
 TRUSTED_GROUPS = [

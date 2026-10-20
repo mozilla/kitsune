@@ -45,12 +45,13 @@
   height: p.$spacing-xl;
   border: none;
   border-radius: p.$border-radius-sm;
-  background-image: url('protocol/img/icons/search.svg');
+  background-image: var(--search-icon);
   background-color: transparent;
   background-position: center center;
   background-repeat: no-repeat;
   font: 0/0 a;
   color: transparent;
+  @include c.forced-colors-icon(url('protocol/img/icons/search.svg'));
 
   &:hover,
   &:active,

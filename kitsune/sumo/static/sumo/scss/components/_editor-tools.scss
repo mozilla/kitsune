@@ -59,7 +59,7 @@ div.editor-tools {
 button {
   &.markup-toolbar-button {
     border: 0;
-    background: url("sumo/img/markup.svg") no-repeat 11px 6px;
+    background: var(--markup-toolbar-image) no-repeat 11px 6px;
     background-size: 410px 22px;
     cursor: pointer;
     height: 36px;
@@ -200,10 +200,10 @@ section.marky {
   padding: 0;
   overflow-y: auto;
   list-style: none;
-  background: var(--color-white);
+  background: var(--editor-autocomplete-bg);
   border: 1px solid var(--field-border-color-default);
   border-radius: var(--global-radius);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--editor-autocomplete-shadow);
 
   li {
     padding: p.$spacing-xs p.$spacing-sm;
@@ -251,7 +251,7 @@ section.marky {
     overflow: auto;
 
     li {
-      border: solid 1px #fff;
+      border: solid 1px var(--media-picker-item-border);
       cursor: pointer;
       list-style: none;
       display: inline-block;
@@ -263,54 +263,18 @@ section.marky {
       width: 120px;
 
       &:hover {
-        background: #f0f0f0;
-        border: solid 1px #9accf7;
+        background: var(--media-picker-item-hover-bg);
+        border: solid 1px var(--media-picker-item-active-border);
       }
 
       &.selected {
-        background: #daedf6;
-        border: solid 1px #9accf7;
+        background: var(--media-picker-item-selected-bg);
+        border: solid 1px var(--media-picker-item-active-border);
       }
 
       img {
         max-width: 120px;
         max-height: 120px;
-      }
-    }
-  }
-
-  div.filter {
-    div.type {
-      color: #929292;
-      float: right;
-      margin-top: 0.5em;
-
-      ol {
-        float: left;
-        list-style-type: none;
-        margin: 0;
-
-        li {
-          border-left: 2px solid #929292;
-          color: rgb(0, 81, 185);
-          cursor: pointer;
-          float: left;
-          font-weight: bold;
-          padding: 0 0.5em;
-
-          &.selected {
-            color: #565656;
-            cursor: default;
-          }
-
-          &:first-child {
-            border: none;
-          }
-        }
-      }
-
-      span {
-        float: left;
       }
     }
   }
@@ -364,29 +328,6 @@ section.marky {
     div.placeholder {
       left: auto;
       right: 15px;
-    }
-
-    div.type {
-      float: left;
-
-      ol {
-        float: right;
-
-        li {
-          border: none;
-          border-right: 2px solid #929292;
-          float: right;
-        }
-      }
-
-      span {
-        float: right;
-      }
-
-      div.submit {
-        left: auto;
-        right: 15px;
-      }
     }
   }
 }

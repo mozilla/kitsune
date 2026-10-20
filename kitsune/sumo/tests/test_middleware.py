@@ -445,3 +445,22 @@ class SumoCSPMiddlewareTestCase(TestCase):
 
     def test_other_paths_do_not_allow_admin_scripts(self):
         self.assertNotIn("'self'", self._directives()["script-src"])
+
+    def test_scripts_allow_the_inline_theme_script_by_hash(self):
+        for label, kwargs in (
+            ("default", {}),
+            ("admin", {"path": "/admin/"}),
+            ("chat", {"show_chat": True}),
+        ):
+            with self.subTest(label):
+                self.assertIn(
+                    settings.HEAD_SCRIPT_CSP_SOURCE, self._directives(**kwargs)["script-src"]
+                )
+
+    def test_configured_scripts_never_pair_the_hash_with_unsafe_inline(self):
+        # Browsers ignore 'unsafe-inline' beside a hash, which would block DEBUG's inline scripts.
+        script_src = settings.CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"]
+
+        self.assertFalse(
+            settings.HEAD_SCRIPT_CSP_SOURCE in script_src and "'unsafe-inline'" in script_src
+        )

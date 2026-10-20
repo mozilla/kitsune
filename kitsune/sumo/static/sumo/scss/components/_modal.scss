@@ -3,7 +3,7 @@
 
 
 .mzp-c-modal-inner {
-  background: var(--page-bg);
+  background: var(--card-bg);
 }
 
 .mzp-c-modal-overlay-contents {
@@ -11,7 +11,8 @@
 }
 
 .mzp-c-modal-close .mzp-c-modal-button-close {
-  background: transparent url("protocol/img/icons/close.svg") center center no-repeat;
+  background: transparent var(--close-icon) center center no-repeat;
+  @include c.forced-colors-icon(url("protocol/img/icons/close.svg"));
 }
 
 

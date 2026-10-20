@@ -1,4 +1,5 @@
 import { renderLineChart } from "sumo/js/charts";
+import { seriesColor } from "sumo/js/charts/theme";
 import { parseISO } from "date-fns";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -44,8 +45,8 @@ function buildConfig(objects) {
       datasets: [
         {
           label: gettext("Questions"),
-          borderColor: "#5d84b2",
-          backgroundColor: "#5d84b2",
+          borderColor: seriesColor(0),
+          backgroundColor: seriesColor(0),
           yAxisID: "y",
           pointRadius: 0,
           borderWidth: 1.5,
@@ -55,8 +56,8 @@ function buildConfig(objects) {
         },
         {
           label: gettext("Solved"),
-          borderColor: "#aa4643",
-          backgroundColor: "#aa4643",
+          borderColor: seriesColor(1),
+          backgroundColor: seriesColor(1),
           yAxisID: "y",
           pointRadius: 0,
           borderWidth: 1.5,
@@ -66,8 +67,8 @@ function buildConfig(objects) {
         },
         {
           label: gettext("Responded in 24 hours"),
-          borderColor: "#89a54e",
-          backgroundColor: "#89a54e",
+          borderColor: seriesColor(2),
+          backgroundColor: seriesColor(2),
           yAxisID: "y",
           pointRadius: 0,
           borderWidth: 1.5,
@@ -77,8 +78,8 @@ function buildConfig(objects) {
         },
         {
           label: gettext("Responded in 72 hours"),
-          borderColor: "#80699b",
-          backgroundColor: "#80699b",
+          borderColor: seriesColor(3),
+          backgroundColor: seriesColor(3),
           yAxisID: "y",
           pointRadius: 0,
           borderWidth: 1.5,
@@ -88,8 +89,8 @@ function buildConfig(objects) {
         },
         {
           label: gettext("% Solved"),
-          borderColor: "#aa4643",
-          backgroundColor: "#aa4643",
+          borderColor: seriesColor(1),
+          backgroundColor: seriesColor(1),
           borderDash: [6, 4],
           yAxisID: "y1",
           pointRadius: 0,
@@ -103,8 +104,8 @@ function buildConfig(objects) {
         },
         {
           label: gettext("% Responded in 24 hours"),
-          borderColor: "#89a54e",
-          backgroundColor: "#89a54e",
+          borderColor: seriesColor(2),
+          backgroundColor: seriesColor(2),
           borderDash: [6, 4],
           yAxisID: "y1",
           pointRadius: 0,
@@ -118,8 +119,8 @@ function buildConfig(objects) {
         },
         {
           label: gettext("% Responded in 72 hours"),
-          borderColor: "#80699b",
-          backgroundColor: "#80699b",
+          borderColor: seriesColor(3),
+          backgroundColor: seriesColor(3),
           borderDash: [6, 4],
           yAxisID: "y1",
           pointRadius: 0,

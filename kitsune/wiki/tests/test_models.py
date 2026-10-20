@@ -3,6 +3,7 @@ import urllib.parse
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -23,7 +24,7 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
     TYPO_SIGNIFICANCE,
 )
-from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.models import Document, Revision, doc_html_cache_key
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
@@ -393,6 +394,25 @@ class DocumentTests(TestCase):
     # recategorizing a template undefined in the tests. If this becomes
     # something we do in the future, we should revisit this and define
     # the behavior in a test.
+
+
+class DocHtmlCacheKeyTests(TestCase):
+    def test_key_varies_with_the_locale_the_slug_and_the_head_script_hash(self):
+        key = doc_html_cache_key("en-US", "a-slug")
+
+        self.assertNotEqual(key, doc_html_cache_key("fr", "a-slug"))
+        self.assertNotEqual(key, doc_html_cache_key("en-US", "another-slug"))
+        with self.settings(HEAD_SCRIPT_CSP_SOURCE="'sha256-changed'"):
+            self.assertNotEqual(key, doc_html_cache_key("en-US", "a-slug"))
+
+    def test_clearing_the_cached_html_removes_the_entry_under_the_current_key(self):
+        document = DocumentFactory(slug="a-slug")
+        key = doc_html_cache_key(document.locale, document.slug)
+        cache.set(key, ("<p>cached</p>", {}))
+
+        document.clear_cached_html()
+
+        self.assertIsNone(cache.get(key))
 
 
 class VisibilityTests(TestCase):

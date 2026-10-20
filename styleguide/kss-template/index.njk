@@ -25,6 +25,7 @@
       </svg>
     </button>
     <span class="kss-navbar-title">{{ options.title }}</span>
+    <button type="button" class="kss-toggle-theme" data-toggle-theme aria-pressed="false">Dark examples</button>
   </header>
   <!-- This is the off-canvas -->
 
@@ -273,6 +274,43 @@ function mobileNav(e){
 
 if (navToggle) {
   navToggle.addEventListener("click", mobileNav);
+}
+
+// switch the examples between the light and dark theme; the choice follows you across pages
+var themeToggle = document.querySelector('[data-toggle-theme]');
+var themeScopes = {% if template.isItem %}[document.documentElement]{% else %}document.querySelectorAll('.kss-modifier__example'){% endif %};
+
+function setExampleTheme(dark) {
+  themeScopes.forEach(function(scope) {
+    if (dark) {
+      scope.setAttribute('data-theme', 'dark');
+    } else {
+      scope.removeAttribute('data-theme');
+    }
+  });
+  if (themeToggle) {
+    themeToggle.setAttribute('aria-pressed', String(dark));
+  }
+}
+
+var storedTheme = null;
+try {
+  storedTheme = localStorage.getItem('kss-theme');
+} catch (e) {
+  // storage is blocked: the examples start light
+}
+setExampleTheme(storedTheme === 'dark');
+
+if (themeToggle) {
+  themeToggle.addEventListener('click', function() {
+    var dark = themeToggle.getAttribute('aria-pressed') !== 'true';
+    setExampleTheme(dark);
+    try {
+      localStorage.setItem('kss-theme', dark ? 'dark' : 'light');
+    } catch (e) {
+      // storage is blocked: the choice applies to this page only
+    }
+  });
 }
 
 

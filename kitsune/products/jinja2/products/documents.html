@@ -4,9 +4,11 @@
 {% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
 {% from 'wiki/includes/document_macros.html' import document_metadata with context %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
+{% from "includes/icons.html" import icon %}
 
 {% if product %}
   {% set announcement_product = product %}
+  {% set product_theme = product.slug %}
   {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title)|forceescape)] %}
   {% if subtopic %}
     {% set ga_content_group = "product-and-topic-and-subtopic-home" %}
@@ -62,7 +64,7 @@
         {% for document in documents %}
           <article class="topic-article no-bottom-margin">
             <div class="topic-article--icon-wrap">
-              <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
+              {{ icon('reader-mode', class='topic-article--icon') }}
             </div>
             <div class="topic-article--text">
               <h2 class="sumo-card-heading">

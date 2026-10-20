@@ -1,0 +1,121 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+.card {
+  &--topic {
+    @include c.elevated-surface(var(--card-bg));
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    border: 1px solid var(--topic-card-border);
+    border-radius: var(--radius-lg);
+    padding: p.$spacing-md;
+    // Not an elevation mixin: the light shadow is Protocol's small shadow, not --elevation-1.
+    box-shadow: var(--topic-card-shadow);
+    box-sizing: border-box;
+    min-height: 320px;
+
+    .topic-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: p.$spacing-md;
+
+      .card--title {
+        font-family: var(--body-font-family);
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+        flex-grow: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+
+        a {
+          text-decoration: none;
+          color: var(--topic-card-title);
+
+          &:hover,
+          &:focus-visible {
+            color: var(--color-link);
+          }
+        }
+      }
+    }
+
+    .card--icon-plate {
+      display: flex;
+      flex-shrink: 0;
+      margin-inline-end: 20px;
+      padding: 6px;
+      border-radius: var(--radius-md);
+      background: var(--topic-card-plate-bg);
+    }
+
+    .card--icon {
+      flex-shrink: 0;
+      margin: 0;
+      width: 18px;
+      height: 18px;
+      filter: var(--media-uploaded-icon-filter);
+    }
+
+    .article-list {
+      flex-grow: 1;
+      margin: 0 0 p.$spacing-md;
+      padding: 0;
+      list-style: none;
+      min-height: 0;
+      overflow: hidden;
+
+      li {
+        margin-bottom: 8px;
+        line-height: 1.5;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        a {
+          color: var(--topic-card-link);
+          font-size: 14px;
+          text-decoration: none;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+
+          // Surface the visited state so users can tell which articles they've
+          // already read (issue #7459).
+          &:visited {
+            color: var(--color-link-visited);
+          }
+
+          &:hover,
+          &:focus-visible {
+            text-decoration: underline;
+            color: var(--color-link);
+          }
+        }
+      }
+    }
+
+    .view-all-link {
+      border-top: 1px solid var(--topic-card-divider);
+      padding-top: 10px;
+      margin-top: auto;
+      display: block;
+      font-size: 14px;
+      color: var(--color-link);
+      text-decoration: none;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}

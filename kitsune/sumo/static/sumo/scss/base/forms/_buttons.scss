@@ -32,15 +32,15 @@
   text-align: center;
   padding: 0 p.$spacing-lg;
   height: p.$spacing-xl;
-  border: 2px solid var(--color-marketing-gray-03);
+  border: 2px solid var(--color-border-interactive);
   border-radius: var(--global-radius);
-  background-color: var(--color-inverse);
+  background-color: var(--color-surface);
 
   font-family: var(--heading-alt-font-family);
   @include p.font-size(14px);
   font-weight:700;
   text-decoration: none;
-  color: var(--color-marketing-gray-07);
+  color: var(--button-text);
 
   cursor: pointer;
   transition-duration: 150ms;
@@ -48,23 +48,23 @@
   appearance: none;
 
   &:visited {
-    color: var(--color-marketing-gray-07);
+    color: var(--button-text);
   }
 
   &:hover:not(:disabled) {
-    border-color: var(--color-marketing-gray-04);
-    background-color: var(--color-marketing-gray-02);
-    color: var(--color-marketing-gray-07);
+    border-color: var(--button-hover-border);
+    background-color: var(--color-link-active-bg);
+    color: var(--button-text);
   }
 
   &:active:not(:disabled) {
-    border-color: var(--color-marketing-gray-05);
-    color: var(--color-marketing-gray-07);
+    border-color: var(--button-active-border);
+    color: var(--button-text);
   }
 
   &:focus {
     box-shadow: var(--focus-shadow);
-    color: var(--color-marketing-gray-07);
+    color: var(--button-text);
   }
 
   &:disabled,
@@ -99,44 +99,48 @@
     height: p.$spacing-2xl;
   }
 
+  // States set the shadow through a property, so the focus ring declared below and components that set box-shadow still win.
   &.primary-button {
+    --button-shadow: var(--button-primary-shadow);
+    box-shadow: var(--button-shadow);
     border-width: 0;
-    background: var(--color-link);
-    color: var(--color-inverse);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
 
     &:hover:not(:disabled) {
-      background: var(--color-blue-07);
-      color: var(--color-inverse);
+      --button-shadow: var(--button-primary-hover-shadow);
+      background: var(--color-accent-hover);
+      color: var(--color-text-on-accent);
     }
 
     &:active:not(:disabled) {
-      background: var(--color-blue-09);
+      background: var(--color-accent-active);
     }
   }
 
   &.secondary-button {
     border-color: var(--color-link);
-    background: var(--color-inverse);
+    background: var(--button-secondary-bg);
     color: var(--color-link);
 
     &:hover:not(:disabled) {
-      border-color: var(--color-blue-07);
-      background-color: var(--color-blue-07);
-      color: var(--color-inverse);
+      border-color: var(--color-accent-hover);
+      background-color: var(--color-accent-hover);
+      color: var(--color-text-on-accent);
     }
 
     &:active:not(:disabled) {
-      border-color: var(--color-blue-09);
-      background: var(--color-blue-09);
-      color: var(--color-inverse);
+      border-color: var(--color-accent-active);
+      background: var(--color-accent-active);
+      color: var(--color-text-on-accent);
     }
   }
 
   &.warning-button {
     &:hover:not(:disabled) {
-      border-color: var(--color-red-07);
-      background-color: var(--color-red-07);
-      color: var(--color-inverse);
+      border-color: var(--button-warning-hover-bg);
+      background-color: var(--button-warning-hover-bg);
+      color: var(--color-text-on-accent);
     }
   }
 
@@ -246,10 +250,11 @@ input[type=submit]:focus {
   background: transparent;
   font: 0/0 a;
   color: transparent;
-  background-image: url('protocol/img/icons/more-vertical.svg');
+  background-image: var(--more-options-icon);
   background-size: p.$spacing-lg p.$spacing-lg;
   background-position: center center;
   background-repeat: no-repeat;
+  @include c.forced-colors-icon(url('protocol/img/icons/more-vertical.svg'), p.$spacing-lg p.$spacing-lg);
 
   &:after {
     content: none;
@@ -284,7 +289,7 @@ input[type=submit]:focus {
   text-decoration: none;
 
   &:hover {
-    color: var(--color-red-10) !important;
+    color: var(--delete-button-hover-text) !important;
   }
 }
 

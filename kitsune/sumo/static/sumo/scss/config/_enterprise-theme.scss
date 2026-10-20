@@ -1,0 +1,19 @@
+// Emitted through a mixin so the rule lands after the theme blocks, not where this module is first loaded.
+@mixin emit {
+  .product-theme--enterprise {
+    --product-callout-ring: linear-gradient(
+      120deg,
+      rgba(117, 67, 227, 0.95),
+      rgba(184, 51, 225, 0.95) 55%,
+      rgba(252, 64, 85, 0.95)
+    );
+    --product-callout-base: var(--enterprise-callout-base);
+    --product-callout-glows:
+      var(--enterprise-callout-glow),
+      radial-gradient(70% 140% at 100% 0%, rgba(117, 67, 227, 0.55), transparent 60%),
+      radial-gradient(45% 120% at 88% 125%, rgba(252, 64, 85, 0.38), transparent 65%),
+      radial-gradient(40% 110% at 62% 130%, rgba(184, 51, 225, 0.36), transparent 65%);
+    --product-hero-text: white;
+    --hero-aurora: none;
+  }
+}

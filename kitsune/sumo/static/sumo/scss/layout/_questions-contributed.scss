@@ -10,13 +10,13 @@
   font-weight: 600;
 
   &--forum {
-    background: rgba(c.color('blue', '06'), 0.08);
-    color: var(--color-link);
+    background: var(--status-info-bg);
+    color: var(--status-info-text);
   }
 
   &--direct-support,
   &--live-chat {
-    background: rgba(c.color('green', '06'), 0.08);
+    background: var(--channel-badge-support-bg);
     color: var(--color-success);
   }
 }
