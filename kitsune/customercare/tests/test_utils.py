@@ -686,11 +686,16 @@ class ResolveChatEligibilityTests(TestCase):
             resolve_chat_eligibility(self.user, self.product), "chat_is_disabled"
         )
 
-    @override_settings(ZENDESK_CHAT_WIDGET_KEY="")
     def test_switched_on_but_not_configured(self):
-        """This fails loudly on purpose, because it's a configuration mistake."""
-        with self.assertRaises(ImproperlyConfigured):
-            resolve_chat_eligibility(self.user, self.product)
+        for setting in (
+            "ZENDESK_CHAT_WIDGET_KEY",
+            "ZENDESK_CHAT_SIGNING_SECRET",
+            "ZENDESK_CHAT_SIGNING_KEY_ID",
+        ):
+            with self.subTest(setting=setting), self.settings(**{setting: ""}):
+                self._assert_ineligible(
+                    resolve_chat_eligibility(self.user, self.product), "chat_not_configured"
+                )
 
     def test_membership_resolves_one_org_per_product(self):
         self.config.forum_config = AAQConfigFactory()
@@ -933,6 +938,14 @@ class AdoptChatTicketTests(TestCase):
         self.assertEqual(SupportTicket.ZD_STATUS_OPEN, ticket.zd_status)
         self.assertEqual(2, len(ticket.comments))
         self.assertIsNotNone(ticket.last_synced_at)
+
+    @override_settings(ZENDESK_CHAT_WIDGET_KEY="")
+    def test_missing_chat_settings_prevent_adoption(self, mock_client):
+        self._mock_zendesk(mock_client)
+
+        with self.assertRaises(ImproperlyConfigured):
+            adopt_chat_ticket(self._zd_ticket())
+        self.assertFalse(SupportTicket.objects.exists())
 
     def test_a_chat_from_someone_who_can_no_longer_chat_gets_no_organization(self, mock_client):
         """The chat is still recorded, but no organization sees it."""

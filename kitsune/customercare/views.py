@@ -27,16 +27,13 @@ from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyExce
 from kitsune.customercare.forms import SupportTicketReplyForm
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import create_zendesk_user, process_zendesk_update
-from kitsune.customercare.utils import (
-    generate_classification_tags,
-    resolve_chat_eligibility,
-    sync_ticket_from_zendesk,
-)
+from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.templatetags.jinja_helpers import group_breadcrumbs
 from kitsune.journal.models import Record
 from kitsune.products.models import Product, Topic
+from kitsune.products.routing import route_support
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import is_ratelimited
 
@@ -93,7 +90,7 @@ def chat_jwt(request, product_slug):
 
     user_info = f"user {user.username} (#{user.id})"
 
-    eligibility = resolve_chat_eligibility(user, product)
+    eligibility = route_support(request, product).chat
 
     if not eligibility.eligible:
         if not eligibility.disabled_site_wide:

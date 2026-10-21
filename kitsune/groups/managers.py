@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db.models import Exists, Max, OuterRef, Q
 from django.db.models.functions import Length, Substr
@@ -101,6 +102,14 @@ class GroupProfileManager(MP_NodeManager):
         return self.filter(
             Exists(self.model.objects.filter(path__startswith=OuterRef("path"), group__user=user))
         )
+
+    def enterprise_companies(self, user):
+        if not (user and user.is_authenticated):
+            return self.none()
+        root = self.filter(slug=settings.ENTERPRISE_GROUP_SLUG, depth=1).first()
+        if root is None:
+            return self.none()
+        return self.containing(user).filter(depth=2, path__startswith=root.path)
 
     def visible(self, user: User | None = None):
         """

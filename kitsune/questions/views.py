@@ -40,7 +40,6 @@ from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
-from kitsune.products.managers import ProductSupportConfigManager
 from kitsune.products.models import Product, ProductSupportConfig, Topic, TopicSlugHistory
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -912,10 +911,10 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             return HttpResponseRedirect(reverse("products.product", args=[product.slug]))
 
         # Handle subscription-gated products
-        if support_type == ProductSupportConfigManager.SUPPORT_TYPE_REDIRECT:
+        if support_type == ProductSupportConfig.SUPPORT_TYPE_REDIRECT:
             return HttpResponseRedirect(aaq_context["redirect_url"])
 
-        if support_type == ProductSupportConfigManager.SUPPORT_TYPE_HIDE:
+        if support_type == ProductSupportConfig.SUPPORT_TYPE_HIDE:
             raise Http404
 
         has_public_forum = aaq_context.get("has_public_forum", False)

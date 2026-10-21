@@ -58,7 +58,7 @@ def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
         and settings.ZENDESK_CHAT_SIGNING_SECRET
         and settings.ZENDESK_CHAT_SIGNING_KEY_ID
     ):
-        raise ImproperlyConfigured("Chat requires a widget key, and a signing key and its secret.")
+        return ChatEligibility(reason="chat_not_configured")
 
     if not (user and user.is_authenticated):
         return ChatEligibility(reason="not_authenticated")
@@ -67,14 +67,13 @@ def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
     if product.is_archived:
         return ChatEligibility(reason="product_unavailable")
 
-    config = product.support_configs.filter(is_active=True, zendesk_config__isnull=False).first()
-    if config is None:
+    config = ProductSupportConfig.objects.active_for(product)
+    if config is None or config.zendesk_config is None:
         return ChatEligibility(reason="no_ticketing_support")
-    if config.subscription_only and not user.profile.products.filter(pk=product.pk).exists():
+    if not config.admits(user):
         return ChatEligibility(reason="subscription_required")
 
-    member_groups = GroupProfile.objects.containing(user).values("group_id")
-    organizations = list(config.support_organizations.filter(group_id__in=member_groups))
+    organizations = list(config.support_organizations.containing(user))
     chat_orgs = tuple(org for org in organizations if org.include_live_chat)
     match chat_orgs:
         case []:
@@ -87,10 +86,8 @@ def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
 
 
 def resolve_org_group(submitter, product: Product) -> GroupProfile | None:
-    config = ProductSupportConfig.objects.filter(
-        product=product, is_active=True, zendesk_config__isnull=False
-    ).first()
-    if config is None:
+    config = ProductSupportConfig.objects.active_for(product)
+    if config is None or config.zendesk_config is None:
         return None
     return (
         GroupProfile.objects.containing(submitter)
@@ -199,7 +196,12 @@ def create_support_ticket(user, product: Product, *, zd_ticket=None, **fields) -
         org_group = resolve_org_group(user, product)
     else:
         # The organization that let the person chat, if they still can.
-        org = resolve_chat_eligibility(user, product).org
+        eligibility = resolve_chat_eligibility(user, product)
+        if eligibility.reason == "chat_not_configured":
+            raise ImproperlyConfigured(
+                "Chat requires a widget key, and a signing key and its secret."
+            )
+        org = eligibility.org
         org_group = GroupProfile.objects.filter(group_id=org.group_id).first() if org else None
 
     fields.update(user=user, product=product, org_group=org_group)

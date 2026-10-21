@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from django.conf import settings
 from django_jinja import library
 
-from kitsune.customercare.utils import resolve_chat_eligibility
+from kitsune.products.routing import route_support
 
 if TYPE_CHECKING:
     from kitsune.products.models import Product
@@ -15,7 +15,7 @@ def chat_is_available(request, product: Product | None) -> bool:
     if not product:
         return False
 
-    eligibility = resolve_chat_eligibility(request.user, product)
+    eligibility = route_support(request, product).chat
 
     request._show_chat = eligibility.eligible
 

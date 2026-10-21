@@ -3,7 +3,6 @@ import json
 import yaml
 from django.db.models import Exists, OuterRef, Prefetch, Q
 
-from kitsune.groups.models import GroupProfile
 from kitsune.products.models import Product, SupportOrganization, Topic
 
 
@@ -17,13 +16,7 @@ def get_professional_support_products(user) -> list[Product]:
     return list(
         Product.active.filter(
             Exists(
-                SupportOrganization.objects.filter(
-                    Exists(
-                        GroupProfile.objects.filter(
-                            group__user=user,
-                            path__startswith=OuterRef("group__profile__path"),
-                        )
-                    ),
+                SupportOrganization.objects.containing(user).filter(
                     config__product=OuterRef("pk"),
                     config__is_active=True,
                     config__zendesk_config__isnull=False,

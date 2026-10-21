@@ -209,9 +209,9 @@ outside the configured root cannot be targeted.
 
 Staff record company agreements in Django admin under **Products > Support
 contracts**. A contract has a name, a status (active, suspended, or cancelled), and
-start and end dates, both inclusive. Each coverage names a product, its Zendesk form
-configuration, the Zendesk product value, and whether chat is included. A bundle is
-several coverages on one contract.
+start and end dates, both inclusive in the site time zone. Each coverage names a product,
+its Zendesk form configuration, the Zendesk product value, and whether chat is included.
+A bundle is several coverages on one contract.
 
 - The company must be a direct child of the enterprise root and cannot change later.
 - A contract needs at least one coverage and lists each product once.

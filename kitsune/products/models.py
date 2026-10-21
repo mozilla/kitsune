@@ -501,6 +501,8 @@ class ProductSupportConfig(ModelBase):
 
     SUPPORT_TYPE_FORUM = "forum"
     SUPPORT_TYPE_ZENDESK = "zendesk"
+    SUPPORT_TYPE_REDIRECT = "redirect_unsubscribed"
+    SUPPORT_TYPE_HIDE = "hide_unsubscribed"
     SUPPORT_TYPE_CHOICES = [
         (SUPPORT_TYPE_FORUM, "Community Forums"),
         (SUPPORT_TYPE_ZENDESK, "Zendesk Support"),
@@ -623,6 +625,18 @@ class ProductSupportConfig(ModelBase):
                 }
             )
 
+    def admits(self, user):
+        return not self.subscription_only or (
+            user.is_authenticated and user.profile.products.filter(pk=self.product_id).exists()
+        )
+
+    @property
+    def has_channel(self):
+        return bool(
+            self.zendesk_config_id
+            or (self.forum_config_id and self.forum_config.enabled_locales.exists())
+        )
+
     @property
     def is_hybrid(self):
         """Returns True if both forum and Zendesk support are enabled."""
@@ -637,6 +651,15 @@ class ProductSupportConfig(ModelBase):
     def enable_zendesk_support(self):
         """Returns True if Zendesk support is enabled (zendesk_config is set)."""
         return bool(self.zendesk_config)
+
+
+class SupportOrganizationQuerySet(models.QuerySet):
+    def containing(self, user):
+        # Local import: products.models -> groups.models -> wiki.parser -> wiki.models
+        # -> products.models.
+        from kitsune.groups.models import GroupProfile
+
+        return self.filter(group_id__in=GroupProfile.objects.containing(user).values("group_id"))
 
 
 class SupportOrganization(ModelBase):
@@ -663,6 +686,8 @@ class SupportOrganization(ModelBase):
         default=False,
         help_text="Members can start live chats with support agents. Requires Zendesk support.",
     )
+
+    objects = SupportOrganizationQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Support organization"
