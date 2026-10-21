@@ -189,6 +189,18 @@ class RevokedChatSignalTests(TestCase):
 
         self.assertEqual(self.notified(notify), {self.user})
 
+    def test_deleting_a_chat_subgroup_tags_members_of_its_subgroups(self, notify):
+        subteam = GroupProfile.objects.add_child(
+            GroupProfile.objects.get(group=self.team),
+            create_kwargs={"group": Group.objects.create(name="subteam"), "slug": "subteam"},
+        ).group
+        subteam_user = UserFactory()
+        subteam_user.groups.add(subteam)
+
+        self.team.delete()
+
+        self.assertEqual(self.notified(notify), {self.user, subteam_user})
+
     def test_deleting_an_unrelated_group_does_not(self, notify):
         self.unrelated.delete()
 

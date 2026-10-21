@@ -42,6 +42,8 @@ class GroupProfile(TreeModelBase):
         MODERATED = "moderated", _lazy("Moderated – visible to specific groups")
 
     slug = models.SlugField(unique=True, editable=False, blank=False, null=False, max_length=80)
+    # Deleting a Group deletes its profiles through treebeard first, so the cascade finds
+    # nothing left to delete. See groups.signals.delete_group_profiles.
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="profile")
     leaders = models.ManyToManyField(User, blank=True)
     information = models.TextField(blank=True, default="", help_text="Use Wiki Syntax")
