@@ -256,18 +256,6 @@ a:hover {
     margin-bottom: 0;
   }
 }
-
-// The KSS frame is white, so a dark example takes the site's page surface and text color.
-.kss-modifier__example[data-theme="dark"],
-:root[data-theme="dark"] & {
-  background: var(--page-bg);
-  color: var(--color-text);
-}
-.kss-modifier__example[data-theme="dark"] {
-  display: flow-root; // negative margins in an example would otherwise paint the background over the modifier name below
-  margin-inline: -8px;
-  padding-inline: 8px;
-}
 &.kss-guides-mode .kss-modifier__example,
 &.kss-guides-mode .kss-modifier__example-footer {
   &:before,

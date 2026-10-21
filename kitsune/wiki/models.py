@@ -1320,6 +1320,4 @@ def user_redirects(user, viewer=None):
 def doc_html_cache_key(locale, slug):
     """Returns the cache key for the document html."""
     cache_key = DOC_HTML_CACHE_KEY.format(locale=locale, slug=slug)
-    # The cached html inlines the head script, which the CSP hash has to match.
-    cache_key = f"{cache_key}:{settings.HEAD_SCRIPT_CSP_SOURCE}"
     return hashlib.sha1(smart_bytes(cache_key)).hexdigest()

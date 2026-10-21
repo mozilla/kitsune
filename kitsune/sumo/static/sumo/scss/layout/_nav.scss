@@ -19,10 +19,7 @@
 // Style guide: nav
 
 .sumo-nav {
-  // Positioned so the dark shadow paints over the next section; without a z-index the menus' stacking is unchanged.
-  position: relative;
-  box-shadow: var(--header-shadow);
-  border-bottom: 1px solid var(--header-divider);
+  border-bottom: 1px solid var(--color-border);
 
   &--container {
     @include c.container;
@@ -42,14 +39,9 @@
     width: 96px;
     height: auto;
 
-    a {
-      display: block;
-    }
-
-    // An inline SVG or a mask would repaint the light logo's antialiasing, so dark recolors the image.
+    a,
     img {
       display: block;
-      filter: var(--icon-image-filter);
     }
   }
 
@@ -216,13 +208,12 @@
     height: p.$spacing-xl;
     border: none;
     border-radius: p.$spacing-xs;
-    background-image: var(--menu-icon);
+    background-image: url('protocol/img/icons/menu.svg');
     background-color: transparent;
     background-position: center center;
     background-repeat: no-repeat;
     font: 0/0 a;
     color: transparent;
-    @include c.forced-colors-icon(url('protocol/img/icons/menu.svg'));
 
     &:hover,
     &:active,
@@ -240,8 +231,7 @@
     @include p.bidi(((margin-left, auto, 0),
         (margin-right, 0, auto),
       ));
-    background-image: var(--search-icon);
-    @include c.forced-colors-icon(url('protocol/img/icons/search.svg'));
+    background-image: url('protocol/img/icons/search.svg');
   }
 
   .simple-search-form {
@@ -296,40 +286,6 @@
 
   .firefox-download-button {
     @include p.bidi(((margin, 0 p.$spacing-lg 0 p.$spacing-sm, 0 p.$spacing-sm 0 p.$spacing-lg), ));
-    box-shadow: var(--header-cta-highlight);
-    background: var(--header-cta-bg);
-    color: var(--header-button-text);
-
-    &:hover:not(:disabled) {
-      background: var(--header-button-hover-bg);
-      color: var(--header-button-text);
-    }
-
-    &:active:not(:disabled) {
-      background: var(--header-button-active-bg);
-    }
-
-    &:focus {
-      box-shadow: var(--focus-shadow), var(--header-cta-highlight);
-    }
-  }
-
-  .secondary-button {
-    border-color: var(--header-secondary-border);
-    background: var(--header-secondary-bg);
-    color: var(--header-secondary-text);
-
-    &:hover:not(:disabled) {
-      border-color: var(--header-button-hover-bg);
-      background-color: var(--header-button-hover-bg);
-      color: var(--header-button-text);
-    }
-
-    &:active:not(:disabled) {
-      border-color: var(--header-button-active-bg);
-      background: var(--header-button-active-bg);
-      color: var(--header-button-text);
-    }
   }
 
   .searchbox {
@@ -373,10 +329,6 @@
     content: none; // removing clearfix that screws up flexbox
   }
 
-  .mzp-c-menu-item-icon {
-    color: var(--color-icon);
-  }
-
   .mzp-c-menu-category {
     &.logged-out-button-row {
       display: flex;
@@ -410,7 +362,7 @@
   margin: 0;
   padding: 0;
   width: 100%;
-  background: var(--header-bg);
+  background: #fff;
 
   a {
     position: absolute;
@@ -419,7 +371,7 @@
     margin: 0;
     padding: 12px 10px;
     padding: 0;
-    background: var(--header-skip-link-bg);
+    background: rgba(255, 255, 255, 0.9);
     font-weight: bold;
     text-align: center;
 
@@ -465,7 +417,7 @@ html {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background-color: var(--unread-badge-bg);
+  background-color: red;
   @media screen and (max-width: p.$screen-md) {
     width: 8px;
     height: 8px;
@@ -474,8 +426,8 @@ html {
 
 .message-count-alert {
   border-radius: 50%;
-  background-color: var(--unread-badge-bg);
-  color: var(--unread-badge-text);
+  background-color: red;
+  color: white;
   font-size: 1rem;
   font-weight: bold;
   padding: 0.25rem 0.50rem;

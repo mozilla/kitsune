@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.core.cache import cache
 from django.test.utils import override_settings
-from parameterized import parameterized
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 
@@ -16,7 +15,7 @@ from kitsune.products.tests import (
     ZendeskConfigFactory,
 )
 from kitsune.questions.models import QuestionLocale
-from kitsune.questions.tests import AAQConfigFactory, QuestionFactory
+from kitsune.questions.tests import AAQConfigFactory
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -445,90 +444,3 @@ class MatomoMzlaProductLandingTests(TestCase):
         r = self.client.get(url, follow=True)
         self.assertEqual(200, r.status_code)
         self.assertNotContains(r, _MATOMO_MARKER)
-
-
-_ENTERPRISE_SLUG = "firefox-enterprise"
-_ENTERPRISE_BODY = "body.product-theme--enterprise"
-
-
-class ProductThemeClassTests(TestCase):
-    """Enterprise pages carry the Enterprise theme class."""
-
-    def setUp(self):
-        super().setUp()
-        # Ordered first, so an article without a product falls back to Enterprise.
-        enterprise = ProductFactory(slug=_ENTERPRISE_SLUG, display_order=-1)
-        ProductSupportConfigFactory(
-            product=enterprise,
-            is_active=True,
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-            zendesk_config=ZendeskConfigFactory(),
-        )
-        self.topic = TopicFactory(products=[enterprise])
-        self.document = ApprovedRevisionFactory(
-            document__products=[enterprise], document__topics=[self.topic]
-        ).document
-        self.question = QuestionFactory(product=enterprise, topic=self.topic)
-        self.unthemed_document = ApprovedRevisionFactory(document__products=[]).document
-        self.other_product = ProductFactory()
-
-        # The AAQ step needs a signed-in user.
-        group = GroupProfileFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
-        user = UserFactory(groups=[group.group])
-        self.client.login(username=user.username, password="testpass")
-
-    @parameterized.expand(
-        [
-            (
-                "product_landing",
-                lambda test: reverse("products.product", args=[_ENTERPRISE_SLUG]),
-                _ENTERPRISE_BODY,
-            ),
-            (
-                "topic_of_product",
-                lambda test: reverse(
-                    "products.documents", args=[_ENTERPRISE_SLUG, test.topic.slug]
-                ),
-                _ENTERPRISE_BODY,
-            ),
-            (
-                "kb_article",
-                lambda test: test.document.get_absolute_url(),
-                _ENTERPRISE_BODY,
-            ),
-            (
-                "kb_article_without_product",
-                lambda test: test.unthemed_document.get_absolute_url(),
-                None,
-            ),
-            (
-                "aaq_step",
-                lambda test: reverse("questions.aaq_step2", args=[_ENTERPRISE_SLUG]),
-                _ENTERPRISE_BODY,
-            ),
-            (
-                "question_details",
-                lambda test: reverse("questions.details", args=[test.question.id]),
-                _ENTERPRISE_BODY,
-            ),
-            (
-                "topic_without_product",
-                lambda test: reverse("products.topic_documents", args=[test.topic.slug]),
-                None,
-            ),
-            (
-                "other_product_landing",
-                lambda test: reverse("products.product", args=[test.other_product.slug]),
-                None,
-            ),
-        ]
-    )
-    def test_product_theme_class(self, _name, url, themed_selector):
-        response = self.client.get(url(self), follow=True)
-        self.assertEqual(200, response.status_code)
-        themed = pq(response.content)('[class*="product-theme--"]')
-        if themed_selector is None:
-            self.assertEqual(0, len(themed))
-        else:
-            self.assertEqual(1, len(themed))
-            self.assertTrue(themed.is_(themed_selector))

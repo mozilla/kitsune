@@ -18,6 +18,7 @@
 // Style guide: forms.toggle
 :root {
   --switch-size: 50px;
+  --toggle-bg-color: var(--color-marketing-gray-03);
   --toggle-value-color: var(--color-text);
 }
 
@@ -60,7 +61,7 @@
     width: calc(var(--switch-size) / 2 - 6px);
     height:  calc(var(--switch-size) / 2 - 6px);
     border-radius: calc(var(--switch-size) / 2 - #{p.$spacing-xs});
-    background: var(--toggle-knob);
+    background: #fff;
     content: "";
     transition: 0.1s;
   }
@@ -96,12 +97,12 @@
     &:disabled + label,
     &:checked:disabled + label {
       &:before {
-        border-color: var(--toggle-disabled-bg);
-        background-color: var(--toggle-disabled-bg);
+        border-color: var(--color-marketing-gray-02);
+        background-color: var(--color-marketing-gray-02);
       }
 
       &:after {
-        background-color: var(--toggle-disabled-knob);
+        background-color: var(--color-marketing-gray-04);
       }
     }
 

@@ -139,13 +139,6 @@ table {
       content: none;
     }
   }
-
-  // Paper can't scroll, so a scrolling wrapper would cut off the columns that don't fit.
-  @media print {
-    margin-right: 0;
-    max-width: none;
-    overflow: visible;
-  }
 }
 
 // These are used at /contributors
@@ -172,10 +165,10 @@ table {
 
 td.needs-update.yes,
 td.stale.yes {
-  background: var(--color-warning);
+  background: var(--color-yellow-03);
 }
 
 td.status,
 td.ready-for-l10n.yes {
-  background: var(--table-success-bg);
+  background: var(--color-green-03);
 }

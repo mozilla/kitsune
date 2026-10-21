@@ -9,8 +9,6 @@
 @use "protocol/css/components/button";
 
 @use "./base/typography";
-@use "./wizard-protocol";
-@use "./forced-colors-focus";
 
 .vbox {
   display: flex;
@@ -39,10 +37,6 @@
 #close {
   display: flex;
   padding: 0;
-
-  img {
-    filter: var(--icon-image-filter);
-  }
 }
 
 #close:not(:hover) {
@@ -79,7 +73,7 @@ hr {
 }
 
 #copied-message {
-  color: var(--wizard-success-text);
+  color: var(--color-green-07);
   padding-block: 4px;
   line-height: 1.5;
 }

@@ -7,11 +7,7 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
 from kitsune.users.models import Profile
-from kitsune.users.theme import get_theme_preference, theme_owner_key
 from kitsune.users.utils import user_is_contributor
-
-library.global_function(get_theme_preference)
-library.global_function(theme_owner_key)
 
 
 @library.global_function

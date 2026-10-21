@@ -45,14 +45,6 @@
   overflow-wrap: anywhere;
 }
 
-// instant_search.js renders these icons as images, so they can't use the icon macro.
-#instant-search-content {
-  img.topic-article--icon,
-  img.card--icon-sm {
-    filter: var(--icon-image-filter);
-  }
-}
-
 .home-search-section {
   text-align: center;
 
@@ -63,22 +55,6 @@
     // @media #{p.$mq-lg} {
     //   margin-bottom: p.$spacing-xl;
     // }
-  }
-
-  &.has-aurora {
-    box-shadow: var(--hero-edge);
-    // Only the image, so a `none` token leaves the .shade-bg color.
-    background-image: var(--hero-aurora);
-
-    a {
-      color: var(--hero-link);
-    }
-
-    // The breadcrumb hover color isn't AA on the glow; an underline gives the feedback instead.
-    .breadcrumbs--list a:hover {
-      text-decoration: underline;
-      color: var(--hero-link);
-    }
   }
 }
 

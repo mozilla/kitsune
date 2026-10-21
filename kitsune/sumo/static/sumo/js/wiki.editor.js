@@ -1,5 +1,5 @@
 import TomSelect from "tom-select";
-import "sumo/scss/components/_tom-select.scss";
+import "tom-select/dist/css/tom-select.default.css";
 
 function intersection(setA, setB) {
   // Use this function instead of the Set.intersection method,

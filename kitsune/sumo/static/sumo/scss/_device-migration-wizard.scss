@@ -2,8 +2,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-@use 'config' as c;
-
 .switching-devices.topic-list:not(.switching-devices.topic-list.is-active) {
     display: none;
 }
@@ -21,10 +19,8 @@ nav.switching-devices.tabs {
 dialog.reminder-dialog {
     border: 0;
     border-radius: 16px;
-    box-shadow: var(--wizard-shadow);
+    box-shadow: 0px 2px 6px rgba(58, 57, 68, 0.2);
     padding: 0;
-    @include c.elevated-surface(var(--color-surface));
-    color: var(--color-moz-text);
 }
 
 dialog.reminder-dialog .mzp-c-menu-list-list {

@@ -113,13 +113,7 @@
 }
 
 .light-grey-bg {
-  background: var(--light-grey-bg);
-}
-
-.svg-icon {
-  // Unlike an <img>, an <svg> flex item shrinks below its size.
-  flex-shrink: 0;
-  color: var(--color-icon);
+  background: var(--color-marketing-gray-01);
 }
 
 .tooltip-container {
@@ -129,7 +123,6 @@
   align-items: center;
 
   .tooltip {
-    background-image: var(--surface-inverse-image);
     background-color: var(--color-inverse-bg);
     color: var(--color-inverse);
     padding: p.$spacing-sm;

@@ -91,7 +91,7 @@
 // One step lighter than .mzp-t-error's default red-30 — same Protocol red ramp,
 // scoped to the report-abuse modal only.
 [data-modal-id^="report-abuse-"] .validation-error.mzp-t-error {
-  background-color: var(--notification-error-soft-bg);
+  background-color: p.$color-red-20;
 }
 
 // .mzp-c-notification-bar sets display: flex unconditionally, which matches

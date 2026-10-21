@@ -13,10 +13,6 @@
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 {% set announcement_product = product|default(None) %}
 {% set classes = 'document' %}
-{# The view falls back to an unrelated product when the article has none. #}
-{% if products %}
-  {% set product_theme = product.slug %}
-{% endif %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
 {% set default_slug = document.parent.slug if document.parent else document.slug %}
 {% set scripts = ('document',) %}

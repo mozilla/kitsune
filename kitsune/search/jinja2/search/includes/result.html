@@ -1,16 +1,15 @@
-{% from "includes/icons.html" import icon %}
 {% macro search_result(result) %}
 <article class="topic-article result {{ result.type }}">
   <div class="topic-article--icon-wrap">
     {% if result.type == 'document' %}
        {% set link_name = "search-result.kb-article" %}
-    {{ icon('reader-mode', class='topic-article--icon') }}
+    <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="">
     {% elif result.type == 'question' %}
       {% set link_name = "search-result.support-forum-question-details" %}
-    {{ icon('blog', class='topic-article--icon') }}
+    <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/blog.svg') }}" alt="">
     {% elif result.type == 'thread' %}
       {% set link_name = "search-result.contributor-forum-thread-details" %}
-    {{ icon('get-involved', class='topic-article--icon') }}
+    <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/get-involved.svg') }}" alt="">
     {% else %}
       {% set link_name = "search-result.other" %}
     {% endif %}

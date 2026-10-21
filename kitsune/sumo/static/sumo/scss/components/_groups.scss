@@ -31,21 +31,22 @@ body:has(#group-profile) {
 .sumo-l-two-col--sidebar .group-hierarchy-card,
 .sumo-l-two-col--sidebar .group-actions-card {
   @include c.card;
-  @include c.elevation-01(var(--color-surface));
+  @include c.elevation-01;
   margin-bottom: p.$spacing-lg;
   padding: p.$spacing-lg;
+  background: white;
 
   &--avatar-section {
     text-align: center;
     padding-bottom: p.$spacing-md;
-    border-bottom: 1px solid var(--group-divider);
+    border-bottom: 1px solid var(--color-marketing-gray-03);
     margin-bottom: p.$spacing-md;
 
     .admin-link {
       display: inline-block;
       margin-top: p.$spacing-xs;
       @include c.text-body-xs;
-      color: var(--color-secondary);
+      color: var(--color-marketing-gray-06);
       text-decoration: none;
 
       &:hover {
@@ -59,7 +60,7 @@ body:has(#group-profile) {
     flex-direction: column;
     gap: p.$spacing-sm;
     padding-bottom: p.$spacing-md;
-    border-bottom: 1px solid var(--group-divider);
+    border-bottom: 1px solid var(--color-marketing-gray-03);
     margin-bottom: p.$spacing-md;
   }
 
@@ -67,7 +68,7 @@ body:has(#group-profile) {
     @include c.text-body-md;
     font-weight: 700;
     margin-bottom: p.$spacing-md;
-    color: var(--color-heading);
+    color: var(--color-ink-09);
   }
 
   &--content {
@@ -82,7 +83,7 @@ body:has(#group-profile) {
   height: 96px;
   border-radius: 50%;
   margin-bottom: p.$spacing-sm;
-  border: 3px solid var(--group-divider);
+  border: 3px solid var(--color-marketing-gray-03);
   object-fit: cover;
 }
 
@@ -98,7 +99,7 @@ body:has(#group-profile) {
     justify-content: space-between;
     align-items: center;
     padding: p.$spacing-sm p.$spacing-md;
-    background: var(--group-inset-bg);
+    background: var(--color-marketing-gray-01);
     border-radius: p.$border-radius-sm;
     border-left: 3px solid var(--color-link);
   }
@@ -112,7 +113,7 @@ body:has(#group-profile) {
 
   .stat-label {
     @include c.text-body-sm;
-    color: var(--color-text-light);
+    color: var(--color-marketing-gray-07);
     font-weight: 600;
   }
 }
@@ -130,7 +131,7 @@ body:has(#group-profile) {
       display: block;
       @include c.text-body-sm;
       font-weight: 700;
-      color: var(--color-text-light);
+      color: var(--color-marketing-gray-07);
       margin-bottom: p.$spacing-xs;
     }
 
@@ -159,7 +160,7 @@ body:has(#group-profile) {
         content: '→';
         position: absolute;
         left: 0;
-        color: var(--group-hierarchy-marker);
+        color: var(--color-marketing-gray-05);
       }
     }
   }
@@ -175,7 +176,7 @@ body:has(#group-profile) {
     align-items: flex-start;
     margin-bottom: p.$spacing-2xl;
     padding-bottom: p.$spacing-lg;
-    border-bottom: 2px solid var(--group-divider);
+    border-bottom: 2px solid var(--color-marketing-gray-03);
     flex-wrap: wrap;
     gap: p.$spacing-md;
 
@@ -214,29 +215,52 @@ body:has(#group-profile) {
       align-items: center;
       gap: p.$spacing-xs;
       padding: p.$spacing-xs p.$spacing-sm;
-      background: var(--group-badge-bg);
+      background: var(--color-marketing-gray-02);
       border-radius: p.$border-radius-md;
       @include c.text-body-sm;
       font-weight: 600;
       white-space: nowrap;
 
       &--visibility {
-        background: var(--group-visibility-badge-bg);
+        background: var(--color-blue-02);
         color: var(--color-link);
       }
 
       &--count {
-        color: var(--color-text-light);
+        color: var(--color-marketing-gray-07);
       }
     }
   }
 
+  .card--callout {
+    @include c.elevation-01;
+    padding: p.$spacing-xl;
+    background: linear-gradient(
+      135deg,
+      var(--color-marketing-gray-01) 0%,
+      var(--color-white) 100%
+    );
+    border-left: 4px solid var(--color-link);
+    margin-bottom: p.$spacing-2xl;
+    width: 100%;
+
+    .card--title {
+      @include c.sumo-callout-heading;
+      margin-bottom: p.$spacing-md;
+    }
+
+    .card--content {
+      @include c.text-body-md;
+      line-height: 1.6;
+    }
+  }
 
   .group-section {
     @include c.card;
-    @include c.elevation-01(var(--color-surface));
+    @include c.elevation-01;
     padding: p.$spacing-xl;
     margin-bottom: p.$spacing-2xl;
+    background: white;
   }
 
   .section-heading {
@@ -245,7 +269,7 @@ body:has(#group-profile) {
     justify-content: space-between;
     margin-bottom: p.$spacing-lg;
     padding-bottom: p.$spacing-md;
-    border-bottom: 2px solid var(--group-divider);
+    border-bottom: 2px solid var(--color-marketing-gray-03);
 
     h2 {
       @include c.sumo-callout-heading;
@@ -260,14 +284,14 @@ body:has(#group-profile) {
         top: 0;
         bottom: 0;
         width: 4px;
-        background: var(--color-accent);
+        background: var(--color-link);
         border-radius: p.$border-radius-sm;
       }
     }
 
     .section-count {
       @include c.text-body-md;
-      color: var(--color-secondary);
+      color: var(--color-marketing-gray-06);
       font-weight: 600;
     }
   }
@@ -324,7 +348,11 @@ body:has(#group-profile) {
         border-left: 4px solid var(--color-success);
         transition: box-shadow 150ms ease;
         position: relative;
-        background: var(--group-leader-card-bg);
+        background: linear-gradient(
+          135deg,
+          rgba(12, 175, 89, 0.03) 0%,
+          var(--color-white) 100%
+        );
 
         &:hover {
           @include c.elevation-02;
@@ -346,8 +374,8 @@ body:has(#group-profile) {
         align-items: center;
         gap: p.$spacing-xs;
         padding: 2px p.$spacing-xs;
-        background: var(--group-leader-badge-bg);
-        color: var(--group-leader-badge-text);
+        background: var(--color-success);
+        color: white;
         border-radius: p.$border-radius-sm;
         @include c.text-body-xs;
         font-weight: 600;
@@ -434,8 +462,8 @@ body:has(#group-profile) {
         align-items: center;
         gap: p.$spacing-xs;
         padding: 2px p.$spacing-xs;
-        background: var(--group-badge-bg);
-        color: var(--color-text);
+        background: var(--color-marketing-gray-02);
+        color: var(--color-marketing-gray-08);
         border-radius: p.$border-radius-sm;
         @include c.text-body-xs;
         font-weight: 600;
@@ -467,20 +495,19 @@ body:has(#group-profile) {
       transition: opacity 150ms ease;
 
       a {
-        color: var(--group-error-text);
+        color: var(--color-red-60);
         text-decoration: none;
         font-size: 1.25rem;
         padding: p.$spacing-xs;
         display: block;
 
         &:hover {
-          color: var(--group-error-text-hover);
+          color: var(--color-red-70);
         }
       }
     }
 
-    > li:hover .remove,
-    .remove:focus-within {
+    > li:hover .remove {
       opacity: 1;
     }
   }
@@ -507,7 +534,7 @@ body:has(#group-profile) {
         gap: p.$spacing-xs;
         padding: p.$spacing-sm p.$spacing-md;
         margin-top: p.$spacing-sm;
-        background: var(--button-secondary-bg);
+        background: var(--color-white);
         border: 2px solid var(--color-link);
         border-radius: p.$border-radius-sm;
         color: var(--color-link);
@@ -518,7 +545,7 @@ body:has(#group-profile) {
         user-select: none;
 
         &:hover {
-          background: var(--group-action-hover-bg);
+          background: var(--color-blue-01);
         }
 
         .action-icon {
@@ -582,8 +609,8 @@ body:has(#group-profile) {
       }
 
       .action-toggle:checked ~ .action-button {
-        background: var(--color-accent);
-        color: var(--color-text-on-accent);
+        background: var(--color-link);
+        color: var(--color-white);
 
         .action-icon {
           transform: rotate(45deg);
@@ -604,7 +631,7 @@ body:has(#group-profile) {
     text-align: center;
     margin-bottom: p.$spacing-2xl;
     padding-bottom: p.$spacing-lg;
-    border-bottom: 2px solid var(--group-divider);
+    border-bottom: 2px solid var(--color-marketing-gray-03);
 
     .sumo-page-heading {
       margin-bottom: p.$spacing-sm;
@@ -612,7 +639,7 @@ body:has(#group-profile) {
 
     .avatar-edit-description {
       @include c.text-body-md;
-      color: var(--color-text-light);
+      color: var(--color-marketing-gray-07);
       margin: 0;
     }
   }
@@ -632,7 +659,7 @@ body:has(#group-profile) {
       @include c.text-body-lg;
       font-weight: 700;
       margin-bottom: p.$spacing-lg;
-      color: var(--color-heading);
+      color: var(--color-ink-09);
       text-align: center;
     }
 
@@ -643,8 +670,8 @@ body:has(#group-profile) {
       margin: 0 auto p.$spacing-md;
       border-radius: 50%;
       overflow: hidden;
-      border: 4px solid var(--group-divider);
-      box-shadow: var(--group-avatar-preview-shadow);
+      border: 4px solid var(--color-marketing-gray-03);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .avatar-preview-image {
@@ -660,11 +687,11 @@ body:has(#group-profile) {
       left: 0;
       right: 0;
       bottom: 0;
-      background: var(--group-avatar-overlay-bg);
+      background: rgba(0, 0, 0, 0.7);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--group-avatar-overlay-text);
+      color: white;
       font-weight: 700;
       font-size: 18px;
       opacity: 1;
@@ -679,7 +706,7 @@ body:has(#group-profile) {
     .avatar-preview-help {
       @include c.text-body-sm;
       text-align: center;
-      color: var(--color-secondary);
+      color: var(--color-marketing-gray-06);
       margin: 0;
     }
   }
@@ -691,19 +718,18 @@ body:has(#group-profile) {
       @include c.text-body-lg;
       font-weight: 700;
       margin-bottom: p.$spacing-lg;
-      color: var(--color-heading);
+      color: var(--color-ink-09);
     }
 
     .form-errors {
-      background: var(--group-form-errors-bg);
-      border-left: 4px solid var(--group-error-text);
+      background: var(--color-red-01);
+      border-left: 4px solid var(--color-red-60);
       padding: p.$spacing-md;
       margin-bottom: p.$spacing-lg;
       border-radius: p.$border-radius-sm;
 
       .error-message {
-        // The edge's lighter red falls short of 4.5:1 on the error box.
-        color: var(--status-error-text);
+        color: var(--color-red-70);
         margin: 0;
         @include c.text-body-sm;
 
@@ -722,10 +748,10 @@ body:has(#group-profile) {
       @include c.text-body-md;
       font-weight: 600;
       margin-bottom: p.$spacing-sm;
-      color: var(--color-heading);
+      color: var(--color-ink-09);
 
       .required {
-        color: var(--group-error-text);
+        color: var(--color-red-60);
         margin-left: 2px;
       }
     }
@@ -737,10 +763,6 @@ body:has(#group-profile) {
         position: absolute;
         left: -9999px;
         opacity: 0;
-
-        &:focus-visible + .file-input-label {
-          box-shadow: var(--focus-shadow);
-        }
       }
 
       // Hide the widget's built-in image preview since we have our own
@@ -763,17 +785,17 @@ body:has(#group-profile) {
       .file-name {
         display: block;
         @include c.text-body-sm;
-        color: var(--color-text-light);
+        color: var(--color-marketing-gray-07);
         padding: p.$spacing-sm p.$spacing-md;
-        background: var(--group-inset-bg);
+        background: var(--color-marketing-gray-01);
         border-radius: p.$border-radius-sm;
-        border: 1px solid var(--group-divider);
+        border: 1px solid var(--color-marketing-gray-03);
       }
     }
 
     .form-help-text {
       @include c.text-body-sm;
-      color: var(--color-secondary);
+      color: var(--color-marketing-gray-06);
       margin-top: p.$spacing-sm;
       margin-bottom: 0;
     }
@@ -837,7 +859,7 @@ body:has(#group-profile) {
       }
 
       .muted {
-        color: var(--color-secondary);
+        color: var(--color-marketing-gray-06);
         font-size: 0.875rem;
         margin-left: p.$spacing-xs;
       }
@@ -860,7 +882,7 @@ body:has(#group-profile) {
     &--leaf {
       display: inline-block;
       width: 16px;
-      color: var(--group-tree-leaf);
+      color: var(--color-marketing-gray-04);
       margin-right: p.$spacing-xs;
       font-size: 0.5rem;
       text-align: center;
@@ -899,9 +921,9 @@ body:has(#group-tickets) {
     display: inline-block;
     padding: 8px p.$spacing-md;
     border-radius: 9999px;
-    border: 1px solid var(--color-border-interactive);
-    background: var(--button-secondary-bg);
-    color: var(--color-text);
+    border: 1px solid var(--color-marketing-gray-03);
+    background: white;
+    color: var(--color-marketing-gray-08);
     text-decoration: none;
     @include c.text-body-md;
     line-height: 1.2;
@@ -912,14 +934,14 @@ body:has(#group-tickets) {
     }
 
     &.is-active {
-      background: var(--color-accent);
-      border-color: var(--color-accent);
-      color: var(--color-text-on-accent);
+      background: var(--color-link);
+      border-color: var(--color-link);
+      color: white;
 
       &:hover {
-        color: var(--color-text-on-accent);
-        background: var(--color-accent-hover);
-        border-color: var(--color-accent-hover);
+        color: white;
+        background: var(--color-link-hover);
+        border-color: var(--color-link-hover);
       }
     }
   }
@@ -1085,7 +1107,7 @@ body:has(#group-tickets) {
   background: var(--color-link-active-bg);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: var(--company-tickets-widget-shadow);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
   &::before {
     content: '';
@@ -1094,7 +1116,7 @@ body:has(#group-tickets) {
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--color-accent);
+    background: var(--color-link);
   }
 
   &--title {
@@ -1102,7 +1124,7 @@ body:has(#group-tickets) {
     @include c.text-body-sm;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-secondary);
+    color: var(--color-marketing-gray-06);
     font-weight: 600;
   }
 
@@ -1111,7 +1133,7 @@ body:has(#group-tickets) {
     font-weight: 800;
     font-size: 1.375rem;
     letter-spacing: -0.01em;
-    color: var(--company-tickets-widget-text);
+    color: var(--color-marketing-gray-09);
     line-height: 1.1;
   }
 
@@ -1127,7 +1149,7 @@ body:has(#group-tickets) {
 
     dt {
       margin: 0;
-      color: var(--color-text-light);
+      color: var(--color-marketing-gray-07);
       font-size: 0.875rem;
     }
 
@@ -1136,7 +1158,7 @@ body:has(#group-tickets) {
       font-weight: 700;
       font-size: 1.5rem;
       font-variant-numeric: tabular-nums;
-      color: var(--company-tickets-widget-text);
+      color: var(--color-marketing-gray-09);
       line-height: 1;
     }
   }
@@ -1147,16 +1169,16 @@ body:has(#group-tickets) {
   .form-error {
     display: block;
     margin-top: p.$spacing-sm;
-    color: var(--status-error-text);
+    color: var(--color-red-08);
     @include c.text-body-md;
   }
 
   form > .form-error {
     margin: 0 0 p.$spacing-lg;
     padding: p.$spacing-md;
-    border-left: 4px solid var(--status-error-text);
+    border-left: 4px solid var(--color-red-08);
     border-radius: p.$border-radius-sm;
-    background: var(--group-form-errors-bg);
+    background: var(--color-red-01);
   }
 }
 

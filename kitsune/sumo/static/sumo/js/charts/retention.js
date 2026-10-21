@@ -1,8 +1,19 @@
-const HEAT_LEVELS = 10;
+const CHART_COLORS = [
+  "#EE2820",
+  "#F25743",
+  "#F58667",
+  "#F9B58B",
+  "#FDE4AF",
+  "#E3F1B6",
+  "#AADA9F",
+  "#72C489",
+  "#39AD72",
+  "#00975C",
+];
 
-// One level per 10%, matching the retention-heat-1 to retention-heat-10 classes.
-function heatLevel(percentage) {
-  return Math.max(1, Math.min(HEAT_LEVELS, Math.floor((percentage || 0) / 10) + 1));
+
+function colorFor(percentage) {
+  return CHART_COLORS[Math.min(9, Math.floor((percentage || 0) / 10))];
 }
 
 function computeStartDate() {
@@ -53,13 +64,12 @@ function buildLegend() {
   legend.className = "retention-legend";
   legend.style.cssText = "display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;font-size:12px;";
 
-  for (let level = 1; level <= HEAT_LEVELS; level++) {
+  CHART_COLORS.forEach((color, i) => {
     const span = document.createElement("span");
-    span.className = `retention-heat-${level}`;
-    span.style.cssText = "padding:2px 6px;border-radius:2px;";
-    span.textContent = `≥${(level - 1) * 10}%`;
+    span.style.cssText = `background-color:${color};padding:2px 6px;color:#333;border-radius:2px;`;
+    span.textContent = `≥${i * 10}%`;
     legend.appendChild(span);
-  }
+  });
 
   return legend;
 }
@@ -81,18 +91,18 @@ function buildGridElement(points, rowLabels) {
     display: grid;
     grid-template-columns: auto repeat(${COLUMNS}, 1fr);
     gap: 1px;
+    background: #ddd;
+    border: 1px solid #ddd;
     font-size: 12px;
   `;
 
   // Header row: top-left empty, then column labels 1..12
   const corner = document.createElement("div");
-  corner.className = "retention-heading";
-  corner.style.cssText = "padding:4px;";
+  corner.style.cssText = "background:#fff;padding:4px;";
   grid.appendChild(corner);
   for (let c = 1; c <= COLUMNS; c++) {
     const cell = document.createElement("div");
-    cell.className = "retention-heading";
-    cell.style.cssText = "padding:4px;text-align:center;font-weight:600;";
+    cell.style.cssText = "background:#fff;padding:4px;text-align:center;font-weight:600;";
     cell.textContent = String(c);
     grid.appendChild(cell);
   }
@@ -100,16 +110,20 @@ function buildGridElement(points, rowLabels) {
   // Body rows
   for (let r = 0; r < rowLabels.length; r++) {
     const rowHeader = document.createElement("div");
-    rowHeader.className = "retention-heading";
-    rowHeader.style.cssText = "padding:4px;white-space:nowrap;";
+    rowHeader.style.cssText = "background:#fff;padding:4px;white-space:nowrap;";
     rowHeader.textContent = rowLabels[r];
     grid.appendChild(rowHeader);
 
     for (let c = 0; c < COLUMNS; c++) {
       const p = cells[r][c];
       const cell = document.createElement("div");
-      cell.className = `retention-cell ${p ? `retention-heat-${heatLevel(p.percentage)}` : "retention-empty"}`;
-      cell.style.cssText = "padding:4px;text-align:center;";
+      const bg = p ? colorFor(p.percentage) : "#f4f4f4";
+      cell.style.cssText = `
+        background:${bg};
+        padding:4px;
+        text-align:center;
+        color:#222;
+      `;
       if (p) {
         const pct = Math.round(p.percentage);
         cell.textContent = `${p.v.toLocaleString()} (${pct}%)`;
@@ -139,8 +153,7 @@ function renderRetentionChart(chartArea, allData, kind) {
 
   const header = document.createElement("p");
   header.textContent = gettext("Weeks since cohort start");
-  header.className = "retention-caption";
-  header.style.cssText = "font-size:12px;margin:8px 0 4px;";
+  header.style.cssText = "font-size:12px;color:#666;margin:8px 0 4px;";
   chartArea.appendChild(header);
 
   const grid = buildGridElement(points, rowLabels);

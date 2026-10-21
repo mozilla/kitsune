@@ -49,39 +49,3 @@
 .kss-navbar-title {
   color: var(--kss-card-bg);
 }
-
-.kss-toggle-theme {
-  -webkit-appearance: none;
-  appearance: none;
-  margin-left: auto;
-  margin-right: 16px;
-  padding: 4px 12px;
-  border: 1px solid var(--kss-card-bg);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--kss-card-bg);
-  font: inherit;
-  font-size: 14px;
-  white-space: nowrap;
-  cursor: pointer;
-
-  &[aria-pressed="true"] {
-    background: var(--kss-card-bg);
-    color: var(--kss-navbar-bg);
-  }
-
-  &:focus-visible {
-    // The site's button focus ring would draw a second ring around the outline.
-    box-shadow: none;
-    outline: 2px solid var(--kss-card-bg);
-    outline-offset: 2px;
-  }
-
-  @media (forced-colors: active) {
-    &[aria-pressed="true"] {
-      background: Highlight;
-      color: HighlightText;
-      forced-color-adjust: none;
-    }
-  }
-}

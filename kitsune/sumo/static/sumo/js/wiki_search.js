@@ -1,6 +1,6 @@
 import Search from "sumo/js/search_utils";
 import TomSelect from "tom-select";
-import "sumo/scss/components/_tom-select.scss";
+import "tom-select/dist/css/tom-select.default.css";
 
 import "sumo/tpl/wiki-related-doc.njk";
 import "sumo/tpl/wiki-search-results.njk";

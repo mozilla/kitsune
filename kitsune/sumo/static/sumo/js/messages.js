@@ -46,11 +46,7 @@ function init() {
     }, { once: true });
   }
 
-  initCharacterCounter();
-}
-
-// Character counter for message box.
-export function initCharacterCounter() {
+  // Character counter for message box.
   var summaryCount = document.getElementById('remaining-characters');
   var summaryBox = summaryCount ? document.querySelector(summaryCount.dataset.input) : null;
   if (summaryCount && summaryBox) {
@@ -65,9 +61,9 @@ export function initCharacterCounter() {
       var message = interpolate(gettext('%s characters remaining'), [delta]);
       summaryCount.textContent = message;
       if (maxCount - currentCount >= 10) {
-        summaryCount.classList.remove('is-over-limit');
+        summaryCount.style.color = 'black';
       } else {
-        summaryCount.classList.add('is-over-limit');
+        summaryCount.style.color = 'red';
         if (currentCount >= maxCount) {
           summaryBox.value = summaryBox.value.substr(0, maxCount);
         }

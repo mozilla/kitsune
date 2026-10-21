@@ -1,5 +1,5 @@
 import TomSelect from 'tom-select';
-import 'sumo/scss/components/_tom-select.scss';
+import 'tom-select/dist/css/tom-select.default.css';
 
 document.addEventListener('DOMContentLoaded', () => {
     const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]')?.value;

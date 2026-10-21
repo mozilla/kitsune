@@ -1,3 +1,5 @@
+@use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
+
 // Base elements - general HTML elements
 @use "protocol/css/base/elements/reset";
 @use "protocol/css/base/elements/common";
@@ -7,12 +9,10 @@
 @use "protocol/css/components/button";
 
 @use "./base/typography";
-@use "./wizard-protocol";
-@use "./forced-colors-focus";
 
 :root,
 :host {
-  --color-text-form-step: var(--wizard-text);
+  --color-text-form-step: var(--color-dark-gray-10);
 
   font-size: 0.875rem;
   line-height: 1.14;
@@ -30,6 +30,15 @@ button.mzp-c-button {
   font-size: 0.8125rem;
 }
 
+.button-secondary,
+.button-secondary:hover,
+.button-secondary:focus,
+.button-secondary:active {
+  background-color: var(--color-light-gray-03);
+  border-color: var(--color-light-gray-03);
+  color: var(--color-text-form-step);
+}
+
 .tooltip-container {
   position: relative;
   display: flex;
@@ -40,8 +49,8 @@ button.mzp-c-button {
   border-radius: 4px;
   padding: 8px;
   position: absolute;
-  background-color: var(--wizard-error);
-  color: var(--wizard-error-text);
+  background-color: p.$color-red-60;
+  color: var(--color-white);
   width: max-content;
   visibility: hidden;
   top: -34px;
@@ -49,7 +58,7 @@ button.mzp-c-button {
 }
 
 .tooltip::before {
-  background-color: var(--wizard-error);
+  background-color: p.$color-red-60;
   content: "";
   height: 12px;
   position: absolute;
@@ -71,9 +80,9 @@ button.mzp-c-button {
 
 .tooltip.visible + input:invalid,
 input:not(:focus):not(:placeholder-shown):invalid {
-  border: 2px solid var(--wizard-error-border);
+  border: 2px solid p.$color-red-60;
 }
 
 .tooltip.visible + input:focus:invalid {
-  box-shadow: var(--wizard-error-ring);
+  box-shadow: 0 0 0 2px rgba(226, 40, 80, 0.5);
 }

@@ -59,17 +59,3 @@ repos:
         additional_dependencies:
           - eslint@10.12.0
           - eslint-plugin-import-x@4.17.1
-  - repo: https://github.com/thibaudcolas/pre-commit-stylelint
-    rev: v17.14.0
-    hooks:
-      - id: stylelint
-        language_version: "22.23.3"
-        files: "^(kitsune/sumo/static/sumo/scss/|svelte/).*\\.(scss|svelte)$"
-        additional_dependencies:
-          - stylelint@17.14.0
-          - stylelint-config-recommended-scss@17.0.1
-          - stylelint-order@8.1.1
-          - "@stylistic/stylelint-plugin@5.3.0"
-          - stylelint-scss@7.2.0
-          - postcss-html@2.0.0
-          - postcss-scss@4.0.9

@@ -2,7 +2,6 @@ from django.conf import settings
 from django.utils import timezone, translation
 
 from kitsune.products.models import ProductSupportConfig
-from kitsune.sumo.theme import dark_mode_enabled
 
 
 def global_settings(request):
@@ -26,10 +25,6 @@ def aaq_languages(request):
 
 def current_year(request):
     return {"CURRENT_YEAR": timezone.now().year}
-
-
-def dark_mode(request):
-    return {"DARK_MODE": dark_mode_enabled(request)}
 
 
 def static_url_webpack(request):

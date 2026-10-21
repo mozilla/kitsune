@@ -12,14 +12,12 @@
     {% for topic_data in topics %}
     <div class="card--topic">
       <div class="topic-header">
-        <div class="card--icon-plate">
-          <img
-            class="card--icon"
-            src="{{ topic_data.image_url }}"
-            alt="{{ pgettext('DB: products.Topic.title', topic_data.title)|forceescape }} icon"
-            loading="lazy"
-          />
-        </div>
+        <img
+          class="card--icon"
+          src="{{ topic_data.image_url }}"
+          alt="{{ pgettext('DB: products.Topic.title', topic_data.title)|forceescape }} icon"
+          loading="lazy"
+        />
           <h3 class="card--title">
             <a href="{{ topic_data.topic_url }}">
               {{ pgettext('DB: products.Topic.title', topic_data.title)|forceescape }}

@@ -12,7 +12,7 @@
 }
 
 .kbox-container {
-  @include c.elevated-surface(var(--color-surface));
+  background: #fff;
   display: none;
   font-size: 14px;
   position: absolute;
@@ -70,7 +70,7 @@
 }
 
 #kbox-overlay {
-  background: var(--kbox-overlay-bg);
+  background: rgba(0, 0, 0, 0.85);
   position: fixed;
   top: 0;
   left: 0;
