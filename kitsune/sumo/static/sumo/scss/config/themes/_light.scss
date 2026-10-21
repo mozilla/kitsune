@@ -842,6 +842,46 @@
 //
 // Style guide: colors.pro-support
 
+// Accent wash
+//
+// A violet wash for panels that hold cards. The cards on it keep `--card-bg` and take
+// `--accent-border`; number and icon tiles use `--accent-tile` with `--accent-ink` on top. Text on
+// the wash is `--color-heading` and `--color-text`.
+//
+// Colors:
+// --accent-wash: #F5F2FF - Dark: #24213A
+// --accent-tile: #E7DFFF (violet-01) - Dark: #3B3470
+// --accent-ink: #45278D (violet-09) - Dark: #D9CCFF
+// --accent-border: #E7DFFF (violet-01) - Dark: #3A3566
+//
+// Weight: 45
+//
+// Style guide: colors.accent-wash
+
+// Info callout
+//
+// The blue variant of the callout, used for "Good to know" notes. It has the same tokens as the
+// warning callout, so its stops, ring, and shadow work the same way and are described there.
+// Heading, body text, and links are checked against each stop.
+//
+// Colors:
+// --callout-info-bg-start: #E8F1FF - Dark: #35435A
+// --callout-info-bg-mid: #F2F7FF - Dark: #2D3646
+// --callout-info-bg-end: #FAFCFF - Dark: #303134
+// --callout-info-edge: #0060DF (blue-06) - Dark: #8FBEFA (azure-03)
+// --callout-info-icon-bg: #D6E6FF (azure-01) - Dark: #43567A
+// --callout-info-icon: #0250BB (blue-07) - Dark: #8FBEFA (azure-03)
+// --callout-info-heading: #20133A (ink-09) - Dark: #F9F9FB (light-gray-02)
+// --callout-info-text: #42435A - Dark: #E0E0E6 (light-gray-04)
+// --callout-info-action-bg: #FFFFFF - Dark: transparent
+// --callout-info-action-border: #0250BB (blue-07) - Dark: rgba(143, 190, 250, 0.55)
+// --callout-info-action-text: #054096 (blue-08) - Dark: #B0D4FF (azure-02)
+// --callout-info-action-hover-bg: #E8F1FF - Dark: rgba(143, 190, 250, 0.1)
+//
+// Weight: 46
+//
+// Style guide: colors.callout-info
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -919,6 +959,27 @@ $light: (
   'callout-warning-action-border': #B07A20,
   'callout-warning-action-text': #6B4300,
   'callout-warning-action-hover-bg': #FFF6E3,
+
+  // Callout (info)
+  'callout-info-bg-start': #E8F1FF,
+  'callout-info-bg-mid': #F2F7FF,
+  'callout-info-bg-end': #FAFCFF,
+  'callout-info-bg-mid-at': 55%,
+  'callout-info-edge': var(--color-blue-06),
+  'callout-info-edge-width': 4px,
+  'callout-info-ring': inset 0 0 0 1px rgba(c.color('blue', '06'), 0.16),
+  'callout-info-shadow': (
+    0 1px 2px rgba(14, 13, 26, 0.05),
+    0 10px 24px -12px rgba(c.color('blue', '07'), 0.2)
+  ),
+  'callout-info-icon-bg': var(--color-azure-01),
+  'callout-info-icon': var(--color-blue-07),
+  'callout-info-heading': var(--color-ink-09),
+  'callout-info-text': var(--color-marketing-gray-08),
+  'callout-info-action-bg': var(--color-white),
+  'callout-info-action-border': var(--color-blue-07),
+  'callout-info-action-text': var(--color-blue-08),
+  'callout-info-action-hover-bg': #E8F1FF,
 
   // Card (landing)
   'landing-card-plate-bg': radial-gradient(circle at 30% 25%, #FFFFFF, #F1F1F5),
@@ -1021,6 +1082,12 @@ $light: (
   'pro-support-banner-bg': linear-gradient(110deg, #FFEDD5 0%, #FDE5CA 25%, #F6E7E5 50%, #EEE2F8 75%, #E0D2F6 100%),
   'pro-support-banner-title': var(--color-black),
   'pro-support-banner-text': var(--color-black),
+
+  // Accent wash
+  'accent-wash': #F5F2FF,
+  'accent-tile': var(--color-violet-01),
+  'accent-ink': var(--color-violet-09),
+  'accent-border': var(--color-violet-01),
 
   // Header
   'header-bg': p.$color-white,

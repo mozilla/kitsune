@@ -2,9 +2,8 @@
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
 {% from 'products/includes/product_macros.html' import product_dropdown %}
 {% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
-{% from 'wiki/includes/document_macros.html' import document_metadata with context %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
-{% from "includes/icons.html" import icon %}
+{% from 'products/includes/curated_macros.html' import curated_block %}
 
 {% if product %}
   {% set announcement_product = product %}
@@ -60,39 +59,136 @@
         {% include 'products/includes/product_documents.html' %}
       {% endif %}
 
-      <section class="topic-list">
-        {% for document in documents %}
-          <article class="topic-article no-bottom-margin">
-            <div class="topic-article--icon-wrap">
-              {{ icon('reader-mode', class='topic-article--icon') }}
-            </div>
-            <div class="topic-article--text">
-              <h2 class="sumo-card-heading">
-                <a href="{{ document['url'] }}"
-                  data-event-name="link_click"
-                  data-event-parameters='{"link_name": "kb-article"}'>
-                  {{ document['document_title'] }}
-                </a>
-              </h2>
-              <p>{{ document['document_summary'] }}</p>
-             {{ document_metadata(document['created'], document['is_first_revision'], document['product_titles'], helpful_votes=None, metadata_type="list") }}
-            </div>
-          </article>
+      {% set show_products = topic_navigation and not product %}
+      {% set card_source_ids = [] %}
+      {% for block in curated_blocks if block['kind'] == 'articles' %}
+        {% for item in block['items'] %}
+          {% do card_source_ids.append(item['source_id']) %}
         {% endfor %}
-      </section>
+      {% endfor %}
+      {% set listed = documents|rejectattr('id', 'in', card_source_ids)|rejectattr('document_parent_id', 'in', card_source_ids)|list %}
+      {% set fallback_listed = (fallback_documents or [])|rejectattr('id', 'in', card_source_ids)|list %}
+      {% for block in curated_blocks %}
+        {% if block['variant'] == 'important' %}
+          {# L10n: Heading of a highlighted note at the top of a topic page, such as https://support.mozilla.org/products/firefox/browse. The note warns readers about something they should know before following the articles below. #}
+          {% set heading = _('Important') %}
+        {% elif block['variant'] == 'good_to_know' %}
+          {# L10n: Heading of a highlighted note at the top of a topic page, such as https://support.mozilla.org/products/firefox/browse. The note gives readers helpful background for the articles below. #}
+          {% set heading = _('Good to know') %}
+        {% elif block['variant'] == 'numbered' %}
+          {# L10n: Heading of a numbered set of recommended articles at the top of a topic page, such as https://support.mozilla.org/products/firefox/browse. It tells readers which articles to read first. #}
+          {% set heading = _('Start here') %}
+        {% elif block['variant'] == 'featured' %}
+          {# L10n: Heading of a set of highlighted articles at the top of a topic page, such as https://support.mozilla.org/products/firefox/browse. #}
+          {% set heading = _('Featured Articles') %}
+        {% elif block['kind'] == 'questions' %}
+          {# L10n: Heading of a set of popular, solved questions from the support forums at the top of a topic page, such as https://support.mozilla.org/products/firefox/browse. #}
+          {% set heading = _('Popular in the forums') %}
+        {% endif %}
+        {% set message = display_curated_message(block['message']) if block['message'] else None %}
+        {{ curated_block(block['kind'], block['variant'], heading, block['items'], message=message) }}
+      {% endfor %}
+      {% if listed %}
+        <div class="list-toolbar" data-list-toolbar>
+          <div class="list-toolbar--title">
+            <h2 class="list-toolbar--heading">
+              {% if listed|length < documents|length or fallback_listed|length < (fallback_documents or [])|length %}
+                {# L10n: Heading above the article list on a topic page, such as https://support.mozilla.org/products/firefox/browse, when featured articles above it are left out of the list. {topic} is the name of the topic. #}
+                {{ _('More in {topic}')|fe(topic=pgettext('DB: products.Topic.title', (subtopic or topic).title)|forceescape) }}
+              {% else %}
+                {{ _('All articles') }}
+              {% endif %}
+            </h2>
+            <span class="list-toolbar--count">{{ listed|length }}</span>
+          </div>
+          <div class="list-toolbar--controls is-hidden" data-list-controls>
+            {# L10n: Screen-reader label for the menu that sorts the article list on topic pages, such as https://support.mozilla.org/products/firefox/browse. #}
+            <label class="list-toolbar--visually-hidden" for="list-sort">{{ _('Sort articles') }}</label>
+            <select id="list-sort" data-list-sort autocomplete="off">
+              {% if (subtopic or topic).article_ordering == 'newest' %}
+                {# L10n: Sort option for the article list on topic pages, such as https://support.mozilla.org/products/firefox/browse. It keeps the default order, which puts the most recently added articles first. #}
+                <option value="server">{{ _('Newest') }}</option>
+              {% else %}
+                {# L10n: Sort option for the article list on topic pages, such as https://support.mozilla.org/products/firefox/browse. It keeps the default order, which puts the most helpful articles first. #}
+                <option value="server">{{ _('Most helpful') }}</option>
+              {% endif %}
+              {# L10n: Sort option for the article list on topic pages, such as https://support.mozilla.org/products/firefox/browse. It lists the most recently updated articles first. #}
+              <option value="updated">{{ _('Recently updated') }}</option>
+              {# L10n: Sort option for the article list on topic pages, such as https://support.mozilla.org/products/firefox/browse. It sorts the articles alphabetically by title. #}
+              <option value="title">{{ _('A–Z') }}</option>
+            </select>
+          </div>
+        </div>
+        <section class="topic-doc-list" data-topic-list>
+          {% for document in listed %}
+            <article class="topic-doc-list--item" data-title="{{ document['document_title'] }}" data-updated="{{ document['created'].isoformat() }}">
+              <div class="topic-doc-list--text">
+                <h3 class="topic-doc-list--title">
+                  <a href="{{ document['url'] }}"
+                    data-event-name="link_click"
+                    data-event-parameters='{"link_name": "kb-article"}'>
+                    {{ document['document_title'] }}
+                  </a>
+                </h3>
+                {% if document['document_summary'] %}
+                  <p class="topic-doc-list--summary">{{ document['document_summary'] }}</p>
+                {% endif %}
+                {% set other_products = [] %}
+                {% if product and document['product_titles'] %}
+                  {% for title in document['product_titles'].split(', ') if title != product.title %}
+                    {% do other_products.append(pgettext('DB: products.Product.title', title)|forceescape) %}
+                  {% endfor %}
+                {% endif %}
+                <p class="topic-doc-list--meta">
+                  {% if document['is_first_revision'] %}
+                    {# L10n: Date a Knowledge Base article was first published, shown under its title in topic lists. {date} is a formatted date, such as Oct 21, 2026. #}
+                    <span>{{ _('Created {date}')|fe(date=datetimeformat(document['created'], format='date')) }}</span>
+                  {% else %}
+                    {# L10n: Date a Knowledge Base article was last updated, shown under its title in topic lists. {date} is a formatted date, such as Oct 21, 2026. #}
+                    <span>{{ _('Updated {date}')|fe(date=datetimeformat(document['created'], format='date')) }}</span>
+                  {% endif %}
+                  {% if other_products %}
+                    <span aria-hidden="true">&middot;</span>
+                    {# L10n: Shown under an article's title in a product's topic list when the article also applies to other products. {products} is a comma-separated list of product names. #}
+                    <span>{{ _('Also for {products}')|fe(products=other_products|join(', ')) }}</span>
+                  {% elif show_products and document['product_titles'] %}
+                    <span aria-hidden="true">&middot;</span>
+                    <span>{{ document['product_titles'] }}</span>
+                  {% endif %}
+                </p>
+              </div>
+            </article>
+          {% endfor %}
+        </section>
+      {% elif not documents and not fallback_documents %}
+        <div class="topic-doc-list-empty">
+          {# L10n: Message shown on a topic page, such as https://support.mozilla.org/products/firefox/browse, when the topic has no articles. #}
+          <p class="topic-doc-list-empty--title">{{ _('No articles here yet') }}</p>
+          {% if subtopic %}
+            {# L10n: Link on the page of a subtopic without articles that goes to the article list of its parent topic. {topic} is the name of the parent topic. #}
+            <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
+              {{ _('See all articles in {topic}')|fe(topic=pgettext('DB: products.Topic.title', topic.title)|forceescape) }}
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
 
-      {% if fallback_documents %}
-        <h2 class="sumo-page-subheading">{{ _('In English') }}</h2>
-        <section class="topic-list">
-        {% for document in fallback_documents %}
-          <article>
-            <h3 class="sumo-card-heading">
-              <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">
-                {{ document['document_title'] }}
-              </a>
-            </h3>
-          </article>
-        {% endfor %}
+      {% if fallback_listed %}
+        <h2 class="topic-doc-list-heading">{{ _('In English') }}</h2>
+        {# L10n: Note under the "In English" heading on a topic page in a language other than English. The articles listed below exist only in English. #}
+        <p class="topic-doc-list-note">{{ _("These articles haven't been translated yet.") }}</p>
+        <section class="topic-doc-list is-compact">
+          {% for document in fallback_listed %}
+            <article class="topic-doc-list--item">
+              <div class="topic-doc-list--text">
+                <h3 class="topic-doc-list--title">
+                  <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">
+                    {{ document['document_title'] }}
+                  </a>
+                </h3>
+              </div>
+            </article>
+          {% endfor %}
         </section>
       {% endif %}
     </article>

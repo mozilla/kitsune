@@ -88,6 +88,10 @@
     border-bottom: 2px solid Highlight;
   }
 
+  .subtopic-nav--link[aria-current='page'] {
+    border: 2px solid Highlight;
+  }
+
   .pagination li.selected a {
     border: 2px solid Highlight;
   }

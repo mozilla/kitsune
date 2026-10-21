@@ -1,7 +1,10 @@
-<header class="sumo-article-header">
+<header class="sumo-article-header topic-header">
   <div class="sumo-article-header--text">
 
-    <div class="documents-product-title">
+    <div class="topic-header--title">
+      {% if topic.image %}
+        <span class="topic-header--tile"><img src="{{ topic.image_url }}" height="28" width="28" alt="" /></span>
+      {% endif %}
       <h1 class="topic-title is-subtopic sumo-page-heading">
         {{ pgettext('DB: products.Topic.title', topic.title)|forceescape }}
       </h1>
@@ -15,3 +18,5 @@
     {% endif %}
   </div>
 </header>
+
+<hr class="topic-divider" />

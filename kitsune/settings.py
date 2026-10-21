@@ -445,6 +445,9 @@ DB_LOCALIZE = {
         "Topic": {
             "attrs": ["title", "description"],
         },
+        "CuratedBlock": {
+            "attrs": ["message"],
+        },
     },
     "kbadge": {
         "Badge": {

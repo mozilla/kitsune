@@ -505,6 +505,31 @@ class TestFacetHelpers(TestCase):
         doc_ids = [d["id"] for d in docs_fr]
         self.assertNotIn(child_doc.id, doc_ids)
 
+    def test_documents_for_flags_documents_with_one_approved_revision(self):
+        """Only approved revisions count, and each document (translations included)
+        is counted on its own revisions; the flag survives the anonymous cache."""
+        topic = TopicFactory(products=[self.desktop], slug="first-revision")
+        single = DocumentFactory(products=[self.desktop], topics=[topic])
+        ApprovedRevisionFactory(document=single)
+        pending = DocumentFactory(products=[self.desktop], topics=[topic])
+        ApprovedRevisionFactory(document=pending)
+        RevisionFactory(document=pending)
+        edited = DocumentFactory(products=[self.desktop], topics=[topic])
+        ApprovedRevisionFactory(document=edited)
+        ApprovedRevisionFactory(document=edited)
+        parent = DocumentFactory(products=[self.desktop], topics=[topic])
+        parent_revision = ApprovedRevisionFactory(document=parent, is_ready_for_localization=True)
+        translation = DocumentFactory(locale="de", parent=parent, products=[self.desktop])
+        ApprovedRevisionFactory(document=translation, based_on=parent_revision)
+        ApprovedRevisionFactory(document=translation, based_on=parent_revision)
+
+        for _ in range(2):
+            docs, fallback = documents_for(self.anonymous, locale="de", topics=[topic])
+            self.assertEqual(
+                {d["id"]: d["is_first_revision"] for d in docs + fallback},
+                {translation.id: False, single.id: True, pending.id: True, edited.id: False},
+            )
+
     def test_documents_for_newest_first(self):
         """A topic with article_ordering=NEWEST orders articles newest-first by
         the document's creation order (id), ignoring display_order."""

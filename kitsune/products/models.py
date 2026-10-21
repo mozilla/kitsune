@@ -1,12 +1,16 @@
 from typing import override
 
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from kitsune.products.managers import (
+    CURATED_ARTICLE_Q,
+    MAX_QUESTIONS_SHOWN,
+    MIN_ITEMS_SHOWN,
+    CuratedBlockManager,
     NonArchivedManager,
     ProductManager,
     ProductSupportConfigManager,
@@ -265,6 +269,200 @@ class TopicSlugHistory(ModelBase):
             old_topic.is_archived = True
             old_topic.save()
         super().save(*args, **kwargs)
+
+
+class CuratedBlock(ModelBase):
+    """An editor-curated block shown on a product's topic page."""
+
+    class Kind(models.TextChoices):
+        CALLOUT = "callout", "Callout"
+        ARTICLES = "articles", "Article cards"
+        QUESTIONS = "questions", "Forum questions"
+
+    class Variant(models.TextChoices):
+        GOOD_TO_KNOW = "good_to_know", "Good to know"
+        IMPORTANT = "important", "Important"
+        NUMBERED = "numbered", "Numbered"
+        FEATURED = "featured", "Featured"
+        MANUAL = "manual", "Manual"
+        AUTOMATIC = "automatic", "Automatic"
+
+    # Every valid (kind, variant) pair, with the (min, max) number of items it holds.
+    ITEM_LIMITS = {
+        (Kind.CALLOUT, Variant.GOOD_TO_KNOW): (0, 3),
+        (Kind.CALLOUT, Variant.IMPORTANT): (0, 3),
+        (Kind.ARTICLES, Variant.NUMBERED): (MIN_ITEMS_SHOWN, 6),
+        (Kind.ARTICLES, Variant.FEATURED): (MIN_ITEMS_SHOWN, 6),
+        (Kind.QUESTIONS, Variant.MANUAL): (MIN_ITEMS_SHOWN, MAX_QUESTIONS_SHOWN),
+        (Kind.QUESTIONS, Variant.AUTOMATIC): (0, 0),
+    }
+
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="curated_blocks")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="curated_blocks")
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    variant = models.CharField(max_length=20, choices=Variant.choices)
+    message = models.TextField(blank=True, help_text="Callouts only. Plain text.")
+    show_until = models.DateTimeField(
+        null=True, blank=True, help_text="The block stops showing after this time."
+    )
+    updated_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = CuratedBlockManager()
+
+    class Meta:
+        verbose_name = "Curated block"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["topic", "product", "kind"], name="unique_curated_block_per_kind"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.get_kind_display()} ({self.get_variant_display()}): {self.topic} / {self.product}"
+
+    def clean(self):
+        super().clean()
+        errors = {}
+
+        if (
+            self.kind in self.Kind.values
+            and self.variant in self.Variant.values
+            and (self.kind, self.variant) not in self.ITEM_LIMITS
+        ):
+            errors["variant"] = (
+                f"'{self.get_variant_display()}' is not a variant of "
+                f"{self.get_kind_display()} blocks."
+            )
+
+        if self.kind in self.Kind.values:
+            message = self.message or ""
+            has_message = bool(message.strip())
+            if self.kind == self.Kind.CALLOUT and not has_message:
+                errors["message"] = "A message is required for callouts."
+            elif self.kind != self.Kind.CALLOUT and has_message:
+                errors["message"] = "Only callouts have a message."
+            elif '"""' in message or "\\" in message or message.endswith('"'):
+                errors["message"] = (
+                    "The message cannot contain a backslash or three double quotes in a row, "
+                    "or end with a double quote."
+                )
+
+        if (
+            self.topic_id is not None
+            and self.product_id is not None
+            and not ProductTopic.objects.filter(
+                product_id=self.product_id, topic_id=self.topic_id
+            ).exists()
+        ):
+            errors["topic"] = f"'{self.topic}' is not one of the topics of '{self.product}'."
+
+        if errors:
+            raise ValidationError(errors)
+
+    def clean_items(self, items):
+        """Validate the complete list of items this block would hold.
+
+        Counts and item types depend on the final set of items, so this runs once they
+        are known (unsaved items are fine). Raises a ValidationError listing every problem.
+        """
+        items = list(items)
+        limits = self.ITEM_LIMITS.get((self.kind, self.variant))
+        if limits is None or self.product_id is None:
+            return
+
+        if self.variant == self.Variant.AUTOMATIC:
+            if items:
+                raise ValidationError("Automatic question blocks cannot have items.")
+            return
+
+        low, high = limits
+        errors = []
+        if not low <= len(items) <= high:
+            expected = f"at most {high}" if low == 0 else f"between {low} and {high}"
+            errors.append(f"Add {expected} items (got {len(items)}).")
+
+        wants_questions = self.kind == self.Kind.QUESTIONS
+        label = "question" if wants_questions else "article"
+        target_ids = []
+        mismatched = False
+        for item in items:
+            target_id = item.question_id if wants_questions else item.document_id
+            other_id = item.document_id if wants_questions else item.question_id
+            if target_id is None or other_id is not None:
+                mismatched = True
+            if target_id is not None:
+                target_ids.append(target_id)
+        if mismatched:
+            errors.append(f"Only {label}s can be added to this block.")
+        if len(set(target_ids)) != len(target_ids):
+            errors.append(f"Each {label} can only be added once.")
+
+        if wants_questions:
+            eligible = set(
+                self.product.questions.filter(
+                    pk__in=target_ids, is_spam=False, is_archived=False
+                ).values_list("pk", flat=True)
+            )
+            requirement = "belong to this product and be neither spam nor archived"
+        else:
+            eligible = set(
+                self.product.document_set.filter(CURATED_ARTICLE_Q, pk__in=target_ids).values_list(
+                    "pk", flat=True
+                )
+            )
+            requirement = (
+                "be a published English source article of this product, not a template, "
+                "redirect, restricted or archived article"
+            )
+        for item in items:
+            target = item.question if wants_questions else item.document
+            if target is not None and target.pk not in eligible:
+                errors.append(f"'{target.title}' must {requirement}.")
+
+        if errors:
+            raise ValidationError(errors)
+
+
+class CuratedBlockItem(ModelBase):
+    """An article or question placed in a curated block."""
+
+    block = models.ForeignKey(CuratedBlock, on_delete=models.CASCADE, related_name="items")
+    position = models.PositiveSmallIntegerField(default=0)
+    document = models.ForeignKey(
+        "wiki.Document",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="curated_block_items",
+        limit_choices_to=CURATED_ARTICLE_Q,
+    )
+    question = models.ForeignKey(
+        "questions.Question",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="curated_block_items",
+        limit_choices_to={"is_spam": False, "is_archived": False},
+    )
+
+    class Meta:
+        ordering = ["position", "id"]
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(document__isnull=False, question__isnull=True)
+                    | models.Q(document__isnull=True, question__isnull=False)
+                ),
+                name="curated_block_item_has_one_target",
+                violation_error_message="Choose either an article or a question.",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.position}: {self.document or self.question}"
 
 
 class Version(ModelBase):
