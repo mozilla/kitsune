@@ -9,6 +9,8 @@ from django.core.exceptions import ValidationError
 from django.db import connections, transaction
 from django.utils.translation import gettext_lazy as _lazy
 
+from kitsune.products.models import SupportContract
+
 _HIERARCHY_LOCK_KEY = int.from_bytes(
     sha256(b"sumo-enterprise-group-hierarchy").digest()[:8], signed=True
 )
@@ -163,6 +165,20 @@ def guard_enterprise_group_move(node, target, *, using="default"):
             before = _profile_companies(profile_ids, using)
             yield
             after = _profile_companies(profile_ids, using)
+            company_ids = {company_id for _, company_id in after.values()}
+            if (
+                SupportContract.objects.using(using)
+                .filter(company_id__in=profile_ids)
+                .exclude(company_id__in=company_ids)
+                .exists()
+            ):
+                raise ValidationError(
+                    _lazy(
+                        "Companies with support contracts must stay directly under "
+                        "the enterprise group."
+                    ),
+                    code="contracted_company",
+                )
             changed_groups = set()
             for profile_id in before.keys() | after.keys():
                 old_membership = before.get(profile_id)

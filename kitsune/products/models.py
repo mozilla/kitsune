@@ -5,6 +5,7 @@ from django.contrib.auth.models import Group, User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.managers import (
     CURATED_ARTICLE_Q,
@@ -802,6 +803,62 @@ class ZendeskConfig(ModelBase):
 
     def __str__(self):
         return self.name
+
+
+class SupportContract(ModelBase):
+    class Status(models.TextChoices):
+        ACTIVE = "active", _lazy("Active")
+        SUSPENDED = "suspended", _lazy("Suspended")
+        CANCELLED = "cancelled", _lazy("Cancelled")
+
+    company = models.ForeignKey(
+        "groups.GroupProfile", on_delete=models.PROTECT, related_name="support_contracts"
+    )
+    name = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
+    starts_on = models.DateField()
+    ends_on = models.DateField()
+
+    class Meta:
+        verbose_name = _lazy("Support contract")
+        verbose_name_plural = _lazy("Support contracts")
+        ordering = ["company", "-starts_on"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(starts_on__lte=models.F("ends_on")),
+                name="support_contract_valid_period",
+            ),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class SupportCoverage(ModelBase):
+    contract = models.ForeignKey(
+        SupportContract, on_delete=models.CASCADE, related_name="coverages"
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.PROTECT, related_name="support_coverages"
+    )
+    zendesk_config = models.ForeignKey(
+        ZendeskConfig, on_delete=models.PROTECT, related_name="support_coverages"
+    )
+    zendesk_product_value = models.CharField(max_length=255)
+    includes_chat = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = _lazy("Support coverage")
+        verbose_name_plural = _lazy("Support coverages")
+        ordering = ["contract", "product"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["contract", "product"], name="unique_support_coverage_product"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.contract}: {self.product}"
 
 
 class ZendeskTopic(ModelBase):

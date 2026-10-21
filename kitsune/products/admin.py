@@ -2,11 +2,15 @@ from typing import Any
 
 from django import forms
 from django.contrib import admin
+from django.contrib.admin.utils import unquote
 from django.db.models.query import QuerySet
 from django.forms.models import BaseInlineFormSet
 from django.http import HttpRequest
+from django.utils.translation import gettext_lazy as _lazy
 
+from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import GroupProfile
+from kitsune.groups.onboarding import get_enterprise_root, link_zendesk_organization
 from kitsune.products.models import (
     CuratedBlock,
     CuratedBlockItem,
@@ -14,6 +18,8 @@ from kitsune.products.models import (
     Product,
     ProductSupportConfig,
     ProductTopic,
+    SupportContract,
+    SupportCoverage,
     SupportOrganization,
     Topic,
     TopicSlugHistory,
@@ -493,3 +499,155 @@ admin.site.register(ZendeskConfig, ZendeskConfigAdmin)
 admin.site.register(ZendeskTopicConfiguration, ZendeskTopicConfigurationAdmin)
 admin.site.register(ProductSupportConfig, ProductSupportConfigAdmin)
 admin.site.register(CuratedBlock, CuratedBlockAdmin)
+
+
+class SupportContractForm(forms.ModelForm):
+    class Meta:
+        model = SupportContract
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "company" in self.fields:
+            company = self.fields["company"]
+            try:
+                company.queryset = get_enterprise_root().get_children()
+            except forms.ValidationError:
+                company.queryset = GroupProfile.objects.none()
+            company.widget.can_add_related = False
+            company.widget.can_change_related = False
+            company.widget.can_delete_related = False
+            company.widget.can_view_related = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        starts_on = cleaned_data.get("starts_on")
+        ends_on = cleaned_data.get("ends_on")
+        if starts_on and ends_on and starts_on > ends_on:
+            self.add_error("ends_on", _lazy("The end date must be on or after the start date."))
+        return cleaned_data
+
+
+class SupportCoverageInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        if any(self.errors):
+            return
+        product_ids = set()
+        submitted_ids = {form.instance.pk for form in self.forms if form.instance.pk is not None}
+        for form in self.forms:
+            if not form.cleaned_data or form.cleaned_data.get("DELETE"):
+                continue
+            product = form.cleaned_data.get("product")
+            if product is not None:
+                product_ids.add(getattr(product, "pk", product))
+        if self.instance.pk:
+            product_ids.update(
+                self.instance.coverages.exclude(pk__in=submitted_ids).values_list(
+                    "product_id", flat=True
+                )
+            )
+
+        contract = self.instance
+        blocking_statuses = (SupportContract.Status.ACTIVE, SupportContract.Status.SUSPENDED)
+        if (
+            contract.status not in blocking_statuses
+            or not contract.company_id
+            or not contract.starts_on
+            or not contract.ends_on
+            or contract.starts_on > contract.ends_on
+            or not product_ids
+        ):
+            return
+        if (
+            SupportCoverage.objects.filter(
+                product_id__in=product_ids,
+                contract__company_id=contract.company_id,
+                contract__status__in=blocking_statuses,
+                contract__starts_on__lte=contract.ends_on,
+                contract__ends_on__gte=contract.starts_on,
+            )
+            .exclude(contract_id=contract.pk)
+            .exists()
+        ):
+            raise forms.ValidationError(
+                _lazy(
+                    "Another active or suspended contract already covers a selected product "
+                    "during this period."
+                )
+            )
+
+
+class SupportCoverageInline(admin.TabularInline):
+    model = SupportCoverage
+    formset = SupportCoverageInlineFormSet
+    extra = 1
+    min_num = 1
+    validate_min = True
+    can_delete = False
+    autocomplete_fields = ("product", "zendesk_config")
+
+    def get_formset(self, request, obj=None, **kwargs):
+        kwargs["validate_min"] = self.validate_min
+        return super().get_formset(request, obj, **kwargs)
+
+    def has_view_permission(self, request, obj=None):
+        parent_admin = self.admin_site.get_model_admin(self.parent_model)
+        return parent_admin.has_view_permission(request, obj)
+
+    def has_add_permission(self, request, obj=None):
+        parent_admin = self.admin_site.get_model_admin(self.parent_model)
+        if obj is None:
+            return parent_admin.has_add_permission(request)
+        return parent_admin.has_change_permission(request, obj)
+
+    def has_change_permission(self, request, obj=None):
+        parent_admin = self.admin_site.get_model_admin(self.parent_model)
+        return parent_admin.has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+def lock_contract_company(company_id):
+    try:
+        company_id = int(company_id)
+    except TypeError, ValueError:
+        return
+    GroupProfile.objects.select_for_update().filter(pk=company_id).first()
+
+
+class SupportContractAdmin(admin.ModelAdmin):
+    form = SupportContractForm
+    fields = ("company", "name", "status", "starts_on", "ends_on")
+    inlines = (SupportCoverageInline,)
+    list_display = ("name", "company", "status", "starts_on", "ends_on")
+    list_filter = ("status",)
+    search_fields = ("company__slug", "company__group__name", "name")
+
+    def get_readonly_fields(self, request, obj=None):
+        return ("company",) if obj else ()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        if request.method != "POST":
+            return super().changeform_view(request, object_id, form_url, extra_context)
+        if "_saveasnew" in request.POST:
+            object_id = None
+        with lock_enterprise_hierarchy():
+            if object_id is not None:
+                contract = self.get_object(request, unquote(object_id))
+                company_id = contract.company_id if contract else None
+            else:
+                company_id = request.POST.get("company")
+            lock_contract_company(company_id)
+            return super().changeform_view(request, object_id, form_url, extra_context)
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        link_zendesk_organization(obj.company, None)
+
+
+admin.site.register(SupportContract, SupportContractAdmin)

@@ -1,14 +1,19 @@
+from datetime import date
+
 import factory
 import factory.django
 import factory.fuzzy
 from django.template.defaultfilters import slugify
 
+from kitsune.groups.tests import EnterpriseCompanyFactory
 from kitsune.products.models import (
     CuratedBlock,
     CuratedBlockItem,
     Platform,
     Product,
     ProductSupportConfig,
+    SupportContract,
+    SupportCoverage,
     SupportOrganization,
     Topic,
     Version,
@@ -163,3 +168,24 @@ def make_article(product, **document_fields):
         **{f"document__{name}": value for name, value in document_fields.items()},
     )
     return revision.document
+
+
+class SupportContractFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SupportContract
+
+    company = factory.SubFactory(EnterpriseCompanyFactory)
+    name = factory.Sequence(lambda n: f"Support agreement {n}")
+    status = SupportContract.Status.ACTIVE
+    starts_on = date(2026, 1, 1)
+    ends_on = date(2026, 12, 31)
+
+
+class SupportCoverageFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SupportCoverage
+
+    contract = factory.SubFactory(SupportContractFactory)
+    product = factory.SubFactory(ProductFactory)
+    zendesk_config = factory.SubFactory(ZendeskConfigFactory)
+    zendesk_product_value = factory.LazyAttribute(lambda coverage: coverage.product.slug)

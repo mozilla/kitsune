@@ -7,6 +7,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupProfileFactory
+from kitsune.products.tests import SupportContractFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.urls import urlpatterns as sumo_urlpatterns
@@ -427,6 +428,19 @@ class EnterpriseMembershipAdminTests(EnterpriseMembershipFixtures, TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(self.tree_state(), before)
         self.assertEqual(self.memberships(member), memberships)
+
+    def test_admin_company_demotion_returns_bad_request_and_rolls_back(self):
+        SupportContractFactory(company=self.company_a)
+        before = self.tree_state()
+        changelist = reverse("admin:groups_groupprofile_changelist")
+
+        response = self.client.post(
+            f"{changelist}move/",
+            {"node": self.company_a.pk, "target": self.company_b.pk, "relation": "child"},
+        )
+
+        self.assertContains(response, "support contracts", status_code=400)
+        self.assertEqual(self.tree_state(), before)
 
     def test_form_and_drag_drop_allow_moves_within_the_same_company(self):
         member = UserFactory()
