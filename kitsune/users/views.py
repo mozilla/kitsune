@@ -18,8 +18,10 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
+    JsonResponse,
 )
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.crypto import constant_time_compare
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext as _
@@ -39,6 +41,7 @@ from mozilla_django_oidc.views import (
     OIDCLogoutView,
 )
 from sentry_sdk import capture_exception, capture_message
+from waffle.decorators import waffle_flag
 
 from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
@@ -52,6 +55,7 @@ from kitsune.kbforums.models import Post as KBForumPost
 from kitsune.kbforums.models import Thread as KBForumThread
 from kitsune.questions.utils import mark_content_as_spam, num_answers, num_questions, num_solutions
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.theme import DARK_MODE_FLAG, dark_mode_enabled
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate, simple_paginate
 from kitsune.tidings.models import Watch
@@ -64,6 +68,12 @@ from kitsune.users.tasks import (
     process_event_subscription_state_change,
 )
 from kitsune.users.templatetags.jinja_helpers import profile_url
+from kitsune.users.theme import (
+    THEME_PREFERENCE_SETTING,
+    set_theme_preference,
+    theme_owner_key,
+    theme_preference_or_default,
+)
 from kitsune.users.utils import (
     deactivate_user,
     delete_user_pipeline,
@@ -377,8 +387,9 @@ def documents_contributed(request, username):
 def edit_settings(request):
     """Edit user settings"""
     template = "users/edit_settings.html"
+    theme_enabled = dark_mode_enabled(request)
     if request.method == "POST":
-        settings_form = SettingsForm(request.POST)
+        settings_form = SettingsForm(request.POST, theme_enabled=theme_enabled)
         if settings_form.is_valid():
             settings_form.save_for_user(request.user)
             messages.add_message(request, messages.INFO, _("Your settings have been saved."))
@@ -389,7 +400,11 @@ def edit_settings(request):
     # Pass the current user's settings as the initial values.
     values = list(request.user.settings.values())
     initial = {}
+    stored_theme_preference = None
     for val in values:
+        if val["name"] == THEME_PREFERENCE_SETTING:
+            stored_theme_preference = val["value"]
+            continue
         try:
             # Uses ast.literal_eval to convert 'False' => False etc.
             # TODO: Make more resilient.
@@ -398,8 +413,30 @@ def edit_settings(request):
             # Attempted to convert the string value to a Python value
             # but failed so leave it a string.
             initial[val["name"]] = val["value"]
-    settings_form = SettingsForm(initial=initial)
+    if theme_enabled:
+        initial[THEME_PREFERENCE_SETTING] = theme_preference_or_default(stored_theme_preference)
+    settings_form = SettingsForm(initial=initial, theme_enabled=theme_enabled)
     return render(request, template, {"settings_form": settings_form})
+
+
+@waffle_flag(DARK_MODE_FLAG)
+@require_POST
+@login_required
+def theme_preference(request):
+    """Store the signed-in user's theme preference, if the page was rendered for them."""
+    owner = request.POST.get("owner", "")
+    if not owner:
+        return JsonResponse({"error": "Missing owner."}, status=400)
+    if not constant_time_compare(owner, theme_owner_key(request.user)):
+        return JsonResponse({"error": "The signed-in account has changed."}, status=409)
+
+    preference = request.POST.get("preference")
+    try:
+        set_theme_preference(request.user, preference)
+    except ValueError:
+        return JsonResponse({"error": "Unknown theme preference."}, status=400)
+
+    return JsonResponse({"preference": preference})
 
 
 @login_required

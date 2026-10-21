@@ -1,4 +1,5 @@
 import { renderLineChart } from "sumo/js/charts";
+import { chartColor } from "sumo/js/charts/theme";
 import { parseISO } from "date-fns";
 
 const POINT_HOVER_RADIUS = 5;
@@ -40,8 +41,8 @@ function buildConfig(datums) {
       datasets: [
         {
           label: gettext("Yes"),
-          borderColor: "#21de2b",
-          backgroundColor: "#21de2b",
+          borderColor: chartColor("--chart-votes-yes"),
+          backgroundColor: chartColor("--chart-votes-yes"),
           yAxisID: "y",
           pointRadius: 0,
           pointHoverRadius: POINT_HOVER_RADIUS,
@@ -50,8 +51,8 @@ function buildConfig(datums) {
         },
         {
           label: gettext("No"),
-          borderColor: "#de2b21",
-          backgroundColor: "#de2b21",
+          borderColor: chartColor("--chart-votes-no"),
+          backgroundColor: chartColor("--chart-votes-no"),
           yAxisID: "y",
           pointRadius: 0,
           pointHoverRadius: POINT_HOVER_RADIUS,
@@ -60,8 +61,8 @@ function buildConfig(datums) {
         },
         {
           label: gettext("% Helpful"),
-          borderColor: "#2b21de",
-          backgroundColor: "#2b21de",
+          borderColor: chartColor("--chart-votes-helpful"),
+          backgroundColor: chartColor("--chart-votes-helpful"),
           yAxisID: "y1",
           pointRadius: 0,
           pointHoverRadius: POINT_HOVER_RADIUS,

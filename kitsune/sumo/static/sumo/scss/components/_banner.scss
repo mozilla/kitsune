@@ -63,6 +63,16 @@
     position: absolute;
     top: 6px;
     right: 6px;
+
+    svg {
+      margin: 0;
+      padding: 0;
+      width: 16px;
+      height: 16px;
+      border-radius: 0;
+      background: none;
+      color: var(--color-icon);
+    }
   }
 
   @media #{p.$mq-md} {
@@ -72,31 +82,26 @@
     }
 
     svg, .icon {
-      margin-left: p.$spacing-xl;
+      margin-inline-start: p.$spacing-xl;
       margin-bottom: 0;
     }
 
     .heading {
-      text-align: left;
+      text-align: start;
       margin: p.$spacing-xl;
     }
 
     .sumo-button {
       margin-bottom: p.$spacing-lg;
-      margin-left: 0;
+      margin-inline-start: 0;
       max-width: 20%;
     }
 
     .sumo-close-button {
       position: static;
-      margin-right: p.$spacing-xl;
+      margin-inline-end: p.$spacing-xl;
     }
   }
-}
-
-.sumo-banner-warning {
-  background: var(--color-warning);
-  color: var(--color-heading);
 }
 
 .sumo-banner-no-close {

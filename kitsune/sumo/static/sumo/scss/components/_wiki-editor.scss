@@ -1,0 +1,870 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+// Hide the related documents list on edit metadata and new document pages
+body.edit_metadata #related-docs-list,
+body.new #related-docs-list {
+  display: none !important;
+}
+
+#id_restrict_to_groups {
+  // Prevents flickering by hiding the un-selectized select
+  // until tom-select uses it to make a new one that's visible.
+  display: none;
+}
+
+#edit-document label {
+  font-weight: bold;
+}
+
+/* Draft-related messages */
+#localize-document,
+#edit-document {
+  .buttons-and-preview {
+
+    /* Taken from Bootstrap V3 */
+    .alert {
+      background: var(--draft-alert-bg) var(--draft-alert-image) repeat-x scroll left top;
+      border: 1px solid transparent;
+      border-radius: p.$spacing-xs;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .error {
+      background-color: var(--draft-alert-error-bg);
+      border-color: var(--draft-alert-error-border);
+      color: var(--draft-alert-error-text);
+    }
+
+    .info {
+      background-color: var(--draft-alert-info-bg);
+      border-color: var(--draft-alert-info-border);
+      color: var(--draft-alert-info-text);
+    }
+
+    .success {
+      background-color: var(--draft-alert-success-bg);
+      border-color: var(--draft-alert-success-border);
+      color: var(--draft-alert-success-text);
+    }
+  }
+}
+
+/* Document history page */
+#revision-list {
+  form {
+    clear: both;
+    margin: 20px 0;
+    padding-top: 20px;
+  }
+
+  ul {
+    clear: both;
+    margin: 5px 0;
+    padding: 0;
+    text-align: left;
+
+    li {
+      list-style: none;
+      padding: p.$spacing-xs;
+
+      >div {
+        display: block;
+        margin-bottom: p.$spacing-xs;
+      }
+
+      &:nth-child(odd) {
+        background: var(--revision-list-row-alt-bg);
+      }
+
+      &.header {
+        color: var(--revision-list-header-text) !important;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .radio {
+    text-align: center;
+    padding: 0 0 0 2px;
+    width: 15px;
+
+    input {
+      margin: 0;
+    }
+  }
+
+  .status {
+    a {
+      font-weight: bold;
+    }
+  }
+
+  @media #{p.$mq-md} {
+
+    ul li>div {
+      display: inline-block;
+      margin-bottom: 0;
+    }
+
+    .date {
+      width: 115px;
+    }
+
+    .status {
+      width: 90px;
+    }
+
+    .significance {
+      width: 35px;
+    }
+
+    .title {
+      width: 290px;
+    }
+
+    .creator {
+      width: 300px;
+    }
+
+    .comment {
+      width: 140px;
+
+      &.wider {
+        width: 330px;
+      }
+    }
+  }
+
+  .creator {
+    color: var(--revision-list-creator-text);
+    // Long display names/usernames without spaces would otherwise expand this
+    // column and force the whole table to overflow horizontally, so allow them
+    // to wrap within the column. Keep room for a minimum number of characters
+    // too, otherwise on narrow screens the column collapses to the width of a
+    // single character.
+    min-width: 16ch;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+
+
+  .showdiff {
+    margin: 2px;
+    width: p.$spacing-md;
+
+    .loading {
+      height: p.$spacing-md;
+      width: p.$spacing-md;
+    }
+
+    .close-diff {
+      display: none;
+    }
+
+    .show-diff img,
+    .close-diff img {
+      filter: var(--icon-image-filter);
+    }
+  }
+
+  .title {
+    .locale {
+      background: var(--revision-list-locale-bg);
+      padding: 0 2px;
+      font-size: 0.7em;
+      box-shadow: var(--revision-list-locale-shadow);
+      position: relative;
+      bottom: 1px;
+      margin-right: 5px;
+    }
+  }
+
+  .l10n,
+  .edit,
+  .delete {
+    text-align: center;
+    width: 25px;
+
+    a {
+      display: inline-block;
+      text-decoration: none;
+      height: 20px;
+      width: 20px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+  }
+
+  .edit {
+    a {
+      background-image: var(--revision-edit-icon);
+      @include c.forced-colors-icon(var(--revision-edit-icon), contain);
+    }
+  }
+
+  .delete {
+    a {
+      background-image: var(--revision-delete-icon);
+      @include c.forced-colors-icon(var(--revision-delete-icon), contain);
+    }
+  }
+
+  .l10n {
+    a {
+      &.yes {
+        background-image: var(--revision-ready-icon);
+        @include c.forced-colors-icon(var(--revision-ready-icon), contain);
+      }
+
+      &.markasready,
+      &.no {
+        background-image: var(--close-icon);
+        @include c.forced-colors-icon(var(--close-icon), contain);
+      }
+
+      &.markasready:hover {
+        background-image: var(--revision-ready-icon);
+        cursor: pointer;
+        @include c.forced-colors-icon(var(--revision-ready-icon), contain);
+      }
+    }
+
+    span {
+      display: inline-block;
+      text-decoration: none;
+      height: 20px;
+      width: 20px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+
+      &.not-approved {
+        background-image: var(--revision-not-approved-icon);
+        opacity: 0.6;
+        @include c.forced-colors-icon(var(--revision-not-approved-icon), contain);
+      }
+
+      &.trivial {
+        background-image: var(--revision-trivial-icon);
+        opacity: 0.4;
+        @include c.forced-colors-icon(var(--revision-trivial-icon), contain);
+      }
+
+      &.not-localizable {
+        background-image: var(--revision-not-localizable-icon);
+        opacity: 0.4;
+        @include c.forced-colors-icon(var(--revision-not-localizable-icon), contain);
+      }
+
+      &.translated {
+        background-image: var(--revision-translated-icon);
+        opacity: 0.6;
+        @include c.forced-colors-icon(var(--revision-translated-icon), contain);
+      }
+    }
+  }
+
+  .loading {
+    display: none;
+    height: 20px;
+    width: 20px;
+  }
+}
+
+.html-rtl {
+  #revision-list {
+    ul {
+      text-align: right;
+    }
+
+    .date,
+    .date-head {
+      padding: 0 10px 0 0;
+    }
+  }
+}
+
+#contributors {
+  margin: 30px 0;
+
+  h1 {
+    font-size: 18px;
+  }
+}
+
+#delete-doc {
+  margin: 50px 0 0;
+  padding: 0 10px 0 0;
+  text-align: right;
+}
+
+.html-rtl {
+  #delete-doc {
+    padding: 0 0 0 10px;
+    text-align: left;
+  }
+}
+
+/* Revision diffs */
+.revision-diff {
+  header {
+    margin: 20px 0 0;
+  }
+
+  h3 {
+    font-weight: bold;
+  }
+
+  h4 {
+    font-weight: bold;
+    margin: 10px 0 0;
+  }
+
+  div.col {
+    display: inline-block;
+    padding-right: 1%;
+    vertical-align: top;
+    width: 48%;
+  }
+
+  div.picker {
+    display: block;
+    padding: 0 10px 0 0;
+    text-align: right;
+    width: auto;
+  }
+
+  a.toggle-diff {
+    float: right;
+    margin: 0 10px 0 0;
+  }
+
+}
+
+.html-rtl {
+  .revision-diff {
+    div.picker {
+      text-align: left;
+    }
+
+    a.toggle-diff {
+      float: left;
+      margin: 0 0 0 10px;
+    }
+  }
+}
+
+#diff-picker-kbox {
+  width: 770px;
+}
+
+#doc-source {
+  textarea {
+    height: 400px;
+  }
+}
+
+/* New / Edit / Translate Document */
+#document-form {
+  form {
+    padding: 0 0 20px;
+  }
+
+  label[for="id_needs_change_comment"] {
+    font-weight: normal;
+  }
+
+  /* Remove margin after the needs-change field before the comment (when it's displayed). */
+  div:has(label[for="id_needs_change"]):has(+ div label[for="id_needs_change_comment"]) {
+    margin-bottom: 0;
+  }
+}
+
+#preview {
+  .showfor {
+    border-radius: var(--global-radius);
+    @include c.elevation-01(var(--card-bg));
+    right: 10px;
+    margin: 0;
+    padding: 20px;
+    position: fixed;
+    max-height: 85vh;
+    top: 10vh;
+    width: 300px;
+    z-index: 5;
+    overflow: auto;
+
+    h1 {
+      font-size: 20px;
+    }
+
+    .exit {
+      font-size: 12px;
+      font-weight: bold;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      z-index: 6;
+
+      &:hover {
+        color: var(--preview-exit-hover-text);
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+#preview-bottom {
+  display: none;
+}
+
+#review-revision {
+  label {
+    font-weight: bold;
+  }
+
+  .showfor {
+    background: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: var(--review-showfor-shadow);
+    display: none;
+    left: 10px;
+    margin: -90px 0 0;
+    padding: 15px;
+    position: fixed;
+    top: 50%;
+    width: 165px;
+    z-index: 5;
+  }
+
+  .unreviewed-revision {
+    font-weight: bold;
+    font-size: 120%;
+  }
+
+  ul.revision-comment {
+    list-style-type: disc;
+    margin-top: -10px;
+    padding: 0px 15px 0;
+  }
+
+  .open {
+    .showfor {
+      display: block;
+
+      h1 {
+        font-size: 20px;
+      }
+
+      input {
+        width: auto !important;
+        /* temp hack workaround */
+      }
+    }
+  }
+}
+
+.html-rtl {
+
+  #preview,
+  #review-revision {
+    .showfor {
+      left: 100px;
+      right: auto;
+    }
+  }
+}
+
+#search-related {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+// Align the wiki edit page's Tom Selects - related documents and
+// restrict-to-groups - with the app's Protocol typography instead of Tom
+// Select's default system font at 13px. Both widgets carry a class on their
+// original element (in the template markup) that Tom Select copies onto its
+// wrapper. text-body-sm sets the family, size, and line-height together;
+// form-control inputs don't inherit these, so the input is included explicitly.
+.ts-wrapper.tom-select-related-docs,
+.ts-wrapper.tom-select-restrict-to-groups {
+  .ts-control,
+  .ts-control input,
+  .ts-dropdown {
+    @include c.text-body-sm;
+  }
+}
+
+/* Translate specific */
+
+.translate {
+  .recent-revisions {
+    li {
+      margin: 10px 0;
+      padding: 0;
+    }
+  }
+}
+
+ul.description {
+  li {
+    list-style: none;
+    padding: 15px 0;
+
+    &:first-child {
+      border: none;
+    }
+  }
+
+  input[type="text"] {
+    width: 98%;
+  }
+
+  textarea {
+    height: 100px;
+    padding: 2px;
+    width: 98%;
+  }
+}
+
+div.approved,
+div.localized {
+  display: inline-block;
+  vertical-align: top;
+  width: 49%;
+
+  p {
+    min-height: 35px;
+  }
+
+  .editor-tools {
+    height: 80px;
+  }
+}
+
+#content-fields {
+  padding: 15px 0;
+
+  h3 {
+    color: var(--translate-source-heading);
+    font-size: 13px;
+    font-weight: bold;
+    margin: 0 0 5px;
+  }
+
+  div.val {
+    border: solid 1px var(--translate-source-border);
+    height: 500px;
+    overflow: auto;
+    padding: 2px;
+    width: 100%;
+  }
+
+  textarea {
+    height: 495px;
+    margin: 0 0 15px;
+    padding: 2px;
+    width: 98%;
+  }
+
+  .approved {
+    textarea {
+      resize: none;
+    }
+  }
+
+  #content-or-diff {
+    margin-top: 96px;
+
+    &.content {
+      .diff-this {
+        display: none;
+      }
+    }
+
+    &.diff {
+      textarea {
+        display: none;
+      }
+    }
+
+    a {
+      cursor: pointer;
+      float: right;
+      margin: 0 0 15px;
+    }
+  }
+
+  .diff-this {
+    height: 500px;
+    overflow: auto;
+    width: 99%;
+  }
+}
+
+body.translate {
+
+  /* Override the translate page to have fluid width */
+  .container_12 {
+    margin: 0 25px;
+    width: auto;
+  }
+
+  #doc-tools {
+    width: 250px;
+    float: left;
+    margin-right: 40px;
+  }
+}
+
+/* Review */
+#revision-content,
+#reision-html {
+  margin: 10px 0;
+
+  pre {
+    white-space: pre-wrap;
+  }
+}
+
+body.review {
+  #actions {
+    margin: 20px 0;
+  }
+
+  #content-fields {
+    textarea {
+      height: 250px;
+      margin: 5px 0 0;
+    }
+  }
+}
+
+#approve-modal {
+  .field label {
+    font-weight: normal;
+  }
+
+  li {
+    list-style: none;
+    padding: 5px;
+    position: relative;
+
+    &:hover {
+      border-radius: 10px 10px 0 10px;
+      box-shadow: var(--approve-modal-item-hover-shadow);
+    }
+  }
+
+  div.message,
+  div.ready-for-l10n,
+  div.needs-change {
+    margin: 10px 0;
+  }
+}
+
+#reject-modal {
+  div.message {
+    margin: 10px 0;
+  }
+
+  textarea {
+    height: 100px;
+    width: 350px;
+  }
+}
+
+#self-approve-warning {
+    margin-top: 0;
+}
+
+.needs-change {
+  .comment {
+    @include p.bidi(((margin, 0 0 0 calc(20px + #{p.$spacing-md}), 0 calc(20px + #{p.$spacing-md}) 0 0),));
+
+    label {
+      display: block;
+    }
+  }
+}
+
+/* New Diffs */
+.diff-this {
+  margin: 15px 0;
+
+  p {
+    margin: 0;
+  }
+
+  table {
+    border: 1px solid var(--diff-border);
+    width: 100%;
+    color: var(--diff-text);
+    font-size: 12px;
+    font-family: var(--code-font-family);
+  }
+
+  .from,
+  .to {
+    display: none;
+  }
+
+  .output {
+    color: var(--diff-output-text);
+    font-size: 13px;
+  }
+
+  .fromLine {
+    background: var(--diff-removed-line-bg);
+  }
+
+  .toLine {
+    background: var(--diff-added-line-bg);
+  }
+
+  .num {
+    background: var(--diff-gutter-bg);
+    border-right: 1px solid var(--diff-border);
+    color: var(--diff-gutter-text);
+    padding: 0 p.$spacing-xs 0 6px;
+    text-align: right;
+    width: 15px;
+  }
+
+  .mark {
+    font-family: Courier;
+    padding: 0 6px;
+    width: p.$spacing-sm;
+  }
+
+  ins {
+    background: var(--diff-added-bg);
+    color: var(--diff-added-text);
+    text-decoration: none;
+  }
+
+  del {
+    background: var(--diff-removed-bg);
+    color: var(--diff-removed-text);
+    text-decoration: none;
+  }
+}
+
+/* CodeMirror editor */
+// screen.scss loads CodeMirror's own styles after this file, so these rules win on the #editor id, not by order.
+#editor {
+  border: 2px solid var(--codemirror-border);
+  border-radius: p.$border-radius-sm;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 0;
+
+  .CodeMirror {
+    background-color: var(--codemirror-bg);
+    color: var(--codemirror-text);
+    font-size: 12px;
+    font-family: var(--code-font-family);
+    height: 100%;
+  }
+
+  .CodeMirror-scrollbar-filler,
+  .CodeMirror-gutter-filler {
+    background-color: var(--codemirror-bg);
+  }
+
+  .CodeMirror-gutters {
+    border-right-color: var(--codemirror-gutter-border);
+    background-color: var(--codemirror-gutter-bg);
+  }
+
+  .CodeMirror-linenumber {
+    color: var(--codemirror-line-number);
+  }
+
+  .CodeMirror-cursor {
+    border-left-color: var(--codemirror-cursor);
+  }
+
+  div.CodeMirror-secondarycursor {
+    border-left-color: var(--codemirror-secondary-cursor);
+  }
+
+  .CodeMirror-selected {
+    background: var(--codemirror-selection-bg);
+  }
+
+  .CodeMirror-focused .CodeMirror-selected,
+  .CodeMirror-line::selection,
+  .CodeMirror-line > span::selection,
+  .CodeMirror-line > span > span::selection {
+    background: var(--codemirror-selection-focused-bg);
+  }
+
+  .cm-invalidchar {
+    color: var(--codemirror-invalid-char);
+  }
+
+  .cm-quote {
+    background-color: var(--codemirror-quote-bg);
+    color: var(--codemirror-quote-text);
+  }
+
+  .cm-variable,
+  .cm-tag {
+    color: var(--codemirror-syntax);
+  }
+
+  .cm-other.cm-link {
+    color: var(--codemirror-link);
+  }
+
+  .cm-bold {
+    color: var(--codemirror-bold);
+    font-weight: normal;
+  }
+
+  .cm-strikethrough {
+    text-decoration: line-through;
+  }
+
+  .cm-italic {
+    font-style: italic;
+  }
+
+  .cm-underline {
+    text-decoration: underline;
+  }
+
+  .cm-comment {
+    color: var(--codemirror-comment);
+  }
+}
+
+#editor_wrapper {
+  height: 500px;
+  margin: 0 0 15px;
+  position: relative;
+}
+
+// The hint list is appended to <body>; the ul type selector outranks show-hint's class rules.
+ul.CodeMirror-hints {
+  box-shadow: var(--codemirror-hints-shadow);
+  border-color: var(--codemirror-hints-border);
+  background: var(--codemirror-hints-bg);
+
+  .CodeMirror-hint {
+    color: var(--codemirror-hint-text);
+  }
+
+  li.CodeMirror-hint-active {
+    background: var(--codemirror-hint-active-bg);
+    color: var(--codemirror-hint-active-text);
+  }
+}

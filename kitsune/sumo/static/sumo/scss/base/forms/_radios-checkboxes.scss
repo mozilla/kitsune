@@ -37,7 +37,7 @@
       height: 20px;
       border: 2px solid var(--field-border-color-default);
       border-radius: p.$border-radius-xs;
-      background-color: var(--color-white);
+      background-color: var(--color-field-bg);
       vertical-align: middle;
       content: "";
     }
@@ -66,7 +66,7 @@
     &:before { // background, checked state
       z-index: 1;
       border-color: var(--checkbox-checked-color);
-      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13.03 9.2"><path fill="none" stroke="#FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.03 1L4.84 8.2 1 4.36"/></svg>');
+      background-image: var(--checkbox-check-icon);
       background-color: var(--checkbox-checked-color);
       background-position: center center;
       background-repeat: no-repeat;
@@ -89,7 +89,7 @@
   [type=checkbox]:checked:disabled + label:before,
   [type=checkbox]:checked:disabled:hover + label:before {
     border-color: var(--field-border-color-disabled);
-    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13.03 9.2"><path fill="none" stroke="#CDCDD4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.03 1L4.84 8.2 1 4.36"/></svg>');
+    background-image: var(--checkbox-check-disabled-icon);
     background-color: var(--field-background-color-disabled);
   }
 
@@ -117,15 +117,15 @@
 
   [type=radio]:checked + label:before,
   [type=checkbox]:checked + label:before {
-    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7.58 7.58"><circle cx="3.79" cy="3.79" r="3.79" fill="#0060DF"/></svg>');
-    background-color: var(--color-white);
+    background-image: var(--radio-dot-icon);
+    background-color: var(--color-field-bg);
     background-size: 10px 10px;
   }
 
   [type=radio]:checked:disabled + label:before,
   [type=radio]:checked:disabled:hover + label:before {
     border-color: var(--field-border-color-disabled);
-    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7.58 7.58"><circle cx="3.79" cy="3.79" r="3.79" fill="#CDCDD4"/></svg>');
+    background-image: var(--radio-dot-disabled-icon);
     background-color: var(--field-background-color-disabled);
   }
 }

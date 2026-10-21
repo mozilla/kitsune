@@ -134,6 +134,7 @@ h5, h6, .text-display-sm {
   --color-link: var(--color-inverse);
   --color-link-visited: var(--color-link-inverse-visited);
   --color-link-active-bg: var(--color-link-inverse-active-bg);
+  background-image: var(--surface-inverse-image);
   background-color: var(--color-inverse-bg);
   color: var(--color-inverse);
 }
@@ -191,6 +192,9 @@ h5, h6, .text-display-sm {
 
 a, :link {
   text-decoration: underline;
+  text-decoration-color: var(--link-underline-color, currentColor);
+  text-decoration-thickness: var(--link-underline-thickness, auto);
+  text-underline-offset: var(--link-underline-offset, auto);
   color: var(--color-link);
 
   &:hover {
@@ -216,10 +220,10 @@ a, :link {
 }
 
 .warning-link {
-  color: var(--color-red-08);
+  color: var(--warning-link);
 
   &:hover {
-    color: var(--color-red-09);
+    color: var(--warning-link-hover);
   }
 }
 
@@ -231,13 +235,13 @@ a, :link {
   padding: p.$spacing-sm;
   margin: 0 0 p.$spacing-md 0;
   border-radius: var(--global-radius);
-  background-color: var(--color-red-02);
+  background-color: var(--errorlist-bg);
   list-style: none;
 }
 
 hr {
   border: 0 none;
-  border-top: 1px solid var(--color-text);
+  border-top: 1px solid var(--rule-color);
   margin: 1em 0;
 }
 

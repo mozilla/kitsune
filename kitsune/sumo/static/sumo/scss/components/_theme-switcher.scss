@@ -1,0 +1,101 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+.sumo-theme-switcher {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+
+  &--legend {
+    padding-block: 0 p.$spacing-xs;
+    padding-inline: 0;
+    @include c.text-body-sm;
+    font-weight: bold;
+    color: inherit;
+  }
+
+  &--options {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-md);
+  }
+
+  // Hidden but still focusable and announced; the label shows the selection and focus.
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  label {
+    margin: 0;
+    padding: 2px p.$spacing-sm;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    @include c.text-body-sm;
+    font-weight: normal;
+    white-space: nowrap;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  input:not(:checked) + label:hover {
+    border-color: currentColor;
+  }
+
+  input:checked + label {
+    background-color: var(--color-accent);
+    color: var(--color-text-on-accent);
+  }
+
+  input:focus-visible + label {
+    position: relative;
+    z-index: 1;
+    box-shadow: var(--focus-shadow);
+  }
+
+  &.is-footer {
+    margin-block-end: p.$layout-sm;
+  }
+
+  &.is-menu {
+    margin-block-start: p.$spacing-lg;
+  }
+
+  &.is-field {
+    margin-block-end: p.$spacing-lg;
+
+    .sumo-theme-switcher--legend {
+      padding-block-end: p.$spacing-sm;
+      @include c.text-body-md;
+    }
+
+    label {
+      padding: p.$spacing-xs p.$spacing-md;
+      @include c.text-body-md;
+    }
+  }
+
+  // Forced colors drop the fill and the focus shadow, so mark both with system colors.
+  @media (forced-colors: active) {
+    input:checked + label {
+      forced-color-adjust: none;
+      border-color: Highlight;
+      background-color: Highlight;
+      color: HighlightText;
+    }
+
+    input:focus-visible + label {
+      outline: 2px solid Highlight;
+      outline-offset: 2px;
+      box-shadow: none;
+    }
+  }
+}

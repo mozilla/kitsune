@@ -1,3 +1,4 @@
+{% from "includes/icons.html" import icon %}
 {% macro search_box(settings, id=False, prefix=None, target=None,
                     placeholder=_('Search questions, articles, or topics (example: saving passwords in Firefox)'),
                     params=None) %}
@@ -29,8 +30,8 @@
           {{ button_text }}
         </a>
       {% endif %}
-      <button class="sumo-close-button close-button" data-close-id="{{ id }}" data-close-memory="session">
-        <img src="{{ webpack_static('protocol/img/icons/close-white.svg') }}" />
+      <button class="sumo-close-button close-button" data-close-id="{{ id }}" data-close-memory="session" aria-label="{{ _('Close') }}">
+        <img src="{{ webpack_static('protocol/img/icons/close-white.svg') }}" alt="" />
       </button>
     </div>
   </div>
@@ -46,7 +47,7 @@
     <a href="https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams"
       class="sumo-button primary-button button-lg">{{ _('Learn More') }}</a>
     <button class="sumo-close-button close-button" data-close-id="id_scam_alert" data-close-memory="remember">
-      <img src="{{ webpack_static('protocol/img/icons/close.svg') }}" />
+      {{ icon('close', label=_('Close')) }}
     </button>
   </div>
 </div>
@@ -104,7 +105,7 @@
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
           <div class="mzp-c-menu-item-head">
             <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
+              <g transform="translate(3 3)" stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd"
                 stroke-linecap="round">
                 <rect stroke-linejoin="round" width="18" height="18" rx="2" />
                 <path d="M4 5h10M4 9h10M4 13h4" />
@@ -177,7 +178,7 @@
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
             <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
+                <g transform="translate(3 3)" stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd"
                   stroke-linecap="round">
                   <rect stroke-linejoin="round" width="18" height="18" rx="2" />
                   <path d="M4 5h10M4 9h10M4 13h4" />
@@ -204,7 +205,7 @@
             <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
-                <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                <g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
                   stroke-linejoin="round">
                   <path
                     d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10" />
@@ -283,7 +284,7 @@
                 viewBox="0 0 24 24">
                 <path
                   d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z"
-                  stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                  stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
                   stroke-linejoin="round" />
               </svg>
               <h4 class="mzp-c-menu-item-title">{{ _('Browse all forum threads by topic') }}</h4>
@@ -310,7 +311,7 @@
             <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
-                <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                <g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
                   stroke-linejoin="round">
                   <path d="M11 3H4a2 2 0 00-2 2v12a2 2 0 002 2h9l2 4 2-4h2a2 2 0 002-2v-6" />
                   <path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z" />
@@ -470,7 +471,7 @@
                 data-event-parameters='{"link_name": "main-menu.contributor-discussions"}'>
                 <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24">
-                  <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                  <g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
                     stroke-linejoin="round">
                     <path
                       d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10" />
@@ -492,7 +493,7 @@
                   viewBox="0 0 24 24">
                   <path
                     d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z"
-                    stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                    stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
                     stroke-linejoin="round" />
                 </svg>
                 <h4 class="mzp-c-menu-item-title">{{ _('Contributor tools') }}</h4>
@@ -509,6 +510,28 @@
 {% endif %}
 {% endmacro %}
 
+
+{% macro theme_switcher(id_prefix, variant, field_name=None, checked=None) %}
+{# Without a form to submit, the switcher needs JavaScript, so the component reveals it. #}
+<fieldset class="sumo-theme-switcher is-{{ variant }}" x-data="themeSwitcher" @change="choose"
+  {%- if not field_name %} hidden{% endif %}>
+  {# L10n: Heading above the choices of color theme: System, Light and Dark. -#}
+  <legend class="sumo-theme-switcher--legend">{{ _('Appearance') }}</legend>
+  <div class="sumo-theme-switcher--options">
+    {# L10n: Color theme that follows the device's light or dark setting. -#}
+    {% set system_label = _('System') -%}
+    {# L10n: Color theme with a light background. -#}
+    {% set light_label = _('Light') -%}
+    {# L10n: Color theme with a dark background. -#}
+    {% set dark_label = _('Dark') %}
+    {% for value, label in (('system', system_label), ('light', light_label), ('dark', dark_label)) %}
+    <input type="radio" id="{{ id_prefix }}-theme-{{ value }}" name="{{ field_name or id_prefix ~ '-theme' }}"
+      value="{{ value }}"{% if value == checked %} checked{% endif %}>
+    <label for="{{ id_prefix }}-theme-{{ value }}">{{ label }}</label>
+    {% endfor %}
+  </div>
+</fieldset>
+{% endmacro %}
 
 {% macro profile_nav(user, hide_aaq_link=False) %}
 {% if not hide_header_search %}
@@ -544,7 +567,7 @@
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
             <a class="mzp-c-menu-item-link" rel="nofollow" href="{{ profile_url(user) }}">
               <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <g transform="translate(5 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd">
+                <g transform="translate(5 3)" stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd">
                   <path d="M0 18c1-4 3.333-6 7-6s6 2 7 6" stroke-linecap="round" />
                   <circle cx="7" cy="4" r="4" />
                 </g>
@@ -564,7 +587,7 @@
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
             <a class="mzp-c-menu-item-link" rel="nofollow" href="{{ url('users.edit_settings') }}">
               <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <g transform="translate(1 1)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
+                <g transform="translate(1 1)" stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd"
                   stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="11" cy="11" r="3" />
                   <path
@@ -582,7 +605,7 @@
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
             <a class="mzp-c-menu-item-link" href="{{ url('messages.inbox') }}">
               <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                <g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
                   stroke-linejoin="round">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                   <path d="M22 6l-10 7L2 6" />
@@ -597,6 +620,9 @@
               </p>
             </a>
           </section>
+          {%- if DARK_MODE %}
+          {{ theme_switcher('profile-menu', 'menu') }}
+          {%- endif %}
           <div class="sumo-button-wrap align-end">
             <form id="sign-out" action="{{ url('users.logout') }}" method="post">
               {% csrf_token %}
@@ -844,7 +870,7 @@
   {% if content %}
     <div id="announce-{{ id }}" class="mzp-c-notification-bar mzp-t-{{ level }}"
       {% if close_memory %}data-close-initial="hidden"{% endif %}>
-      <button class="mzp-c-notification-bar-button close-button" data-close-id="announce-{{ id }}" type="button"
+      <button class="mzp-c-notification-bar-button close-button" data-close-id="announce-{{ id }}" type="button" aria-label="{{ _('Close') }}"
         {% if close_memory %}data-close-memory="{{ close_memory }}" {% endif %}
         {% if close_type %}data-close-type="{{ close_type }}" {% endif %}>
       </button>
@@ -860,7 +886,9 @@
 <link rel="shortcut icon" href="{{ webpack_static('sumo/img/favicon.ico') }}">
 <link rel="apple-touch-icon" sizes="180x180" href="{{ webpack_static('sumo/img/apple-touch-icon.png') }}">
 <link rel="manifest" href="/manifest.json">
+{% if not DARK_MODE -%}
 <meta name="theme-color" content="#ffffff">
+{% endif -%}
 {% endmacro %}
 
 {% macro download_firefox() %}
@@ -929,8 +957,8 @@
 <div class="sumo-card-grid is-four-wide">
   <div class="scroll-wrap">
     {% for doc in articles %}
-    <div class="card card--article zoom-on-hover">
-      <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="{{ doc.title }}" />
+    <div class="card card--article">
+      {{ icon('reader-mode', class='card--icon-sm') }}
       <div class="card--details">
         <h3 class="card--title">
           <a class="expand-this-link" href="{{ url('wiki.document', doc.slug) }}"{% if new_tab %} target="_blank"{% endif %}

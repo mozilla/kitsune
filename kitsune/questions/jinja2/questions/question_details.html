@@ -14,6 +14,9 @@
   {% set scripts = ('questions', 'topics') %}
 {% endif %}
 {% set classes = 'answers' %}
+{% if product %}
+  {% set product_theme = product.slug %}
+{% endif %}
 
 {% set product_title = pgettext('DB: products.Product.title', product.title) if product else _('All Products') %}
 {% set logo = pgettext('DB: products.Product.image_alternate_url', product.image_alternate_url) if product else '' %}

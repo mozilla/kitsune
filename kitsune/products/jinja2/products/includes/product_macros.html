@@ -2,8 +2,10 @@
 <div class="sumo-card-grid is-product-wrap">
   <div class="scroll-wrap">
     {% for product in products %}
-      <div class="card card--product zoom-on-hover">
-          <img class="card--icon" src="{{ product.image_url }}" alt="{{ pgettext('DB: products.Product.title', product.title)|forceescape }}" />
+      <div class="card card--product">
+          <div class="card--icon-plate">
+            <img class="card--icon" src="{{ product.image_url }}" alt="{{ pgettext('DB: products.Product.title', product.title)|forceescape }}" />
+          </div>
           <div class="card--details">
             <h3 class="card--title">
               <a class="expand-this-link" href="{{ url('products.product', slug=product.slug) }}"

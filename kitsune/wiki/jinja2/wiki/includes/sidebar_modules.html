@@ -1,4 +1,5 @@
 {% from "wiki/includes/document_macros.html" import show_for, document_watch with context %}
+{% from "includes/icons.html" import icon %}
 
 {% macro document_tools(document, parent, user, active, settings, include_showfor=False) -%}
   {% if not parent %}
@@ -9,7 +10,7 @@
       {% if (is_contributor(user) or in_staff_group(user)) and (document or parent).is_linked_in_product %}
         <li>
           <figure class="linked-in-product">
-            <img src="{{ webpack_static('sumo/img/info.svg') }}" alt="{{ _('Information icon') }}" />
+            {{ icon('info', label=_('Information icon')) }}
             <figcaption>{{ _("Article is linked in product") }}</figcaption>
           </figure>
         </li>
