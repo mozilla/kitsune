@@ -9,12 +9,6 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.users.models import ContributionAreas, Profile
-from kitsune.users.theme import (
-    DEFAULT_THEME_PREFERENCE,
-    THEME_PREFERENCE_SETTING,
-    THEME_PREFERENCES,
-    set_theme_preference,
-)
 from kitsune.users.utils import add_to_contributors
 from kitsune.users.widgets import MonthYearWidget
 
@@ -46,12 +40,6 @@ PASSWD_MIN_LENGTH_MSG = _lazy("Password must be 8 or more characters.")
 
 USERNAME_CACHE_KEY = "username-blacklist"
 
-THEME_PREFERENCE_LABELS = {
-    "system": _lazy("System"),
-    "light": _lazy("Light"),
-    "dark": _lazy("Dark"),
-}
-
 
 class SettingsForm(forms.Form):
     forums_watch_new_thread = forms.BooleanField(
@@ -73,20 +61,8 @@ class SettingsForm(forms.Form):
         required=False, label=_lazy("Send emails for private messages")
     )
 
-    def __init__(self, *args, theme_enabled=False, **kwargs):
-        super().__init__(*args, **kwargs)
-        if theme_enabled:
-            self.fields[THEME_PREFERENCE_SETTING] = forms.ChoiceField(
-                label=_lazy("Appearance"),
-                choices=[(value, THEME_PREFERENCE_LABELS[value]) for value in THEME_PREFERENCES],
-                initial=DEFAULT_THEME_PREFERENCE,
-            )
-
     def save_for_user(self, user):
         for field in list(self.fields.keys()):
-            if field == THEME_PREFERENCE_SETTING:
-                set_theme_preference(user, self.cleaned_data[field])
-                continue
             value = str(self.cleaned_data[field])
             setting = user.settings.filter(name=field)
             update_count = setting.update(value=value)

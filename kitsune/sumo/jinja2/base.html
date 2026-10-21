@@ -1,4 +1,4 @@
-{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, profile_nav, download_firefox, field, checkbox, favicon, theme_switcher with context %}
+{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, profile_nav, download_firefox, field, checkbox, favicon with context %}
 
 {% if request.LANGUAGE_CODE == 'xx' %}
   {% set meta = [('robots', 'noindex')] %}
@@ -19,20 +19,12 @@
   {% endif %}
   {% if settings.GA_CONSOLE_LOGGING %}data-ga-console-logging="true"{% endif %}
   {% if settings.GA_DEBUG_MODE %}data-ga-debug-mode="true"{% endif %}
-  {%- if DARK_MODE and request.user.is_authenticated %}
-  data-theme-preference="{{ get_theme_preference(request.user) }}"
-  data-theme-owner="{{ theme_owner_key(request.user) }}"
-  data-theme-endpoint="{{ url('users.theme_preference') }}"
-  {%- endif %}
   {% if show_chat %}
   data-zendesk-chat-jwt-url="{{ url('customercare.chat_jwt', product_slug=(product or current_product).slug) }}"
   data-zendesk-chat-user="{{ user.id }}"
   data-zendesk-chat-tags="{{ chat_conversation_tags(product or current_product) }}"
   {% endif %}>
 <head>
-  {% if DARK_MODE -%}
-  <script>{{ theme_head_script() }}</script>
-  {% endif -%}
   {% include "includes/google-analytics.html" %}
   {% if matomo_mzla %}{% include "includes/matomo-mzla.html" %}{% endif %}
 
@@ -88,7 +80,7 @@
   {% endif %}
 </head>
 
-<body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }}{% if product_theme == 'firefox-enterprise' %} product-theme--enterprise{% endif %} {{ request.LANGUAGE_CODE }}"
+<body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-messages-api="{{ url('messages.api.get_autocomplete_suggestions') }}"
@@ -112,7 +104,7 @@
 
 {% if settings.STAGE %}
 <div id="stage-banner"  class="mzp-c-notification-bar mzp-t-warning">
-  <button class="mzp-c-notification-bar-button close-button" type="button" aria-label="{{ _('Close') }}"></button>
+  <button class="mzp-c-notification-bar-button close-button" type="button"></button>
   <p>{{ _('This is a staging site, the content gets overwritten on the 1st of every month.<br>The production site is <a href="https://support.mozilla.org">here</a>.') }}</p>
 </div>
 {% endif %}
@@ -349,9 +341,6 @@
           <button type="submit">{{ _('Go') }}</button>
         </form>
       </div>
-      {%- if DARK_MODE %}
-      {{ theme_switcher('footer', 'footer') }}
-      {%- endif %}
       <ul class="mzp-c-footer-links-social">
         <li><a class="twitter" href="https://twitter.com/firefox">Twitter<span>(@firefox)</span></a></li>
         <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">YouTube<span> (firefoxchannel)</span></a></li>

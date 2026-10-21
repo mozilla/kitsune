@@ -8,7 +8,7 @@
   align-items: center;
   gap: p.$spacing-xs p.$spacing-sm;
   padding-bottom: p.$spacing-lg;
-  border-bottom: 1px solid var(--thread-border);
+  border-bottom: 1px solid var(--color-light-gray-04);
   margin-bottom: p.$spacing-xl;
 }
 
@@ -219,18 +219,18 @@
   @include c.text-body-sm;
 
   &--info {
-    background: var(--status-info-bg);
-    color: var(--status-info-text);
+    background: rgba(c.color('blue', '06'), 0.08);
+    color: var(--color-link);
   }
 
   &--spam {
-    background: var(--status-pending-bg);
-    color: var(--status-pending-text);
+    background: rgba(c.color('yellow', '04'), 0.2);
+    color: c.color('orange', '08');
   }
 
   &--error {
-    background: var(--status-error-bg);
-    color: var(--status-error-text);
+    background: rgba(c.color('red', '06'), 0.08);
+    color: c.color('red', '08');
     margin-top: p.$spacing-lg;
   }
 }

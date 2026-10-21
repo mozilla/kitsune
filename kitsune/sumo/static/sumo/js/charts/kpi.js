@@ -1,19 +1,21 @@
 import { renderLineChart } from "sumo/js/charts";
-import { seriesColor } from "sumo/js/charts/theme";
 import { parseISO } from "date-fns";
 
 const COLORS = {
-  blue: seriesColor(0),
-  red: seriesColor(1),
-  green: seriesColor(2),
-  purple: seriesColor(3),
-  orange: seriesColor(9),
-  magenta: seriesColor(10),
+  blue: "#5d84b2",
+  red: "#aa4643",
+  green: "#89a54e",
+  purple: "#80699b",
+  orange: "#C98531",
+  magenta: "#DB75C2",
+  cyan: "#3d96ae",
+  brown: "#a47d7c",
+  lime: "#b5ca92",
 };
 
 // Each entry: list of datasets to plot. Each dataset has:
 //  - label: gettext-wrapped display label
-//  - color: a series color from the chart theme
+//  - color: hex
 //  - axis: "y" (counts) or "y1" (percent)
 //  - extract: (object) -> y value (or null)
 //  - dashed?: bool

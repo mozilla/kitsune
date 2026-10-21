@@ -1,0 +1,59 @@
+@use './mixins' as c;
+@use '@mozilla-protocol/core/protocol/css/includes/lib' as p;
+@use './color-swatches' as swatches;
+
+:root {
+  @include c.cssvars(swatches.$colors);
+  --page-bg: white;
+  --card-bg: var(--page-bg);
+
+  --color-click: var(--color-blue-06);
+  --color-success: var(--color-green-06);
+  --color-warning: var(--color-yellow-03);
+  --color-error: var(--color-red-05);
+  --color-shade-bg: var(--color-light-gray-02);
+
+  --color-error-hover: var(--color-red-07);
+
+
+  --color-inverse-bg: var(--color-ink-09);
+  --color-inverse: var(--color-white);
+
+  --color-heading: var(--color-inverse-bg);
+  --color-text: var(--color-marketing-gray-08);
+  --color-text-light: var(--color-marketing-gray-07);
+  --color-link: var(--color-click);
+  --color-link-hover: var(--color-blue-07);
+  --color-link-visited: var(--color-purple-06);
+  --color-link-active-bg: var(--color-marketing-gray-02);
+  --color-secondary: var(--color-marketing-gray-06);
+  --color-link-inverse-visited: var(--color-purple-02);
+  --color-link-inverse-active-bg: #{rgba(c.color('marketing-gray', '02'), 0.2)};
+  --color-border: var(--color-marketing-gray-02);
+  --color-callout-bg: var(--color-marketing-gray-02);
+  --color-moz-heading: #000000;
+  --color-moz-text: var(--color-moz-heading);
+  --color-moz-inverse-bg: var(--color-ink-08);
+
+  --base-font-size: 1rem;
+  --heading-font-family: var(--title-font-family);
+  --heading-alt-font-family: var(--heading-font-family);
+  --code-font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+
+  --global-margin: 1rem;
+  --global-radius: #{p.$border-radius-sm};
+
+  // form fields
+  --focus-shadow: 0 0 0 #{p.$spacing-xs} rgba(0, 96, 223, 0.3), 0 0 0 2px rgb(0, 138, 234);
+}
+
+// With locales where Mozilla Headline and Mozilla Text have partial character support,
+// we use Inter for everything to avoid mixed fonts within a word/sentence:
+[lang="ee"], [lang="ig"], [lang="vi"], [lang="yo"] {
+  --body-font-family: Inter, X-LocaleSpecific, sans-serif;
+  --title-font-family: Inter, X-LocaleSpecific, sans-serif;
+}
+
+.shade-bg {
+  background: var(--color-shade-bg);
+}

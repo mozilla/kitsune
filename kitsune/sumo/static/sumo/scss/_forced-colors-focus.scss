@@ -1,7 +1,0 @@
-// Shared with the wizard's shadow sheets: forced colors drop focus shadows, and author rules remove outlines at higher specificity.
-@media (forced-colors: active) {
-  :focus-visible {
-    outline: 2px solid Highlight !important;
-    outline-offset: 2px;
-  }
-}

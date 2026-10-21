@@ -19,27 +19,27 @@
   // Blue — new/open tickets and open questions.
   &--open,
   &--new {
-    background: var(--status-info-bg);
-    color: var(--status-info-text);
+    background: rgba(c.color('blue', '06'), 0.08);
+    color: var(--color-link);
   }
 
   // Green — solved tickets and questions with a verified solution.
   &--solved {
-    background: var(--status-success-bg);
-    color: var(--status-success-text);
+    background: rgba(c.color('green', '06'), 0.08);
+    color: var(--color-success);
   }
 
   // Yellow — tickets awaiting a reply (pending) or a third party (hold).
   &--pending,
   &--hold {
-    background: var(--status-pending-bg);
-    color: var(--status-pending-text);
+    background: rgba(c.color('yellow', '04'), 0.2);
+    color: c.color('orange', '08');
   }
 
   // Gray — neutral/closed tickets, deleted ("Inactive"), locked/archived questions.
   &--neutral,
   &--closed {
-    background: var(--status-neutral-bg);
-    color: var(--status-neutral-text);
+    background: rgba(c.color('marketing-gray', '05'), 0.12);
+    color: var(--color-text-light);
   }
 }

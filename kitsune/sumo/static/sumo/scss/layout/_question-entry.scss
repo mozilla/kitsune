@@ -12,7 +12,7 @@
   display: grid;
   grid-template-columns: 36px 1fr;
   column-gap: p.$spacing-md;
-  border-bottom: 1px solid var(--thread-border);
+  border-bottom: 1px solid var(--color-light-gray-04);
   padding: p.$spacing-xl 0;
 
   &:first-child {

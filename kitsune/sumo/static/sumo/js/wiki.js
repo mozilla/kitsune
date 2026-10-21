@@ -197,7 +197,7 @@ function initPrepopulatedSlugs() {
   });
 }
 
-export function initSummaryCount() {
+function initSummaryCount() {
   var summaryCount = document.getElementById('remaining-characters');
   var summaryBox = document.getElementById('id_summary');
   if (!summaryCount || !summaryBox) {
@@ -211,9 +211,9 @@ export function initSummaryCount() {
     var currentCount = summaryBox.value.length;
     summaryCount.textContent = warningCount - currentCount;
     if (warningCount - currentCount >= 0) {
-      summaryCount.classList.remove('is-over-limit');
+      summaryCount.style.color = 'black';
     } else {
-      summaryCount.classList.add('is-over-limit');
+      summaryCount.style.color = 'red';
       if (currentCount >= maxCount) {
         summaryBox.value = summaryBox.value.substr(0, maxCount);
       }

@@ -9,7 +9,7 @@
         margin-bottom: p.$spacing-lg;
         border-radius: p.$border-radius-md;
         overflow: hidden;
-        background-color: var(--flagged-item-bg);
+        background-color: p.$color-light-gray-20;
     }
 
     .wait {
@@ -51,22 +51,22 @@
 
 .flagged-content {
     padding: p.$spacing-md p.$spacing-lg;
-    background-color: var(--flagged-content-bg);
+    background-color: p.$color-light-gray-10;
     border-radius: 5px;
-    box-shadow: var(--flagged-content-shadow);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
     margin-bottom: p.$spacing-md;
 
     &__heading,
     &__subheading {
         font-weight: bold;
         font-size: 1.25rem;
-        color: var(--flagged-content-heading);
+        color: p.$color-dark-gray-80;
     }
 
     &__title,
     &__text {
         font-size: 1.1rem;
-        color: var(--flagged-content-text);
+        color: p.$color-dark-gray-80;
     }
 
     .compact-info {
@@ -79,11 +79,11 @@
 
         .current-topic {
             display: inline-block;
-            color: var(--flagged-content-text);
+            color: p.$color-dark-gray-80;
             transition: color 0.3s ease-in-out;
 
             &.updated {
-                color: var(--status-success-text);
+                color: p.$color-green-80;
 
                 &::after {
                     content: ' ✔';

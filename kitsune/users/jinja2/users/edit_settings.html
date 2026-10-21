@@ -11,14 +11,7 @@
   <form method="post" action="">
     {% csrf_token %}
     {% for field in settings_form %}
-      {%- if field.name == 'theme_preference' %}
-      {{ theme_switcher('settings', 'field', field_name=field.name, checked=field.value()) }}
-      {%- for error in field.errors %}
-      <span class="form-error is-visible">{{ error }}</span>
-      {%- endfor %}
-      {%- else %}
       {{ checkbox(field) }}
-      {%- endif %}
     {% endfor %}
     <div class="sumo-button-wrap align-end">
       <button class="sumo-button primary-button button-lg" type="submit">{{ _('Update') }}</button>

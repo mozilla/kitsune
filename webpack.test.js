@@ -20,10 +20,6 @@ module.exports = merge(common, {
           },
         },
       },
-      {
-        test: /\.txt$/,
-        type: "asset/source",
-      },
     ],
   },
 });

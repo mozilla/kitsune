@@ -22,23 +22,23 @@
 
 .dashboards table.overview small {
     font-size: 80%;
-    color: var(--dashboard-muted-text);
+    color: #999;
     white-space: nowrap;
 }
 
 .dashboards div.percent-graph {
-    background-color: var(--dashboard-percent-track);
+    background-color: #f3f3f3;
     height: 10px;
 }
 
 .dashboards div.percent-graph div {
-    background-color: var(--dashboard-percent-fill);
+    background-color: #dfdfdf;
     height: 10px;
 }
 
 .dashboards div.absolute-graph {
     display: block;
-    background-color: var(--dashboard-absolute-bar);
+    background-color: p.$color-green-60;
     height: 1em;
 }
 
@@ -58,7 +58,7 @@
 
 .dashboards table.documents .users {
     font-size: 90%;
-    color: var(--dashboard-muted-text);
+    color: #999;
 }
 
 .dashboards table.overview td:nth-child(2) {
@@ -102,7 +102,7 @@
 
 .dashboards ul.readout-modes li {
     display: inline-block;
-    background: var(--readout-mode-bg);
+    background: var(--color-marketing-gray-02);
     border-radius: p.$border-radius-sm;
     cursor: pointer;
     list-style: none;
@@ -113,19 +113,19 @@
 }
 
 .dashboards ul.readout-modes li:hover {
-    background: var(--readout-mode-hover-bg);
+    background: var(--color-marketing-gray-01);
 }
 
 .dashboards ul.readout-modes li.active {
-    background: var(--color-accent);
+    background: var(--color-click);
 }
 
 .dashboards ul.readout-modes li.active:hover {
-    background: var(--readout-mode-active-hover-bg);
+    background: #4978bc;
 }
 
 .dashboards ul.readout-modes li.active a {
-    color: var(--color-text-on-accent);
+    color: #fff;
 }
 
 .dashboards-detail h1 {
@@ -149,21 +149,21 @@
 .dashboards td.status {
     .update:after {
         content: '\25C6';
-        color: var(--dashboard-status-update);
+        color: #f8e687;
     }
     .out-of-date:after {
         content: '\25C6';
-        color: var(--dashboard-status-out-of-date);
+        color: orange;
 
     }
     .untranslated:after {
         content: '\25B2';
-        color: var(--dashboard-status-untranslated);
+        color: red;
 
     }
     .ok:after {
         content: '\25CF';
-        color: var(--dashboard-status-ok);
+        color: #add575;
         margin-left: p.$spacing-xs;
     }
 }
@@ -210,37 +210,5 @@
     details {
         padding-top: p.$spacing-lg;
         padding-bottom: p.$spacing-lg;
-    }
-}
-
-/* KPI retention grid, built by sumo/js/charts/retention.js */
-.retention-caption {
-    color: var(--chart-text);
-}
-
-.retention-grid {
-    border: 1px solid var(--retention-grid-line);
-    background: var(--retention-grid-line);
-}
-
-.retention-heading {
-    background: var(--retention-heading-bg);
-}
-
-.retention-cell {
-    color: var(--retention-cell-text);
-}
-
-.retention-empty {
-    background: var(--retention-empty-bg);
-}
-
-.retention-legend span {
-    color: var(--retention-legend-text);
-}
-
-@for $level from 1 through 10 {
-    .retention-heat-#{$level} {
-        background-color: var(--chart-heat-#{$level});
     }
 }
