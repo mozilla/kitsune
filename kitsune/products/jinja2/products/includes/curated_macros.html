@@ -1,0 +1,81 @@
+{% from "includes/icons.html" import icon %}
+{# kind: callout, articles or questions. variant: good_to_know or important; numbered or featured; manual or automatic. items: {url, title, summary, english}, or {url, title, solved, replies} on questions. #}
+{% macro curated_block(kind, variant, heading, items, message=None) -%}
+{% set heading_id = 'curated-' ~ kind ~ '-heading' %}
+{% set link_name = 'curated.question' if kind == 'questions' else 'curated.kb-article' %}
+{% set link_kind = variant if kind == 'articles' else kind %}
+{% if kind == 'callout' and (message or items) %}
+<section class="curated-block is-callout is-{{ variant|replace('_', '-') }}" aria-labelledby="{{ heading_id }}">
+  <span class="curated-block--icon" aria-hidden="true">
+    {% if variant == 'important' %}
+      {% include 'includes/icons/alert-icon.svg' %}
+    {% else %}
+      {{ icon('info') }}
+    {% endif %}
+  </span>
+  <div class="curated-block--body">
+    <h2 id="{{ heading_id }}" class="curated-block--heading">{{ heading }}</h2>
+    {% if message %}<p class="curated-block--message">{{ message }}</p>{% endif %}
+    {% if items %}
+      <ul class="curated-block--links">
+        {% for item in items %}
+          <li>
+            <a class="curated-block--link" href="{{ item.url }}"
+              data-event-name="link_click"
+              data-event-parameters='{"link_name": "{{ link_name }}", "link_detail": "{{ link_kind }}:{{ loop.index }}"}'>
+              <span class="curated-block--link-text">
+                <span class="curated-block--link-title">{{ item.title }}</span>
+                {% if item.english %}<span class="curated-block--lang">{{ _('In English') }}</span>{% endif %}
+              </span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+</section>
+{% elif kind in ('articles', 'questions') and items %}
+{% set list_tag = 'ol' if variant == 'numbered' else 'ul' %}
+<section class="curated-block is-{{ kind }} is-{{ variant|replace('_', '-') }}" aria-labelledby="{{ heading_id }}">
+  <header class="curated-block--head">
+    <h2 id="{{ heading_id }}" class="curated-block--heading">{{ heading }}</h2>
+  </header>
+  <{{ list_tag }} class="curated-block--grid">
+    {% for item in items %}
+      <li class="curated-block--card">
+        {% if variant == 'numbered' %}
+          <span class="curated-block--number" aria-hidden="true">{{ loop.index }}</span>
+        {% endif %}
+        <div class="curated-block--text">
+          <h3 class="curated-block--title">
+            <a href="{{ item.url }}"
+              data-event-name="link_click"
+              data-event-parameters='{"link_name": "{{ link_name }}", "link_detail": "{{ link_kind }}:{{ loop.index }}"}'>{{ item.title }}</a>
+          </h3>
+          {% if item.summary %}
+            <p class="curated-block--summary">{{ item.summary }}</p>
+          {% endif %}
+          {% if kind == 'questions' %}
+            {% set replies = item.replies|int %}
+            <p class="curated-block--meta">
+              {% if item.solved %}
+                {# L10n: This is a question status. #}
+                <span class="curated-block--state is-solved">{{ pgettext("question", "Solved") }}</span>
+              {% else %}
+                {# L10n: This is a question status. #}
+                <span class="curated-block--state">{{ pgettext("question", "Open") }}</span>
+              {% endif %}
+              <span aria-hidden="true">&middot;</span>
+              {# L10n: Number of replies shown on a forum question card on topic pages, such as https://support.mozilla.org/products/firefox/browse. {n} is the number of replies. #}
+              <span>{{ ngettext('{n} reply', '{n} replies', replies)|f(n=replies) }}</span>
+            </p>
+          {% elif item.english %}
+            <p class="curated-block--meta"><span class="curated-block--lang">{{ _('In English') }}</span></p>
+          {% endif %}
+        </div>
+      </li>
+    {% endfor %}
+  </{{ list_tag }}>
+</section>
+{% endif %}
+{%- endmacro %}

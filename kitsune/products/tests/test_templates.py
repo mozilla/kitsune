@@ -1,14 +1,20 @@
+import json
+from unittest import mock
+
 from django.conf import settings
 from django.core.cache import cache
-from django.test.utils import override_settings
+from django.db import connection
+from django.test.utils import CaptureQueriesContext, modify_settings, override_settings
 from parameterized import parameterized
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupProfileFactory
-from kitsune.products.models import HOT_TOPIC_SLUG, ProductSupportConfig
+from kitsune.products.models import HOT_TOPIC_SLUG, CuratedBlock, ProductSupportConfig, Topic
 from kitsune.products.tests import (
+    CuratedBlockFactory,
+    CuratedBlockItemFactory,
     ProductFactory,
     ProductSupportConfigFactory,
     SupportOrganizationFactory,
@@ -22,6 +28,9 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
+
+Kind = CuratedBlock.Kind
+Variant = CuratedBlock.Variant
 
 
 class ProductViewsTestCase(ElasticTestCase):
@@ -120,7 +129,7 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
         self.assertEqual(
-            doc("#document-list > section > article:first-child > div > h2 > a").text(),
+            doc("#document-list > section > article:first-child > div > h3 > a").text(),
             docs[1].title,
         )
 
@@ -134,7 +143,7 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
         self.assertEqual(
-            doc("#document-list > section > article:nth-child(2) > div > h2> a").text(),
+            doc("#document-list > section > article:nth-child(2) > div > h3 > a").text(),
             docs[2].title,
         )
 
@@ -148,7 +157,7 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
         self.assertEqual(
-            doc("#document-list > section > article:nth-child(2) > div > h2").text(), docs[0].title
+            doc("#document-list > section > article:nth-child(2) > div > h3").text(), docs[0].title
         )
 
     def test_subtopics(self):
@@ -183,6 +192,394 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(200, r.status_code)
         pqdoc = pq(r.content)
         self.assertEqual(2, len(pqdoc(".subtopics>li")))
+
+
+class TopicPageHeaderTests(TestCase):
+    """The product strip and the compact topic header."""
+
+    def setUp(self):
+        super().setUp()
+        self.product = ProductFactory()
+        self.topic = TopicFactory(products=[self.product])
+        ApprovedRevisionFactory(document__products=[self.product], document__topics=[self.topic])
+
+    def get_page(self, name, *args):
+        return pq(self.client.get(reverse(name, args=args), follow=True).content)
+
+    def test_product_page_has_strip_and_topic_tile(self):
+        doc = self.get_page("products.documents", self.product.slug, self.topic.slug)
+
+        link = doc(".product-strip a.product-strip--product")
+        self.assertEqual(reverse("products.product", args=[self.product.slug]), link.attr("href"))
+        self.assertEqual(self.product.title, link.text())
+        self.assertEqual(self.topic.image_url, doc(".topic-header--tile img").attr("src"))
+
+    def test_cross_product_page_has_tile_without_strip(self):
+        doc = self.get_page("products.topic_documents", self.topic.slug)
+
+        self.assertEqual(0, len(doc(".product-strip")))
+        self.assertEqual(1, len(doc(".topic-header--tile")))
+
+    def test_no_tile_without_topic_image(self):
+        self.topic.image = None
+        self.topic.save()
+
+        doc = self.get_page("products.documents", self.product.slug, self.topic.slug)
+
+        self.assertEqual(0, len(doc(".topic-header--tile")))
+
+
+class TopicPageCuratedBlockTests(TestCase):
+    """The curated blocks of a product topic page and their effect on the article list."""
+
+    def setUp(self):
+        super().setUp()
+        self.product = ProductFactory()
+        self.topic = TopicFactory(products=[self.product])
+        self.articles = [self.add_article(self.topic) for _ in range(6)]
+
+    def add_article(self, topic):
+        revision = ApprovedRevisionFactory(
+            document__products=[self.product], document__topics=[topic]
+        )
+        return revision.document
+
+    def add_block(self, kind, variant, items=None, topic=None, **fields):
+        if items is None and kind == Kind.ARTICLES:
+            items = self.articles[:2]
+        elif items is None and kind == Kind.QUESTIONS:
+            items = [QuestionFactory(product=self.product, topic=self.topic) for _ in range(2)]
+        block = CuratedBlockFactory(
+            product=self.product, topic=topic or self.topic, kind=kind, variant=variant, **fields
+        )
+        field = "question" if kind == Kind.QUESTIONS else "document"
+        for position, target in enumerate(items or []):
+            CuratedBlockItemFactory(block=block, position=position, **{field: target})
+        return block
+
+    def page_url(self, subtopic=None, locale="en-US"):
+        if subtopic:
+            args = [self.product.slug, self.topic.slug, subtopic.slug]
+            return reverse("products.subtopics", args=args, locale=locale)
+        return reverse(
+            "products.documents", args=[self.product.slug, self.topic.slug], locale=locale
+        )
+
+    def get_page(self, url):
+        return pq(self.client.get(url, follow=True).content)
+
+    def test_blocks_render_in_a_fixed_order_above_the_list(self):
+        self.add_block(Kind.QUESTIONS, Variant.MANUAL)
+        self.add_block(Kind.ARTICLES, Variant.NUMBERED)
+        self.add_block(Kind.CALLOUT, Variant.GOOD_TO_KNOW)
+
+        doc = self.get_page(self.page_url())
+
+        rendered = doc("#document-list > .curated-block, #document-list > .list-toolbar")
+        self.assertEqual(
+            [
+                "curated-block is-callout is-good-to-know",
+                "curated-block is-articles is-numbered",
+                "curated-block is-questions is-manual",
+                "list-toolbar",
+            ],
+            [pq(element).attr("class") for element in rendered],
+        )
+
+    @parameterized.expand(
+        [
+            (Kind.CALLOUT, Variant.GOOD_TO_KNOW, "Good to know"),
+            (Kind.CALLOUT, Variant.IMPORTANT, "Important"),
+            (Kind.ARTICLES, Variant.NUMBERED, "Start here"),
+            (Kind.ARTICLES, Variant.FEATURED, "Featured Articles"),
+            (Kind.QUESTIONS, Variant.MANUAL, "Popular in the forums"),
+        ]
+    )
+    def test_heading_follows_the_variant(self, kind, variant, heading):
+        self.add_block(kind, variant)
+
+        doc = self.get_page(self.page_url())
+
+        self.assertEqual(heading, doc(".curated-block--heading").text())
+
+    @parameterized.expand(
+        [
+            ("plain", "Back up your bookmarks first."),
+            ("percent_and_markup", "Save 50% of the <b>time</b> & {more}"),
+        ]
+    )
+    def test_callout_message_is_shown_as_text(self, _name, message):
+        self.add_block(Kind.CALLOUT, Variant.IMPORTANT, message=message)
+
+        doc = self.get_page(self.page_url())
+
+        self.assertEqual(message, doc(".curated-block--message").text())
+        self.assertEqual(0, len(doc(".curated-block--message b")))
+
+    def test_translated_callout_message_with_a_percent_sign_renders(self):
+        self.add_block(Kind.CALLOUT, Variant.IMPORTANT, message="Save time")
+        translated = "Spare 50% der <b>Zeit</b>"
+
+        with mock.patch(
+            "kitsune.products.templatetags.jinja_helpers.pgettext", return_value=translated
+        ):
+            doc = self.get_page(self.page_url())
+
+        self.assertEqual(translated, doc(".curated-block--message").text())
+        self.assertEqual(0, len(doc(".curated-block--message b")))
+
+    @parameterized.expand(
+        [("parent_tab", False, "good-to-know"), ("subtopic_tab", True, "important")]
+    )
+    def test_subtopic_tab_inherits_blocks_and_overrides_per_kind(
+        self, _name, on_subtopic, variant
+    ):
+        subtopic = TopicFactory(parent=self.topic, products=[self.product])
+        self.add_block(Kind.CALLOUT, Variant.GOOD_TO_KNOW, message="Parent note")
+        self.add_block(Kind.ARTICLES, Variant.NUMBERED)
+        self.add_block(Kind.CALLOUT, Variant.IMPORTANT, topic=subtopic, message="Subtopic note")
+
+        doc = self.get_page(self.page_url(subtopic if on_subtopic else None))
+
+        self.assertEqual(
+            [f"curated-block is-callout is-{variant}", "curated-block is-articles is-numbered"],
+            [pq(block).attr("class") for block in doc(".curated-block")],
+        )
+        self.assertEqual(
+            "Subtopic note" if on_subtopic else "Parent note",
+            doc(".curated-block--message").text(),
+        )
+
+    def test_no_blocks_renders_nothing_and_the_full_list(self):
+        doc = self.get_page(self.page_url())
+
+        self.assertEqual(0, len(doc(".curated-block")))
+        self.assertEqual(6, len(doc(".topic-doc-list--item")))
+        self.assertEqual("All articles", doc(".list-toolbar--heading").text())
+
+    @parameterized.expand(
+        [
+            ("cross_product", "products.topic_documents", False),
+            ("topic_filtered_by_product", "products.topic_product_documents", True),
+        ]
+    )
+    def test_cross_product_pages_render_no_blocks(self, _name, url_name, with_product):
+        self.add_block(Kind.CALLOUT, Variant.GOOD_TO_KNOW)
+        self.add_block(Kind.ARTICLES, Variant.NUMBERED)
+        args = [self.topic.slug] + ([self.product.slug] if with_product else [])
+
+        doc = self.get_page(reverse(url_name, args=args))
+
+        self.assertEqual(0, len(doc(".curated-block")))
+        self.assertEqual(6, len(doc(".topic-doc-list--item")))
+        self.assertEqual("All articles", doc(".list-toolbar--heading").text())
+
+    @parameterized.expand([("topic_tab", False), ("subtopic_tab", True)])
+    def test_card_articles_leave_the_list_but_callout_links_stay(self, _name, on_subtopic):
+        viewed = self.topic
+        if on_subtopic:
+            viewed = TopicFactory(parent=self.topic, products=[self.product])
+            for article in self.articles:
+                article.topics.add(viewed)
+        self.add_block(Kind.ARTICLES, Variant.NUMBERED, items=self.articles[:4])
+        self.add_block(Kind.CALLOUT, Variant.GOOD_TO_KNOW, items=self.articles[4:5])
+
+        doc = self.get_page(self.page_url(viewed if on_subtopic else None))
+
+        self.assertEqual(
+            [article.get_absolute_url() for article in self.articles[:4]],
+            [pq(link).attr("href") for link in doc(".is-articles .curated-block--title a")],
+        )
+        self.assertCountEqual(
+            [article.get_absolute_url() for article in self.articles[4:]],
+            [pq(link).attr("href") for link in doc(".topic-doc-list--title a")],
+        )
+        self.assertEqual(f"More in {viewed.title}", doc(".list-toolbar--heading").text())
+        self.assertEqual("2", doc(".list-toolbar--count").text())
+
+    @parameterized.expand([("no_articles", False, 1), ("every_article_is_a_card", True, 0)])
+    def test_empty_state_shows_only_when_the_topic_has_no_articles(
+        self, _name, all_are_cards, expected
+    ):
+        topic = self.topic if all_are_cards else TopicFactory(products=[self.product])
+        if all_are_cards:
+            self.add_block(Kind.ARTICLES, Variant.NUMBERED, items=self.articles)
+
+        doc = self.get_page(reverse("products.documents", args=[self.product.slug, topic.slug]))
+
+        self.assertEqual(expected, len(doc(".topic-doc-list-empty")))
+        self.assertEqual(0, len(doc(".list-toolbar")))
+
+    def test_card_articles_leave_both_lists_on_a_localized_page(self):
+        translated = [self.articles[0], self.articles[4]]
+        translations = {}
+        for article in translated:
+            translation = DocumentFactory(parent=article, locale="de")
+            ApprovedRevisionFactory(document=translation, based_on=article.current_revision)
+            translations[article.pk] = translation
+        self.add_block(Kind.ARTICLES, Variant.NUMBERED, items=self.articles[:4])
+
+        doc = self.get_page(self.page_url(locale="de"))
+
+        cards = doc(".is-articles .curated-block--card")
+        self.assertEqual(
+            [translations[self.articles[0].pk].title] + [a.title for a in self.articles[1:4]],
+            [pq(card).find(".curated-block--title").text() for card in cards],
+        )
+        label = doc(".topic-doc-list-heading").text()
+        self.assertEqual(
+            ["", label, label, label],
+            [pq(card).find(".curated-block--lang").text() for card in cards],
+        )
+        self.assertEqual(
+            [translations[self.articles[4].pk].title],
+            [pq(title).text() for title in doc("[data-topic-list] .topic-doc-list--title")],
+        )
+        self.assertEqual(
+            [self.articles[5].title],
+            [pq(title).text() for title in doc(".is-compact .topic-doc-list--title")],
+        )
+        self.assertTrue(
+            all(pq(link).attr("href").startswith("/de/") for link in doc(".curated-block a"))
+        )
+
+    @parameterized.expand(
+        [
+            (
+                "numbered",
+                Kind.ARTICLES,
+                Variant.NUMBERED,
+                ".curated-block--card a",
+                "curated.kb-article",
+            ),
+            (
+                "featured",
+                Kind.ARTICLES,
+                Variant.FEATURED,
+                ".curated-block--card a",
+                "curated.kb-article",
+            ),
+            (
+                "callout",
+                Kind.CALLOUT,
+                Variant.IMPORTANT,
+                ".curated-block--link",
+                "curated.kb-article",
+            ),
+            (
+                "questions",
+                Kind.QUESTIONS,
+                Variant.MANUAL,
+                ".curated-block--card a",
+                "curated.question",
+            ),
+        ]
+    )
+    def test_curated_links_report_kind_and_position(
+        self, link_kind, kind, variant, selector, link_name
+    ):
+        items = self.articles[:2] if kind == Kind.CALLOUT else None
+        self.add_block(kind, variant, items=items)
+
+        doc = self.get_page(self.page_url())
+
+        events = [json.loads(pq(link).attr("data-event-parameters")) for link in doc(selector)]
+        self.assertEqual(
+            [
+                {"link_name": link_name, "link_detail": f"{link_kind}:{position}"}
+                for position in (1, 2)
+            ],
+            events,
+        )
+
+
+class TopicPageListRowTests(TestCase):
+    """The meta line under each article in the topic list."""
+
+    DATE = r"[A-Z][a-z]{2} \d{1,2}, \d{4}"
+
+    def setUp(self):
+        super().setUp()
+        self.product = ProductFactory(title="Primary")
+        self.other_product = ProductFactory(title="Secondary")
+        self.topic = TopicFactory(products=[self.product, self.other_product])
+        ApprovedRevisionFactory(
+            document__title="Single revision",
+            document__products=[self.product],
+            document__topics=[self.topic],
+        )
+        shared = ApprovedRevisionFactory(
+            document__title="Shared and edited",
+            document__products=[self.product, self.other_product],
+            document__topics=[self.topic],
+        )
+        ApprovedRevisionFactory(document=shared.document)
+
+    def meta_by_title(self, name, *args):
+        page = pq(self.client.get(reverse(name, args=args), follow=True).content)
+        rows = (pq(row) for row in page(".topic-doc-list--item"))
+        return {
+            row.find(".topic-doc-list--title").text(): row.find(".topic-doc-list--meta").text()
+            for row in rows
+        }
+
+    def test_product_page_meta_names_only_other_products(self):
+        meta = self.meta_by_title("products.documents", self.product.slug, self.topic.slug)
+
+        self.assertRegex(meta["Single revision"], rf"^Created {self.DATE}$")
+        self.assertRegex(meta["Shared and edited"], rf"^Updated {self.DATE} · Also for Secondary$")
+
+    def test_cross_product_page_meta_lists_product_titles(self):
+        meta = self.meta_by_title("products.topic_documents", self.topic.slug)
+
+        self.assertRegex(meta["Single revision"], rf"^Created {self.DATE} · Primary$")
+        self.assertRegex(meta["Shared and edited"], rf"^Updated {self.DATE} · Primary, Secondary$")
+
+    # django-silk (USE_DJANGO_SILK) issues its own queries per captured query.
+    @modify_settings(MIDDLEWARE={"remove": "silk.middleware.SilkyMiddleware"})
+    def test_query_count_does_not_grow_with_the_article_count(self):
+        url = reverse("products.documents", args=[self.product.slug, self.topic.slug])
+
+        def count_queries():
+            cache.clear()
+            with CaptureQueriesContext(connection) as queries:
+                self.client.get(url, follow=True)
+            return len(queries)
+
+        before = count_queries()
+        for _ in range(3):
+            ApprovedRevisionFactory(
+                document__products=[self.product],
+                document__topics=[self.topic],
+            )
+
+        self.assertEqual(count_queries(), before)
+
+
+class TopicPageSortLabelTests(TestCase):
+    """The label of the default sort option follows the order the server uses."""
+
+    @parameterized.expand(
+        [
+            (Topic.ArticleOrdering.DEFAULT, False, "Most helpful"),
+            (Topic.ArticleOrdering.NEWEST, False, "Newest"),
+            (Topic.ArticleOrdering.NEWEST, True, "Newest"),
+        ]
+    )
+    def test_default_sort_option(self, ordering, on_subtopic, label):
+        product = ProductFactory()
+        if on_subtopic:
+            topic = TopicFactory(products=[product])
+            viewed = TopicFactory(parent=topic, products=[product], article_ordering=ordering)
+            url = reverse("products.subtopics", args=[product.slug, topic.slug, viewed.slug])
+        else:
+            viewed = TopicFactory(products=[product], article_ordering=ordering)
+            url = reverse("products.documents", args=[product.slug, viewed.slug])
+        ApprovedRevisionFactory(document__products=[product], document__topics=[viewed])
+
+        doc = pq(self.client.get(url, follow=True).content)
+
+        self.assertEqual(label, doc('#list-sort option[value="server"]').text())
 
 
 class ProfessionalSupportTestCase(TestCase):

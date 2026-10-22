@@ -1,9 +1,12 @@
+from datetime import timedelta
+
 from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.forms import BaseInlineFormSet
+from django.utils import timezone
 
-from kitsune.questions.models import AAQConfig, QuestionLocale
+from kitsune.questions.models import AAQConfig, Question, QuestionLocale
 from kitsune.sumo.utils import PrettyJSONEncoder
 
 
@@ -95,4 +98,31 @@ class AAQConfigAdmin(admin.ModelAdmin):
         return ", ".join(products) if products else "-"
 
 
+class QuestionAdmin(admin.ModelAdmin):
+    """Read-only; registered so other admin forms can pick questions with autocomplete."""
+
+    search_fields = ("title",)
+    show_full_result_count = False
+
+    def get_search_results(self, request, queryset, search_term):
+        term = search_term.strip()
+        if term.isascii() and term.isdigit():
+            return queryset.filter(pk=int(term)), False
+
+        # Questions older than 180 days are archived; the indexed range keeps the title scan small.
+        now = timezone.now()
+        queryset = queryset.filter(created__range=(now - timedelta(days=180), now))
+        return super().get_search_results(request, queryset, search_term)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 admin.site.register(AAQConfig, AAQConfigAdmin)
+admin.site.register(Question, QuestionAdmin)

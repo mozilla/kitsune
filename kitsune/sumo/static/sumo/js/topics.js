@@ -1,3 +1,5 @@
+import { initTopicList } from "sumo/js/topic-list";
+
 document.addEventListener('DOMContentLoaded', function () {
     let dropdown = document.getElementById('products-topics-dropdown');
     if (dropdown) {
@@ -8,4 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    initTopicList();
 });

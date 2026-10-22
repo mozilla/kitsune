@@ -8,6 +8,8 @@ from django.http import HttpRequest
 
 from kitsune.groups.models import GroupProfile
 from kitsune.products.models import (
+    CuratedBlock,
+    CuratedBlockItem,
     Platform,
     Product,
     ProductSupportConfig,
@@ -417,7 +419,77 @@ class ZendeskTopicConfigurationAdmin(admin.ModelAdmin):
     search_fields = ("zendesk_config__name", "zendesk_topic__form_title", "zendesk_topic__slug")
 
 
+class CuratedBlockItemInlineFormSet(BaseInlineFormSet):
+    """Validate the items the block will hold once this submission is saved."""
+
+    def clean(self):
+        super().clean()
+        if any(self.errors):
+            return
+        deleted_forms = self.deleted_forms
+        items = [
+            form.instance
+            for form in self.forms
+            if form not in deleted_forms and (form.has_changed() or form.instance.pk)
+        ]
+        self.instance.clean_items(items)
+
+
+class CuratedBlockItemInline(admin.TabularInline):
+    model = CuratedBlockItem
+    formset = CuratedBlockItemInlineFormSet
+    extra = 1
+    fields = ("position", "document", "question")
+    autocomplete_fields = ("document", "question")
+
+
+class CuratedBlockAdmin(admin.ModelAdmin):
+    list_display = (
+        "product",
+        "topic",
+        "kind",
+        "variant",
+        "show_until",
+        "updated_at",
+        "updated_by",
+    )
+    list_filter = ("product", "topic", "kind")
+    search_fields = ("topic__title", "product__title")
+    list_select_related = ("product", "topic", "updated_by")
+    fields = (
+        "product",
+        "topic",
+        "kind",
+        "variant",
+        "message",
+        "show_until",
+        "updated_by",
+        "updated_at",
+    )
+    readonly_fields = ("updated_by", "updated_at")
+    autocomplete_fields = ("product", "topic")
+    inlines = (CuratedBlockItemInline,)
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return self.readonly_fields
+        return (*self.readonly_fields, "product", "topic", "kind")
+
+    def formfield_for_choice_field(self, db_field, request, **kwargs):
+        if db_field.name == "variant":
+            kwargs["help_text"] = (
+                "Manual questions stop showing once they are archived, "
+                "180 days after they were asked."
+            )
+        return super().formfield_for_choice_field(db_field, request, **kwargs)
+
+    def save_model(self, request, obj, form, change):
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
 admin.site.register(ZendeskTopic, ZendeskTopicAdmin)
 admin.site.register(ZendeskConfig, ZendeskConfigAdmin)
 admin.site.register(ZendeskTopicConfiguration, ZendeskTopicConfigurationAdmin)
 admin.site.register(ProductSupportConfig, ProductSupportConfigAdmin)
+admin.site.register(CuratedBlock, CuratedBlockAdmin)

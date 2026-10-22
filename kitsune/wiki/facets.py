@@ -8,7 +8,7 @@ from django.db.models import Case, Count, OuterRef, Q, Subquery, When
 from django.db.models.functions import Now
 
 from kitsune.products.models import Topic
-from kitsune.wiki.models import Document, HelpfulVote
+from kitsune.wiki.models import Document, HelpfulVote, Revision
 
 
 def topics_for(user, product, parent=False):
@@ -107,7 +107,7 @@ def _documents_for(user, locale, topics=None, products=None):
         # For anonymous users, first check the cache. The ordering is part of the
         # key (but not the shared "cache_key") so that toggling a topic's
         # article_ordering invalidates only this already-sorted result.
-        documents_cache_key = f"documents_for_v2:{cache_key}:{newest_first}"
+        documents_cache_key = f"documents_for_v3:{cache_key}:{newest_first}"
         documents = cache.get(documents_cache_key)
         if documents is not None:
             return documents
@@ -185,8 +185,17 @@ def _documents_for(user, locale, topics=None, products=None):
         )
     )
 
+    docs = list(qs)
+
+    approved_revision_counts = dict(
+        Revision.objects.filter(document_id__in=[d.id for d in docs], is_approved=True)
+        .values("document_id")
+        .annotate(count=Count("*"))
+        .values_list("document_id", "count")
+    )
+
     doc_dicts = []
-    for d in qs:
+    for d in docs:
         doc_dicts.append(
             {
                 "id": d.id,
@@ -198,6 +207,7 @@ def _documents_for(user, locale, topics=None, products=None):
                 "document_summary": d.current_revision.summary,
                 "display_order": d.original.display_order,
                 "helpful_votes": votes_dict.get(d.current_revision_id, 0),
+                "is_first_revision": approved_revision_counts.get(d.id, 0) == 1,
             }
         )
 

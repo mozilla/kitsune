@@ -4,6 +4,8 @@ import factory.fuzzy
 from django.template.defaultfilters import slugify
 
 from kitsune.products.models import (
+    CuratedBlock,
+    CuratedBlockItem,
     Platform,
     Product,
     ProductSupportConfig,
@@ -127,3 +129,37 @@ class SupportOrganizationFactory(factory.django.DjangoModelFactory):
 
     config = factory.SubFactory(ProductSupportConfigFactory)
     include_live_chat = False
+
+
+class CuratedBlockFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CuratedBlock
+
+    product = factory.SubFactory(ProductFactory)
+    topic = factory.LazyAttribute(lambda o: TopicFactory(products=[o.product]))
+    kind = CuratedBlock.Kind.CALLOUT
+    variant = CuratedBlock.Variant.GOOD_TO_KNOW
+    message = factory.LazyAttribute(
+        lambda o: "Heads up." if o.kind == CuratedBlock.Kind.CALLOUT else ""
+    )
+
+
+class CuratedBlockItemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CuratedBlockItem
+
+    block = factory.SubFactory(CuratedBlockFactory)
+    position = factory.Sequence(lambda n: n)
+
+
+def make_article(product, **document_fields):
+    """Return an approved, localizable KB article of `product`."""
+    # Avoid cycles: wiki.tests -> products.tests.
+    from kitsune.wiki.tests import ApprovedRevisionFactory
+
+    revision = ApprovedRevisionFactory(
+        document__products=[product],
+        is_ready_for_localization=True,
+        **{f"document__{name}": value for name, value in document_fields.items()},
+    )
+    return revision.document

@@ -384,6 +384,8 @@ and an outlined `.sumo-button.primary-button`,
 all from `--callout-<variant>-*` tokens.
 `components/_callout-warning.scss` includes `callout(warning)` for `.sumo-banner-warning` and `#doc-content .warning`.
 Forum posts keep their own `.warning` look.
+The blue `info` variant sits alongside `warning` with the same tokens;
+the topic page's curated callouts use `info` for "Good to know" and `warning` for "Important".
 
 A new variant defines the same token set in both theme maps,
 then includes `callout(<variant>)` on its selector:

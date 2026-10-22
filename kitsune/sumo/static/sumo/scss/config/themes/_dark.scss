@@ -77,6 +77,24 @@ $dark: (
   'callout-warning-action-text': #FFD58A,
   'callout-warning-action-hover-bg': rgba(246, 188, 93, 0.1),
 
+  // Callout (info)
+  'callout-info-bg-start': #35435A,
+  'callout-info-bg-mid': #2D3646,
+  'callout-info-bg-end': #303134,
+  'callout-info-bg-mid-at': 45%,
+  'callout-info-edge': var(--color-azure-03),
+  'callout-info-edge-width': 3px,
+  'callout-info-ring': inset 0 0 0 1px rgba(c.color('azure', '03'), 0.16),
+  'callout-info-shadow': var(--elevation-1),
+  'callout-info-icon-bg': #43567A,
+  'callout-info-icon': var(--color-azure-03),
+  'callout-info-heading': var(--color-light-gray-02),
+  'callout-info-text': var(--color-light-gray-04),
+  'callout-info-action-bg': transparent,
+  'callout-info-action-border': rgba(c.color('azure', '03'), 0.55),
+  'callout-info-action-text': var(--color-azure-02),
+  'callout-info-action-hover-bg': rgba(c.color('azure', '03'), 0.1),
+
   // Card (landing)
   'landing-card-plate-bg': radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035)),
   'landing-card-plate-ring': inset 0 0 0 1px rgba(255, 255, 255, 0.06),
@@ -187,6 +205,12 @@ $dark: (
   ),
   'pro-support-banner-title': var(--color-heading),
   'pro-support-banner-text': var(--color-text),
+
+  // Accent wash
+  'accent-wash': #24213A,
+  'accent-tile': #3B3470,
+  'accent-ink': #D9CCFF,
+  'accent-border': #3A3566,
 
   // Header
   'header-bg': var(--color-graphite-01),

@@ -279,11 +279,13 @@
 
 
 {% macro topic_tabs(topics, subtopics, product, topic, selected_subtopic=None) -%}
-<nav class="tabs">
-  <ul class="tabs--list subtopics">
+{% set topic_count = topics|selectattr('id', 'equalto', topic.id)|map(attribute='num_docs')|first %}
+{# L10n: Accessible label for the list of subtopics on topic pages, such as https://support.mozilla.org/products/firefox/browse #}
+<nav class="subtopic-nav" aria-label="{{ _('Subtopics') }}">
+  <ul class="subtopic-nav--list subtopics">
     {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
-    <li class="tabs--item">
-      <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}"
+    <li>
+      <a class="subtopic-nav--link" href="{{ topic_url }}" {% if not selected_subtopic %}aria-current="page"{% endif %}
         data-event-name="link_click"
         data-event-parameters='{
           "link_name": "tab.product-and-topic-home",
@@ -295,18 +297,20 @@
         {% set deprecated_all_desktop = _('All articles and threads') %}
         {# L10n: Label for a tab listing all articles for the selected topic. Displayed on topic pages, such as https://support.mozilla.org/products/firefox/browse #}
         <span class="hide-on-mobile">{{ _('All articles') }}</span>
+        {% if topic_count %}<span class="subtopic-nav--count">{{ topic_count }}</span>{% endif %}
       </a>
     </li>
     {% for subtopic in subtopics %}
       {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
-      <li class="tabs--item">
-        <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}"
+      <li>
+        <a class="subtopic-nav--link" href="{{ subtopic_url }}" {% if subtopic == selected_subtopic %}aria-current="page"{% endif %}
           data-event-name="link_click"
           data-event-parameters='{
             "link_name": "tab.product-and-topic-and-subtopic-home",
             "link_detail": "{{ product.slug + '/' + topic.slug + '/' + subtopic.slug }}"
           }'>
           <span>{{ pgettext('DB: products.Topic.title', subtopic.title)|forceescape }}</span>
+          <span class="subtopic-nav--count">{{ subtopic.num_docs }}</span>
         </a>
       </li>
     {% endfor %}

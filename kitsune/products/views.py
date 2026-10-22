@@ -10,12 +10,18 @@ from kitsune.customercare.utils import resolve_org_group
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
 from kitsune.products.managers import ProductSupportConfigManager
-from kitsune.products.models import Product, ProductSupportConfig, Topic, TopicSlugHistory
+from kitsune.products.models import (
+    CuratedBlock,
+    Product,
+    ProductSupportConfig,
+    Topic,
+    TopicSlugHistory,
+)
 from kitsune.products.utils import get_professional_support_products
 from kitsune.sumo.utils import get_aaq_context, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
-from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.models import Document
 from kitsune.wiki.utils import build_topics_data, get_featured_articles
 
 
@@ -193,10 +199,11 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
 
     documents, fallback_documents = documents_for(request.user, **doc_kw)
 
-    for document in documents:
-        document["is_first_revision"] = (
-            Revision.objects.filter(document=document["id"], is_approved=True).count() == 1
-        )
+    curated_blocks = (
+        []
+        if topic_navigation
+        else CuratedBlock.objects.for_page(product, topic, subtopic, request.LANGUAGE_CODE)
+    )
 
     return render(
         request,
@@ -209,6 +216,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             "subtopics": topics_for(request.user, product=product, parent=topic),
             "documents": documents,
             "fallback_documents": fallback_documents,
+            "curated_blocks": curated_blocks,
             "search_params": {"product": product_slug},
             "topic_navigation": topic_navigation,
             "topic_list": topic_list,
