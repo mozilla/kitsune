@@ -21,8 +21,11 @@ from kitsune.dashboards import LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, LAST_YEA
 log = logging.getLogger("k.googleanalytics")
 
 
-# The default Retry instance retries on all transient errors.
-retry_on_transient_errors = Retry()
+# A page of a year-long report can take GA4 over a minute to build.
+REPORT_TIMEOUT = 300  # seconds
+
+# Retries on all transient errors, within the same time limit as each request.
+retry_on_transient_errors = Retry(timeout=REPORT_TIMEOUT)
 
 
 PERIOD_TO_DAYS_AGO = {
@@ -49,16 +52,16 @@ def get_client():
     return BetaAnalyticsDataClient(credentials=credentials)
 
 
-def run_report(date_range, create_report_request, limit=10000, verbose=False):
+def run_report(date_range, create_report_request, limit=250000, verbose=False):
     """
     A generator that yields results from GA4 data API using the given
     "create_report_request" function to create RunReportRequest instances,
     and limited to the given date range. It handles paging in chunks sized
     by the provided "limit" until all of the requested data has been received.
     """
-    if (limit <= 0) or (limit > 10000):
-        # The maximum number of rows that the GA4 data API will return is 10K.
-        limit = 10000
+    if (limit <= 0) or (limit > 250000):
+        # The maximum number of rows that the GA4 data API will return is 250K.
+        limit = 250000
 
     offset = 0
     response = None
@@ -75,7 +78,9 @@ def run_report(date_range, create_report_request, limit=10000, verbose=False):
         request = create_report_request(date_range, offset=offset, limit=limit)
         if verbose:
             log.info(f"Fetching rows {offset} to {offset + limit}...")
-        response = client.run_report(request, retry=retry_on_transient_errors)
+        response = client.run_report(
+            request, retry=retry_on_transient_errors, timeout=REPORT_TIMEOUT
+        )
         if verbose:
             log.info(f"Received {len(response.rows)} rows.")
         for row in response.rows:
