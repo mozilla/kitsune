@@ -17,3 +17,24 @@ def check_zendesk_oauth_configuration(app_configs, **kwargs):
             )
         ]
     return []
+
+
+@register()
+def check_zendesk_chat_configuration(app_configs, **kwargs):
+    configured = (
+        settings.ZENDESK_CHAT_WIDGET_KEY,
+        settings.ZENDESK_CHAT_SIGNING_SECRET,
+        settings.ZENDESK_CHAT_SIGNING_KEY_ID,
+    )
+    if any(configured) and not all(configured):
+        return [
+            Warning(
+                "Zendesk chat is only partially configured; chat will be unavailable.",
+                hint=(
+                    "Set ZENDESK_CHAT_WIDGET_KEY, ZENDESK_CHAT_SIGNING_SECRET, and "
+                    "ZENDESK_CHAT_SIGNING_KEY_ID to enable chat, or clear all three."
+                ),
+                id="customercare.W002",
+            )
+        ]
+    return []

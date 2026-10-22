@@ -45,88 +45,12 @@ class ProductSupportConfigManager(Manager):
             .distinct()
         )
 
-    SUPPORT_TYPE_REDIRECT = "redirect_unsubscribed"
-    SUPPORT_TYPE_HIDE = "hide_unsubscribed"
-
-    def route_support_request(self, request, product):
-        """
-        Determines which support channel to route a request to (forum or Zendesk).
-
-        Handles group-based access control for hybrid products and honors user
-        preferences via query parameters when permitted.
-
-        Args:
-            request: HttpRequest object
-            product: Product instance
-
-        Returns:
-            tuple: (support_type, can_switch)
-                - support_type: SUPPORT_TYPE_FORUM, SUPPORT_TYPE_ZENDESK,
-                  SUPPORT_TYPE_REDIRECT, SUPPORT_TYPE_HIDE, or None
-                - can_switch: whether user can toggle between channels
-                - Returns (None, False) if no config exists - view should handle error
-        """
-        # Avoid cycles: groups.models -> wiki.models -> products.models -> this manager.
-        from kitsune.groups.models import GroupProfile
-        from kitsune.products.models import ProductSupportConfig
-
-        # Query config for this product
-        try:
-            support_config = self.get(product=product, is_active=True)
-        except self.model.DoesNotExist:
-            return (None, False)
-
-        user = request.user
-
-        # Subscription gate: check before any other routing logic
-        if support_config.subscription_only:
-            is_subscribed = (
-                user.is_authenticated and user.profile.products.filter(id=product.id).exists()
-            )
-            if not is_subscribed:
-                if support_config.unsubscribed_redirect_product_id:
-                    return (self.SUPPORT_TYPE_REDIRECT, False)
-                return (self.SUPPORT_TYPE_HIDE, False)
-
-        requested_type = request.GET.get("support_type")
-
-        # Validate requested_type
-        if requested_type and requested_type not in [
-            ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-        ]:
-            requested_type = None
-
-        # Non-hybrid: Only one support type available, no switching
-        if not support_config.is_hybrid:
-            if support_config.enable_forum_support:
-                return (ProductSupportConfig.SUPPORT_TYPE_FORUM, False)
-            elif support_config.enable_zendesk_support:
-                return (ProductSupportConfig.SUPPORT_TYPE_ZENDESK, False)
-            else:
-                raise ValueError(f"No support channels enabled for product {product.slug}")
-
-        # Hybrid without organizations: all users can switch
-        if not support_config.support_organizations.exists():
-            support_type = requested_type or support_config.default_support_type
-            return (support_type, True)
-
-        # Hybrid with organizations: check user membership
-        user_in_group = (
-            user.is_authenticated
-            and support_config.support_organizations.filter(
-                Q(group_id__in=user.groups.values_list("id", flat=True))
-                | Q(group_id__in=GroupProfile.objects.containing(user).values("group_id"))
-            ).exists()
+    def active_for(self, product):
+        return (
+            self.select_related("forum_config", "zendesk_config", "unsubscribed_redirect_product")
+            .filter(product=product, is_active=True)
+            .first()
         )
-
-        if not user_in_group:
-            return (support_config.default_support_type, False)
-
-        # User in group: Can switch, use group default or general default
-        default = support_config.group_default_support_type or support_config.default_support_type
-        support_type = requested_type or default
-        return (support_type, True)
 
 
 def _question_card(row, locale):

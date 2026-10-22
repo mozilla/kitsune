@@ -9,7 +9,6 @@ from product_details import product_details
 from kitsune.customercare.utils import resolve_org_group
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
-from kitsune.products.managers import ProductSupportConfigManager
 from kitsune.products.models import (
     CuratedBlock,
     Product,
@@ -95,8 +94,7 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             "latest_version": latest_version,
             "featured": get_featured_articles(product=product, locale=request.LANGUAGE_CODE),
             "has_support_config": bool(aaq_context)
-            and aaq_context.get("current_support_type")
-            != ProductSupportConfigManager.SUPPORT_TYPE_HIDE,
+            and aaq_context.get("current_support_type") != ProductSupportConfig.SUPPORT_TYPE_HIDE,
             "aaq_context": aaq_context,
             "professional_support_products": professional_support_products,
             "support_org_group": support_org_group,

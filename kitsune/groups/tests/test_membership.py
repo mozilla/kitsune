@@ -14,6 +14,8 @@ from kitsune.groups import membership
 from kitsune.groups.membership import validate_enterprise_memberships
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupProfileFactory
+from kitsune.products.models import SupportContract
+from kitsune.products.tests import SupportContractFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
 
@@ -309,6 +311,36 @@ class EnterpriseHierarchyTests(MembershipFixtures, TestCase):
         )
         self.assertEqual(self.tree_state(), before)
         self.assertEqual(self.memberships(self.user), {self.team_a.group_id})
+
+
+@override_settings(ENTERPRISE_GROUP_SLUG="contracted-company-hierarchy-root")
+class ContractedCompanyHierarchyTests(MembershipFixtures, TestCase):
+    def test_contracted_company_cannot_leave_the_root(self):
+        SupportContractFactory(company=self.company_a, status=SupportContract.Status.CANCELLED)
+        before = self.tree_state()
+
+        for node, target in (
+            (self.company_a, self.company_b),
+            (self.company_a, self.team_b),
+            (self.company_a, self.unrelated),
+            (self.root, self.unrelated),
+        ):
+            with self.subTest(node=node.pk, target=target.pk):
+                with self.assertRaises(ValidationError) as caught:
+                    GroupProfile.objects.move(node, target, "last-child")
+                self.assertEqual(caught.exception.code, "contracted_company")
+                self.assertEqual(self.tree_state(), before)
+
+    def test_moves_that_keep_contracted_companies_under_the_root_are_allowed(self):
+        SupportContractFactory(company=self.company_a)
+
+        GroupProfile.objects.move(self.company_a, self.company_b, "right")
+        GroupProfile.objects.move(self.team_a, self.other_team_a, "last-child")
+        GroupProfile.objects.move(self.company_b, self.team_a, "last-child")
+
+        self.assertEqual(GroupProfile.objects.get_parent(self.company_a), self.root)
+        self.assertEqual(GroupProfile.objects.get_parent(self.team_a), self.other_team_a)
+        self.assertEqual(GroupProfile.objects.get_parent(self.company_b), self.team_a)
 
 
 @override_settings(ENTERPRISE_GROUP_SLUG="membership-concurrency-root", ES_LIVE_INDEXING=False)

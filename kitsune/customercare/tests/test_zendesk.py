@@ -10,7 +10,10 @@ from django.core.checks import Warning
 from django.test import SimpleTestCase, override_settings
 from zenpy.lib.exception import APIException, RatelimitBudgetExceeded, ZenpyException
 
-from kitsune.customercare.checks import check_zendesk_oauth_configuration
+from kitsune.customercare.checks import (
+    check_zendesk_chat_configuration,
+    check_zendesk_oauth_configuration,
+)
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.zendesk import (
     LOGINLESS_TAG,
@@ -1467,3 +1470,19 @@ class ZendeskConfigurationChecksTests(SimpleTestCase):
                     ZENDESK_OAUTH_CLIENT_SECRET=client_secret,
                 ):
                     self.assertEqual(check_zendesk_oauth_configuration(None), [])
+
+    def test_chat_configuration_warns_only_when_partial(self):
+        for widget, secret, key_id, expected in (
+            ("", "", "", []),
+            ("widget", "", "", ["customercare.W002"]),
+            ("", "secret", "key-id", ["customercare.W002"]),
+            ("widget", "secret", "key-id", []),
+        ):
+            with self.subTest(widget=widget, secret=secret, key_id=key_id):
+                with self.settings(
+                    ZENDESK_CHAT_WIDGET_KEY=widget,
+                    ZENDESK_CHAT_SIGNING_SECRET=secret,
+                    ZENDESK_CHAT_SIGNING_KEY_ID=key_id,
+                ):
+                    warnings = check_zendesk_chat_configuration(None)
+                self.assertEqual([warning.id for warning in warnings], expected)

@@ -205,6 +205,25 @@ Missing prerequisites and conflicts leave the operation unchanged and display a
 form error. Read-only mode refuses both mutations. Department groups and companies
 outside the configured root cannot be targeted.
 
+## Enterprise support contracts
+
+Staff record company agreements in Django admin under **Products > Support
+contracts**. A contract has a name, a status (active, suspended, or cancelled), and
+start and end dates, both inclusive in the site time zone. Each coverage names a product,
+its Zendesk form configuration, the Zendesk product value, and whether chat is included.
+A bundle is several coverages on one contract.
+
+- The company must be a direct child of the enterprise root and cannot change later.
+- A contract needs at least one coverage and lists each product once.
+- Active and suspended contracts of one company cannot cover the same product in
+  overlapping periods. Cancelled contracts never block.
+- Contracts and coverages cannot be deleted. Cancel a contract to retire it; to fix a
+  mistake, cancel it and enter a new one.
+- A company with contracts cannot be deleted or moved from directly under the root.
+
+Saving a contract creates the company's local Zendesk organization identity without
+contacting Zendesk. Contracts do not yet affect routing or what members see.
+
 ## Enterprise account preparation
 
 Staff add people with **Add person** on a company's page. It prepares the SUMO

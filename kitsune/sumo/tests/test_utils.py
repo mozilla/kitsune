@@ -7,14 +7,23 @@ from django.test.utils import override_settings
 from parameterized import parameterized
 
 from kitsune.journal.models import Record
+from kitsune.products.models import ProductSupportConfig
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    ZendeskConfigFactory,
+)
+from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.utils import (
+    get_aaq_context,
     get_aaq_url,
     get_browser,
     get_next_url,
     has_blocked_link,
     has_support_config,
     is_ratelimited,
+    set_aaq_context,
     smart_int,
     truncated_json_dumps,
     webpack_static,
@@ -320,9 +329,6 @@ class WebpackStaticTests(TestCase):
 
 class HasSupportConfigTests(TestCase):
     def test_product_support_config_inactive(self):
-        from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory
-        from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
-
         product = ProductFactory()
         locale = QuestionLocaleFactory(locale="en-US")
         aaq_config = AAQConfigFactory(enabled_locales=[locale])
@@ -331,9 +337,6 @@ class HasSupportConfigTests(TestCase):
         self.assertFalse(has_support_config(product))
 
     def test_forum_config_no_locales(self):
-        from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory
-        from kitsune.questions.tests import AAQConfigFactory
-
         product = ProductFactory()
         aaq_config = AAQConfigFactory()
         ProductSupportConfigFactory(product=product, forum_config=aaq_config, is_active=True)
@@ -341,12 +344,6 @@ class HasSupportConfigTests(TestCase):
         self.assertFalse(has_support_config(product))
 
     def test_zendesk_only_active(self):
-        from kitsune.products.tests import (
-            ProductFactory,
-            ProductSupportConfigFactory,
-            ZendeskConfigFactory,
-        )
-
         product = ProductFactory()
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(product=product, zendesk_config=zendesk_config, is_active=True)
@@ -354,15 +351,77 @@ class HasSupportConfigTests(TestCase):
         self.assertTrue(has_support_config(product))
 
     def test_forum_support_active(self):
-        from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory
-        from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
-
         product = ProductFactory()
         locale = QuestionLocaleFactory(locale="en-US")
         aaq_config = AAQConfigFactory(enabled_locales=[locale])
         ProductSupportConfigFactory(product=product, forum_config=aaq_config, is_active=True)
 
         self.assertTrue(has_support_config(product))
+
+
+class AAQContextTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory()
+        self.user = UserFactory()
+        self.request = RequestFactory().get("/")
+        self.request.user = self.user
+        self.request.LANGUAGE_CODE = "en-US"
+        self.request.session = {}
+
+    def test_channel_context_and_locale_fallback(self):
+        ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=AAQConfigFactory(enabled_locales=[QuestionLocaleFactory(locale="en-US")]),
+            zendesk_config=ZendeskConfigFactory(),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
+        expected = {
+            "product_slug": self.product.slug,
+            "multiple_products": True,
+            "has_ticketing_support": True,
+            "has_public_forum": True,
+            "current_support_type": ProductSupportConfig.SUPPORT_TYPE_FORUM,
+            "can_switch": True,
+        }
+        self.assertEqual(
+            get_aaq_context(self.request, self.product, multiple_products=True), expected
+        )
+
+        self.request.LANGUAGE_CODE = "fr"
+        expected.update(has_public_forum=False, has_default_public_forum=True)
+        self.assertEqual(
+            set_aaq_context(self.request, self.product, multiple_products=True), expected
+        )
+        self.assertEqual(self.request.session["aaq_context"], expected)
+
+    def test_unusable_forum_config_has_no_context_even_when_subscription_only(self):
+        ProductSupportConfigFactory(
+            product=self.product, forum_config=AAQConfigFactory(), subscription_only=True
+        )
+        self.assertEqual(get_aaq_context(self.request, self.product), {})
+
+    def test_subscription_gate_returns_only_gate_context(self):
+        config = ProductSupportConfigFactory(
+            product=self.product,
+            zendesk_config=ZendeskConfigFactory(),
+            subscription_only=True,
+        )
+        for redirect in (None, ProductFactory(slug="subscription-help")):
+            with self.subTest(redirect=redirect):
+                config.unsubscribed_redirect_product = redirect
+                config.save()
+                request = RequestFactory().get("/")
+                request.user = self.user
+                if redirect:
+                    expected = {
+                        "current_support_type": ProductSupportConfig.SUPPORT_TYPE_REDIRECT,
+                        "redirect_url": "/en-US/questions/new/subscription-help",
+                    }
+                    self.assertEqual(get_aaq_url(expected), expected["redirect_url"])
+                else:
+                    expected = {"current_support_type": ProductSupportConfig.SUPPORT_TYPE_HIDE}
+                self.assertTrue(has_support_config(self.product))
+                self.assertEqual(get_aaq_context(request, self.product), expected)
 
 
 class GetAAQUrlTests(TestCase):

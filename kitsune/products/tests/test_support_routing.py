@@ -1,21 +1,29 @@
-from django.contrib.auth.models import AnonymousUser
-from django.test import RequestFactory, TestCase
+from datetime import timedelta
+from unittest.mock import patch
+
+from django.contrib.auth.models import AnonymousUser, User
+from django.db import IntegrityError
+from django.test import RequestFactory, TestCase, override_settings
+from django.utils import timezone
 
 from kitsune.groups.models import GroupProfile
-from kitsune.products.managers import ProductSupportConfigManager
-from kitsune.products.models import ProductSupportConfig
+from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory
+from kitsune.products.models import ProductSupportConfig, SupportContract
+from kitsune.products.routing import ENTERPRISE_SUPPORT, PRODUCT_SUPPORT, route_support
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportContractFactory,
+    SupportCoverageFactory,
     SupportOrganizationFactory,
     ZendeskConfigFactory,
 )
-from kitsune.questions.tests import AAQConfigFactory
+from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
 from kitsune.users.tests import GroupFactory, UserFactory
 
 
 class SupportRoutingTests(TestCase):
-    """Tests for ProductSupportConfig.objects.route_support_request()"""
+    """Product support routing."""
 
     def setUp(self):
         self.factory = RequestFactory()
@@ -23,20 +31,18 @@ class SupportRoutingTests(TestCase):
         self.user = UserFactory()
 
     def test_no_config_returns_none(self):
-        """When no ProductSupportConfig exists, return (None, False)."""
+        """No config means no product support channel or switching."""
         request = self.factory.get("/")
         request.user = self.user
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertIsNone(support_type)
-        self.assertFalse(can_switch)
+        self.assertIsNone(product_support.support_type)
+        self.assertFalse(product_support.can_switch)
 
     def test_forum_only_routing(self):
-        """Forum-only product returns (SUPPORT_TYPE_FORUM, False)."""
-        aaq_config = AAQConfigFactory()
+        """Forum-only products cannot switch channels."""
+        aaq_config = AAQConfigFactory(enabled_locales=[QuestionLocaleFactory(locale="en-US")])
         ProductSupportConfigFactory(
             product=self.product,
             forum_config=aaq_config,
@@ -47,15 +53,13 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = self.user
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
-        self.assertFalse(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
+        self.assertFalse(product_support.can_switch)
 
     def test_zendesk_only_routing(self):
-        """Zendesk-only product returns (SUPPORT_TYPE_ZENDESK, False)."""
+        """Zendesk-only products cannot switch channels."""
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(
             product=self.product,
@@ -67,12 +71,10 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = self.user
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-        self.assertFalse(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+        self.assertFalse(product_support.can_switch)
 
     def test_hybrid_no_organizations_default_forum(self):
         """Hybrid product with no organizations defaults to forum, allows switching."""
@@ -89,12 +91,10 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = self.user
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
-        self.assertTrue(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
+        self.assertTrue(product_support.can_switch)
 
     def test_hybrid_no_organizations_default_zendesk(self):
         """Hybrid product with no organizations defaults to Zendesk, allows switching."""
@@ -111,12 +111,10 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = self.user
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-        self.assertTrue(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+        self.assertTrue(product_support.can_switch)
 
     def test_hybrid_no_organizations_honors_requested_type(self):
         """Hybrid product with no organizations honors requested_type query param."""
@@ -133,12 +131,10 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/", {"support_type": "zendesk"})
         request.user = self.user
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-        self.assertTrue(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+        self.assertTrue(product_support.can_switch)
 
     def test_hybrid_with_organizations_nonmember(self):
         """Hybrid with organizations: a nonmember is locked to default."""
@@ -157,12 +153,10 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/", {"support_type": "zendesk"})
         request.user = self.user  # User NOT in group
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
-        self.assertFalse(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
+        self.assertFalse(product_support.can_switch)
 
     def test_hybrid_with_organizations_member_can_switch(self):
         """Hybrid with organizations: a member can switch."""
@@ -184,12 +178,10 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/", {"support_type": "zendesk"})
         request.user = self.user
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-        self.assertTrue(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+        self.assertTrue(product_support.can_switch)
 
     def test_hybrid_organization_member_default_override(self):
         """Hybrid organization members use group_default_support_type over default."""
@@ -212,13 +204,11 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/")  # No requested_type
         request.user = self.user
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
         # Should use group_default_support_type (Zendesk), not default (Forum)
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-        self.assertTrue(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+        self.assertTrue(product_support.can_switch)
 
     def test_invalid_requested_type_ignored(self):
         """Invalid requested_type query param is ignored."""
@@ -235,13 +225,11 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/", {"support_type": "invalid"})
         request.user = self.user
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
         # Should fall back to default since invalid type is ignored
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
-        self.assertTrue(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
+        self.assertTrue(product_support.can_switch)
 
     def test_anonymous_user_hybrid_no_organizations(self):
         """Anonymous user on hybrid product with no organizations can switch."""
@@ -258,12 +246,10 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = AnonymousUser()
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
-        self.assertTrue(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
+        self.assertTrue(product_support.can_switch)
 
     def test_anonymous_user_hybrid_with_organizations(self):
         """Anonymous user on hybrid with organizations is locked to default."""
@@ -282,17 +268,13 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = AnonymousUser()
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
-        self.assertFalse(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
+        self.assertFalse(product_support.can_switch)
 
     def test_no_support_channels_constraint(self):
         """Database constraint prevents config with neither forum nor Zendesk."""
-        from django.db import IntegrityError
-
         with self.assertRaises(IntegrityError) as context:
             ProductSupportConfigFactory(
                 product=self.product,
@@ -339,20 +321,18 @@ class SubtreeSupportRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = self.user
 
-        self.assertEqual(
-            ProductSupportConfig.objects.route_support_request(request, self.product),
-            (ProductSupportConfig.SUPPORT_TYPE_ZENDESK, True),
-        )
+        product_support = route_support(request, self.product).product_support
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+        self.assertTrue(product_support.can_switch)
 
     def test_deep_descendant_can_override_group_default(self):
         self.user.groups.add(self.descendant.group)
         request = self.factory.get("/", {"support_type": "forum"})
         request.user = self.user
 
-        self.assertEqual(
-            ProductSupportConfig.objects.route_support_request(request, self.product),
-            (ProductSupportConfig.SUPPORT_TYPE_FORUM, True),
-        )
+        product_support = route_support(request, self.product).product_support
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
+        self.assertTrue(product_support.can_switch)
 
     def test_members_outside_company_cannot_use_organization_support(self):
         sibling = GroupProfile.objects.add_child(
@@ -367,14 +347,15 @@ class SubtreeSupportRoutingTests(TestCase):
                 request = self.factory.get("/", {"support_type": "zendesk"})
                 request.user = self.user
 
+                product_support = route_support(request, self.product).product_support
                 self.assertEqual(
-                    ProductSupportConfig.objects.route_support_request(request, self.product),
-                    (ProductSupportConfig.SUPPORT_TYPE_FORUM, False),
+                    product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM
                 )
+                self.assertFalse(product_support.can_switch)
 
 
 class SubscriptionRoutingTests(TestCase):
-    """Tests for subscription_only routing in route_support_request()."""
+    """Subscription-only product support routing."""
 
     def setUp(self):
         self.factory = RequestFactory()
@@ -396,12 +377,10 @@ class SubscriptionRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = self.user
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-        self.assertFalse(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+        self.assertFalse(product_support.can_switch)
 
     def test_non_subscriber_with_redirect_returns_redirect_sentinel(self):
         """Non-subscribed user is returned SUPPORT_TYPE_REDIRECT when redirect product is set."""
@@ -412,36 +391,30 @@ class SubscriptionRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = self.user  # has no subscription
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfigManager.SUPPORT_TYPE_REDIRECT)
-        self.assertFalse(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_REDIRECT)
+        self.assertFalse(product_support.can_switch)
 
     def test_non_subscriber_without_redirect_returns_hide_sentinel(self):
         """Non-subscribed user is returned SUPPORT_TYPE_HIDE when no redirect product is set."""
         request = self.factory.get("/")
         request.user = self.user  # has no subscription, no redirect product configured
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfigManager.SUPPORT_TYPE_HIDE)
-        self.assertFalse(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_HIDE)
+        self.assertFalse(product_support.can_switch)
 
     def test_anonymous_user_returns_hide_sentinel(self):
         """Anonymous users on a subscription_only product are treated as non-subscribers."""
         request = self.factory.get("/")
         request.user = AnonymousUser()
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
-        )
+        product_support = route_support(request, self.product).product_support
 
-        self.assertEqual(support_type, ProductSupportConfigManager.SUPPORT_TYPE_HIDE)
-        self.assertFalse(can_switch)
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_HIDE)
+        self.assertFalse(product_support.can_switch)
 
     def test_subscription_only_false_bypasses_check(self):
         """When subscription_only is False, all users pass through to normal routing."""
@@ -451,9 +424,201 @@ class SubscriptionRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = self.user  # no subscription, but subscription_only is off
 
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, self.product
+        product_support = route_support(request, self.product).product_support
+
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+        self.assertFalse(product_support.can_switch)
+
+
+class EnterpriseSupportRoutingTests(TestCase):
+    def setUp(self):
+        self.company = EnterpriseCompanyFactory()
+        self.department = DepartmentFactory(company=self.company)
+        self.user = UserFactory()
+        self.user.groups.add(self.company.group)
+        self.product = ProductFactory()
+        self.today = timezone.localdate()
+        self.contract = SupportContractFactory(
+            company=self.company,
+            starts_on=self.today - timedelta(days=1),
+            ends_on=self.today + timedelta(days=1),
+        )
+        self.coverage = SupportCoverageFactory(contract=self.contract, product=self.product)
+
+    def route(self, user=None, product=None):
+        request = RequestFactory().get("/")
+        request.user = user if user is not None else self.user
+        return route_support(request, product if product is not None else self.product)
+
+    def test_company_and_department_members_are_covered(self):
+        for group in (self.company.group, self.department.group):
+            with self.subTest(group=group):
+                self.user.groups.set([group])
+                enterprise_support = self.route().enterprise_support
+                self.assertTrue(enterprise_support.eligible)
+                self.assertEqual(enterprise_support.coverage, self.coverage)
+                self.assertIsNone(enterprise_support.reason)
+
+    def test_root_members_and_leaders_are_not_company_members(self):
+        root = GroupProfile.objects.get_ancestors(self.company).get(depth=1)
+        for groups, leaders in (([], []), ([root.group], []), ([], [self.user])):
+            with self.subTest(groups=groups, leaders=leaders):
+                self.user.groups.set(groups)
+                self.company.leaders.set(leaders)
+                enterprise_support = self.route().enterprise_support
+                self.assertFalse(enterprise_support.eligible)
+                self.assertEqual(enterprise_support.reason, "no_company")
+
+    @override_settings(ENTERPRISE_GROUP_SLUG="missing-enterprise-root")
+    def test_missing_enterprise_root(self):
+        self.assertEqual(self.route().enterprise_support.reason, "no_company")
+
+    def test_unavailable_user_or_product(self):
+        for user, product, reason in (
+            (AnonymousUser(), self.product, "not_authenticated"),
+            (UserFactory(is_active=False), self.product, "inactive_user"),
+            (self.user, ProductFactory(is_archived=True), "product_unavailable"),
+        ):
+            with self.subTest(reason=reason):
+                enterprise_support = self.route(user=user, product=product).enterprise_support
+                self.assertFalse(enterprise_support.eligible)
+                self.assertEqual(enterprise_support.reason, reason)
+
+    def test_membership_in_two_companies_is_ambiguous(self):
+        other_company = EnterpriseCompanyFactory()
+        User.groups.through.objects.bulk_create(
+            [User.groups.through(user_id=self.user.pk, group_id=other_company.group_id)]
         )
 
-        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-        self.assertFalse(can_switch)
+        enterprise_support = self.route().enterprise_support
+        self.assertFalse(enterprise_support.eligible)
+        self.assertEqual(enterprise_support.reason, "ambiguous_company")
+
+    def test_contract_dates_are_inclusive(self):
+        for day, eligible in (
+            (self.contract.starts_on - timedelta(days=1), False),
+            (self.contract.starts_on, True),
+            (self.contract.ends_on, True),
+            (self.contract.ends_on + timedelta(days=1), False),
+        ):
+            with (
+                self.subTest(day=day),
+                patch("kitsune.products.routing.timezone.localdate", return_value=day),
+            ):
+                enterprise_support = self.route().enterprise_support
+                self.assertEqual(enterprise_support.eligible, eligible)
+                self.assertEqual(enterprise_support.reason, None if eligible else "no_coverage")
+
+    def test_suspended_and_cancelled_contracts_are_not_effective(self):
+        for status in (SupportContract.Status.SUSPENDED, SupportContract.Status.CANCELLED):
+            with self.subTest(status=status):
+                self.contract.status = status
+                self.contract.save()
+                enterprise_support = self.route().enterprise_support
+                self.assertFalse(enterprise_support.eligible)
+                self.assertEqual(enterprise_support.reason, "no_coverage")
+
+    def test_coverage_is_product_specific(self):
+        enterprise_support = self.route(product=ProductFactory()).enterprise_support
+        self.assertFalse(enterprise_support.eligible)
+        self.assertEqual(enterprise_support.reason, "no_coverage")
+
+    def test_overlapping_coverage_is_ambiguous(self):
+        other_contract = SupportContractFactory(
+            company=self.company,
+            starts_on=self.contract.starts_on,
+            ends_on=self.contract.ends_on,
+        )
+        SupportCoverageFactory(contract=other_contract, product=self.product)
+
+        enterprise_support = self.route().enterprise_support
+        self.assertFalse(enterprise_support.eligible)
+        self.assertEqual(enterprise_support.reason, "ambiguous_coverage")
+
+    def test_coverage_needs_no_product_support_config(self):
+        route = self.route()
+        self.assertEqual(route.enterprise_support.coverage, self.coverage)
+        self.assertTrue(route.enterprise_support.eligible)
+        self.assertIsNone(route.product_support.support_type)
+
+    def test_coverage_ignores_subscription_gate(self):
+        config = ProductSupportConfigFactory(
+            product=self.product,
+            zendesk_config=ZendeskConfigFactory(),
+            subscription_only=True,
+        )
+        for redirect, support_type in (
+            (None, ProductSupportConfig.SUPPORT_TYPE_HIDE),
+            (ProductFactory(), ProductSupportConfig.SUPPORT_TYPE_REDIRECT),
+        ):
+            with self.subTest(support_type=support_type):
+                config.unsubscribed_redirect_product = redirect
+                config.save()
+                route = self.route()
+                self.assertEqual(route.enterprise_support.coverage, self.coverage)
+                self.assertTrue(route.enterprise_support.eligible)
+                self.assertEqual(route.product_support.support_type, support_type)
+                self.assertFalse(route.product_support.has_ticket)
+
+    def test_preferred_ticket_uses_eligible_legs(self):
+        config = ProductSupportConfigFactory(
+            product=self.product, zendesk_config=ZendeskConfigFactory()
+        )
+        for covered, product_support, expected in (
+            (True, True, ENTERPRISE_SUPPORT),
+            (False, True, PRODUCT_SUPPORT),
+            (True, False, ENTERPRISE_SUPPORT),
+            (False, False, None),
+        ):
+            with self.subTest(covered=covered, product_support=product_support):
+                self.user.groups.set([self.company.group] if covered else [])
+                config.is_active = product_support
+                config.save()
+                route = self.route()
+                self.assertEqual(route.enterprise_support.eligible, covered)
+                self.assertEqual(route.product_support.has_ticket, product_support)
+                self.assertEqual(route.preferred_ticket, expected)
+
+    def test_ticket_weights_change_preference_not_routing(self):
+        ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=AAQConfigFactory(),
+            zendesk_config=ZendeskConfigFactory(),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
+        for weights, preferred in (
+            ({ENTERPRISE_SUPPORT: 20, PRODUCT_SUPPORT: 10}, ENTERPRISE_SUPPORT),
+            ({ENTERPRISE_SUPPORT: 10, PRODUCT_SUPPORT: 20}, PRODUCT_SUPPORT),
+            ({ENTERPRISE_SUPPORT: 10, PRODUCT_SUPPORT: 10}, ENTERPRISE_SUPPORT),
+        ):
+            with (
+                self.subTest(weights=weights),
+                patch.dict("kitsune.products.routing.TICKET_WEIGHTS", weights),
+            ):
+                route = self.route()
+                self.assertEqual(route.preferred_ticket, preferred)
+                self.assertTrue(route.enterprise_support.eligible)
+                self.assertTrue(route.product_support.has_ticket)
+                self.assertEqual(
+                    route.product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM
+                )
+                self.assertTrue(route.product_support.can_switch)
+
+    def test_repeated_product_support_routing_needs_no_queries(self):
+        ProductSupportConfigFactory(product=self.product, zendesk_config=ZendeskConfigFactory())
+        request = RequestFactory().get("/")
+        request.user = self.user
+        product_support = route_support(request, self.product).product_support
+        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+
+        with self.assertNumQueries(0):
+            self.assertEqual(
+                route_support(request, self.product).product_support.support_type,
+                ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
+            )
+
+    def test_anonymous_enterprise_support_needs_no_queries(self):
+        with self.assertNumQueries(0):
+            enterprise_support = self.route(user=AnonymousUser()).enterprise_support
+            self.assertFalse(enterprise_support.eligible)
+            self.assertEqual(enterprise_support.reason, "not_authenticated")

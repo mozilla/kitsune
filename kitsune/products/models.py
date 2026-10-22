@@ -5,6 +5,7 @@ from django.contrib.auth.models import Group, User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.managers import (
     CURATED_ARTICLE_Q,
@@ -500,6 +501,8 @@ class ProductSupportConfig(ModelBase):
 
     SUPPORT_TYPE_FORUM = "forum"
     SUPPORT_TYPE_ZENDESK = "zendesk"
+    SUPPORT_TYPE_REDIRECT = "redirect_unsubscribed"
+    SUPPORT_TYPE_HIDE = "hide_unsubscribed"
     SUPPORT_TYPE_CHOICES = [
         (SUPPORT_TYPE_FORUM, "Community Forums"),
         (SUPPORT_TYPE_ZENDESK, "Zendesk Support"),
@@ -622,6 +625,18 @@ class ProductSupportConfig(ModelBase):
                 }
             )
 
+    def admits(self, user):
+        return not self.subscription_only or (
+            user.is_authenticated and user.profile.products.filter(pk=self.product_id).exists()
+        )
+
+    @property
+    def has_channel(self):
+        return bool(
+            self.zendesk_config_id
+            or (self.forum_config_id and self.forum_config.enabled_locales.exists())
+        )
+
     @property
     def is_hybrid(self):
         """Returns True if both forum and Zendesk support are enabled."""
@@ -636,6 +651,15 @@ class ProductSupportConfig(ModelBase):
     def enable_zendesk_support(self):
         """Returns True if Zendesk support is enabled (zendesk_config is set)."""
         return bool(self.zendesk_config)
+
+
+class SupportOrganizationQuerySet(models.QuerySet):
+    def containing(self, user):
+        # Local import: products.models -> groups.models -> wiki.parser -> wiki.models
+        # -> products.models.
+        from kitsune.groups.models import GroupProfile
+
+        return self.filter(group_id__in=GroupProfile.objects.containing(user).values("group_id"))
 
 
 class SupportOrganization(ModelBase):
@@ -662,6 +686,8 @@ class SupportOrganization(ModelBase):
         default=False,
         help_text="Members can start live chats with support agents. Requires Zendesk support.",
     )
+
+    objects = SupportOrganizationQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Support organization"
@@ -802,6 +828,62 @@ class ZendeskConfig(ModelBase):
 
     def __str__(self):
         return self.name
+
+
+class SupportContract(ModelBase):
+    class Status(models.TextChoices):
+        ACTIVE = "active", _lazy("Active")
+        SUSPENDED = "suspended", _lazy("Suspended")
+        CANCELLED = "cancelled", _lazy("Cancelled")
+
+    company = models.ForeignKey(
+        "groups.GroupProfile", on_delete=models.PROTECT, related_name="support_contracts"
+    )
+    name = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
+    starts_on = models.DateField()
+    ends_on = models.DateField()
+
+    class Meta:
+        verbose_name = _lazy("Support contract")
+        verbose_name_plural = _lazy("Support contracts")
+        ordering = ["company", "-starts_on"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(starts_on__lte=models.F("ends_on")),
+                name="support_contract_valid_period",
+            ),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class SupportCoverage(ModelBase):
+    contract = models.ForeignKey(
+        SupportContract, on_delete=models.CASCADE, related_name="coverages"
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.PROTECT, related_name="support_coverages"
+    )
+    zendesk_config = models.ForeignKey(
+        ZendeskConfig, on_delete=models.PROTECT, related_name="support_coverages"
+    )
+    zendesk_product_value = models.CharField(max_length=255)
+    includes_chat = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = _lazy("Support coverage")
+        verbose_name_plural = _lazy("Support coverages")
+        ordering = ["contract", "product"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["contract", "product"], name="unique_support_coverage_product"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.contract}: {self.product}"
 
 
 class ZendeskTopic(ModelBase):

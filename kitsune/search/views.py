@@ -12,7 +12,6 @@ from django.utils.translation import pgettext
 from django.views.decorators.cache import cache_page
 
 from kitsune import search as constants
-from kitsune.products.managers import ProductSupportConfigManager
 from kitsune.products.models import Product, ProductSupportConfig
 from kitsune.search.base import SumoSearchPaginator
 from kitsune.search.forms import SimpleSearchForm
@@ -207,7 +206,7 @@ def simple_search(request):
         if product:
             aaq_context = get_aaq_context(request, product)
             support_type = aaq_context.get("current_support_type")
-            if support_type and support_type != ProductSupportConfigManager.SUPPORT_TYPE_HIDE:
+            if support_type and support_type != ProductSupportConfig.SUPPORT_TYPE_HIDE:
                 support_aaq_url = get_aaq_url(aaq_context)
                 is_ticketed = support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK
         else:

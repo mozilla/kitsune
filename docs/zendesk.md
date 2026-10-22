@@ -76,6 +76,12 @@ not change.
 See [Zendesk's OAuth migration guide](https://developer.zendesk.com/documentation/authentication/oauth-migration/#client-credentials-grant)
 for the client-credentials flow and token lifecycle.
 
+## Chat
+
+Partially configured chat settings emit system-check warning `customercare.W002`;
+with settings missing and the chat switch enabled, pages render without the widget
+instead of failing, and authenticated token requests return HTTP 403.
+
 ## Enterprise provisioning
 
 The [enterprise provisioning service](groups.md#enterprise-zendesk-provisioning)

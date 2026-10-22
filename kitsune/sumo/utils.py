@@ -45,7 +45,7 @@ def paginate(request, queryset, per_page=20, paginator_cls=paginator.Paginator, 
     # Get a page of results, or the first page if there's a problem.
     try:
         paginated = p.page(page)
-    except (paginator.EmptyPage, paginator.InvalidPage):
+    except paginator.EmptyPage, paginator.InvalidPage:
         paginated = p.page(1)
 
     paginated.url = build_paged_url(request)
@@ -75,12 +75,11 @@ def build_paged_url(request):
     return "{}?{}".format(base, qsa)
 
 
-
 def smart_int(string, fallback=0):
     """Convert a string to int, with fallback for invalid strings or types."""
     try:
         return int(float(string))
-    except (ValueError, TypeError, OverflowError):
+    except ValueError, TypeError, OverflowError:
         return fallback
 
 
@@ -369,14 +368,12 @@ def has_support_config(product=None):
 
     This checks ProductSupportConfig.is_active and ensures at least one support channel
     is properly configured:
-    - For forum support: AAQConfig must be active
+    - For forum support: AAQConfig must have an enabled locale
     - For Zendesk support: ZendeskConfig just needs to be configured
 
     Returns True if the product has any active support channel.
     """
-    # avoid circular dependencies
-    from django.db.models import Q
-
+    # Avoid cycles: products.models -> sumo.utils.
     from kitsune.products.models import Product, ProductSupportConfig
 
     if not product:
@@ -388,17 +385,8 @@ def has_support_config(product=None):
         except Product.DoesNotExist:
             return False
 
-    # Check for the existence of a ProductSupportConfig with either:
-    # 1. Forum support with at least one enabled locale, OR
-    # 2. Zendesk support configured
-    return (
-        ProductSupportConfig.objects.filter(
-            product=product,
-            is_active=True,
-        )
-        .filter(Q(forum_config__enabled_locales__isnull=False) | Q(zendesk_config__isnull=False))
-        .exists()
-    )
+    config = ProductSupportConfig.objects.active_for(product)
+    return bool(config and config.has_channel)
 
 
 def get_aaq_context(request, product, multiple_products=False):
@@ -411,26 +399,27 @@ def get_aaq_context(request, product, multiple_products=False):
     - current_support_type is SUPPORT_TYPE_REDIRECT with redirect_url set, or
     - current_support_type is SUPPORT_TYPE_HIDE (caller should return Http404)
     """
-    from kitsune.products.managers import ProductSupportConfigManager
+    # Avoid cycles: products.models -> sumo.utils.
     from kitsune.products.models import ProductSupportConfig
 
-    if not has_support_config(product):
+    # Avoid cycles: products.models -> sumo.utils -> products.routing -> products.models.
+    from kitsune.products.routing import route_support
+
+    if not product:
         return {}
 
-    support_type, can_switch = ProductSupportConfig.objects.route_support_request(request, product)
+    product_support = route_support(request, product).product_support
+    support_type = product_support.support_type
+    if support_type is None:
+        return {}
 
-    if support_type == ProductSupportConfigManager.SUPPORT_TYPE_REDIRECT:
-        config = ProductSupportConfig.objects.get(product=product, is_active=True)
-        redirect_url = reverse(
-            "questions.aaq_step2",
-            kwargs={"product_slug": config.unsubscribed_redirect_product.slug},
-        )
+    if support_type == ProductSupportConfig.SUPPORT_TYPE_REDIRECT:
         return {
             "current_support_type": support_type,
-            "redirect_url": redirect_url,
+            "redirect_url": product_support.redirect_url,
         }
 
-    if support_type == ProductSupportConfigManager.SUPPORT_TYPE_HIDE:
+    if support_type == ProductSupportConfig.SUPPORT_TYPE_HIDE:
         return {"current_support_type": support_type}
 
     aaq_context = {
@@ -439,7 +428,7 @@ def get_aaq_context(request, product, multiple_products=False):
         "has_ticketing_support": product.has_ticketing_support,
         "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
         "current_support_type": support_type,
-        "can_switch": can_switch,
+        "can_switch": product_support.can_switch,
     }
 
     if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE:
@@ -468,9 +457,10 @@ def get_aaq_url(aaq_context, topic=None):
 
     Expects a dict as returned by get_aaq_context (may be empty).
     """
-    from kitsune.products.managers import ProductSupportConfigManager
+    # Avoid cycles: products.models -> sumo.utils.
+    from kitsune.products.models import ProductSupportConfig
 
-    if aaq_context.get("current_support_type") == ProductSupportConfigManager.SUPPORT_TYPE_REDIRECT:
+    if aaq_context.get("current_support_type") == ProductSupportConfig.SUPPORT_TYPE_REDIRECT:
         return aaq_context.get("redirect_url")
 
     is_ticketed = aaq_context.get("current_support_type") == "zendesk"

@@ -104,6 +104,16 @@ class ChatWidgetTemplateTests(TestCase):
 
         self.assertNotContains(self._get(), SNIPPET_MARKER)
 
+    @override_settings(
+        ZENDESK_CHAT_WIDGET_KEY="",
+        ZENDESK_CHAT_SIGNING_SECRET="",
+        ZENDESK_CHAT_SIGNING_KEY_ID="",
+    )
+    def test_page_renders_without_chat_when_settings_are_missing(self):
+        self.client.force_login(self.user)
+
+        self.assertNotContains(self._get(), SNIPPET_MARKER)
+
     def test_a_chat_page_lets_the_widget_style_itself(self):
         self.client.force_login(self.user)
 

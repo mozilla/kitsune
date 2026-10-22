@@ -1,7 +1,6 @@
 from types import SimpleNamespace
 
 from django.contrib.auth.models import AnonymousUser, Group
-from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
 from waffle.testutils import override_switch
 
@@ -67,9 +66,7 @@ class ChatIsAvailableTests(TestCase):
 
     @override_settings(ZENDESK_CHAT_WIDGET_KEY="")
     def test_switched_on_but_not_configured(self):
-        """This fails loudly on purpose, because it's a configuration mistake."""
-        with self.assertRaises(ImproperlyConfigured):
-            chat_is_available(self._request(), self.product)
+        self.assertFalse(chat_is_available(self._request(), self.product))
 
 
 @override_settings(ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES="de,pt-BR")
