@@ -21,6 +21,7 @@ from kombu.exceptions import OperationalError
 from post_office.models import STATUS, Email
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
+from zenpy.lib.api_objects import OrganizationMembership
 from zenpy.lib.exception import APIException, RatelimitBudgetExceeded
 
 from kitsune.customercare.models import ZendeskOrganization
@@ -52,6 +53,7 @@ class ProvisioningFixtures(InvitationFixtures):
         self.client = self.client_class.return_value
         self.client.ensure_organization.return_value = "101"
         self.client.ensure_user.return_value = "201"
+        self.client.get_organization_memberships.return_value = []
 
     def provision(self, invitation, **kwargs):
         return provision_enterprise_invitation(
@@ -101,6 +103,10 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.assertEqual(result.status, EnterpriseInvitation.Status.READY)
         self.assertEqual((result.failed_action, result.error_code), ("", ""))
         self.assertEqual(self.client.ensure_user.call_args.kwargs["name"], "Jamie Rivera")
+        self.client.remove_organization_memberships.assert_called_once_with(
+            user_id="201", organization_ids=set(), memberships=[]
+        )
+        self.sync_membership.assert_called_once_with(invitation.user_id)
         self.assertEqual(User.all_users.filter(pk=invitation.user_id).values().get(), before_user)
         self.assertEqual(
             Profile.all_profiles.filter(user_id=invitation.user_id).values().get(),
@@ -129,6 +135,28 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.assertIn(link, email.html_message)
         token = urlsplit(link).path.rsplit("/", 1)[1]
         self.assertEqual(load_enterprise_invitation(token).pk, invitation.pk)
+
+    def test_invitation_removes_only_other_sumo_linked_organization_memberships(self):
+        invitation = self.invite()
+        ZendeskOrganization.objects.filter(group_profile=self.company).update(zendesk_id="101")
+        ZendeskOrganization.objects.create(group_profile=self.other_company, zendesk_id="102")
+        ZendeskOrganization.objects.create(group_profile=self.child(self.other_company))
+        memberships = [
+            OrganizationMembership(organization_id=organization_id)
+            for organization_id in (101, 102, 999)
+        ]
+        self.client.get_organization_memberships.return_value = memberships
+
+        result = self.provision(invitation)
+
+        self.assertEqual(result.status, EnterpriseInvitation.Status.READY)
+        self.client.get_organization_memberships.assert_called_once_with(user_id="201")
+        self.client.remove_organization_memberships.assert_called_once_with(
+            user_id="201", organization_ids={"102"}, memberships=memberships
+        )
+        self.client.ensure_organization_membership.assert_called_once_with(
+            user_id="201", organization_id="101", memberships=memberships
+        )
 
     def test_existing_identity_uses_public_name_and_preserves_account_fields(self):
         user = self.eligible_user(
@@ -194,6 +222,16 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                 "zendesk_membership",
                 RatelimitBudgetExceeded("private provider response"),
             ),
+            (
+                "remove_organization_memberships",
+                "zendesk_membership",
+                requests.Timeout("private provider response"),
+            ),
+            (
+                "get_organization_memberships",
+                "zendesk_membership",
+                requests.Timeout("private provider response"),
+            ),
         )
         for index, (method, action, error) in enumerate(operations, start=1):
             with self.subTest(action=action, error=type(error).__name__):
@@ -211,7 +249,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                 self.assertEqual(failed.failed_action, action)
                 self.assertEqual(failed.error_code, "zendesk_unavailable")
                 organization_id = "101" if index > 1 else None
-                saved_user_id = user_id if index == 3 else ""
+                saved_user_id = user_id if index >= 3 else ""
                 self.assertEqual(
                     ZendeskOrganization.objects.get(group_profile=self.company).zendesk_id,
                     organization_id,
@@ -242,7 +280,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                     self.client.ensure_user.call_args.kwargs["zendesk_id"], saved_user_id or None
                 )
                 self.client.ensure_organization_membership.assert_called_with(
-                    user_id=user_id, organization_id="101"
+                    user_id=user_id, organization_id="101", memberships=[]
                 )
 
     def test_unknown_conflict_records_safe_code_and_keeps_prior_work(self):
@@ -262,7 +300,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.assertEqual(self.client.ensure_organization.call_args.kwargs["zendesk_id"], "101")
         self.assertEqual(self.client.ensure_user.call_args.kwargs["zendesk_id"], "201")
         self.client.ensure_organization_membership.assert_called_with(
-            user_id="201", organization_id="101"
+            user_id="201", organization_id="101", memberships=[]
         )
 
     def test_unexpected_failure_rolls_back_local_changes_and_retry_reruns_operations(self):
@@ -284,7 +322,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.assertIsNone(self.client.ensure_organization.call_args.kwargs["zendesk_id"])
         self.assertIsNone(self.client.ensure_user.call_args.kwargs["zendesk_id"])
         self.client.ensure_organization_membership.assert_called_with(
-            user_id="201", organization_id="101"
+            user_id="201", organization_id="101", memberships=[]
         )
 
     def test_ready_reconciles_using_fresh_invitation_state_and_clears_stale_errors(self):
@@ -305,7 +343,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.assertEqual(self.client.ensure_organization.call_args.kwargs["zendesk_id"], "101")
         self.assertEqual(self.client.ensure_user.call_args.kwargs["zendesk_id"], "201")
         self.client.ensure_organization_membership.assert_called_with(
-            user_id="201", organization_id="101"
+            user_id="201", organization_id="101", memberships=[]
         )
         self.assertEqual(self.snapshot(), before)
 
@@ -555,7 +593,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                 self.assertIsNone(self.client.ensure_organization.call_args.kwargs["zendesk_id"])
                 self.assertIsNone(self.client.ensure_user.call_args.kwargs["zendesk_id"])
                 self.client.ensure_organization_membership.assert_called_with(
-                    user_id=user_id, organization_id="101"
+                    user_id=user_id, organization_id="101", memberships=[]
                 )
                 self.assertEqual(
                     ZendeskOrganization.objects.get(group_profile=self.company).zendesk_id, "101"
@@ -591,7 +629,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.assertEqual(ready.status, EnterpriseInvitation.Status.READY)
         self.assertEqual(self.client.ensure_organization.call_args.kwargs["zendesk_id"], "101")
         self.client.ensure_organization_membership.assert_called_with(
-            user_id="201", organization_id="101"
+            user_id="201", organization_id="101", memberships=[]
         )
 
     def test_preexisting_duplicate_remote_user_link_rejects_before_provider_calls(self):
@@ -867,6 +905,7 @@ class EnterpriseProvisioningConcurrencyTests(ProvisioningFixtures, TransactionTe
         )
         self.company.refresh_from_db()
         self.assertEqual(self.company.get_parent().pk, destination.pk)
+        self.cleanup_membership.assert_called_once_with(invitation.user_id, "201", ("101",))
 
     def test_permission_revocation_during_provider_io_stops_stale_writes(self):
         for change in ("is_staff", "is_active", "root_leadership"):

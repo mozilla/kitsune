@@ -27,7 +27,11 @@ from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyExce
 from kitsune.customercare.forms import SupportTicketReplyForm
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import create_zendesk_user, process_zendesk_update
-from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
+from kitsune.customercare.utils import (
+    generate_classification_tags,
+    sync_ticket_from_zendesk,
+    system_tags,
+)
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.templatetags.jinja_helpers import group_breadcrumbs
@@ -338,13 +342,13 @@ def update_topic(request, ticket_id):
     ticket.save(update_fields=["topic"])
 
     # Regenerate tags from new topic
-    system_tags = [
-        tag for tag in ticket.zendesk_tags if tag in ["loginless_ticket", "stage", "other"]
-    ]
+    kept_tags = system_tags(ticket.zendesk_tags)
+    if "other" in ticket.zendesk_tags:
+        kept_tags.append("other")
     classification_tags = generate_classification_tags(
         ticket, {"topic_result": {"topic": new_topic.title}}
     )
-    ticket.zendesk_tags = system_tags + classification_tags
+    ticket.zendesk_tags = kept_tags + classification_tags
     ticket.save(update_fields=["zendesk_tags"])
 
     return JsonResponse({"updated_topic": pgettext("DB: products.Topic.title", new_topic.title)})

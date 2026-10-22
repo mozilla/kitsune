@@ -1,12 +1,14 @@
-from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db.models import Exists, Max, OuterRef, Q
 from django.db.models.functions import Length, Substr
 from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
 
 from kitsune.groups.membership import (
+    company_organization_ids,
+    enterprise_profiles,
     guard_enterprise_group_move,
     lock_enterprise_hierarchy,
+    queue_enterprise_zendesk_sync,
     validate_enterprise_group_memberships,
 )
 
@@ -44,12 +46,35 @@ class GroupProfileQuerySet(MP_NodeQuerySet):
             .annotate(depth=Max("profile__depth"))
         )
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, _sync_enterprise_memberships=True, **kwargs):
         # Treebeard reads paths in one query and deletes by path in another, so a
         # move in between could make it delete the wrong subtree.
         with lock_enterprise_hierarchy(using=self.db, exclusive=True):
+            if _sync_enterprise_memberships:
+                mapped_ancestor = self.model.objects.using(self.db).filter(
+                    zendesk_organization__isnull=False,
+                    path=Substr(OuterRef("path"), 1, Length("path")),
+                )
+                deleted_profiles = self.model.objects.using(self.db).filter(
+                    Q(pk__in=self.values("pk")) | Q(pk__in=self.descendants().values("pk")),
+                    Q(pk__in=enterprise_profiles(self.db).values("pk")) | Exists(mapped_ancestor),
+                )
+                user_ids = (
+                    User.groups.through.objects.using(self.db)
+                    .filter(group_id__in=deleted_profiles.values("group_id"))
+                    .values_list("user_id", flat=True)
+                )
+                queue_enterprise_zendesk_sync(
+                    user_ids,
+                    using=self.db,
+                    removed_organization_ids=company_organization_ids(
+                        deleted_profiles.values("group_id"), using=self.db
+                    ),
+                )
             # Deepest first, so each subgroup's delete handlers still see the tree above it.
             for group in list(self.subgroup_groups().order_by("-depth")):
+                # The outer subtree snapshot includes these users and deleted mappings.
+                group._enterprise_memberships_captured = True
                 group.delete(using=self.db)
             return super().delete(*args, **kwargs)
 
@@ -106,10 +131,9 @@ class GroupProfileManager(MP_NodeManager):
     def enterprise_companies(self, user):
         if not (user and user.is_authenticated):
             return self.none()
-        root = self.filter(slug=settings.ENTERPRISE_GROUP_SLUG, depth=1).first()
-        if root is None:
-            return self.none()
-        return self.containing(user).filter(depth=2, path__startswith=root.path)
+        return self.containing(user).filter(
+            depth=2, pk__in=enterprise_profiles(self.db).values("pk")
+        )
 
     def visible(self, user: User | None = None):
         """

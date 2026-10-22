@@ -222,7 +222,8 @@ A bundle is several coverages on one contract.
 - A company with contracts cannot be deleted or moved from directly under the root.
 
 Saving a contract creates the company's local Zendesk organization identity without
-contacting Zendesk. Contracts do not yet affect routing or what members see.
+contacting Zendesk. Effective coverage selects the enterprise form at the shared product
+support URL; the remaining site and company presentation is planned in T4.
 
 ## Enterprise account preparation
 
@@ -306,11 +307,109 @@ enterprise support configuration, and company membership rules. It refuses
 read-only mode, never recreates missing local resources, and leaves accepted
 invitations unchanged.
 
-Zendesk requests run while only the account-email lock is held; afterwards
-provisioning locks and revalidates the records before saving. Results are discarded
-if the company, account, or mapping changed in flight, except for links matching
-what this run resolved. Conflicting identities, or Zendesk IDs owned by another
-SUMO profile, need administrator resolution.
+Before contacting Zendesk, provisioning commits the company's local organization
+mapping and stable UUID, so retries reuse the same remote create-or-update key.
+Zendesk requests run while only the account-email lock is held, never while
+hierarchy or row locks are held. Afterwards provisioning locks and revalidates the
+records before saving. Results are discarded if the company, account, or mapping
+changed in flight, except for links matching what this run resolved. Conflicting
+identities, or Zendesk IDs owned by another SUMO profile, need administrator resolution.
+
+### Membership mirroring
+
+Company membership changes queue
+`kitsune.groups.tasks.sync_enterprise_zendesk_membership(user_id)` after commit:
+
+- **Add person**, group management, admin, and ORM additions/removals/clears.
+- Inactive-member cleanup, group or `GroupProfile` deletion, and subtree moves into, out of,
+  or between companies. Deletion still reconciles members of shared groups whose
+  other profiles survive.
+- `GroupProfile` creation for groups with existing members and admin group reassignment, including
+  both former and new members.
+
+Removal paths capture former company organization IDs before mappings disappear.
+When a saved remote user ID exists, they also queue captured-identity cleanup. It
+survives subsequent company or user deletion; rolled-back mutations publish neither task.
+
+Direct company membership and membership in descendant departments count;
+enterprise-root-only membership and leadership do not. The task reconciles current
+state rather than replaying the triggering change. While a user belongs to a
+company, it ensures the company's Zendesk organization and eligible end user,
+removes memberships in other Zendesk organizations linked to SUMO companies or
+captured from deleted company mappings, and then ensures the company's membership.
+Members therefore belong to at most one SUMO company organization; unrelated organizations
+are untouched. Removing old SUMO-company memberships before creating the target
+membership avoids rehoming former-company tickets into the new company on new joins.
+If the target membership already exists, removing another SUMO-company membership
+may move its open tickets into the company under Zendesk's behavior. Verify both
+cases in a Zendesk sandbox.
+
+If more than one company matches, synchronization logs `company_conflict` and stops
+before provider calls; an administrator must correct the memberships. Deleted-account
+cleanup needs no target company and can still remove captured memberships.
+
+Leaving the last company removes SUMO-linked memberships. Deleted mappings remain
+removal targets through `removed_organization_ids`, including former companies moved
+outside the enterprise tree and their departments. Joining another company before
+the worker runs does not preserve old grants; synchronization preserves the current target.
+
+Deleting any user with a saved Zendesk ID captures that ID and every nonempty
+SUMO-linked organization ID before the user, profile, and membership rows cascade.
+After commit, it queues
+`kitsune.groups.tasks.remove_stale_zendesk_memberships(user_id, zendesk_user_id, organization_ids)`.
+This applies without current company membership, including root-only members, leaders,
+and ambiguous memberships. Removing membership and then deleting the account cannot
+strand a grant: this task needs no surviving user, profile, or company mapping.
+
+The deletion signal skips missing profiles/IDs and conflicting local ownership.
+Cleanup rechecks ownership, rejects elevated/shared remote roles, and logs conflicts
+using only user IDs and safe codes. Removal permits email, Mozilla identity, and
+active/suspended-status drift; these do not justify retaining old company access.
+
+Synchronization commits the organization mapping/UUID before provider calls and
+revalidates local state under short locks afterward. Safely validated links survive
+membership changes so retries can remove stale grants. Remote calls hold the account-email
+lock, never hierarchy or row locks.
+
+If the account or mapping disappears or is replaced during setup, queue cleanup after
+commit for that attempt's resolved remote user/organization pair. Do the same when an
+email/FxA identity change or profile replacement invalidates the saved setup identity,
+even if company membership is unchanged. Never persist an invalidated link.
+Cleanup preserves a surviving account's current company organization only while its
+profile still owns the captured Zendesk user ID. Otherwise it removes the stale identity's
+captured memberships. It neither removes unrelated organizations nor recreates memberships;
+no matching remote memberships is a successful no-op.
+
+Invitation provisioning uses this cleanup when local revalidation fails after remote
+identities were resolved. Cleanup is queued outside the failed local transaction so
+rolling back local writes cannot strand an already-created remote membership. The
+original validation error is preserved; no local invitation access is granted.
+
+Background membership tasks skip read-only mode and retry expected provider failures
+and local-state changes. Unexpected programming errors are not retried. Permanent
+identity conflicts are logged and require administrator correction.
+
+To reconcile existing company members after deployment or configuration changes,
+run:
+
+```sh
+docker compose run --rm web ./manage.py sync_enterprise_zendesk_memberships
+```
+
+The command synchronizes each current company member once, including department-only
+members, sequentially in the command process. It reports failed user IDs and safe
+error codes, prints a completion summary, and exits unsuccessfully if any member
+failed. Resolve those failures and rerun the command; it reuses the same synchronization
+logic as membership events without queuing a batch of jobs. Read-only mode refuses
+the run. It excludes root-only members and unrelated users; without an enterprise
+root it reports zero members. It does not scan former members.
+For the contract-support cutover, run it after deploy while admissions remain paused.
+Wait for the command to complete successfully, verify ticket delivery, then reopen
+admissions. The command does not clean up pre-deploy departures. If earlier invitees
+have left, audit surviving invitation records and validate their saved user and
+organization links before removing old access. Invitations do not preserve historical
+Zendesk IDs when accounts or company mappings are deleted, so they cannot identify
+every former membership.
 
 ### Status and recovery
 
@@ -324,7 +423,7 @@ SUMO profile, need administrator resolution.
 - Staff retry with the **Resend** button, which reruns the full sequence using saved
   IDs, the organization UUID, and the invited email, so earlier partial remote work
   is reconciled. A rerun never sends a second welcome, but queues one for a `ready`
-  invitation that has none. There is no automatic retry.
+  invitation that has none. Invitation provisioning is not retried automatically.
 
 See [Zendesk provisioning](zendesk.md#enterprise-provisioning) for provider
 permissions and identity rules.
@@ -415,13 +514,24 @@ Test coverage includes 58 tests in `kitsune/groups/tests/test_models.py`:
 - **VisibilityInheritanceTests**: Visibility inheritance rules (2 tests)
 - **ModeratedVisibilityTests**: MODERATED group visibility (5 tests)
 
+Membership tests cover the following paths:
+
+- `kitsune/groups/tests/test_zendesk_membership.py`: synchronization, identity conflicts,
+  and provider failures.
+- `kitsune/groups/tests/test_zendesk_membership_changes.py`: membership, hierarchy,
+  and admin changes.
+- `kitsune/groups/tests/test_deleted_user_membership.py`: real commit and rollback
+  behavior, captured identities surviving cascades, and cleanup safeguards.
+- `kitsune/groups/tests/test_sync_enterprise_zendesk_memberships.py`: sequential
+  reconciliation, member selection, and failure reporting.
+
 Run tests:
 ```bash
 # All groups tests
-python manage.py test kitsune.groups.tests
+docker compose run --rm web python manage.py test kitsune.groups.tests
 
 # Specific test file
-python manage.py test kitsune.groups.tests.test_models
+docker compose run --rm web python manage.py test kitsune.groups.tests.test_models
 ```
 
 ## Key Behaviors

@@ -23,6 +23,7 @@ from kitsune.users.tests import GroupFactory, UserFactory
 class MembershipFixtures:
     def setUp(self):
         super().setUp()
+        self.enterContext(patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay"))
         self.root = GroupProfileFactory(
             slug=settings.ENTERPRISE_GROUP_SLUG,
             visibility=GroupProfile.Visibility.PRIVATE,

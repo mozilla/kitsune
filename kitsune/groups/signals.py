@@ -1,9 +1,22 @@
+import logging
+
 from django.contrib.auth.models import Group, User
+from django.db import transaction
 from django.db.models.signals import m2m_changed, post_save, pre_delete
 from django.dispatch import receiver
 
-from kitsune.groups.membership import guard_enterprise_memberships
+from kitsune.customercare.models import ZendeskOrganization
+from kitsune.groups.membership import (
+    company_organization_ids,
+    enterprise_profiles,
+    guard_enterprise_memberships,
+    queue_enterprise_zendesk_sync,
+)
 from kitsune.groups.models import GroupProfile
+from kitsune.groups.tasks import remove_stale_zendesk_memberships
+from kitsune.users.models import Profile
+
+log = logging.getLogger("k.groups")
 
 
 @receiver(
@@ -21,6 +34,82 @@ def guard_company_memberships(sender, instance, action, reverse, pk_set, using, 
     # remain held after pre_add returns, through the insertion and outer commit.
     with guard_enterprise_memberships(user_ids, group_ids, using=using):
         pass
+
+
+@receiver(
+    m2m_changed,
+    sender=User.groups.through,
+    dispatch_uid="groups.sync_enterprise_zendesk_memberships",
+)
+def sync_company_memberships(sender, instance, action, reverse, pk_set, using, **kwargs):
+    if action not in ("post_add", "post_remove", "pre_clear"):
+        return
+    if action != "pre_clear" and not pk_set:
+        return
+    enterprise_groups = enterprise_profiles(using)
+    if reverse:
+        if not enterprise_groups.filter(group_id=instance.pk).exists():
+            return
+        user_ids = (
+            sender.objects.using(using)
+            .filter(group_id=instance.pk)
+            .values_list("user_id", flat=True)
+            if action == "pre_clear"
+            else pk_set
+        )
+        group_ids = (instance.pk,)
+    else:
+        group_ids = (
+            sender.objects.using(using)
+            .filter(user_id=instance.pk)
+            .values_list("group_id", flat=True)
+            if action == "pre_clear"
+            else pk_set
+        )
+        if not enterprise_groups.filter(group_id__in=group_ids).exists():
+            return
+        user_ids = (instance.pk,)
+    organization_ids = ()
+    if action != "post_add":
+        organization_ids = company_organization_ids(group_ids, using=using)
+    queue_enterprise_zendesk_sync(user_ids, using=using, removed_organization_ids=organization_ids)
+
+
+@receiver(
+    pre_delete,
+    sender=User,
+    dispatch_uid="groups.remove_stale_zendesk_memberships",
+)
+def remove_deleted_user_memberships(sender, instance, using, **kwargs):
+    """Capture remote cleanup before the user's profile and memberships cascade."""
+    profiles = Profile.all_profiles.using(using)
+    profile = profiles.filter(user_id=instance.pk).first()
+    if profile is None or not profile.zendesk_id:
+        return
+    if profiles.filter(zendesk_id=profile.zendesk_id).exclude(pk=profile.pk).exists():
+        log.warning(
+            "Zendesk deleted-user membership conflict for user %s: %s",
+            instance.pk,
+            "account_conflict",
+        )
+        return
+
+    organization_ids = tuple(
+        ZendeskOrganization.objects.using(using)
+        .exclude(zendesk_id__isnull=True)
+        .exclude(zendesk_id="")
+        .order_by("zendesk_id")
+        .values_list("zendesk_id", flat=True)
+    )
+    if not organization_ids:
+        return
+    transaction.on_commit(
+        lambda user_id=instance.pk, zendesk_user_id=profile.zendesk_id: (
+            remove_stale_zendesk_memberships.delay(user_id, zendesk_user_id, organization_ids)
+        ),
+        using=using,
+        robust=True,
+    )
 
 
 @receiver(
@@ -79,4 +168,8 @@ def delete_group_profiles(sender, instance, using, **kwargs):
     in order to properly maintain the profile tree. This also deletes the
     subgroups' Groups (see GroupProfileQuerySet.delete).
     """
-    GroupProfile.objects.using(using).filter(group_id=instance.pk).delete()
+    GroupProfile.objects.using(using).filter(group_id=instance.pk).delete(
+        _sync_enterprise_memberships=not getattr(
+            instance, "_enterprise_memberships_captured", False
+        )
+    )

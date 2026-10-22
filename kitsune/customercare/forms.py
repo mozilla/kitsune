@@ -2,12 +2,11 @@ import re
 
 from django import forms
 from django.conf import settings
-from django.core.exceptions import ValidationError as DjangoValidationError
-from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _lazy
 
-from kitsune.products import PRODUCT_SLUG_ALIASES
-from kitsune.products.models import ProductSupportConfig, ZendeskTopic, ZendeskTopicConfiguration
+from kitsune.customercare.models import accepted_context_for
+from kitsune.customercare.utils import create_support_ticket
+from kitsune.products.models import ZendeskTopicConfiguration
 
 OS_CHOICES = [
     (None, _lazy("Select platform")),
@@ -98,8 +97,6 @@ URGENCY_TAGS = {
     "critical": "seg-pri-critical",
 }
 
-ZENDESK_PRODUCT_SLUGS = {v: k for k, v in PRODUCT_SLUG_ALIASES.items()}
-
 
 class ZendeskForm(forms.Form):
     """Form for submitting a ticket to Zendesk."""
@@ -135,14 +132,16 @@ class ZendeskForm(forms.Form):
         widget=forms.HiddenInput,
         required=False,
     )
-    subject = forms.CharField(label=_lazy("Subject"))
+    subject = forms.CharField(label=_lazy("Subject"), max_length=255)
     description = forms.CharField(label=_lazy("Tell us more"), widget=forms.Textarea())
     country = forms.CharField(widget=forms.HiddenInput, required=False)
 
-    def __init__(self, *args, product, user=None, **kwargs):
+    def __init__(self, *args, product, zendesk_config, coverage=None, user=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.product = product
+        self.zendesk_config = zendesk_config
+        self.coverage = coverage
         self.user = user
 
         is_loginless = product.slug in settings.LOGIN_EXCEPTIONS and (
@@ -153,45 +152,33 @@ class ZendeskForm(forms.Form):
             self.fields["email"].widget = forms.EmailInput()
         else:
             self.fields["email"].initial = user.email
+            self.fields["email"].disabled = True
 
-        try:
-            support_config = ProductSupportConfig.objects.get(product=product, is_active=True)
-        except ProductSupportConfig.DoesNotExist:
-            support_config = None
+        topic_configs = list(
+            ZendeskTopicConfiguration.objects.filter(zendesk_config=zendesk_config)
+            .select_related("zendesk_topic")
+            .order_by("display_order")
+        )
+        self.topics = {config.zendesk_topic.slug: config.zendesk_topic for config in topic_configs}
+        self.fields["category"].choices = [
+            (None, _lazy("Select a reason for contacting")),
+            *[
+                (config.zendesk_topic.slug, config.zendesk_topic.form_title)
+                for config in topic_configs
+                if config.loginless_only == is_loginless
+            ],
+        ]
 
-        if support_config and support_config.zendesk_config:
-            zendesk_config = support_config.zendesk_config
-
-            topic_configs = (
-                ZendeskTopicConfiguration.objects.filter(
-                    zendesk_config=zendesk_config, loginless_only=is_loginless
-                )
-                .select_related("zendesk_topic")
-                .order_by("display_order")
-            )
-
-            category_choices = [(None, _lazy("Select a reason for contacting"))]
-            for topic_config in topic_configs:
-                topic = topic_config.zendesk_topic
-                category_choices.append((topic.slug, topic.form_title))
-
-            self.fields["category"].choices = category_choices
-
-            if not zendesk_config.enable_os_field:
-                self.fields["os"].widget = forms.HiddenInput()
-
-            if zendesk_config.enable_deployment_fields:
-                self.fields["update_channel"].widget = forms.Select()
-                self.fields["update_channel"].choices = UPDATE_CHANNEL_CHOICES
-                self.fields["update_channel"].required = True
-                self.fields["policy_distribution"].widget = forms.Select()
-                self.fields["policy_distribution"].choices = POLICY_DISTRIBUTION_CHOICES
-                self.fields["policy_distribution"].required = True
-
-            if zendesk_config.enable_urgency_field:
-                self.fields["urgency"].widget = forms.Select()
-                self.fields["urgency"].choices = URGENCY_CHOICES
-                self.fields["urgency"].required = True
+        for name, enabled in (
+            ("os", zendesk_config.enable_os_field),
+            ("update_channel", zendesk_config.enable_deployment_fields),
+            ("policy_distribution", zendesk_config.enable_deployment_fields),
+            ("urgency", zendesk_config.enable_urgency_field),
+        ):
+            field = self.fields[name]
+            field.disabled = not enabled
+            field.widget = forms.Select(choices=field.choices) if enabled else forms.HiddenInput()
+            field.required = enabled and name != "os"
 
         self.label_suffix = ""
 
@@ -200,75 +187,47 @@ class ZendeskForm(forms.Form):
         if not email:
             return email
 
-        is_invalid = False
-
-        try:
-            validate_email(email)
-        except DjangoValidationError:
-            is_invalid = True
-
-        if "@" in email and re.search(r"\.[a-zA-Z]{2,}\d+", email.split("@", 1)[1]):
-            is_invalid = True
-
-        if email.count("@") != 1 or " " in email:
-            is_invalid = True
-
-        if is_invalid:
+        if (
+            ("@" in email and re.search(r"\.[a-zA-Z]{2,}\d+", email.split("@", 1)[1]))
+            or email.count("@") != 1
+            or " " in email
+        ):
             raise forms.ValidationError(_lazy("Please enter a valid email address."))
 
         return email
 
-    def send(self, user, product):
+    def send(self, user):
         """Create a SupportTicket record and trigger async classification."""
-        selected_category_slug = self.cleaned_data.get("category")
+        zendesk_topic = self.topics.get(self.cleaned_data.get("category"))
         zendesk_tags = []
 
-        if selected_category_slug:
-            try:
-                support_config = ProductSupportConfig.objects.get(product=product, is_active=True)
-            except ProductSupportConfig.DoesNotExist:
-                support_config = None
+        if zendesk_topic:
+            for tag_value in zendesk_topic.tags_dict.values():
+                if tag_value:
+                    if isinstance(tag_value, list):
+                        zendesk_tags.extend(tag_value)
+                    else:
+                        zendesk_tags.append(tag_value)
 
-            if support_config and support_config.zendesk_config:
-                try:
-                    topic = ZendeskTopic.objects.get(slug=selected_category_slug)
-                except ZendeskTopic.DoesNotExist:
-                    topic = None
-
-                if topic:
-                    tag_data = topic.tags_dict
-
-                    for tag_value in tag_data.values():
-                        if tag_value:
-                            if isinstance(tag_value, list):
-                                zendesk_tags.extend(tag_value)
-                            else:
-                                zendesk_tags.append(tag_value)
-
-        if os := self.cleaned_data.get("os"):
-            if tag := OS_TAGS.get(os):
-                zendesk_tags.append(tag)
-
-        if update_channel := self.cleaned_data.get("update_channel"):
-            if tag := UPDATE_CHANNEL_TAGS.get(update_channel):
-                zendesk_tags.append(tag)
-
-        if policy_distribution := self.cleaned_data.get("policy_distribution"):
-            if tag := POLICY_DISTRIBUTION_TAGS.get(policy_distribution):
-                zendesk_tags.append(tag)
-
-        if urgency := self.cleaned_data.get("urgency"):
-            if tag := URGENCY_TAGS.get(urgency):
+        for field, tags in (
+            ("os", OS_TAGS),
+            ("update_channel", UPDATE_CHANNEL_TAGS),
+            ("policy_distribution", POLICY_DISTRIBUTION_TAGS),
+            ("urgency", URGENCY_TAGS),
+        ):
+            if tag := tags.get(self.cleaned_data.get(field)):
                 zendesk_tags.append(tag)
 
         if settings.STAGE:
             zendesk_tags.append("stage")
 
-        from kitsune.customercare.utils import create_support_ticket
-
+        accepted_context = accepted_context_for(
+            self.product, self.zendesk_config, self.coverage, topics=self.topics.values()
+        )
+        accepted_context["selected_topic_id"] = zendesk_topic.topic_id if zendesk_topic else None
         return create_support_ticket(
             user if (user and user.is_authenticated) else None,
-            product,
+            self.product,
             subject=self.cleaned_data["subject"],
             description=self.cleaned_data["description"],
             category=self.cleaned_data.get("category", ""),
@@ -279,6 +238,8 @@ class ZendeskForm(forms.Form):
             policy_distribution=self.cleaned_data.get("policy_distribution", ""),
             urgency=self.cleaned_data.get("urgency", ""),
             zendesk_tags=zendesk_tags,
+            coverage=self.coverage,
+            accepted_context=accepted_context,
         )
 
 

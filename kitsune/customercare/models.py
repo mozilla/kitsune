@@ -11,8 +11,46 @@ from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
 
 from kitsune.groups.models import GroupProfile
-from kitsune.products.models import Product, Topic
+from kitsune.products import PRODUCT_SLUG_ALIASES
+from kitsune.products.models import Product, ProductSupportConfig, Topic
 from kitsune.sumo.models import ModelBase
+
+ZENDESK_PRODUCT_SLUGS = {v: k for k, v in PRODUCT_SLUG_ALIASES.items()}
+
+
+class MissingTicketContext(Exception):
+    pass
+
+
+def accepted_context_for(product, zendesk_config, coverage=None, *, topics=None) -> dict:
+    if topics is None:
+        topics = zendesk_config.topics.filter(topic__isnull=False)
+    automation_tags: dict[str, list[str]] = {}
+    for topic in sorted(topics, key=lambda topic: topic.slug):
+        if topic.topic_id is not None:
+            automation_tags.setdefault(str(topic.topic_id), topic.automation_tags)
+    context = {
+        "form_id": zendesk_config.ticket_form_id,
+        "brand_id": zendesk_config.brand_id,
+        "product_value": (
+            ZENDESK_PRODUCT_SLUGS.get(product.slug, product.slug)
+            if product.slug == "mozilla-vpn"
+            else product.slug
+        ),
+        "skip_spam": zendesk_config.skip_spam_moderation,
+        "automation_tags": automation_tags,
+    }
+    if coverage:
+        company = coverage.contract.company
+        organization, _ = ZendeskOrganization.objects.get_or_create(group_profile=company)
+        context.update(
+            product_value=coverage.zendesk_product_value,
+            skip_spam=True,
+            coverage_id=coverage.pk,
+            contract={"id": coverage.contract_id, "name": coverage.contract.name},
+            company={"external_id": str(organization.external_id), "name": company.group.name},
+        )
+    return context
 
 
 class ZendeskOrganization(ModelBase):
@@ -84,6 +122,10 @@ class SupportTicketQuerySet(models.QuerySet):
 
 class SupportTicket(ModelBase):
     """Model to store pending Zendesk ticket submissions before classification."""
+
+    class Origin(models.TextChoices):
+        PRODUCT = "product", _lazy("Product support")
+        ENTERPRISE = "enterprise", _lazy("Enterprise support")
 
     # Submission pipeline statuses
     STATUS_PENDING = "pending"
@@ -177,6 +219,15 @@ class SupportTicket(ModelBase):
     policy_distribution = models.CharField(max_length=255, blank=True, default="")
     urgency = models.CharField(max_length=50, blank=True, default="")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="support_tickets")
+    origin = models.CharField(max_length=20, choices=Origin.choices, default=Origin.PRODUCT)
+    coverage = models.ForeignKey(
+        "products.SupportCoverage",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="support_tickets",
+    )
+    accepted_context = models.JSONField(default=dict, blank=True)
     topic = models.ForeignKey(
         Topic, on_delete=models.SET_NULL, null=True, blank=True, related_name="support_tickets"
     )
@@ -191,8 +242,8 @@ class SupportTicket(ModelBase):
         related_name="support_tickets",
         db_index=True,
         help_text=(
-            "Organization that owns this ticket. Set automatically at submission to the "
-            "nearest ancestor group configured as a support organization for this product. "
+            "Company that owns an enterprise ticket, set at acceptance. "
+            "Legacy tickets retain their original support organization. "
             "Null means a personal ticket, visible only to the submitter."
         ),
     )
@@ -238,6 +289,20 @@ class SupportTicket(ModelBase):
 
     def __str__(self):
         return f"Support Ticket: {self.subject} ({self.submission_status})"
+
+    @property
+    def context(self) -> dict:
+        """Stored accepted context; older product tickets use the live product config."""
+        if self.accepted_context:
+            return self.accepted_context
+        if self.origin == self.Origin.ENTERPRISE:
+            raise MissingTicketContext(f"Enterprise ticket {self.pk} has no accepted context")
+        config = ProductSupportConfig.objects.active_for(self.product)
+        if not config or not config.zendesk_config:
+            raise MissingTicketContext(
+                f"Product ticket {self.pk} has no accepted context or active Zendesk config"
+            )
+        return accepted_context_for(self.product, config.zendesk_config)
 
     @property
     def title(self):

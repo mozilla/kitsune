@@ -76,6 +76,38 @@ not change.
 See [Zendesk's OAuth migration guide](https://developer.zendesk.com/documentation/authentication/oauth-migration/#client-credentials-grant)
 for the client-credentials flow and token lifecycle.
 
+## Ticket processing
+
+New product and enterprise tickets store their accepted Zendesk configuration:
+form, brand, product value, spam policy, and topic automation tags. Classification,
+moderator release, and failed-ticket recovery use that snapshot even after
+configuration changes; taxonomy tier and legacy tags still follow the current
+Topic tree. Older product tickets without a snapshot use their live product
+configuration. Missing enterprise context or a missing legacy configuration flags
+the ticket for review rather than sending it.
+
+Enterprise tickets belong to the contract's company and skip spam and product
+reassignment checks, but still receive topic classification. Their origin adds
+`seg-enterprise-support` to the outgoing Zendesk payload, not the stored tags.
+Classification and moderator topic changes preserve system and `seg-*` tags.
+
+Enterprise delivery explicitly sets the Zendesk organization linked to the accepted
+company's external ID. Delivery requires a linked organization, an active requester
+still in that SUMO company, and membership in its Zendesk organization. Missing any
+of these holds the ticket with its snapshot unchanged. This covers departures before
+remote removal, incomplete join synchronization, and membership removed directly in
+Zendesk. Contract expiry alone does not block delivery. The sender never substitutes
+another company/default organization or changes organization membership.
+
+Holds and other send failures appear with notes in the staff **Zendesk Spam Queue**:
+
+- **No spam found.** retries delivery and both membership checks; missing membership
+  leaves the ticket pending in the queue.
+- **Removed spam content.** rejects the ticket.
+
+Synchronization does not release held tickets automatically. Membership checks and
+remote ticket creation are not atomic; removal between checking and creation can race.
+
 ## Chat
 
 Partially configured chat settings emit system-check warning `customercare.W002`;
@@ -85,25 +117,54 @@ instead of failing, and authenticated token requests return HTTP 403.
 ## Enterprise provisioning
 
 The [enterprise provisioning service](groups.md#enterprise-zendesk-provisioning)
-uses the authentication above. Its integration account must also be allowed to
-create organization memberships for end users.
+and membership synchronization task use the authentication above. Their integration
+account must also be allowed to create and delete organization memberships for end
+users.
 
 Organizations are linked by saved ID or created with `ZendeskOrganization.external_id`,
 a stable local UUID, as the
 [create-or-update key](https://developer.zendesk.com/api-reference/ticketing/organizations/organizations/#create-or-update-organization).
-A matching name alone never adopts an organization, and existing organizations are
-not modified.
+Provisioning and membership synchronization commit the local mapping and UUID before
+any remote request, so a retry retains the same create-or-update identity. A 422 during
+first creation is recovered only when a fresh external-ID lookup finds the same UUID
+(case-insensitively); a name collision alone remains a conflict. Existing organizations
+are not modified.
 
-Users are linked by saved ID or invited email. Only active, unsuspended end users
-without elevated roles, whose primary email and Mozilla identity match, are
-eligible; existing names and identities are preserved. Users created for unclaimed
-accounts get no Mozilla identity and skip the verification email, and background
-sync leaves them alone until first login attaches the identity.
+For provisioning and current-company synchronization, users are linked by saved ID
+or invited email. Only active, unsuspended end users without elevated roles, whose
+primary email and Mozilla identity match, are eligible; existing names and
+identities are preserved. Users created for unclaimed accounts get no Mozilla
+identity and skip the verification email; background profile synchronization leaves
+their identity alone until first login attaches it.
 
 Memberships use the
-[Organization Memberships API](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/#create-membership),
-which adds the target pair without removing the user's other memberships. A 422
-counts as success only when a fresh read finds that pair.
+[Organization Memberships API](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/#create-membership).
+A 422 on creation counts as success only when a fresh read finds the target pair.
+Provisioning and membership synchronization remove memberships only in other
+organizations linked by `ZendeskOrganization.zendesk_id` or captured from deleted
+company mappings, before ensuring that pair.
+Members belong to at most one SUMO company organization. Organizations not linked to
+SUMO, including agent-created ones, are untouched. For new joins, removal precedes
+company membership creation to avoid rehoming former-company tickets into the new
+company. If the target membership already exists, removing another SUMO-company
+membership may move its open tickets into the company under Zendesk's behavior.
+Both cases must be verified in a Zendesk sandbox.
+
+Cleanup rejects elevated/shared Zendesk roles and remote identities owned by another
+local account. It permits email, Mozilla identity, and active/suspended-status drift
+when removing old company access. Captured cleanup removes only the supplied company
+organization IDs. It preserves a surviving user's current company organization only
+while that user's profile still owns the captured Zendesk user ID; otherwise it
+removes the stale identity's captured memberships. Unrelated memberships are untouched.
+Setup queues captured-pair cleanup when email/FxA identity changes or profile replacement
+invalidate its resolved identity, even if the user stays in the same company. It does
+not persist the invalidated link.
+
+Remote requests use the account-email lock; hierarchy and row locks are limited to
+local preparation and revalidation. Provider failures and local-state changes use
+the existing task retries; permanent identity conflicts need administrator resolution.
+For membership events, deletion and in-flight cleanup, and the existing-member
+reconciliation command, see [membership mirroring](groups.md#membership-mirroring).
 
 Profile Zendesk IDs must be canonical decimal strings, without whitespace or
 leading zeros, so ownership checks match exactly; preserve this format in imports

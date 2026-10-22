@@ -47,6 +47,12 @@ class InvitationFixtures:
         )
         self.enterContext(patch("kitsune.customercare.signals.update_zendesk_user.delay"))
         self.enterContext(patch("kitsune.users.auth.update_zendesk_identity.delay"))
+        self.sync_membership = self.enterContext(
+            patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay")
+        )
+        self.cleanup_membership = self.enterContext(
+            patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay")
+        )
         # Django names a failed on-commit callback by its qualified name when logging it.
         self.send_queued_mail = self.enterContext(
             patch(

@@ -6,7 +6,8 @@ from django.utils.dateparse import parse_datetime
 from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.forms import ZendeskForm
+from kitsune.customercare.models import SupportTicket, ZendeskOrganization, accepted_context_for
 from kitsune.customercare.tasks import (
     adopt_chat_tickets,
     create_zendesk_user,
@@ -26,8 +27,10 @@ from kitsune.llm.support.classifiers import classify_zendesk_submission
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportCoverageFactory,
     TopicFactory,
     ZendeskConfigFactory,
+    ZendeskTopicConfigurationFactory,
     ZendeskTopicFactory,
 )
 from kitsune.sumo.tests import TestCase
@@ -264,6 +267,103 @@ class ZendeskSubmissionClassifierTests(TestCase):
         mock_classify_spam.assert_called_once()
         mock_classify_topic.assert_called_once()
 
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    @patch("kitsune.llm.support.classifiers._handle_product_reassignment", return_value=None)
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    def test_classification_uses_accepted_spam_policy(
+        self, mock_topic, mock_spam, mock_reassignment, mock_client
+    ):
+        topic = TopicFactory(title="Deployment", products=[self.product])
+        self.zendesk_config.skip_spam_moderation = False
+        ticket = SupportTicketFactory(
+            product=self.product,
+            accepted_context=accepted_context_for(self.product, self.zendesk_config),
+            submission_status=SupportTicket.STATUS_PENDING,
+        )
+        self.zendesk_config.skip_spam_moderation = True
+        self.zendesk_config.save()
+        mock_topic.return_value = {"topic_result": {"topic": topic.title}}
+        mock_spam.return_value = {"spam_result": {"is_spam": False}}
+        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=123))
+
+        zendesk_submission_classifier(ticket.pk)
+
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.topic, topic)
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_SENT)
+        mock_topic.assert_called_once()
+        mock_spam.assert_called_once()
+        mock_reassignment.assert_called_once()
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    def test_enterprise_skips_spam_and_reassignment(
+        self, mock_topic, mock_spam, mock_reassignment, mock_client
+    ):
+        topic = TopicFactory(title="Deployment", products=[self.product])
+        self.zendesk_config.skip_spam_moderation = False
+        self.zendesk_config.save()
+        coverage = SupportCoverageFactory(product=self.product, zendesk_config=self.zendesk_config)
+        ZendeskOrganization.objects.create(
+            group_profile=coverage.contract.company, zendesk_id="321"
+        )
+        ticket = SupportTicketFactory(
+            product=self.product,
+            origin=SupportTicket.Origin.ENTERPRISE,
+            coverage=coverage,
+            org_group=coverage.contract.company,
+            accepted_context=accepted_context_for(self.product, self.zendesk_config, coverage),
+            submission_status=SupportTicket.STATUS_PENDING,
+            zendesk_tags=["seg-rel-esr"],
+        )
+        ticket.user.groups.add(coverage.contract.company.group)
+        mock_topic.return_value = {"topic_result": {"topic": topic.title}}
+        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=123))
+
+        zendesk_submission_classifier(ticket.pk)
+
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.topic, topic)
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_SENT)
+        self.assertIn("seg-rel-esr", ticket.zendesk_tags)
+        mock_topic.assert_called_once()
+        mock_spam.assert_not_called()
+        mock_reassignment.assert_not_called()
+        fields = mock_client.return_value.create_ticket.call_args.args[1]
+        self.assertEqual(fields["organization_id"], "321")
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    @patch("kitsune.llm.support.classifiers.classify_product")
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    def test_accepted_product_reassignment_survives_removed_live_config(
+        self, mock_spam, mock_product, mock_topic, mock_client
+    ):
+        self.zendesk_config.skip_spam_moderation = False
+        ticket = SupportTicketFactory(
+            product=self.product,
+            accepted_context=accepted_context_for(self.product, self.zendesk_config),
+            submission_status=SupportTicket.STATUS_PENDING,
+        )
+        self.support_config.delete()
+        other_product = ProductFactory(title="Other product")
+        mock_spam.return_value = {"spam_result": {"is_spam": False}}
+        mock_product.return_value = {"product_result": {"product": other_product.title}}
+        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=123))
+
+        zendesk_submission_classifier(ticket.pk)
+
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.product, self.product)
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_SENT)
+        self.assertIn("other", ticket.zendesk_tags)
+        mock_topic.assert_not_called()
+        fields = mock_client.return_value.create_ticket.call_args.args[1]
+        self.assertEqual(fields["product"], self.product.slug)
+
     @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
     @patch("kitsune.llm.support.classifiers.get_taxonomy")
     @patch("kitsune.llm.support.classifiers.classify_spam")
@@ -293,6 +393,44 @@ class ZendeskSubmissionClassifierTests(TestCase):
 
         payload = mock_classify_topic.call_args.args[0]
         self.assertEqual(payload["selected_topic"], "Edit account details")
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    @patch("kitsune.llm.support.classifiers._handle_product_reassignment", return_value=None)
+    @patch("kitsune.llm.support.classifiers.get_taxonomy", return_value={})
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    def test_accepted_topic_hint_survives_remapping(
+        self, mock_classify_topic, mock_classify_spam, *mocks
+    ):
+        mock_classify_spam.return_value = {"spam_result": {"is_spam": False}}
+        mock_classify_topic.return_value = {"topic_result": {"topic": "Deployment"}}
+        zendesk_topic = ZendeskTopicFactory(
+            slug="deploy-help", topic=TopicFactory(title="Deployment")
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.zendesk_config, zendesk_topic=zendesk_topic
+        )
+        user = UserFactory()
+        form = ZendeskForm(
+            {
+                "email": user.email,
+                "category": "deploy-help",
+                "subject": "Rollout",
+                "description": "Fleet rollout fails",
+            },
+            product=self.product,
+            zendesk_config=self.zendesk_config,
+            user=user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        submission = form.send(user)
+        zendesk_topic.topic = TopicFactory(title="Billing")
+        zendesk_topic.save()
+
+        classify_zendesk_submission(submission)
+
+        payload = mock_classify_topic.call_args.args[0]
+        self.assertEqual(payload["selected_topic"], "Deployment")
 
     @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
     @patch("kitsune.llm.support.classifiers.get_taxonomy")
@@ -333,23 +471,62 @@ class ProcessFailedZendeskTicketsTests(TestCase):
             product=self.product, is_active=True, zendesk_config=self.zendesk_config
         )
 
-    @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
-    def test_process_failed_tickets(self, mock_send):
-        """Test that periodic task processes failed tickets."""
-        mock_send.return_value = True
-
-        submission = SupportTicket.objects.create(
-            subject="Help",
-            description="Need help",
-            category="general",
-            email="user@example.com",
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_process_failed_tickets(self, mock_client):
+        context = accepted_context_for(self.product, self.zendesk_config)
+        ticket = SupportTicketFactory(
             product=self.product,
+            accepted_context=context,
             submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
         )
+        self.support_config.delete()
+        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=123))
 
         process_failed_zendesk_tickets()
 
-        mock_send.assert_called_once_with(submission)
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_SENT)
+        fields = mock_client.return_value.create_ticket.call_args.args[1]
+        self.assertEqual(fields["ticket_form_id"], int(context["form_id"]))
+        self.assertIsNone(fields["brand_id"])
+        self.assertEqual(fields["product"], self.product.slug)
+        self.assertEqual(fields["origin"], SupportTicket.Origin.PRODUCT)
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_recovery_sends_with_accepted_context(self, mock_client):
+        coverage = SupportCoverageFactory(
+            product=self.product,
+            zendesk_config=self.zendesk_config,
+            zendesk_product_value="enterprise-firefox",
+        )
+        ZendeskOrganization.objects.create(
+            group_profile=coverage.contract.company, zendesk_id="321"
+        )
+        context = accepted_context_for(self.product, self.zendesk_config, coverage)
+        submission = SupportTicketFactory(
+            product=self.product,
+            origin=SupportTicket.Origin.ENTERPRISE,
+            coverage=coverage,
+            org_group=coverage.contract.company,
+            accepted_context=context,
+            submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
+        )
+        submission.user.groups.add(coverage.contract.company.group)
+        self.support_config.delete()
+        coverage.zendesk_config = ZendeskConfigFactory(ticket_form_id="123", brand_id="42")
+        coverage.save()
+        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=789))
+
+        process_failed_zendesk_tickets()
+
+        submission.refresh_from_db()
+        self.assertEqual(submission.submission_status, SupportTicket.STATUS_SENT)
+        fields = mock_client.return_value.create_ticket.call_args.args[1]
+        self.assertEqual(fields["ticket_form_id"], int(context["form_id"]))
+        self.assertIsNone(fields["brand_id"])
+        self.assertEqual(fields["product"], "enterprise-firefox")
+        self.assertEqual(fields["origin"], SupportTicket.Origin.ENTERPRISE)
+        self.assertEqual(fields["organization_id"], "321")
 
     @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
     def test_process_failed_tickets_ignores_other_statuses(self, mock_send):

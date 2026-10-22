@@ -16,6 +16,55 @@ _HIERARCHY_LOCK_KEY = int.from_bytes(
 )
 
 
+def company_organization_ids(group_ids, *, using="default"):
+    profiles = apps.get_model("groups", "GroupProfile").objects.db_manager(using)
+    return (
+        profiles.containing_groups(group_ids)
+        .exclude(zendesk_organization__zendesk_id__isnull=True)
+        .exclude(zendesk_organization__zendesk_id="")
+        .values_list("zendesk_organization__zendesk_id", flat=True)
+    )
+
+
+def queue_enterprise_zendesk_sync(user_ids, *, using="default", removed_organization_ids=()):
+    """Reconcile each affected user after commit, including deleted organization links."""
+    # Break the GroupProfile -> managers -> membership -> tasks -> GroupProfile import cycle.
+    from kitsune.groups.tasks import (
+        remove_stale_zendesk_memberships,
+        sync_enterprise_zendesk_membership,
+    )
+
+    removed_organization_ids = tuple(sorted(set(removed_organization_ids)))
+    user_ids = set(user_ids)
+    if removed_organization_ids:
+        profiles = apps.get_model("users", "Profile").all_profiles.using(using)
+        for user_id, zendesk_user_id in (
+            profiles.filter(user_id__in=user_ids)
+            .exclude(zendesk_id="")
+            .values_list("user_id", "zendesk_id")
+        ):
+            transaction.on_commit(
+                lambda member_id=user_id, remote_id=zendesk_user_id: (
+                    remove_stale_zendesk_memberships.delay(
+                        member_id, remote_id, removed_organization_ids
+                    )
+                ),
+                using=using,
+                robust=True,
+            )
+    kwargs = (
+        {"removed_organization_ids": removed_organization_ids} if removed_organization_ids else {}
+    )
+    for user_id in user_ids:
+        transaction.on_commit(
+            lambda member_id=user_id: sync_enterprise_zendesk_membership.delay(
+                member_id, **kwargs
+            ),
+            using=using,
+            robust=True,
+        )
+
+
 @contextmanager
 def lock_enterprise_hierarchy(*, using="default", exclusive=False):
     """Hold the tree stable until commit, before locking company or user rows.
@@ -33,7 +82,8 @@ def lock_enterprise_hierarchy(*, using="default", exclusive=False):
         yield
 
 
-def _enterprise_profiles(using):
+def enterprise_profiles(using="default"):
+    """Return profiles below the configured enterprise root, excluding the root."""
     # The manager calls the move guard, so importing GroupProfile here would cycle.
     profiles = apps.get_model("groups", "GroupProfile").objects.using(using)
     root_path = (
@@ -47,7 +97,7 @@ def _enterprise_profiles(using):
 
 
 def _company_paths(group_ids, using):
-    profiles = _enterprise_profiles(using)
+    profiles = enterprise_profiles(using)
     company_path_length = profiles.model.steplen * 2
     companies = defaultdict(set)
     for group_id, path in profiles.filter(group_id__in=group_ids).values_list("group_id", "path"):
@@ -121,7 +171,7 @@ def guard_enterprise_memberships(user_ids, group_ids, *, replace=False, using="d
 
 
 def _profile_companies(profile_ids, using):
-    profiles = _enterprise_profiles(using)
+    profiles = enterprise_profiles(using)
     company_path_length = profiles.model.steplen * 2
     companies = dict(profiles.filter(depth=2).values_list("path", "pk"))
     return {
@@ -134,7 +184,7 @@ def _profile_companies(profile_ids, using):
 
 def validate_enterprise_group_memberships(profile, *, using="default"):
     """Validate an inserted/reassigned profile while its exclusive gate is held."""
-    if not _enterprise_profiles(using).filter(pk=profile.pk).exists():
+    if not enterprise_profiles(using).filter(pk=profile.pk).exists():
         return
     user_ids = tuple(
         User.groups.through.objects.using(using)
@@ -143,6 +193,7 @@ def validate_enterprise_group_memberships(profile, *, using="default"):
     )
     _lock_users(user_ids, using)
     _validate_memberships(user_ids, (), replace=False, using=using, check_existing=True)
+    queue_enterprise_zendesk_sync(user_ids, using=using)
 
 
 @contextmanager
@@ -163,6 +214,14 @@ def guard_enterprise_group_move(node, target, *, using="default"):
                 .values_list("pk", flat=True)
             )
             before = _profile_companies(profile_ids, using)
+            organization_ids = tuple(
+                apps.get_model("customercare", "ZendeskOrganization")
+                .objects.using(using)
+                .filter(group_profile_id__in={company_id for _, company_id in before.values()})
+                .exclude(zendesk_id__isnull=True)
+                .exclude(zendesk_id="")
+                .values_list("zendesk_id", flat=True)
+            )
             yield
             after = _profile_companies(profile_ids, using)
             company_ids = {company_id for _, company_id in after.values()}
@@ -198,6 +257,9 @@ def guard_enterprise_group_move(node, target, *, using="default"):
                 _lock_users(user_ids, using)
                 _validate_memberships(
                     user_ids, (), replace=False, using=using, check_existing=True
+                )
+                queue_enterprise_zendesk_sync(
+                    user_ids, using=using, removed_organization_ids=organization_ids
                 )
     finally:
         # treebeard refreshes these objects before validation; restore them on rollback too.

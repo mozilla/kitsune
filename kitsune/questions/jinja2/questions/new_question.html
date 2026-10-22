@@ -35,7 +35,7 @@
 {% block major_detail_instructions %}
   <h2 class="sumo-page-heading">
     {% if current_support_type == SUPPORT_TYPE_ZENDESK %}
-      {% if is_enterprise %}
+      {% if current_product and current_product.slug == 'firefox-enterprise' %}
         {# L10n: A header, displayed for enterprise users when asking a new question or as a title of the Still Need Help banner. Attention: This is a brand name that should not be tranlsated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
         {{ _('Firefox Professional Support') }}
       {% else %}

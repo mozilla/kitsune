@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.utils import get_deleted_objects
 from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest
 from django.utils.text import capfirst
@@ -11,7 +11,10 @@ from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
 from kitsune.groups.membership import (
+    company_organization_ids,
+    enterprise_profiles,
     lock_enterprise_hierarchy,
+    queue_enterprise_zendesk_sync,
     validate_enterprise_group_memberships,
 )
 from kitsune.groups.models import GroupProfile
@@ -32,6 +35,19 @@ class GroupProfileAdminForm(movenodeform_factory(GroupProfile)):  # type: ignore
         return cleaned
 
     def save(self, commit=True):
+        if self.instance.pk and "group" in self.changed_data:
+            using = self.instance._state.db or "default"
+            if enterprise_profiles(using).filter(pk=self.instance.pk).exists():
+                # Treebeard saves the reassigned group before save_model or its move guard.
+                queue_enterprise_zendesk_sync(
+                    User.groups.through.objects.using(using)
+                    .filter(group_id=self.initial["group"])
+                    .values_list("user_id", flat=True),
+                    using=using,
+                    removed_organization_ids=company_organization_ids(
+                        (self.initial["group"],), using=using
+                    ),
+                )
         reference_node = self.cleaned_data.get("treebeard_ref_node")
         position = self.cleaned_data.get("treebeard_position")
         if (

@@ -16,16 +16,20 @@ from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import SupportTicket, accepted_context_for
 from kitsune.customercare.tests import SupportTicketFactory
+from kitsune.customercare.zendesk import ENTERPRISE_SUPPORT_TAG
 from kitsune.groups.models import GroupProfile
 from kitsune.journal.models import RECORD_INFO, Record
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportCoverageFactory,
     SupportOrganizationFactory,
     TopicFactory,
     ZendeskConfigFactory,
+    ZendeskTopicConfigurationFactory,
+    ZendeskTopicFactory,
 )
 from kitsune.sumo.tests import TestCase, translated_db_strings
 from kitsune.sumo.urlresolvers import reverse as reverse_locale
@@ -1102,3 +1106,60 @@ class ChatJWTViewTests(TestCase):
             response = self.client.post(self._url())
 
         self.assertEqual(429, response.status_code)
+
+
+class UpdateTopicTests(TestCase):
+    def test_preserves_system_tags_and_accepted_automation_tags(self):
+        coverage = SupportCoverageFactory()
+        topic = TopicFactory(
+            products=[coverage.product], title="Deployment", legacy_tag="technical"
+        )
+        zd_topic = ZendeskTopicFactory(topic=topic, automation_tags=["accepted-automation"])
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=coverage.zendesk_config, zendesk_topic=zd_topic
+        )
+        kept_tags = ["loginless_ticket", "stage", "other", ENTERPRISE_SUPPORT_TAG, "seg-rel-esr"]
+        ticket = SupportTicketFactory(
+            product=coverage.product,
+            origin=SupportTicket.Origin.ENTERPRISE,
+            coverage=coverage,
+            accepted_context=accepted_context_for(
+                coverage.product, coverage.zendesk_config, coverage
+            ),
+            zendesk_tags=[*kept_tags, "old-topic", "old-automation"],
+        )
+        zd_topic.automation_tags = ["changed-automation"]
+        zd_topic.save()
+        self.client.force_login(UserFactory(is_superuser=True))
+
+        response = self.client.post(
+            reverse_locale("customercare.update_topic", args=[ticket.pk]),
+            data=json.dumps({"topic": topic.pk}),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.topic, topic)
+        self.assertCountEqual(
+            ticket.zendesk_tags,
+            [*kept_tags, *topic.tier_tags, "accepted-automation", "technical"],
+        )
+
+    def test_legacy_ticket_without_config_can_change_topic(self):
+        ticket = SupportTicketFactory(accepted_context={}, zendesk_tags=["seg-rel-esr"])
+        topic = TopicFactory(products=[ticket.product], title="Deployment")
+        self.client.force_login(UserFactory(is_superuser=True))
+
+        response = self.client.post(
+            reverse_locale("customercare.update_topic", args=[ticket.pk]),
+            data=json.dumps({"topic": topic.pk}),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.topic, topic)
+        self.assertCountEqual(ticket.zendesk_tags, ["seg-rel-esr", "undefined", *topic.tier_tags])

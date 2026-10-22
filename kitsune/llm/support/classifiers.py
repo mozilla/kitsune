@@ -7,7 +7,7 @@ from kitsune.llm.spam.classifier import (
     classify_spam,
     determine_action_from_spam_result,
 )
-from kitsune.products.models import Product, ProductSupportConfig, ZendeskTopic
+from kitsune.products.models import Product, Topic, ZendeskTopic
 from kitsune.products.utils import get_taxonomy
 
 if TYPE_CHECKING:
@@ -131,22 +131,20 @@ def classify_zendesk_submission(submission: SupportTicket) -> dict[str, Any]:
 
     # Pass the user's form selection as a hint for topic classification. Only when the
     # ZendeskTopic maps to a taxonomy topic, since the classifier picks from topic titles.
-    if submission.category:
+    # Accepted tickets keep the mapping they were submitted with.
+    selected_topic = None
+    if submission.accepted_context:
+        topic_id = submission.accepted_context.get("selected_topic_id")
+        selected_topic = Topic.objects.filter(pk=topic_id).first() if topic_id else None
+    elif submission.category:
         zd_topic = (
             ZendeskTopic.objects.filter(slug=submission.category).select_related("topic").first()
         )
-        if zd_topic and zd_topic.topic_id:
-            payload["selected_topic"] = zd_topic.topic.title
+        selected_topic = zd_topic.topic if zd_topic else None
+    if selected_topic:
+        payload["selected_topic"] = selected_topic.title
 
-    # Check if spam moderation should be skipped for this product
-    skip_spam = False
-    try:
-        config = product.support_configs.get(is_active=True)
-        if config.zendesk_config and config.zendesk_config.skip_spam_moderation:
-            skip_spam = True
-    except ProductSupportConfig.DoesNotExist:
-        # If we can't determine config, fall back to normal spam checking
-        pass
+    skip_spam = submission.context["skip_spam"]
 
     base_result: dict[str, Any] = {
         "spam_result": {},
@@ -156,7 +154,7 @@ def classify_zendesk_submission(submission: SupportTicket) -> dict[str, Any]:
 
     def zendesk_on_reassignment(product_result: dict[str, Any], new_product: Product):
         """Handle product reassignment for Zendesk tickets."""
-        if product.has_ticketing_support:
+        if submission.accepted_context or product.has_ticketing_support:
             # Original product has ticketing support - send to Zendesk with "other" tag, skip topic classification
             return {
                 "action": ModerationAction.NOT_SPAM,

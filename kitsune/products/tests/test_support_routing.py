@@ -9,7 +9,12 @@ from django.utils import timezone
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory
 from kitsune.products.models import ProductSupportConfig, SupportContract
-from kitsune.products.routing import ENTERPRISE_SUPPORT, PRODUCT_SUPPORT, route_support
+from kitsune.products.routing import (
+    ENTERPRISE_SUPPORT,
+    PRODUCT_SUPPORT,
+    SupportForm,
+    route_support,
+)
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
@@ -35,10 +40,20 @@ class SupportRoutingTests(TestCase):
         request = self.factory.get("/")
         request.user = self.user
 
-        product_support = route_support(request, self.product).product_support
+        route = route_support(request, self.product)
 
-        self.assertIsNone(product_support.support_type)
-        self.assertFalse(product_support.can_switch)
+        self.assertIsNone(route.product_support.support_type)
+        self.assertFalse(route.product_support.can_switch)
+        self.assertEqual(route.aaq_action, SupportForm())
+        for action in (
+            ProductSupportConfig.SUPPORT_TYPE_FORUM,
+            PRODUCT_SUPPORT,
+            ENTERPRISE_SUPPORT,
+            None,
+            "invalid",
+        ):
+            with self.subTest(action=action):
+                self.assertFalse(route.allows(action))
 
     def test_forum_only_routing(self):
         """Forum-only products cannot switch channels."""
@@ -273,6 +288,33 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
         self.assertFalse(product_support.can_switch)
 
+    def test_single_channel_forms_ignore_unavailable_channel_choices(self):
+        for support_type, requested_type, action in (
+            ("forum", "zendesk", "forum"),
+            ("zendesk", "forum", PRODUCT_SUPPORT),
+        ):
+            with self.subTest(support_type=support_type):
+                product = ProductFactory()
+                ProductSupportConfigFactory(
+                    product=product,
+                    forum_config=(
+                        AAQConfigFactory(enabled_locales=[QuestionLocaleFactory(locale="en-US")])
+                        if support_type == "forum"
+                        else None
+                    ),
+                    zendesk_config=ZendeskConfigFactory() if support_type == "zendesk" else None,
+                )
+                request = self.factory.get("/", {"support_type": requested_type})
+                request.user = self.user
+                route = route_support(request, product)
+                self.assertEqual(route.aaq_action, SupportForm(action))
+                self.assertEqual(route.aaq_action.support_type, support_type)
+                self.assertTrue(route.allows(action))
+                other_action = PRODUCT_SUPPORT if action == "forum" else "forum"
+                self.assertFalse(route.allows(other_action))
+                self.assertFalse(route.allows(ENTERPRISE_SUPPORT))
+                self.assertFalse(route.allows("zendesk"))
+
     def test_no_support_channels_constraint(self):
         """Database constraint prevents config with neither forum nor Zendesk."""
         with self.assertRaises(IntegrityError) as context:
@@ -445,8 +487,8 @@ class EnterpriseSupportRoutingTests(TestCase):
         )
         self.coverage = SupportCoverageFactory(contract=self.contract, product=self.product)
 
-    def route(self, user=None, product=None):
-        request = RequestFactory().get("/")
+    def route(self, user=None, product=None, **params):
+        request = RequestFactory().get("/", params)
         request.user = user if user is not None else self.user
         return route_support(request, product if product is not None else self.product)
 
@@ -579,30 +621,58 @@ class EnterpriseSupportRoutingTests(TestCase):
                 self.assertEqual(route.product_support.has_ticket, product_support)
                 self.assertEqual(route.preferred_ticket, expected)
 
-    def test_ticket_weights_change_preference_not_routing(self):
+    def test_hybrid_form_defaults_and_explicit_channels(self):
+        config = ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=AAQConfigFactory(),
+            zendesk_config=ZendeskConfigFactory(),
+        )
+        for default, requested, expected in (
+            ("forum", None, SupportForm(ENTERPRISE_SUPPORT, can_switch=True)),
+            ("zendesk", None, SupportForm(ENTERPRISE_SUPPORT, can_switch=True)),
+            ("forum", "invalid", SupportForm(ENTERPRISE_SUPPORT, can_switch=True)),
+            ("zendesk", "forum", SupportForm("forum", can_switch=True)),
+            ("forum", "zendesk", SupportForm(ENTERPRISE_SUPPORT, can_switch=True)),
+        ):
+            with self.subTest(default=default, requested=requested):
+                config.default_support_type = default
+                config.save()
+                route = self.route(**({"support_type": requested} if requested else {}))
+                self.assertEqual(route.aaq_action, expected)
+                self.assertTrue(route.allows("forum"))
+                self.assertFalse(route.allows(PRODUCT_SUPPORT))
+                self.assertTrue(route.allows(ENTERPRISE_SUPPORT, str(self.coverage.pk)))
+
+    def test_ticket_weights_prefer_enterprise_without_changing_forum_access(self):
         ProductSupportConfigFactory(
             product=self.product,
             forum_config=AAQConfigFactory(),
             zendesk_config=ZendeskConfigFactory(),
             default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
         )
-        for weights, preferred in (
-            ({ENTERPRISE_SUPPORT: 20, PRODUCT_SUPPORT: 10}, ENTERPRISE_SUPPORT),
-            ({ENTERPRISE_SUPPORT: 10, PRODUCT_SUPPORT: 20}, PRODUCT_SUPPORT),
-            ({ENTERPRISE_SUPPORT: 10, PRODUCT_SUPPORT: 10}, ENTERPRISE_SUPPORT),
+        for weights in (
+            {ENTERPRISE_SUPPORT: 20, PRODUCT_SUPPORT: 10},
+            {ENTERPRISE_SUPPORT: 10, PRODUCT_SUPPORT: 10},
         ):
             with (
                 self.subTest(weights=weights),
                 patch.dict("kitsune.products.routing.TICKET_WEIGHTS", weights),
             ):
                 route = self.route()
-                self.assertEqual(route.preferred_ticket, preferred)
+                self.assertEqual(route.preferred_ticket, ENTERPRISE_SUPPORT)
                 self.assertTrue(route.enterprise_support.eligible)
                 self.assertTrue(route.product_support.has_ticket)
                 self.assertEqual(
                     route.product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM
                 )
                 self.assertTrue(route.product_support.can_switch)
+                self.assertEqual(
+                    route.aaq_action, SupportForm(ENTERPRISE_SUPPORT, can_switch=True)
+                )
+                self.assertFalse(route.allows(PRODUCT_SUPPORT))
+                self.assertTrue(route.allows(ENTERPRISE_SUPPORT, str(self.coverage.pk)))
+                forum_route = self.route(support_type="forum")
+                self.assertEqual(forum_route.aaq_action, SupportForm("forum", can_switch=True))
 
     def test_repeated_product_support_routing_needs_no_queries(self):
         ProductSupportConfigFactory(product=self.product, zendesk_config=ZendeskConfigFactory())

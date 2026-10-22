@@ -32,7 +32,7 @@ class SupportTicketAdmin(admin.ModelAdmin):
     list_display_links = ("id", "subject")
     list_filter = ("submission_status", "product", "created")
     search_fields = ("subject", "description", "email", "zendesk_ticket_id")
-    readonly_fields = ("created", "zendesk_ticket_id")
+    readonly_fields = ("created", "zendesk_ticket_id", "origin", "coverage", "accepted_context")
     date_hierarchy = "created"
     ordering = ("-created",)
     raw_id_fields = ("user",)

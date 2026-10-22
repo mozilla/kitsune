@@ -17,6 +17,7 @@ from kitsune.customercare.models import SupportTicket
 
 NO_RESPONSE = "No response provided."
 LOGINLESS_TAG = "loginless_ticket"
+ENTERPRISE_SUPPORT_TAG = "seg-enterprise-support"
 CHAT_REVOKED_TAG = "chat-access-revoked"
 OAUTH_SCOPES = "read users:write tickets:write organizations:write"
 OAUTH_EXPIRY_MARGIN = 60
@@ -135,16 +136,23 @@ class ZendeskClient:
     def ensure_organization(
         self, *, name: str, external_id: str, zendesk_id: str | None = None
     ) -> str:
-        """Link a saved organization or provision using its stable local UUID."""
+        """Link a saved organization or recover creation races using its stable UUID."""
+        if zendesk_id not in (None, ""):
+            return self.validate_organization(zendesk_id)
+        if not external_id:
+            raise ZendeskProvisioningConflict("zendesk_conflict")
         try:
-            if zendesk_id is not None:
-                return self.validate_organization(zendesk_id)
-            if not external_id:
-                raise ZendeskProvisioningConflict("zendesk_conflict")
             organization = self.client.organizations.create_or_update(
                 ZendeskOrganization(name=name, external_id=external_id)
             )
         except (APIException, requests.HTTPError) as exc:
+            if exc.response is not None and exc.response.status_code == 422:
+                try:
+                    for organization in self.client.organizations(external_ids=[external_id]):
+                        if (organization.external_id or "").casefold() == external_id.casefold():
+                            return canonical_zendesk_id(organization.id)
+                except (APIException, requests.HTTPError) as read_exc:
+                    ZendeskProvisioningConflict.raise_from(read_exc)
             ZendeskProvisioningConflict.raise_from(exc)
         if (organization.external_id or "").casefold() != external_id.casefold():
             raise ZendeskProvisioningConflict("zendesk_conflict")
@@ -162,6 +170,19 @@ class ZendeskClient:
             if remote_uid and (not fxa_uid or remote_uid != fxa_uid):
                 raise ZendeskProvisioningConflict("account_conflict")
         return canonical_zendesk_id(user.id)
+
+    def validate_removal_user(self, zendesk_id: str) -> str:
+        """Validate a saved end user for removal, allowing activity and identity drift."""
+        saved_id = canonical_zendesk_id(zendesk_id)
+        try:
+            user = self.client.users(id=int(saved_id))
+        except (APIException, requests.HTTPError) as exc:
+            ZendeskProvisioningConflict.raise_from(exc)
+        if canonical_zendesk_id(user.id) != saved_id or user.role != "end-user":
+            raise ZendeskProvisioningConflict("account_conflict")
+        if user.shared or user.shared_agent or user.chat_only or user.custom_role_id:
+            raise ZendeskProvisioningConflict("account_conflict")
+        return saved_id
 
     def ensure_user(
         self,
@@ -236,33 +257,83 @@ class ZendeskClient:
         ):
             raise ZendeskProvisioningConflict("account_conflict")
 
-    def ensure_organization_membership(self, *, user_id: str, organization_id: str) -> None:
-        """Add the target membership without removing or replacing another company."""
+    def get_organization_memberships(self, *, user_id: str) -> list[OrganizationMembership]:
+        """Read a complete snapshot before mutations can shift memberships between pages."""
+        user_id = canonical_zendesk_id(user_id)
+        try:
+            return list(self.client.users.organization_memberships(user=int(user_id)))
+        except (APIException, requests.HTTPError) as exc:
+            ZendeskProvisioningConflict.raise_from(exc)
+
+    def has_organization_membership(self, *, user_id: str, organization_id: str) -> bool:
+        """Read whether this user currently belongs to the target organization."""
         user_id = canonical_zendesk_id(user_id)
         organization_id = canonical_zendesk_id(organization_id)
+        try:
+            for membership in self.client.users.organization_memberships(user=int(user_id)):
+                if (
+                    canonical_zendesk_id(membership.user_id) == user_id
+                    and canonical_zendesk_id(membership.organization_id) == organization_id
+                ):
+                    return True
+        except (APIException, requests.HTTPError) as exc:
+            ZendeskProvisioningConflict.raise_from(exc)
+        return False
+
+    def ensure_organization_membership(
+        self, *, user_id: str, organization_id: str, memberships=None
+    ) -> None:
+        """Add the target membership, reusing an optional snapshot only for the initial check."""
+        user_id = canonical_zendesk_id(user_id)
+        organization_id = canonical_zendesk_id(organization_id)
+        if memberships is None:
+            if self.has_organization_membership(user_id=user_id, organization_id=organization_id):
+                return
+        elif any(
+            canonical_zendesk_id(membership.user_id) == user_id
+            and canonical_zendesk_id(membership.organization_id) == organization_id
+            for membership in memberships
+        ):
+            return
         try:
             membership = self.client.organization_memberships.create(
                 OrganizationMembership(user_id=int(user_id), organization_id=int(organization_id))
             )
         except (APIException, requests.HTTPError) as exc:
             if exc.response is not None and exc.response.status_code == 422:
-                try:
-                    for membership in self.client.users.organization_memberships(
-                        user=int(user_id)
-                    ):
-                        if (
-                            canonical_zendesk_id(membership.user_id) == user_id
-                            and canonical_zendesk_id(membership.organization_id) == organization_id
-                        ):
-                            return
-                except (APIException, requests.HTTPError) as read_exc:
-                    ZendeskProvisioningConflict.raise_from(read_exc)
+                if self.has_organization_membership(
+                    user_id=user_id, organization_id=organization_id
+                ):
+                    return
             ZendeskProvisioningConflict.raise_from(exc)
         if (
             canonical_zendesk_id(membership.user_id) != user_id
             or canonical_zendesk_id(membership.organization_id) != organization_id
         ):
             raise ZendeskProvisioningConflict("zendesk_conflict")
+
+    def remove_organization_memberships(
+        self, *, user_id: str, organization_ids, memberships=None
+    ) -> None:
+        """Remove only selected organizations, reusing an optional complete snapshot."""
+        user_id = canonical_zendesk_id(user_id)
+        organization_ids = {
+            canonical_zendesk_id(organization_id) for organization_id in organization_ids
+        }
+        if memberships is None:
+            memberships = self.get_organization_memberships(user_id=user_id)
+        for membership in memberships:
+            organization_id = canonical_zendesk_id(membership.organization_id)
+            if organization_id not in organization_ids:
+                continue
+            try:
+                self.client.organization_memberships.delete(membership)
+            except (APIException, requests.HTTPError) as exc:
+                if isinstance(exc, RecordNotFoundException) or (
+                    exc.response is not None and exc.response.status_code == 404
+                ):
+                    continue
+                ZendeskProvisioningConflict.raise_from(exc)
 
     def _user_to_zendesk_user(self, user, email):
         """Given a Django user, return a Zendesk user."""
@@ -381,7 +452,7 @@ class ZendeskClient:
             ticket_kwargs["brand_id"] = int(brand_id)
 
         tags = []
-        # If this is the normal, athenticated form we want to use the category field
+        is_enterprise = ticket_fields.get("origin") == SupportTicket.Origin.ENTERPRISE
         if user and user.is_authenticated:
             custom_fields.append(
                 {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": ticket_fields.get("category")},
@@ -400,9 +471,11 @@ class ZendeskClient:
             )
             tags.append(LOGINLESS_TAG)
 
-        zendesk_tags = ticket_fields.get("zendesk_tags", [])
-        if zendesk_tags:
-            tags.extend(zendesk_tags)
+        tags.extend(
+            tag for tag in ticket_fields.get("zendesk_tags", []) if tag != ENTERPRISE_SUPPORT_TAG
+        )
+        if is_enterprise:
+            tags.append(ENTERPRISE_SUPPORT_TAG)
 
         if tags:
             ticket_kwargs.update({"tags": tags})
@@ -419,6 +492,15 @@ class ZendeskClient:
                 ticket.requester_id = self.create_user(user).id
         else:
             ticket.requester_id = self.create_user(user, email=ticket_fields.get("email", "")).id
+        if "organization_id" in ticket_fields:
+            organization_id = canonical_zendesk_id(ticket_fields["organization_id"])
+            if not self.has_organization_membership(
+                user_id=ticket.requester_id, organization_id=organization_id
+            ):
+                raise ValueError(
+                    "The requester is not a member of the company's Zendesk organization"
+                )
+            ticket.organization_id = int(organization_id)
         return self.client.tickets.create(ticket)
 
     def get_ticket(self, ticket_id):

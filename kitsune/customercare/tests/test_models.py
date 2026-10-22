@@ -2,15 +2,24 @@ from django.contrib.auth.models import AnonymousUser, Group
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import (
+    MissingTicketContext,
+    SupportTicket,
+    ZendeskOrganization,
+    accepted_context_for,
+)
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import GroupProfile
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportCoverageFactory,
     SupportOrganizationFactory,
+    TopicFactory,
     ZendeskConfigFactory,
+    ZendeskTopicConfigurationFactory,
 )
+from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -68,6 +77,91 @@ class SupportTicketModelTests(TestCase):
         str_repr = str(ticket)
         self.assertIn("Test Subject", str_repr)
         self.assertIn("processing_failed", str_repr)
+
+
+class AcceptedTicketContextTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory(slug="mozilla-vpn")
+        self.config = ZendeskConfigFactory(ticket_form_id="42", brand_id="17")
+        ProductSupportConfigFactory(product=self.product, zendesk_config=self.config)
+        self.topic = TopicFactory(products=[self.product])
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.config,
+            zendesk_topic__topic=self.topic,
+            zendesk_topic__slug="a-first",
+            zendesk_topic__automation_tags=["vpn-automation"],
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.config, zendesk_topic__automation_tags=["unlinked"]
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_topic__topic=self.topic, zendesk_topic__automation_tags=["other-config"]
+        )
+
+    def test_product_context_snapshots_config_and_vpn_alias(self):
+        self.assertEqual(
+            accepted_context_for(self.product, self.config),
+            {
+                "form_id": "42",
+                "brand_id": "17",
+                "product_value": "firefox-private-network-vpn",
+                "skip_spam": False,
+                "automation_tags": {str(self.topic.pk): ["vpn-automation"]},
+            },
+        )
+        self.product.slug = "mozilla-account"
+        self.config.brand_id = ""
+        self.config.skip_spam_moderation = True
+        context = accepted_context_for(self.product, self.config)
+        self.assertEqual(context["product_value"], "mozilla-account")
+        self.assertEqual(context["brand_id"], "")
+        self.assertTrue(context["skip_spam"])
+
+    def test_enterprise_context_snapshots_coverage_and_company(self):
+        coverage = SupportCoverageFactory(
+            product=self.product,
+            zendesk_config=self.config,
+            zendesk_product_value="enterprise-vpn",
+        )
+        company = coverage.contract.company
+        context = accepted_context_for(self.product, self.config, coverage)
+        self.assertEqual(context["product_value"], "enterprise-vpn")
+        self.assertTrue(context["skip_spam"])
+        self.assertEqual(context["coverage_id"], coverage.pk)
+        self.assertEqual(
+            context["contract"], {"id": coverage.contract_id, "name": coverage.contract.name}
+        )
+        self.assertEqual(
+            context["company"],
+            {
+                "external_id": str(
+                    ZendeskOrganization.objects.get(group_profile=company).external_id
+                ),
+                "name": company.group.name,
+            },
+        )
+        self.assertEqual(context, accepted_context_for(self.product, self.config, coverage))
+
+    def test_first_zendesk_topic_by_slug_supplies_automation_tags(self):
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.config,
+            zendesk_topic__topic=self.topic,
+            zendesk_topic__slug="z-last",
+            zendesk_topic__automation_tags=["other-automation"],
+        )
+        context = accepted_context_for(self.product, self.config)
+        self.assertEqual(context["automation_tags"], {str(self.topic.pk): ["vpn-automation"]})
+
+    def test_missing_live_zendesk_config_raises_missing_context(self):
+        config = ProductSupportConfigFactory(
+            product=ProductFactory(), forum_config=AAQConfigFactory(), zendesk_config=None
+        )
+        ticket = SupportTicketFactory(product=config.product)
+        with self.assertRaisesMessage(MissingTicketContext, "active Zendesk config"):
+            ticket.context
+        config.delete()
+        with self.assertRaisesMessage(MissingTicketContext, "active Zendesk config"):
+            ticket.context
 
 
 class PublicCommentsTests(TestCase):

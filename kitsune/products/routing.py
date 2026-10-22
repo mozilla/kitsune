@@ -36,6 +36,18 @@ class EnterpriseSupport:
         return self.coverage is not None
 
 
+@dataclass(frozen=True)
+class SupportForm:
+    action: str | None = None
+    can_switch: bool = False
+
+    @property
+    def support_type(self) -> str | None:
+        if self.action == ProductSupportConfig.SUPPORT_TYPE_FORUM:
+            return ProductSupportConfig.SUPPORT_TYPE_FORUM
+        return ProductSupportConfig.SUPPORT_TYPE_ZENDESK if self.action else None
+
+
 class SupportRoute:
     def __init__(self, request, product):
         self.request = request
@@ -139,6 +151,43 @@ class SupportRoute:
         if self.product_support.has_ticket:
             legs.append(PRODUCT_SUPPORT)
         return max(legs, key=TICKET_WEIGHTS.__getitem__, default=None)
+
+    @cached_property
+    def aaq_action(self) -> SupportForm:
+        has_forum = self.allows(ProductSupportConfig.SUPPORT_TYPE_FORUM)
+        preferred_ticket = self.preferred_ticket
+        requested_type = self.request.GET.get("support_type")
+        if requested_type == ProductSupportConfig.SUPPORT_TYPE_FORUM and has_forum:
+            action: str | None = ProductSupportConfig.SUPPORT_TYPE_FORUM
+        elif preferred_ticket and (
+            requested_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK
+            or preferred_ticket == ENTERPRISE_SUPPORT
+        ):
+            action = preferred_ticket
+        elif (
+            has_forum
+            and self.product_support.support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM
+        ):
+            action = ProductSupportConfig.SUPPORT_TYPE_FORUM
+        else:
+            action = preferred_ticket
+        return SupportForm(
+            action=action,
+            can_switch=has_forum and preferred_ticket is not None,
+        )
+
+    def allows(self, action, coverage_id=None) -> bool:
+        if action == ENTERPRISE_SUPPORT:
+            coverage = self.enterprise_support.coverage
+            return coverage is not None and str(coverage.pk) == coverage_id
+        if action == PRODUCT_SUPPORT:
+            return self.preferred_ticket == PRODUCT_SUPPORT
+        if action == ProductSupportConfig.SUPPORT_TYPE_FORUM:
+            return (
+                self.product_support.support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM
+                or self.product_support.can_switch
+            )
+        return False
 
 
 def route_support(request, product) -> SupportRoute:

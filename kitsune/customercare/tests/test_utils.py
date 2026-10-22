@@ -1,3 +1,4 @@
+from datetime import timedelta
 from unittest.mock import MagicMock, Mock, patch
 
 import requests
@@ -9,10 +10,11 @@ from django.utils.dateparse import parse_datetime
 from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import SupportTicket, ZendeskOrganization, accepted_context_for
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.customercare.utils import (
     adopt_chat_ticket,
+    create_support_ticket,
     generate_classification_tags,
     process_zendesk_classification_result,
     resolve_chat_eligibility,
@@ -21,12 +23,15 @@ from kitsune.customercare.utils import (
     send_support_ticket_to_zendesk,
     sync_ticket_from_zendesk,
 )
+from kitsune.customercare.zendesk import ENTERPRISE_SUPPORT_TAG
+from kitsune.flagit.models import FlaggedObject
 from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    SupportCoverageFactory,
     SupportOrganizationFactory,
     TopicFactory,
     ZendeskConfigFactory,
@@ -35,6 +40,7 @@ from kitsune.products.tests import (
 )
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
 
@@ -45,10 +51,12 @@ class GenerateClassificationTagsTests(TestCase):
     def setUp(self):
         """Set up test data."""
         self.product = ProductFactory(slug="firefox", title="Firefox")
+        self.zendesk_config = ZendeskConfigFactory()
+        ProductSupportConfigFactory(product=self.product, zendesk_config=self.zendesk_config)
 
     def test_no_topic_result_returns_undefined(self):
         """Test that missing topic_result returns ['undefined', 'general']."""
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {}
 
         tags = generate_classification_tags(submission, result)
@@ -57,7 +65,7 @@ class GenerateClassificationTagsTests(TestCase):
 
     def test_undefined_topic_returns_empty_list(self):
         """Test that 'Undefined' topic returns ['undefined', 'general']."""
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Undefined"}}
 
         tags = generate_classification_tags(submission, result)
@@ -66,7 +74,7 @@ class GenerateClassificationTagsTests(TestCase):
 
     def test_topic_not_found_in_db_returns_undefined(self):
         """Test that topic not found in database returns ['undefined', 'general']."""
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Nonexistent Topic"}}
 
         tags = generate_classification_tags(submission, result)
@@ -80,12 +88,25 @@ class GenerateClassificationTagsTests(TestCase):
         )
         topic.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Settings"}}
 
         tags = generate_classification_tags(submission, result)
 
         self.assertEqual(tags, ["t1-settings", "technical"])
+
+    def test_missing_context_preserves_topic_and_legacy_tags(self):
+        ProductSupportConfig.objects.filter(product=self.product).delete()
+        topic = TopicFactory(title="Settings", legacy_tag="technical", products=[self.product])
+        for origin in SupportTicket.Origin.values:
+            with self.subTest(origin=origin):
+                submission = SupportTicket(product=self.product, origin=origin)
+                self.assertEqual(
+                    generate_classification_tags(
+                        submission, {"topic_result": {"topic": topic.title}}
+                    ),
+                    ["t1-settings", "technical"],
+                )
 
     def test_two_tier_topic(self):
         """Test generating tags for a tier 2 topic."""
@@ -96,7 +117,7 @@ class GenerateClassificationTagsTests(TestCase):
         tier2 = TopicFactory(title="Notifications", parent=tier1, is_archived=False)
         tier2.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Notifications"}}
 
         tags = generate_classification_tags(submission, result)
@@ -116,7 +137,7 @@ class GenerateClassificationTagsTests(TestCase):
         tier3 = TopicFactory(title="Extensions", parent=tier2, is_archived=False)
         tier3.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Extensions"}}
 
         tags = generate_classification_tags(submission, result)
@@ -134,14 +155,14 @@ class GenerateClassificationTagsTests(TestCase):
         tier2 = TopicFactory(title="Sign in", parent=tier1, is_archived=False)
         tier2.products.add(self.product)
 
-        zendesk_config = ZendeskConfigFactory()
-        ProductSupportConfigFactory(product=self.product, zendesk_config=zendesk_config)
         zd_topic = ZendeskTopicFactory(
             topic=tier2, automation_tags=["ssa-sign-in-failure-automation"]
         )
-        ZendeskTopicConfigurationFactory(zendesk_config=zendesk_config, zendesk_topic=zd_topic)
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.zendesk_config, zendesk_topic=zd_topic
+        )
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Sign in"}}
 
         tags = generate_classification_tags(submission, result)
@@ -166,7 +187,7 @@ class GenerateClassificationTagsTests(TestCase):
         )
         tier1.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Billing and subscriptions"}}
 
         tags = generate_classification_tags(submission, result)
@@ -180,7 +201,7 @@ class GenerateClassificationTagsTests(TestCase):
         )
         tier1.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {
             "product_result": {"product": "Mozilla VPN"},
             "topic_result": {"topic": "Settings"},
@@ -197,7 +218,7 @@ class GenerateClassificationTagsTests(TestCase):
         topic = TopicFactory(title="Settings", parent=None, is_archived=True)
         topic.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Settings"}}
 
         tags = generate_classification_tags(submission, result)
@@ -228,6 +249,8 @@ class SendSupportTicketToZendeskTests(TestCase):
         self.submission.policy_distribution = ""
         self.submission.urgency = ""
         self.submission.zendesk_tags = []
+        self.submission.context = accepted_context_for(self.product, self.zendesk_config)
+        self.submission.origin = SupportTicket.Origin.PRODUCT
 
     @patch("kitsune.customercare.utils.ZendeskClient")
     def test_suspended_user_error_auto_rejects(self, mock_zendesk_client):
@@ -329,6 +352,226 @@ class SendSupportTicketToZendeskTests(TestCase):
         mock_flag_object.assert_called_once()
 
 
+class AcceptedTicketContextTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory(slug="mozilla-vpn")
+        self.zendesk_config = ZendeskConfigFactory(ticket_form_id="12345", brand_id="42")
+        self.support_config = ProductSupportConfigFactory(
+            product=self.product, zendesk_config=self.zendesk_config
+        )
+        self.coverage = SupportCoverageFactory(
+            product=self.product,
+            zendesk_config=self.zendesk_config,
+            zendesk_product_value="enterprise-vpn",
+        )
+        self.organization = ZendeskOrganization.objects.create(
+            group_profile=self.coverage.contract.company, zendesk_id="321"
+        )
+        self.user = UserFactory()
+        self.user.groups.add(self.coverage.contract.company.group)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_enterprise_creation_preserves_company_and_context(self, mock_classify):
+        ticket = create_support_ticket(
+            self.user,
+            self.product,
+            coverage=self.coverage,
+            accepted_context=accepted_context_for(
+                self.product, self.zendesk_config, self.coverage
+            ),
+            subject="Deployment help",
+        )
+
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.org_group, self.coverage.contract.company)
+        self.assertEqual(ticket.origin, SupportTicket.Origin.ENTERPRISE)
+        self.assertEqual(ticket.coverage, self.coverage)
+        self.assertEqual(ticket.accepted_context["product_value"], "enterprise-vpn")
+        self.assertTrue(ticket.accepted_context["skip_spam"])
+        self.assertNotIn(ENTERPRISE_SUPPORT_TAG, ticket.zendesk_tags)
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_send_uses_accepted_context_after_configuration_changes(self, mock_client):
+        tickets = [
+            SupportTicketFactory(
+                user=self.user,
+                product=self.product,
+                origin=origin,
+                coverage=coverage,
+                org_group=coverage.contract.company if coverage else None,
+                accepted_context=accepted_context_for(self.product, self.zendesk_config, coverage),
+            )
+            for origin, coverage in (
+                (SupportTicket.Origin.PRODUCT, None),
+                (SupportTicket.Origin.ENTERPRISE, self.coverage),
+            )
+        ]
+        replacement = ZendeskConfigFactory(ticket_form_id="67890", brand_id="99")
+        self.support_config.zendesk_config = replacement
+        self.support_config.save()
+        self.coverage.zendesk_config = replacement
+        self.coverage.zendesk_product_value = "changed-enterprise-vpn"
+        self.coverage.save()
+        self.zendesk_config.ticket_form_id = "54321"
+        self.zendesk_config.brand_id = "84"
+        self.zendesk_config.save()
+        contract = self.coverage.contract
+        contract.ends_on = timezone.localdate() - timedelta(days=1)
+        contract.starts_on = contract.ends_on - timedelta(days=365)
+        contract.save()
+
+        for ticket in tickets:
+            with self.subTest(origin=ticket.origin):
+                ticket.refresh_from_db()
+                mock_client.return_value.create_ticket.return_value = Mock(
+                    ticket=Mock(id=ticket.pk)
+                )
+                self.assertTrue(send_support_ticket_to_zendesk(ticket))
+                fields = mock_client.return_value.create_ticket.call_args.args[1]
+                self.assertEqual(fields["ticket_form_id"], 12345)
+                self.assertEqual(fields["brand_id"], 42)
+                self.assertEqual(fields["product"], ticket.accepted_context["product_value"])
+                self.assertEqual(fields["origin"], ticket.origin)
+                if ticket.origin == SupportTicket.Origin.ENTERPRISE:
+                    self.assertEqual(fields["organization_id"], self.organization.zendesk_id)
+                else:
+                    self.assertNotIn("organization_id", fields)
+
+    def test_automation_tags_use_snapshot_but_taxonomy_tags_stay_live(self):
+        topic = TopicFactory(products=[self.product], title="Deployment", legacy_tag="technical")
+        zd_topic = ZendeskTopicFactory(topic=topic, automation_tags=["accepted-automation"])
+        mapping = ZendeskTopicConfigurationFactory(
+            zendesk_config=self.zendesk_config, zendesk_topic=zd_topic
+        )
+        tickets = [
+            SupportTicket(
+                product=self.product,
+                origin=origin,
+                coverage=coverage,
+                accepted_context=accepted_context_for(self.product, self.zendesk_config, coverage),
+            )
+            for origin, coverage in (
+                (SupportTicket.Origin.PRODUCT, None),
+                (SupportTicket.Origin.ENTERPRISE, self.coverage),
+            )
+        ]
+        mapping.zendesk_topic = ZendeskTopicFactory(
+            topic=topic, automation_tags=["replacement-automation"]
+        )
+        mapping.save()
+        zd_topic.automation_tags = ["changed-automation"]
+        zd_topic.save()
+        topic.title = "Updated deployment"
+        topic.legacy_tag = "accounts"
+        topic.save()
+        result = {"topic_result": {"topic": topic.title}}
+
+        for ticket in tickets:
+            with self.subTest(origin=ticket.origin):
+                self.assertEqual(
+                    generate_classification_tags(ticket, result),
+                    [*topic.tier_tags, "accepted-automation", "accounts"],
+                )
+        self.assertEqual(
+            generate_classification_tags(SupportTicket(product=self.product), result),
+            [*topic.tier_tags, "replacement-automation", "accounts"],
+        )
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_legacy_product_ticket_uses_live_config(self, mock_client):
+        ticket = SupportTicketFactory(product=self.product, accepted_context={})
+        self.zendesk_config.ticket_form_id = "67890"
+        self.zendesk_config.brand_id = "99"
+        self.zendesk_config.save()
+        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=123))
+
+        self.assertTrue(send_support_ticket_to_zendesk(ticket))
+
+        fields = mock_client.return_value.create_ticket.call_args.args[1]
+        self.assertEqual(fields["ticket_form_id"], 67890)
+        self.assertEqual(fields["brand_id"], 99)
+        self.assertEqual(fields["product"], "firefox-private-network-vpn")
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_flag_release_sends_with_accepted_context(self, mock_client):
+        ticket = SupportTicketFactory(
+            user=self.user,
+            product=self.product,
+            origin=SupportTicket.Origin.ENTERPRISE,
+            coverage=self.coverage,
+            org_group=self.coverage.contract.company,
+            accepted_context=accepted_context_for(
+                self.product, self.zendesk_config, self.coverage
+            ),
+            submission_status=SupportTicket.STATUS_FLAGGED,
+        )
+        self.support_config.delete()
+        self.coverage.zendesk_config = ZendeskConfigFactory(ticket_form_id="67890", brand_id="99")
+        self.coverage.save()
+        moderator = UserFactory(is_superuser=True)
+        flag = FlaggedObject.objects.create(
+            content_object=ticket, creator=moderator, reason=FlaggedObject.REASON_SPAM
+        )
+        self.client.force_login(moderator)
+        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=789))
+
+        response = self.client.post(
+            reverse("flagit.update", args=[flag.pk]), {"status": FlaggedObject.FLAG_REJECTED}
+        )
+
+        self.assertEqual(response.status_code, 302)
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_SENT)
+        fields = mock_client.return_value.create_ticket.call_args.args[1]
+        self.assertEqual(fields["ticket_form_id"], 12345)
+        self.assertEqual(fields["brand_id"], 42)
+        self.assertEqual(fields["product"], "enterprise-vpn")
+        self.assertEqual(fields["origin"], SupportTicket.Origin.ENTERPRISE)
+        self.assertEqual(fields["organization_id"], self.organization.zendesk_id)
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_invalid_zendesk_ids_flag_instead_of_sending(self, mock_client):
+        for field, value in (
+            ("ticket_form_id", ""),
+            ("ticket_form_id", "invalid"),
+            ("brand_id", "invalid"),
+        ):
+            with self.subTest(field=field, value=value):
+                config = ZendeskConfigFactory(**{field: value})
+                ticket = SupportTicketFactory(
+                    product=self.product,
+                    accepted_context=accepted_context_for(self.product, config),
+                )
+
+                self.assertFalse(send_support_ticket_to_zendesk(ticket))
+
+                ticket.refresh_from_db()
+                self.assertEqual(ticket.submission_status, SupportTicket.STATUS_FLAGGED)
+                flag = FlaggedObject.objects.get(object_id=ticket.pk)
+                self.assertEqual(flag.reason, FlaggedObject.REASON_OTHER)
+                self.assertIn("invalid literal for int()", flag.notes)
+        mock_client.assert_not_called()
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_missing_context_flags_instead_of_sending(self, mock_client):
+        self.support_config.delete()
+        for origin in SupportTicket.Origin:
+            with self.subTest(origin=origin):
+                ticket = SupportTicketFactory(
+                    product=self.product, origin=origin, accepted_context={}
+                )
+
+                self.assertFalse(send_support_ticket_to_zendesk(ticket))
+
+                ticket.refresh_from_db()
+                self.assertEqual(ticket.submission_status, SupportTicket.STATUS_FLAGGED)
+                flag = FlaggedObject.objects.get(object_id=ticket.pk)
+                self.assertEqual(flag.reason, FlaggedObject.REASON_OTHER)
+                self.assertIn("Failed to send to Zendesk:", flag.notes)
+                self.assertFalse(ticket.zendesk_ticket_id)
+        mock_client.assert_not_called()
+
+
 class ProcessZendeskClassificationResultTests(TestCase):
     """Tests for process_zendesk_classification_result."""
 
@@ -351,6 +594,9 @@ class ProcessZendeskClassificationResultTests(TestCase):
             "loginless_ticket",
             "seg-rel-esr",
             "seg-policy-windows-gpo",
+            ENTERPRISE_SUPPORT_TAG,
+            "stage",
+            "obsolete-topic-tag",
         ]
         result = {
             "action": ModerationAction.NOT_SPAM,
@@ -363,6 +609,9 @@ class ProcessZendeskClassificationResultTests(TestCase):
         self.assertIn("seg-rel-esr", self.submission.zendesk_tags)
         self.assertIn("seg-policy-windows-gpo", self.submission.zendesk_tags)
         self.assertIn("loginless_ticket", self.submission.zendesk_tags)
+        self.assertIn(ENTERPRISE_SUPPORT_TAG, self.submission.zendesk_tags)
+        self.assertIn("stage", self.submission.zendesk_tags)
+        self.assertNotIn("obsolete-topic-tag", self.submission.zendesk_tags)
 
 
 class SyncTicketFromZendeskTests(TestCase):
@@ -570,6 +819,16 @@ class ResolveOrgGroupTests(TestCase):
 
     def test_descendant_member_resolves_to_org_root(self):
         self.assertEqual(resolve_org_group(self.it_user, self.product), self.c1)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_product_ticket_of_an_organization_member_has_no_company(self, mock_classify):
+        ticket = create_support_ticket(
+            self.it_user,
+            self.product,
+            accepted_context=accepted_context_for(self.product, self.config.zendesk_config),
+            subject="Billing",
+        )
+        self.assertIsNone(ticket.org_group)
 
     def test_nested_support_organizations_resolves_to_deepest(self):
         """When multiple ancestors are support organizations, pick the nearest (deepest)."""

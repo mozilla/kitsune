@@ -35,6 +35,7 @@ class TagChatTicketsIfRevokedTests(TestCase):
     def setUp(self):
         # Saving a user with a zendesk_id would otherwise call Zendesk.
         self.enterContext(patch("kitsune.customercare.signals.update_zendesk_user"))
+        self.enterContext(patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay"))
 
     def test_queues_the_task_after_the_commit_with_the_zendesk_id_read_now(self, delay):
         user = UserFactory(profile__zendesk_id="789")

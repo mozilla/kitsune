@@ -370,14 +370,12 @@ def moderate_content(request):
 
 @group_required(settings.STAFF_GROUP)
 def zendesk_spam_queue(request):
-    """Display Zendesk spam tickets for review by Staff members."""
+    """Display Zendesk spam and delivery holds for review by Staff members."""
     ct_support_ticket = ContentType.objects.get_for_model(SupportTicket)
 
     objects = (
-        get_flagged_objects(
-            reason=FlaggedObject.REASON_SPAM,
-            content_types=[ct_support_ticket],
-        )
+        get_flagged_objects(content_types=[ct_support_ticket])
+        .filter(reason__in=(FlaggedObject.REASON_SPAM, FlaggedObject.REASON_OTHER))
         .select_related("content_type", "creator")
         .prefetch_related(
             "content_object",
