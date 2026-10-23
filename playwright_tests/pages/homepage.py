@@ -8,7 +8,6 @@ class Homepage(BasePage):
 
         """General page locators."""
         self.user_notification = page.locator("//ul[@class='user-messages']//p")
-        self.user_notification_links = page.locator("//ul[@class='user-messages']//p/a").all()
         self.user_notification_link_by_link_text = lambda link_name: page.locator(
             f"//ul[@class='user-messages']//p/a[normalize-space(text())='{link_name}']")
 

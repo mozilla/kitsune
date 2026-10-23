@@ -22,7 +22,7 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
         utilities.start_existing_session(cookies=first_user)
 
     with allure.step("Checking all contributor checkboxes"):
-        sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=False)
+        sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=True)
 
     with check, allure.step("Verifying that the correct notification banner text is displayed"):
         expect(sumo_pages.edit_my_profile_con_areas_page.
@@ -49,13 +49,17 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
         utilities.start_existing_session(cookies=first_user)
 
     with allure.step("Accessing the edit contribution areas page and unchecking all checkboxes"):
-        sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=True)
+        sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=False)
 
     with check, allure.step("Clicking on the update button and verifying that the correct"
                             " notification banner is displayed"):
         expect(sumo_pages.edit_my_profile_con_areas_page.
                edit_contribution_areas_preferences_saved_banner_text).to_have_text(
             EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT)
+
+    with check, allure.step("Verifying that all the checkboxes are unchecked"):
+        assert sumo_pages.edit_my_profile_con_areas_page.are_all_cont_pref_checked(
+            checked=False), "Not all checkbox options are unchecked!"
 
     with check, allure.step("Verifying that the groups section is not displayed inside the profile"
                             " section"):

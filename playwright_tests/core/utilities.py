@@ -8,7 +8,7 @@ import time
 import uuid
 from datetime import datetime
 from typing import Any, Union
-from urllib.error import HTTPError
+from urllib.parse import urldefrag
 
 import requests
 from dateutil import parser
@@ -138,24 +138,30 @@ class Utilities:
         Returns:
             str: The verification code
         """
+        if new_account:
+            restmail_code_header = 'x-verify-short-code'
+        elif change_password:
+            restmail_code_header = 'x-account-change-verify-code'
+        else:
+            restmail_code_header = 'x-signin-verify-code'
+
         for attempt in range(max_attempts):
             if restmail_username:
                 try:
                     target = f"https://restmail.net/mail/{restmail_username}"
                     response = requests.get(target)
                     response.raise_for_status()
-                    json_response = response.json()
-                    if new_account:
-                        fxa_verification_code = json_response[0]['headers']['x-verify-short-code']
-                    elif change_password:
-                        fxa_verification_code = (json_response[0]['headers']
-                        ['x-account-change-verify-code'])
-                    else:
-                        fxa_verification_code = json_response[0]['headers']['x-signin-verify-code']
-                    self.clear_email(restmail_username=restmail_username)
-                    return fxa_verification_code
-                except HTTPError and IndexError as error:
+                    # The inbox can also hold other FxA emails, so pick the one carrying the code.
+                    codes = [mail['headers'][restmail_code_header] for mail in response.json()
+                             if restmail_code_header in mail.get('headers', {})]
+                    if codes:
+                        self.clear_email(restmail_username=restmail_username)
+                        return codes[-1]
+                    print(f"Attempt {attempt + 1}/{max_attempts}: No '{restmail_code_header}' "
+                          f"email yet")
+                except requests.RequestException as error:
                     print(error)
+                time.sleep(poll_interval)
             else:
                 service = self._get_gmail_service()
                 try:
@@ -205,7 +211,7 @@ class Utilities:
                     print(f"Error fetching verification code: {e}")
                     time.sleep(poll_interval)
 
-            raise Exception("Failed to retrieve FxA verification code")
+        raise Exception("Failed to retrieve FxA verification code")
 
     def _extract_code_from_subject(self, subject: str) -> str:
         """Extracts 6-digit verification code from email subject.
@@ -630,15 +636,30 @@ class Utilities:
             tried_once (bool): If the cookies deletion was tried once
         """
         top_navbar = TopNavbar(self.page)
+        # The current page is loaded again without cookies. The close-account confirmation is
+        # the response to a form POST, and loading its URL again with GET returns an empty 405.
+        target_url = self.page.url
+        if target_url.startswith("about:") or re.search(r"/users/close_account$", target_url):
+            target_url = HomepageMessages.STAGE_HOMEPAGE_URL
+        old_sessions = {cookie["value"] for cookie in self.page.context.cookies()
+                        if cookie["name"] == "session_id"}
         for attempt in range(retries):
             try:
+                # Leaving the page first stops the requests it still has in flight, whose
+                # responses could otherwise set the signed-out user's session cookie again.
+                self.page.goto("about:blank")
                 self.page.context.clear_cookies()
-                self.refresh_page()
+                self.navigate_to_link(target_url)
+                # Signed-out pages get an anonymous session cookie of their own, so only the
+                # previous session coming back counts.
+                if any(cookie["name"] == "session_id" and cookie["value"] in old_sessions
+                       for cookie in self.page.context.cookies()):
+                    raise PlaywrightTimeoutError("The previous session cookie was set again")
                 if FxAPageMessages.AUTH_PAGE_URL in self.get_page_url():
                     break
-                else:
-                    top_navbar._wait_for_locator(top_navbar.signin_signup_button,
-                                                 raise_exception=True)
+                # The sign-in button is only hidden, not removed, while the page is scrolled
+                # (e.g. to a #fragment) and the header is collapsed.
+                top_navbar.signin_signup_button.wait_for(state="attached", timeout=3500)
                 break
             except PlaywrightTimeoutError:
                 print("Cookies were not successfully deleted. Retrying...")
@@ -646,12 +667,12 @@ class Utilities:
                     continue
 
         # In order to avoid test flakiness we are trying to delete the cookies again if the sign-in
-        # sign-up button is not visible after page refresh.
-        if top_navbar.signin_signup_button.is_hidden() and not tried_once:
+        # sign-up button is not on the page after the reload.
+        if top_navbar.signin_signup_button.count() == 0 and not tried_once:
             self.delete_cookies(tried_once=True)
 
     def start_existing_session(self, cookies: dict = None, session_file_name: str = None,
-                               tried_once=False):
+                               expected_username: str = None, attempts: int = 10):
         """
         This helper function starts an existing session by applying the session cookies saved in
         the /sessions/ folder.
@@ -659,25 +680,74 @@ class Utilities:
         Args:
             session_file_name (str): The session file name
             cookies (dict): The cookies to be applied
-            tried_once (bool): If the session was tried once
+            expected_username (str): If given, the signed-in username is verified against it, which
+            catches a stale or mismatched session.
+            attempts (int): How many times to apply the cookies before giving up. Ten by default,
+            since a session which is not readable yet becomes readable a moment later.
         """
         top_navbar = TopNavbar(self.page)
-        if not tried_once:
-            self.delete_cookies()
 
         if session_file_name is not None:
             with open(f"core/sessions/.auth/{session_file_name}.json", 'r') as file:
-                cookies_data = json.load(file)
-            self.page.context.add_cookies(cookies=cookies_data['cookies'])
-            self.refresh_page()
-            if top_navbar.signin_signup_button.is_visible() and not tried_once:
-                self.start_existing_session(session_file_name=session_file_name, tried_once=True)
-        elif cookies is not None:
-            self.page.context.add_cookies(cookies=cookies['cookies'])
-            self.refresh_page()
-            if top_navbar.signin_signup_button.is_visible() and not tried_once:
-                self.start_existing_session(cookies=cookies, tried_once=True)
+                cookies = json.load(file)
+            source = f"the {session_file_name} session file"
+        else:
+            source = "the provided session payload"
 
+        if cookies is None and session_file_name is None:
+            self.delete_cookies()
+            return
+
+        if not isinstance(cookies, dict) or not cookies.get('cookies'):
+            raise AssertionError(
+                f"There is no cookie to apply from {source} : {cookies!r}. When this payload comes "
+                f"from the user creation API, that call did not return a usable one.")
+
+        # The current page is loaded again with the new cookies. The close-account confirmation
+        # is the response to a form POST, and loading its URL again with GET returns an empty
+        # 405, so that session starts from the homepage instead.
+        target_url = self.page.url
+        if target_url.startswith("about:") or re.search(r"/users/close_account$", target_url):
+            target_url = HomepageMessages.STAGE_HOMEPAGE_URL
+        session_id = next((cookie["value"] for cookie in cookies["cookies"]
+                           if cookie["name"] == "session_id"), None)
+
+        for attempt in range(1, attempts +1):
+            # Leaving the page first stops the requests it still has in flight, whose responses
+            # could otherwise set the previous user's session cookie again.
+            self.page.goto("about:blank")
+            self.page.context.clear_cookies()
+            self.page.context.add_cookies(cookies=cookies['cookies'])
+            self.navigate_to_link(target_url)
+            try:
+                expect(top_navbar.signin_signup_button).to_be_hidden(timeout=5000)
+                # A blank or error page has no sign-in button either, so the signed-in
+                # username has to be present too.
+                expect(top_navbar.signed_in_username).to_be_attached(timeout=5000)
+            except AssertionError:
+                print(f"Applying {source} did not sign the user in (attempt {attempt}/{attempts}). "
+                      f"Retrying...")
+                self.wait_for_given_timeout(2000)
+                continue
+
+            if session_id and not any(cookie["name"] == "session_id"
+                                      and cookie["value"] == session_id
+                                      for cookie in self.page.context.cookies()):
+                print(f"Applying {source} was overridden by another session cookie "
+                      f"(attempt {attempt}/{attempts}). Retrying...")
+                self.wait_for_given_timeout(2000)
+                continue
+
+            if expected_username and top_navbar.signed_in_username.is_visible():
+                signed_in_as = top_navbar.get_text_of_logged_in_username()
+                if signed_in_as.strip().lower() != expected_username.strip().lower():
+                    print(f"Applying {source} signed in '{signed_in_as}' instead of"
+                          f" '{expected_username}' (attempt {attempt}/{attempts}. Retrying)")
+                    self.wait_for_given_timeout(2000)
+                    continue
+            return
+        raise AssertionError(f"Applying {source} did not produce a signed-in state after "
+                             f"{attempts} attempts")
 
     def refresh_page(self, retries: int = 3) -> Response | None:
         """
@@ -688,10 +758,23 @@ class Utilities:
         response = None
         for attempt in range(retries):
             try:
-                response = self.page.reload(wait_until="domcontentloaded")
+                # goto() on the current URL instead of reload(): under parallel load a Firefox
+                # reload sometimes never reports DOMContentLoaded, costing the full navigation
+                # timeout. A URL with a fragment still needs reload(), since goto() to it is a
+                # same-document navigation which doesn't refetch the page.
+                if urldefrag(self.page.url).fragment:
+                    response = self.page.reload(wait_until="domcontentloaded")
+                else:
+                    response = self.page.goto(self.page.url, wait_until="domcontentloaded")
+            except PlaywrightTimeoutError:
+                if attempt < retries - 1:
+                    print(f"Reload timed out, attempt {attempt + 1}/{retries}. Retrying...")
+                    continue
+                raise
             except PlaywrightError as e:
                 msg = str(e)
-                if "net::ERR_ABORTED" in msg or "frame was detached" in msg:
+                if ("net::ERR_ABORTED" in msg or "frame was detached" in msg
+                        or "interrupted by another navigation" in msg):
                     print(f"Ignored benign reload error: {msg}")
                     self.wait_for_dom_to_load()
                     return None
@@ -995,6 +1078,83 @@ class Utilities:
 
         return page.request.post(api_url, form=data, headers=headers)
 
+    def post_test_api_request(self, endpoint: str, payload: dict, session_id: str, *,
+                              benign_statuses: tuple = (), retries: int = 10,
+                              timeout: int = 30, backoff_ms: int = 2000) -> dict:
+        """Post to one of the SUMO testing endpoints, retrying only what a retry can fix.
+
+        Transport errors, 5xx responses and unparseable bodies (proxy or error pages) are
+        retried. A 4xx is raised straight away since it will not fix itself, and a redirect
+        or 401/403 names the expired staff session as the likely cause. Exhausting the
+        attempts raises as well, so the failure reports itself here instead of surfacing
+        later as a missing element or a "NoneType is not subscriptable".
+
+        Args:
+            endpoint (str): The full endpoint url.
+            payload (dict): The JSON request body.
+            session_id (str): The staff session id authorizing the call.
+            benign_statuses (tuple): Statuses to treat as success, e.g. 404 for a deletion
+                whose user is already gone.
+            retries (int): How many attempts to make. Ten by default, so a slow or
+                briefly unavailable environment does not cost the test its user.
+            timeout (int): Per request timeout, in seconds.
+            backoff_ms (int): How long to wait between attempts.
+        """
+
+        def failure_detail(response) -> str:
+            """Prefer the message the API itself reports over a dump of its body."""
+            try:
+                message = response.json().get("message")
+            except ValueError:
+                message = None
+            if message:
+                return " ".join(str(message).split())
+            body = response.text.lstrip()
+            if body.startswith("<"):
+                return (f"an HTML response of {len(response.text)} bytes rather than JSON, so "
+                        f"the testing endpoints may be disabled on this environment")
+            return " ".join(body[:200].split()) or "an empty body"
+
+        last_error = "no attempt was made"
+        for attempt in range(1, retries + 1):
+            try:
+                response = requests.post(
+                    url=endpoint,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Cookie": f"session_id={session_id}",
+                        "User-Agent": self.user_agent,
+                    },
+                    timeout=timeout,
+                )
+            except requests.RequestException as error:
+                last_error = f"the request itself failed: {error}"
+            else:
+                if response.status_code in (200, 201) or response.status_code in benign_statuses:
+                    try:
+                        return response.json()
+                    except ValueError:
+                        last_error = (f"status {response.status_code} with a non-JSON body: "
+                                      f"{response.text[:200]}")
+                elif response.status_code in (301, 302, 401, 403):
+                    raise AssertionError(
+                        f"{endpoint} responded with {response.status_code}, which means the "
+                        f"staff session authorizing it is no longer valid. Regenerate the "
+                        f"session files inside core/sessions/.auth/ and run again."
+                    )
+                elif response.status_code < 500:
+                    raise AssertionError(f"{endpoint} responded with {response.status_code}: "
+                                         f"{failure_detail(response)}")
+                else:
+                    last_error = (f"status {response.status_code}: "
+                                  f"{failure_detail(response)}")
+            print(f"{endpoint} attempt {attempt}/{retries} failed - {last_error}")
+            if attempt < retries:
+                self.wait_for_given_timeout(backoff_ms)
+        raise AssertionError(
+            f"{endpoint} did not succeed after {retries} attempts - {last_error}")
+
     def block_request(self, route):
         """
         This function blocks a certain request
@@ -1010,6 +1170,44 @@ class Utilities:
             return {"event": message.split(": ", 1)[1].rstrip(':')}
         elif message.startswith('parameters:'):
             return {"parameters": json.loads(message.split(": ", 1)[1])}
+
+    def record_ga_log(self, events: list[dict], msg) -> None:
+        """Console listener collecting the GA events the page logs, each with the parameters
+        logged right after it."""
+        if msg.type != "log" or (log := self.get_ga_logs(msg)) is None:
+            return
+        if "event" in log:
+            events.append(log)
+        elif events and "parameters" not in events[-1]:
+            events[-1].update(log)
+
+    def is_ga_console_logging_enabled(self) -> bool:
+        """Whether the current page logs its GA events to the console (GA_CONSOLE_LOGGING).
+        Without it there is nothing to capture, so GA event checks can't run."""
+        enabled = self.page.evaluate(
+            "() => document.documentElement.dataset.gaConsoleLogging === 'true'")
+        if not enabled:
+            print("GA checks not run: GA_CONSOLE_LOGGING is off on this environment.")
+        return enabled
+
+    def wait_for_ga_event(self, events: list[dict], expected: dict, timeout: int = 5000) -> bool:
+        """Waits until one of the GA events captured from the console matches the expected
+        one: same event name, and the expected parameters among the logged ones.
+
+        Args:
+            events (list[dict]): The events captured by `record_ga_log`.
+            expected (dict): The expected event, as stored in ga4_data.json.
+            timeout (int): How long to wait for the event, in milliseconds.
+        """
+        deadline = time.monotonic() + timeout / 1000
+        while True:
+            if any(event.get("event") == expected["event"]
+                   and expected["parameters"].items() <= event.get("parameters", {}).items()
+                   for event in events):
+                return True
+            if time.monotonic() >= deadline:
+                return False
+            self.page.wait_for_timeout(100)
 
     def fetch_scrolly(self) -> int:
         """

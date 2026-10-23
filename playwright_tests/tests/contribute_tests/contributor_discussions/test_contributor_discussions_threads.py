@@ -45,6 +45,8 @@ def test_new_thread_field_validations(page: Page, create_user_factory):
                             "page"):
         sumo_pages.new_thread_page.fill_title_input_field(
             utilities.discussion_thread_data['thread_title'])
+        sumo_pages.new_thread_page.click_on_post_thread_button()
+        expect(page).to_have_url(new_thread_page_url)
 
     with allure.step("Deleting the text inside the title input field"):
         sumo_pages.new_thread_page.clear_title_input_field()
@@ -96,8 +98,8 @@ def test_new_thread_field_validations(page: Page, create_user_factory):
 def test_new_thread_creation_cancel_button(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
-    thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
-                    generate_random_number(1, 1000))
+    thread_title = utilities.generate_unique_title(
+        utilities.discussion_thread_data['thread_title'])
     test_user = create_user_factory(groups=["forum-contributors"])
 
     with allure.step("Signing in with a contributor account and navigating to the Off topic "
@@ -134,8 +136,8 @@ def test_thread_title_edit(page: Page, create_user_factory):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
 
     with allure.step("Creating a new thread"):
-        thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
-                        generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -165,8 +167,8 @@ def test_thread_title_edit(page: Page, create_user_factory):
         expect(page).to_have_url(re.compile(f".*{FxAPageMessages.AUTH_PAGE_URL}*"))
 
     utilities.navigate_to_link(thread_url)
-    new_thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
-                        generate_random_number(1, 1000))
+    new_thread_title = utilities.generate_unique_title(
+        utilities.discussion_thread_data['thread_title'])
     with allure.step("Signing in with the original user and editing the title of the thread"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.contributor_thread_flow.edit_thread_title(new_thread_title)
@@ -217,8 +219,8 @@ def test_thread_deletion(page: Page, create_user_factory):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
 
     with allure.step("Creating a new thread"):
-        thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
-                        generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -273,8 +275,8 @@ def test_thread_locking(page: Page, create_user_factory):
         utilities.start_existing_session(cookies=test_user)
 
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
-                        generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -365,8 +367,8 @@ def test_sticky_this_thread(page: Page, create_user_factory):
     with allure.step("Signing in with a contributor and posting a new thread"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
-                        generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -432,8 +434,7 @@ def test_sticky_this_thread(page: Page, create_user_factory):
         sumo_pages.forum_thread_page.click_unsticky_this_thread_option()
         expect(sumo_pages.forum_thread_page.unsticky_this_thread_option).to_be_hidden()
         expect(sumo_pages.forum_thread_page.sticky_this_thread_option).to_be_visible()
-        expect(sumo_pages.forum_discussions_page.thread_type(thread_title, "Sticky")
-               ).to_be_hidden()
+        expect(sumo_pages.forum_thread_page.thread_meta).not_to_contain_text(["Sticky"])
 
     with check, allure.step("Verifying that the sticky image is not displayed inside the threads "
                             "table"):
@@ -452,8 +453,9 @@ def test_thread_breadcrumbs(page: Page, create_user_factory):
     with allure.step("Signing in with a contributor and posting a new thread"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
-                        generate_random_number(1, 1000))
+        # The breadcrumb truncates thread titles longer than 40 characters.
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])[:40]
         sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -490,8 +492,8 @@ def test_forum_post_side_navbar_redirects(page: Page, create_user_factory):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
 
     with allure.step("Creating a new forum thread"):
-        thread_title = utilities.discussion_thread_data['thread_title'] + (
-            utilities.generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -530,8 +532,8 @@ def test_forum_moderators_availability_inside_the_forum_post_page(page: Page, us
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
 
     with allure.step("Creating a new forum thread"):
-        thread_title = utilities.discussion_thread_data['thread_title'] + (
-            utilities.generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -569,8 +571,8 @@ def test_edit_own_forum_post(page: Page, user_type, create_user_factory):
 
     with allure.step("Creating a new forum thread"):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        thread_title = utilities.discussion_thread_data['thread_title'] + (
-            utilities.generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -600,8 +602,8 @@ def test_edit_forum_posts(page: Page, create_user_factory):
     with allure.step("Signing in to SUMO and creating a new forum thread"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        thread_title = utilities.discussion_thread_data['thread_title'] + (
-            utilities.generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -658,8 +660,8 @@ def test_delete_this_post(page: Page, create_user_factory):
     with allure.step("Signing in to SUMO and creating a new forum thread"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        thread_title = utilities.discussion_thread_data['thread_title'] + (
-            utilities.generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -727,8 +729,8 @@ def test_delete_this_post_option_availability(page: Page, create_user_factory):
     with allure.step("Signing in to SUMO and creating a new forum thread"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        thread_title = utilities.discussion_thread_data['thread_title'] + (
-            utilities.generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         first_thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -765,8 +767,8 @@ def test_quote_this_post(page: Page, create_user_factory):
     with allure.step("Signing in to SUMO and creating a new forum thread"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        thread_title = utilities.discussion_thread_data['thread_title'] + (
-            utilities.generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         thread_body = utilities.discussion_thread_data['thread_body']
         thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=thread_body
@@ -806,8 +808,8 @@ def test_link_to_this_post_option(page: Page, create_user_factory):
     with allure.step("Signing in to SUMO and creating a new forum thread"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        thread_title = utilities.discussion_thread_data['thread_title'] + (
-            utilities.generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
@@ -837,8 +839,8 @@ def test_private_message_option(page: Page, create_user_factory):
     with allure.step("Signing in to SUMO and creating a new forum thread"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        thread_title = utilities.discussion_thread_data['thread_title'] + (
-            utilities.generate_random_number(1, 1000))
+        thread_title = utilities.generate_unique_title(
+            utilities.discussion_thread_data['thread_title'])
         thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )

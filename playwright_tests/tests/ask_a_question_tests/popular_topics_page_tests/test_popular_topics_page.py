@@ -10,15 +10,22 @@ from playwright_tests.messages.contribute_messages.con_pages.con_page_messages i
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
+# Split the product topic walks across xdist workers; with the learn-more test this file runs
+# 6 tests, one per worker (--numprocesses 6).
+NAVBAR_SHARDS = 2
+AAQ_SHARDS = 3
+
 
 # C890379
 @pytest.mark.productTopicsPage
-def test_popular_topics_navbar(page: Page):
+@pytest.mark.parametrize("shard", range(NAVBAR_SHARDS))
+def test_popular_topics_navbar(page: Page, shard: int):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
 
     with allure.step("Navigating to product topics pages"):
-        for product_topic in utilities.general_test_data["product_topics"]:
+        for product_topic in list(utilities.general_test_data["product_topics"])[
+                shard::NAVBAR_SHARDS]:
             topic_url = utilities.general_test_data["product_topics"][product_topic]
             utilities.navigate_to_link(topic_url)
             utilities.wait_for_url_to_be(topic_url)
@@ -63,14 +70,16 @@ def test_learn_more_redirect(page: Page):
 # T5696738
 @pytest.mark.smokeTest
 @pytest.mark.productTopicsPage
-def test_aaq_redirect(page: Page, restmail_test_account_creation):
+@pytest.mark.parametrize("shard", range(AAQ_SHARDS))
+def test_aaq_redirect(page: Page, restmail_test_account_creation, shard: int):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     restmail_test_account_creation()
     utilities.delete_cookies()
 
     with (allure.step("Navigating to product topics pages")):
-        for product_topic in utilities.general_test_data["product_topics"]:
+        for product_topic in list(utilities.general_test_data["product_topics"])[
+                shard::AAQ_SHARDS]:
             topic_url = utilities.general_test_data["product_topics"][product_topic]
             utilities.navigate_to_link(topic_url)
             utilities.wait_for_url_to_be(topic_url)
@@ -87,9 +96,6 @@ def test_aaq_redirect(page: Page, restmail_test_account_creation):
                         expect(sumo_pages.common_web_elements.aaq_widget).to_be_hidden()
                         continue
                 if product_topic in utilities.general_test_data['freemium_products']:
-                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
-                        AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT)
-                elif product_topic == "Firefox for Enterprise":
                     expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
                         AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT)
                 else:

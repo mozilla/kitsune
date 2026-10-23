@@ -785,14 +785,16 @@ def test_mark_reply_as_spam(page: Page, create_user_factory):
         sumo_pages.question_page.click_on_reply_more_options_button(reply_id_two)
         expect(sumo_pages.question_page.mark_reply_as_spam(reply_id_two)
                ).to_be_hidden()
-        sumo_pages.question_page.click_on_reply_more_options_button(reply_id_two)
+        sumo_pages.question_page.click_on_reply_more_options_button(reply_id_two,
+                                                                    expect_open=False)
 
     with allure.step("Clicking on other user posted reply menu and verifying that the 'mark "
                      "as spam' option is not displayed for non-admin users"):
         sumo_pages.question_page.click_on_reply_more_options_button(reply_id_one)
         expect(sumo_pages.question_page.mark_reply_as_spam(reply_id_one)
                ).to_be_hidden()
-        sumo_pages.question_page.click_on_reply_more_options_button(reply_id_one)
+        sumo_pages.question_page.click_on_reply_more_options_button(reply_id_one,
+                                                                    expect_open=False)
 
     with check, allure.step("Signing in with a Forum Moderator, clicking on the 'Marks as "
                             "Spam' option for one of the replies and verifying that the "

@@ -1,5 +1,12 @@
+import time
+
 from playwright.sync_api import Page
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright_tests.core.basepage import BasePage
+
+# How long without a new revision list request before a filter change counts as applied. wiki.js
+# sends the request 200 ms after the last change.
+FILTER_QUIET_PERIOD = 0.5
 
 
 class RecentRevisions(BasePage):
@@ -50,8 +57,6 @@ class RecentRevisions(BasePage):
             f"//div[@id='revisions-fragment']//div[@class='title']/a[text()='{article_title}']/../"
             f"../div[@class='creator']/a[contains(text(),'{username}')]/../../"
             f"div[@class='comment wider']")
-        self.loading_icon = page.locator(
-            "//article[@id='revision-list']/form/img[@class='loading']")
 
         """Locators related to the revision diff section."""
         self.revision_diff_section = page.locator("div[class='revision-diff']")
@@ -79,31 +84,63 @@ class RecentRevisions(BasePage):
     def get_list_of_all_editors(self) -> list[str]:
         return self._get_text_of_elements(self.all_editors)
 
+    def _apply_filter(self, action):
+        """Runs a filter change and waits until the revision list shows its result.
+
+        wiki.js sends one request per change, does not cancel the earlier ones and hides the
+        loading icon as soon as any of them returns, so the icon cannot tell when the list
+        reflects the last change. Every revision list request the change starts is waited for
+        instead, until none is left and no new one follows.
+        """
+        pending, seen = [], []
+
+        def on_request(request):
+            if "fragment=1" in request.url:
+                pending.append(request)
+                seen.append(request)
+
+        def on_done(request):
+            if request in pending:
+                pending.remove(request)
+
+        self.page.on("request", on_request)
+        self.page.on("requestfinished", on_done)
+        self.page.on("requestfailed", on_done)
+        try:
+            action()
+            deadline = time.monotonic() + 15
+            settled_since = time.monotonic()
+            while time.monotonic() < deadline:
+                if pending:
+                    settled_since = time.monotonic()
+                elif seen and time.monotonic() - settled_since >= FILTER_QUIET_PERIOD:
+                    return
+                self.page.wait_for_timeout(100)
+            raise PlaywrightTimeoutError(
+                "The revision list did not update after the filter change")
+        finally:
+            self.page.remove_listener("request", on_request)
+            self.page.remove_listener("requestfinished", on_done)
+            self.page.remove_listener("requestfailed", on_done)
+
     def select_locale_option(self, locale_value: str):
-        self._select_option_by_value(self.locale_select_field, locale_value)
-        self._wait_for_locator(self.loading_icon, timeout=3000)
-        self._wait_for_locator_to_be_hidden(self.loading_icon, timeout=5000)
+        self._apply_filter(
+            lambda: self._select_option_by_value(self.locale_select_field, locale_value))
 
     def fill_in_users_field(self, username: str):
-        self._fill(self.users_input_field, username)
-        self._press_a_key(self.users_input_field, "Enter")
-        self._wait_for_locator(self.loading_icon, timeout=3000)
-        self._wait_for_locator_to_be_hidden(self.loading_icon, timeout=5000)
+        def fill():
+            self._fill(self.users_input_field, username)
+            self._press_a_key(self.users_input_field, "Enter")
+        self._apply_filter(fill)
 
     def clearing_the_user_field(self):
-        self._clear_field(self.users_input_field)
-        self._wait_for_locator(self.loading_icon, timeout=3000)
-        self._wait_for_locator_to_be_hidden(self.loading_icon, timeout=5000)
+        self._apply_filter(lambda: self._clear_field(self.users_input_field))
 
     def add_start_date(self, start_date: str):
-        self._type(self.start_date_input_field, start_date, 0)
-        self._wait_for_locator(self.loading_icon, timeout=3000)
-        self._wait_for_locator_to_be_hidden(self.loading_icon, timeout=5000)
+        self._apply_filter(lambda: self._type(self.start_date_input_field, start_date, 0))
 
     def add_end_date(self, end_date: str):
-        self._type(self.end_date_input_field, end_date, 0)
-        self._wait_for_locator(self.loading_icon, timeout=3000)
-        self._wait_for_locator_to_be_hidden(self.loading_icon, timeout=5000)
+        self._apply_filter(lambda: self._type(self.end_date_input_field, end_date, 0))
 
     def click_on_article_title(self, article_title: str, creator: str):
         self._click(self.article_title(creator, article_title))

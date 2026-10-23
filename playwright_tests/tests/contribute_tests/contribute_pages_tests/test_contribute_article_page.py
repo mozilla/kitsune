@@ -40,7 +40,7 @@ def test_contribute_article_page_text(page: Page):
         expect(sumo_pages.ways_to_contribute_pages.hero_second_header).to_have_text(
             ContributeHelpArticlesMessages.HERO_SECOND_TITLE)
 
-    with check, allure.step("Verifying tha the paragraph under h2 is successfully displayed and"
+    with check, allure.step("Verifying that the paragraph under h2 is successfully displayed and"
                             " contains the correct strings"):
         expect(sumo_pages.ways_to_contribute_pages.hero_text).to_have_text(
             ContributeHelpArticlesMessages.HERO_TEXT)
@@ -121,7 +121,7 @@ def test_contribute_article_page_images_are_not_broken(page: Page):
 def test_contribute_article_page_breadcrumbs(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Accessing the Contribute Forum page"):
+    with allure.step("Accessing the Contribute with help Article page"):
         utilities.navigate_to_link(
             ContributeHelpArticlesMessages.STAGE_CONTRIBUTE_HELP_ARTICLES_PAGE_URL
         )
@@ -140,7 +140,7 @@ def test_contribute_article_page_breadcrumbs(page: Page):
     )
     with allure.step("Verifying that the Contribute breadcrumb redirects to the Contribute page"):
         expect(page).to_have_url(ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL)
-    utilities.navigate_forward()
+    utilities.navigate_back()
 
     sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(
         sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[0]
@@ -155,7 +155,7 @@ def test_contribute_article_page_breadcrumbs(page: Page):
 def test_contribute_article_other_ways_to_contribute_redirect_to_the_correct_page(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Accessing the Contribute Forum page"):
+    with allure.step("Accessing the Contribute with help Article page"):
         utilities.navigate_to_link(
             ContributeHelpArticlesMessages.STAGE_CONTRIBUTE_HELP_ARTICLES_PAGE_URL
         )

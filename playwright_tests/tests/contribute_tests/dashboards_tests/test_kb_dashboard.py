@@ -12,6 +12,9 @@ from playwright_tests.messages.contribute_messages.con_tools.kb_dashboard_messag
 from playwright_tests.messages.contribute_messages.con_tools.moderate_forum_messages import (
     ModerateForumContentPageMessages,
 )
+from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
+    KBArticlePageMessages,
+)
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -737,9 +740,23 @@ def test_kb_dashboard_can_be_filtered_by_each_product(page: Page):
 
         with allure.step(f"Opening the edit metadata page of a random listed article for the "
                          f"'{kb_type['label']}' type"):
-            random_index = random.randint(0, articles_count - 1)
-            article_title = sumo_pages.kb_dashboard_page.get_listed_article_title(random_index)
-            sumo_pages.kb_dashboard_page.click_on_listed_article(random_index)
+            # Other tests leave half-deleted articles behind that the dashboard still lists, and
+            # their edit metadata page returns a server error, so articles without approved
+            # content are skipped. inner_text() waits for the article page's content section,
+            # which the dashboard lacks, so the check never runs against the page being left.
+            article_title = None
+            for random_index in random.sample(range(articles_count), min(5, articles_count)):
+                title = sumo_pages.kb_dashboard_page.get_listed_article_title(random_index)
+                sumo_pages.kb_dashboard_page.click_on_listed_article(random_index)
+                if (KBArticlePageMessages.KB_ARTICLE_NOT_APPROVED_CONTENT
+                        not in sumo_pages.kb_article_page.kb_article_content.inner_text()):
+                    article_title = title
+                    break
+                utilities.navigate_back()
+            if article_title is None:
+                print(f"No listed article with approved content was found for the "
+                      f"'{kb_type['label']}' type. Skipping.")
+                continue
             utilities.navigate_to_link(
                 sumo_pages.kb_article_page.get_url().rstrip("/") + "/edit/metadata")
             if sumo_pages.kb_edit_article_page.is_edit_anyway_option_visible():

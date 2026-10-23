@@ -419,8 +419,11 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template, create_use
 
     thread = _create_discussion_thread(page)
 
-    with allure.step("Navigating to the Article Discussions page"):
-        sumo_pages.top_navbar.click_on_article_discussions_option()
+    with allure.step("Navigating to the Article Discussions page via the Contributor "
+                     "discussions sidebar"):
+        sumo_pages.top_navbar.click_on_contributor_discussions_top_navbar_option()
+        sumo_pages.common_web_elements.click_on_a_contributor_tools_side_navbar_option(
+            "Article discussions")
 
     with check, allure.step("Verifying that the the kb article is displayed for admin users"):
         expect(sumo_pages.article_discussions_page.article_discussion_title(
@@ -858,26 +861,24 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_page.click_on_show_history_option()
         sumo_pages.kb_article_show_history_page.click_on_show_history_category()
-        expect(sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
-               ).to_be_visible()
+        assert sumo_pages.kb_category_page.is_article_listed(article_details['article_title'])
 
     with check, allure.step("Verifying that the restricted kb article is displayed for users "
                             "belonging to a whitelisted group"):
         utilities.start_existing_session(cookies=test_user_two)
-        expect(sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
-               ).to_be_visible()
+        assert sumo_pages.kb_category_page.is_article_listed(article_details['article_title'])
 
     with check, allure.step("Verifying that the restricted kb article is not displayed for users "
                             "belonging to a non-whitelisted group"):
         utilities.start_existing_session(cookies=test_user_three)
-        expect(sumo_pages.kb_category_page.article_from_list(
-            article_details['article_title'])).to_be_hidden()
+        assert not sumo_pages.kb_category_page.is_article_listed(
+            article_details['article_title'])
 
     with allure.step("Verifying that the restricted kb article is not displayed for signed out "
                      "users"):
         utilities.delete_cookies()
-        expect(sumo_pages.kb_category_page.article_from_list(
-            article_details['article_title'])).to_be_hidden()
+        assert not sumo_pages.kb_category_page.is_article_listed(
+            article_details['article_title'])
 
     with allure.step("Signing in with an admin account and whitelisting a new group"):
         utilities.start_existing_session(cookies=test_user)
@@ -892,8 +893,7 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_page.click_on_show_history_option()
         sumo_pages.kb_article_show_history_page.click_on_show_history_category()
-        expect(sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
-               ).to_be_visible()
+        assert sumo_pages.kb_category_page.is_article_listed(article_details['article_title'])
 
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
@@ -909,8 +909,7 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
     with check, allure.step("Navigating to the category page and verifying that the "
                             "article is displayed for signed out users"):
         utilities.delete_cookies()
-        expect(sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
-               ).to_be_visible()
+        assert sumo_pages.kb_category_page.is_article_listed(article_details['article_title'])
 
 
 @pytest.fixture

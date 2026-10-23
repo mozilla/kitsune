@@ -11,6 +11,7 @@ class ProductsPageMessages:
                            "data breach",
         "MDN Plus": "MDN Plus provides a custom user experience for MDN supporters",
         "Firefox Focus": "Automatic privacy browser and content blocker",
-        "Firefox for Enterprise": "Enterprise-grade protection, powered by Firefox",
-        "Thunderbird": "Email software for Windows, Mac and Linux"
+        "Firefox Enterprise": "Enterprise-grade protection, powered by Firefox",
+        "Thunderbird": "Email software for Windows, Mac and Linux",
+        "Thunderbird for Android": "Email app for Android smartphones and tablets",
     }

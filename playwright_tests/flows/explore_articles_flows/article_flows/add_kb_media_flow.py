@@ -64,7 +64,7 @@ class AddKbMediaFlow:
         else:
             self.media_gallery_page.click_on_upload_modal_cancel_button()
 
-    def delete_media_file(self, media_file_title="None"):
+    def delete_media_file(self, media_file_title: str | None = None):
         """
             Deletes and uploaded test image from the Image Gallery.
             Args:

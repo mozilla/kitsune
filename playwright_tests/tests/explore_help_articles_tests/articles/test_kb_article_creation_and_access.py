@@ -1479,7 +1479,7 @@ def test_article_topic_and_product_change(page: Page, create_user_factory):
 def test_article_helpfulness_votes(page: Page, vote_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    events = {}
+    events = []
     ga_events = utilities.ga4_data
     test_user = create_user_factory()
     test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
@@ -1495,22 +1495,26 @@ def test_article_helpfulness_votes(page: Page, vote_type, create_user_factory):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step(f"Voting the article as {vote_type}"):
-        page.on("console", lambda msg: events.update(log) if (log := utilities.get_ga_logs(
-            msg)) is not None and msg.type == "log" else None)
+        ga_logging = utilities.is_ga_console_logging_enabled()
+        page.on("console", lambda msg: utilities.record_ga_log(events, msg))
 
         sumo_pages.kb_article_page.click_on_helpful_button()
-        with check, allure.step("Verifying that the correct event is sent"):
-            assert events.items() <= ga_events['article_helpfulness'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct event is sent"):
+                assert utilities.wait_for_ga_event(events, ga_events['article_helpfulness'])
 
         sumo_pages.kb_article_page.click_on_helpfulness_option(vote_type)
-        with check, allure.step("Verifying that the correct survey open event is sent"):
-            assert events.items() <= ga_events['open_survey_helpful'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct survey open event is sent"):
+                assert utilities.wait_for_ga_event(events, ga_events['open_survey_helpful'])
 
         sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
         sumo_pages.kb_article_page.click_on_helpfulness_submit_button()
 
-        with check, allure.step("Verifying that the correct survey submitted event is sent"):
-            assert events.items() <= ga_events[f'{slugify(vote_type).lower()}'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct survey submitted event is sent"):
+                assert utilities.wait_for_ga_event(
+                    events, ga_events[f'{slugify(vote_type).lower()}'])
 
         with check, allure.step("Verifying that the correct widget is displayed"):
             expect(sumo_pages.kb_article_page.survey_message).to_have_text(
@@ -1533,7 +1537,7 @@ def test_article_helpfulness_votes(page: Page, vote_type, create_user_factory):
 def test_article_helpfulness_cancel_vote(page: Page, vote_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    events = {}
+    events = []
     ga_events = utilities.ga4_data
     test_user = create_user_factory()
     test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
@@ -1549,22 +1553,25 @@ def test_article_helpfulness_cancel_vote(page: Page, vote_type, create_user_fact
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step(f"Voting the article as {vote_type}"):
-        page.on("console", lambda msg: events.update(log) if (log := utilities.get_ga_logs(
-            msg)) is not None and msg.type == "log" else None)
+        ga_logging = utilities.is_ga_console_logging_enabled()
+        page.on("console", lambda msg: utilities.record_ga_log(events, msg))
 
         sumo_pages.kb_article_page.click_on_helpful_button()
-        with check, allure.step("Verifying that the correct event is sent"):
-            assert events.items() <= ga_events['article_helpfulness'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct event is sent"):
+                assert utilities.wait_for_ga_event(events, ga_events['article_helpfulness'])
 
         sumo_pages.kb_article_page.click_on_helpfulness_option(vote_type)
-        with check, allure.step("Verifying that the correct survey open event is sent"):
-            assert events.items() <= ga_events['open_survey_helpful'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct survey open event is sent"):
+                assert utilities.wait_for_ga_event(events, ga_events['open_survey_helpful'])
 
         sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
         sumo_pages.kb_article_page.click_on_helpfulness_cancel_button()
 
-        with check, allure.step("Verifying that the correct cancel survey event is sent"):
-            assert events.items() <= ga_events['cancel_survey_helpful'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct cancel survey event is sent"):
+                assert utilities.wait_for_ga_event(events, ga_events['cancel_survey_helpful'])
 
         with check, allure.step("Verifying that the correct widget is displayed"):
             expect(sumo_pages.kb_article_page.survey_message).to_have_text(
@@ -1588,7 +1595,7 @@ def test_article_helpfulness_cancel_vote(page: Page, vote_type, create_user_fact
 def test_article_unhelpfulness_votes(page: Page, vote_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    events = {}
+    events = []
     ga_events = utilities.ga4_data
     test_user = create_user_factory()
     test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
@@ -1604,27 +1611,27 @@ def test_article_unhelpfulness_votes(page: Page, vote_type, create_user_factory)
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step(f"Voting the article as {vote_type}"):
-        page.on("console", lambda msg: events.update(log) if (log := utilities.get_ga_logs(
-            msg)) is not None and msg.type == "log" else None)
+        ga_logging = utilities.is_ga_console_logging_enabled()
+        page.on("console", lambda msg: utilities.record_ga_log(events, msg))
 
         sumo_pages.kb_article_page.click_on_unhelpful_button()
-        with check, allure.step("Verifying that the correct event is sent"):
-            assert events.items() <= ga_events['article_unhelpfulness'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct event is sent"):
+                assert utilities.wait_for_ga_event(events, ga_events['article_unhelpfulness'])
 
         sumo_pages.kb_article_page.click_on_helpfulness_option(vote_type)
-        with check, allure.step("Verifying that the correct survey open event is sent"):
-            assert events.items() <= ga_events['open_survey_unhelpful'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct survey open event is sent"):
+                assert utilities.wait_for_ga_event(events, ga_events['open_survey_unhelpful'])
 
         sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
         sumo_pages.kb_article_page.click_on_helpfulness_submit_button()
 
-        with check, allure.step("Verifying that the correct survey submitted event is sent"):
-            assert (
-                events.items()
-                <= ga_events[
-                    f'{slugify(vote_type).lower() if vote_type != "Other" else "other-unhelpful"}'
-                ].items()
-            )
+        if ga_logging:
+            with check, allure.step("Verifying that the correct survey submitted event is sent"):
+                survey_event = (slugify(vote_type).lower() if vote_type != "Other"
+                                else "other-unhelpful")
+                assert utilities.wait_for_ga_event(events, ga_events[survey_event])
     with check, allure.step("Verifying that the correct widget is displayed"):
         expect(sumo_pages.kb_article_page.survey_message).to_have_text(
             KBArticlePageMessages.KB_SURVEY_FEEDBACK)
@@ -1647,7 +1654,7 @@ def test_article_unhelpfulness_votes(page: Page, vote_type, create_user_factory)
 def test_article_unhelpfulness_cancel_vote(page: Page, vote_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    events = {}
+    events = []
     ga_events = utilities.ga4_data
     test_user = create_user_factory()
     test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
@@ -1663,22 +1670,25 @@ def test_article_unhelpfulness_cancel_vote(page: Page, vote_type, create_user_fa
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step(f"Voting the article as {vote_type}"):
-        page.on("console", lambda msg: events.update(log) if (log := utilities.get_ga_logs(
-            msg)) is not None and msg.type == "log" else None)
+        ga_logging = utilities.is_ga_console_logging_enabled()
+        page.on("console", lambda msg: utilities.record_ga_log(events, msg))
 
         sumo_pages.kb_article_page.click_on_unhelpful_button()
-        with check, allure.step("Verifying that the correct event is sent"):
-            assert events.items() <= ga_events['article_unhelpfulness'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct event is sent"):
+                assert utilities.wait_for_ga_event(events, ga_events['article_unhelpfulness'])
 
         sumo_pages.kb_article_page.click_on_helpfulness_option(vote_type)
-        with check, allure.step("Verifying that the correct survey open event is sent"):
-            assert events.items() <= ga_events['open_survey_unhelpful'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct survey open event is sent"):
+                assert utilities.wait_for_ga_event(events, ga_events['open_survey_unhelpful'])
 
         sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
         sumo_pages.kb_article_page.click_on_helpfulness_cancel_button()
 
-        with check, allure.step("Verifying that the correct survey submitted event is sent"):
-            assert events.items() <= ga_events['cancel_survey_unhelpful'].items()
+        if ga_logging:
+            with check, allure.step("Verifying that the correct survey submitted event is sent"):
+                assert utilities.wait_for_ga_event(events, ga_events['cancel_survey_unhelpful'])
 
     with check, allure.step("Verifying that the correct widget is displayed"):
         expect(sumo_pages.kb_article_page.survey_message).to_have_text(

@@ -117,8 +117,8 @@ def test_product_support_page_info(page: Page, create_user_factory):
                                               PRODUCT_SUPPORT_PAGE_FREQUENT_TOPICS_SUBTITLE)
                 else:
                     print(f"{card} has no frequent topics displayed!!!")
-            with allure.step("Navigating back"):
-                utilities.navigate_back()
+                with allure.step("Navigating back"):
+                    utilities.navigate_back()
 
 
 # C2903828 C2903829  C2903831
@@ -199,8 +199,8 @@ def test_product_support_page_featured_articles_redirect(page: Page, is_chromium
                 else:
                     print(f"{card} has no featured articles displayed!!!")
 
-            with allure.step("Navigating back"):
-                utilities.navigate_back()
+                with allure.step("Navigating back"):
+                    utilities.navigate_back()
 
 
 # C890932

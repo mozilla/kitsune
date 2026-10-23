@@ -51,6 +51,8 @@ class KBArticleDiscussionPage(BasePage):
             "button", name="Post Reply", exact=True)
         self.dotted_menu_for_thread = lambda thread_id: page.locator(
             f"li#{thread_id} span[class='icon-button is-summary'] button")
+        self.expanded_dotted_menu_for_thread = lambda thread_id: page.locator(
+            f"li#{thread_id} span[class='icon-button is-summary'] button[aria-expanded='true']")
         self.edit_this_thread = lambda thread_id: page.locator(
             f"li#{thread_id} div[class='mzp-c-menu-list is-details']").get_by_role(
             "link", name="Edit this post", exact=True)
@@ -150,7 +152,10 @@ class KBArticleDiscussionPage(BasePage):
 
     """Actions against the thread replies section."""
     def click_on_dotted_menu_for_a_certain_reply(self, thread_id: str):
-        self._click(self.dotted_menu_for_thread(thread_id))
+        # A click that lands while the page is still shifting its layout can leave the menu
+        # closed, so retry until it reports itself as expanded.
+        self._click(self.dotted_menu_for_thread(thread_id),
+                    expected_locator=self.expanded_dotted_menu_for_thread(thread_id))
 
     def click_on_delete_this_thread_option(self):
         self._click(self.delete_thread)

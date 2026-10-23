@@ -4,7 +4,6 @@ import requests
 import allure
 import pytest
 from playwright.sync_api import Page
-from requests import JSONDecodeError
 from slugify import slugify
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
@@ -131,48 +130,56 @@ def create_user_factory(page: Page, request):
             groups (list[str]): The groups to which the user belongs.
             permissions (list[str]): The permissions of the user.
         """
-        if username is None:
-            username = ''.join(random.choice(
-                string.ascii_lowercase + string.digits) for _ in range(10))
         endpoint = HomepageMessages.STAGE_HOMEPAGE_URL_EN_US + "users/api/create"
+        generate_username = username is None
+        # A request which timed out on our side may still have created the user, so a retry
+        # then answers 409. A generated name is swapped for a fresh one in that case.
+        for _ in range(3):
+            if generate_username:
+                username = ''.join(random.choice(
+                    string.ascii_lowercase + string.digits) for _ in range(10))
 
-        request_body = {
-            "username": username,
-            "groups": groups if groups else [],
-            "permissions": permissions if permissions else [],
-        }
-        print(request_body)
+            request_body = {
+                "username": username,
+                "groups": groups if groups else [],
+                "permissions": permissions if permissions else [],
+            }
+            print(request_body)
 
-        additional_headers = {
-            "Content-Type": "application/json",
-            "Cookie": f"session_id={session_id}",
-            "User-Agent": Utilities.user_agent
-        }
+            # Registered before the call, so a user created by a timed-out request is still
+            # cleaned up. Deleting a user which was never created is a benign 404.
+            created_users.append(username)
+            data = utilities.post_test_api_request(
+                endpoint, request_body, session_id,
+                benign_statuses=(409,) if generate_username else ())
+            if data.get("cookies"):
+                break
 
-        for attempt in range(3):
-            response = requests.post(url=endpoint, json=request_body, headers=additional_headers)
-            try:
-                data = response.json()
-                created_users.append(username)
-                print(f"User creation API responded with: {data}")
-                return data
-            except (ValueError, JSONDecodeError) as e:
-                print("The user creation API failed. Retrying")
-                utilities.wait_for_given_timeout(5000)
+        if not data.get("username") or not data.get("cookies"):
+            raise AssertionError(
+                f"The user creation API did not return a usable payload for '{username}': {data}"
+            )
+
+        print(f"User creation API responded with: {data}")
+        return data
 
     def _cleanup():
         """
         Test finalizer function which triggers the deletion of the newly created test accounts.
         """
         endpoint = HomepageMessages.STAGE_HOMEPAGE_URL_EN_US + "users/api/trigger-delete"
+        failed_deletions = []
         for username in created_users:
-            print("Deleting created users")
-            additional_headers = {
-                "Cookie": f"session_id={session_id}",
-                "User-Agent": Utilities.user_agent
-            }
-            request_body = {"username": username}
-            requests.post(url=endpoint, json=request_body, headers=additional_headers)
+            print(f"Deleting created user: {username}")
+            try:
+                utilities.post_test_api_request(endpoint, {"username": username}, session_id,
+                                                benign_statuses=(404,))
+            except (requests.RequestException, AssertionError) as error:
+                failed_deletions.append(f"{username} ({error})")
+
+        if failed_deletions:
+            print(f"WARNING: {len(failed_deletions)} test user(s) could not be deleted and are "
+                  f"left on the environment: {', '.join(failed_deletions)}")
 
 
     request.addfinalizer(_cleanup)

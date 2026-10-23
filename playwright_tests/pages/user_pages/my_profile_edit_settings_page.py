@@ -94,13 +94,14 @@ class MyProfileEditSettingsPage(BasePage):
         """Check if send emails for private messages checkbox is checked"""
         return self._is_checkbox_checked(self.send_emails_for_private_messages_checkbox)
 
-    def are_all_checkbox_checked(self) -> bool:
-        """Check if all checkboxes are checked"""
-        return all([
+    def are_all_checkbox_checked(self, checked: bool = True) -> bool:
+        """Check if all checkboxes are checked, or all unchecked when `checked` is False."""
+        states = [
             self.is_watch_forum_threads_i_start_checkbox_checked(),
             self.is_watch_forum_threads_i_comment_checkbox_checked(),
             self.is_watch_kb_discussion_threads_i_start_checkbox_checked(),
             self.is_watch_kb_discussion_threads_i_comment_checkbox_checked(),
             self.is_watch_question_threads_i_comment_checkbox_checked(),
             self.is_send_emails_for_private_messages_checkbox_checked(),
-        ])
+        ]
+        return all(state == checked for state in states)

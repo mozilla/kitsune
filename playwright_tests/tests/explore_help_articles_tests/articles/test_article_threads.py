@@ -66,7 +66,6 @@ def test_article_thread_field_validation(page: Page, create_user_factory):
 
     with allure.step("Clearing both title and content fields and adding 5 characters inside "
                      "the thread content field"):
-        sumo_pages.kb_article_discussion_page.clear_new_thread_body_field()
         sumo_pages.kb_article_discussion_page.clear_new_thread_title_field()
         sumo_pages.kb_article_discussion_page.clear_new_thread_body_field()
         sumo_pages.kb_article_discussion_page.add_text_to_new_thread_body_input_field(
@@ -134,7 +133,7 @@ def test_thread_replies_counter_increment(page: Page, create_user_factory):
         utilities.navigate_to_link(article_details["article_url"])
 
     with check, allure.step("Clicking on the 'Post a new thread button', posting a new kb article "
-                            "discussion thread and verifying that the thread counter is not 0"):
+                            "discussion thread and verifying that the thread counter is 0"):
         thread_info = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
         expect(sumo_pages.kb_article_discussion_page.thread_page_replies_counter).to_have_text(
             "0 replies")

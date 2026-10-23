@@ -16,6 +16,9 @@ from playwright_tests.messages.explore_help_articles.kb_translation_messages imp
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
+# Splits the locale walks across xdist workers.
+LOCALE_SHARDS = 4
+
 
 # C2489548, C2490043, C946153
 @pytest.mark.kbArticleTranslation
@@ -276,10 +279,11 @@ def test_revisions_cannot_be_marked_as_ready_for_l10n_if_lacking_permissions(pag
 
 # C2316346, C2316347
 @pytest.mark.kbArticleTranslation
-def test_unsupported_locales_fallback(page: Page):
+@pytest.mark.parametrize("shard", range(LOCALE_SHARDS))
+def test_unsupported_locales_fallback(page: Page, shard: int):
     utilities = Utilities(page)
     with allure.step("Verifying the unsupported locales fallback"):
-        for key, value in NON_SUPPORTED_LOCALES.items():
+        for key, value in list(NON_SUPPORTED_LOCALES.items())[shard::LOCALE_SHARDS]:
             utilities.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{key}/")
             if value is None:
                 expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
@@ -299,19 +303,17 @@ def test_fallback_languages(page: Page):
 
 # C2316347
 @pytest.mark.kbArticleTranslation
-def test_supported_languages(page: Page):
+@pytest.mark.parametrize("shard", range(LOCALE_SHARDS))
+def test_supported_languages(page: Page, shard: int):
     utilities = Utilities(page)
     with check, allure.step("Verifying that the users are redirected to the supported locales "
                             "successfully"):
-        for locale in SUMO_LANGUAGES:
-            if locale == 'xx':
-                continue
-            else:
-                with page.expect_navigation() as navigation_info:
-                    utilities.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{locale}/")
-                response = navigation_info.value
-                assert response.status == 200
-                expect(page).to_have_url(re.compile(f".*{locale}*"))
+        for locale in [locale for locale in SUMO_LANGUAGES if locale != 'xx'][
+                shard::LOCALE_SHARDS]:
+            response = utilities.navigate_to_link(
+                HomepageMessages.STAGE_HOMEPAGE_URL + f"/{locale}/")
+            assert response is not None and response.status == 200, f"{locale}: {response}"
+            expect(page).to_have_url(re.compile(rf"/{re.escape(locale)}/"))
 
 
 # C2316350, C2316349

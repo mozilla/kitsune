@@ -46,8 +46,6 @@ def test_deleted_user_is_displayed_in_both_inbox_and_outbox(page: Page, create_u
     with check, allure.step("Verifying that sender of the message is the 'deleted user'"):
         expect(sumo_pages.inbox_page.deleted_sender_by_message_excerpt(second_message_body)
                ).to_have_text(deleted_user_username)
-        expect(sumo_pages.inbox_page.deleted_sender_by_message_excerpt(second_message_body)
-               ).to_have_text(deleted_user_username)
 
     with check, allure.step("Clicking on the message excerpt and verifying that the 'deleted user' "
                             "is successfully displayed as the message sender"):

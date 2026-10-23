@@ -6,7 +6,6 @@ from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.models.admin_banner_data import AdminBannerData
 from playwright_tests.pages.sumo_pages import SumoPages
-from playwright_tests.tests.admin.conftest import create_announcement_banner
 
 
 # C2944342

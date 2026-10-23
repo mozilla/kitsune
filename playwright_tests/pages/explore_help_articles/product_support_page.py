@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import Page
 
 from playwright_tests.core.basepage import BasePage
@@ -18,9 +20,9 @@ class ProductSupportPage(BasePage):
             has_text="Featured Articles")
         self.featured_articles_cards = page.locator(
             "//h2[contains(text(),'Featured Articles')]/..//a")
-        self.featured_article_card = lambda card_title: page.locator(
-            f'//h2[contains(text(),"Featured Articles")]/..//a[normalize-space(text())'
-            f'="{card_title}"]')
+        # Matched by text rather than an XPath literal, which breaks on titles with quotes.
+        self.featured_article_card = lambda card_title: self.featured_articles_cards.filter(
+            has_text=re.compile(rf"^\s*{re.escape(card_title)}\s*$"))
 
         """Locators belonging to the 'Still Need Help' widget."""
         self.still_need_help_widget = page.locator(

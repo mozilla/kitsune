@@ -46,8 +46,12 @@ class EditKBArticlePage(BasePage):
         self._fill(self.edit_article_search_result_summary_field, text)
 
     def fill_edit_article_content_field(self, text: str):
-        # We need to toggle the content field from syntax highlighting to make interaction easier.
-        self._click(self.edit_article_toggle_syntax_highlight)
+        # The plain textarea is easier to drive than the syntax highlighting editor. The toggle
+        # is flipped only while the textarea is hidden, and the click is retried until the
+        # textarea shows, since a click landing while the editor is still being set up is lost.
+        if not self._is_element_visible(self.edit_article_content_textarea_field):
+            self._click(self.edit_article_toggle_syntax_highlight,
+                        expected_locator=self.edit_article_content_textarea_field)
         self._clear_field(self.edit_article_content_textarea_field)
         self._fill(self.edit_article_content_textarea_field, text)
 

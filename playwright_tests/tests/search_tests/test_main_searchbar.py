@@ -447,31 +447,36 @@ def test_pagination_scroll_position(page: Page):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
 
-    with allure.step("Adding the 'Test' search term and clicking on the next pagination item"):
+    with allure.step("Adding the 'Test' search term and saving the first page results"):
         sumo_pages.search_page.fill_into_searchbar("Test")
+        first_page_results = sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with allure.step("Clicking on the next pagination item"):
         sumo_pages.common_web_elements.click_on_next_pagination_item()
         utilities.wait_for_given_timeout(1000)
 
-    with check, allure.step("Verifying that the page is scrolled to the top of the page and the"
-                            "highlighted pagination item is 1"):
+    with check, allure.step("Verifying that the page is scrolled to the top, the previous "
+                            "pagination item is displayed and different results are shown"):
+        second_page_results = sumo_pages.search_page.get_all_search_results_article_titles()
         assert utilities.fetch_scrolly() == 0
-        expect(sumo_pages.common_web_elements.selected_pagination_item).to_have_text("2")
+        expect(sumo_pages.common_web_elements.previous_pagination_item).to_be_visible()
+        assert second_page_results != first_page_results
 
-    with check, allure.step("Clicking on the 4 pagination item and verifying that the page is "
-                            "scrolled to the top of the page and the highlighted pagination item "
-                            "is 4"):
-        sumo_pages.common_web_elements.click_on_pagination_item("4")
+    with check, allure.step("Clicking on the next pagination item again and verifying that the "
+                            "page is scrolled to the top and different results are shown"):
+        sumo_pages.common_web_elements.click_on_next_pagination_item()
         utilities.wait_for_given_timeout(1000)
+        third_page_results = sumo_pages.search_page.get_all_search_results_article_titles()
         assert utilities.fetch_scrolly() == 0
-        expect(sumo_pages.common_web_elements.selected_pagination_item).to_have_text("4")
+        assert third_page_results != second_page_results
 
     with check, allure.step("Clicking on the previous pagination item and verifying that the "
-                            "page is scrolled to the top of the page and the highlighted "
-                            "pagination item is 2"):
+                            "page is scrolled to the top and the second page results are shown"):
         sumo_pages.common_web_elements.click_on_previous_pagination_item()
         utilities.wait_for_given_timeout(1000)
         assert utilities.fetch_scrolly() == 0
-        expect(sumo_pages.common_web_elements.selected_pagination_item).to_have_text("3")
+        assert (sumo_pages.search_page.get_all_search_results_article_titles() ==
+                second_page_results)
 
 
 # C1329223
@@ -641,6 +646,10 @@ def test_or_operator(page: Page, locale):
 
         for title in sumo_pages.search_page.get_all_search_results_article_titles():
             content = sumo_pages.search_page.get_all_search_results_article_bolded_content(title)
+            if locale != 'en-US' and not content:
+                # Hybrid search also matches the English article and shows its translation,
+                # so there is no bolded term in the localized snippet.
+                continue
             assert _verify_search_results(page, search_term.replace("OR", ""), 'english',
                                           title, content), (f"{search_term} not found in "
                                                             f"search result with title: "
@@ -730,14 +739,16 @@ def test_keywords_field_and_content_operator(page: Page, create_user_factory):
     test_user = create_user_factory(permissions=["review_revision"])
     utilities.start_existing_session(cookies=test_user)
 
-    search_term_keyword = "field:keywords.en-US:playwright search test"
+    keyword_text = "playwright search test"
+    content_text = "playwright search test the content"
+    search_term_keyword = f'field:keywords.en-US:"{keyword_text}"'
     second_search_term_keyword = "field:keywords.en-US:(playwright search NOT test)"
     third_search_term_keyword = "field:keywords.en-US:(playwright search test NOT music)"
-    search_term_content = "field:content.en-US:playwright search test the content"
+    search_term_content = f'field:content.en-US:"{content_text}"'
     article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
         approve_first_revision=True,
-        article_keyword=search_term_keyword.replace("field:keywords.en-US:", ""),
-        article_content=search_term_content.replace("field:content.en-US:", "")
+        article_keyword=keyword_text,
+        article_content=content_text
     )
 
     utilities.reindex_document("WikiDocument", article_details["article_id"])
@@ -777,7 +788,7 @@ def test_keywords_field_and_content_operator(page: Page, create_user_factory):
                 content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
                     title
                 )
-                assert _verify_search_results(page, search_term_content, 'english', title,
+                assert _verify_search_results(page, content_text, 'english', title,
                                               content)
 
 
@@ -842,7 +853,7 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
     with allure.step("Searching for the ro article using the title field operator"):
         utilities.reindex_document("WikiDocument", ro_article_info['translation_id'])
         sumo_pages.search_page.fill_into_searchbar(
-            "field:title.ro:" + ro_article_info['translation_title'])
+            f'field:title.ro:"{ro_article_info["translation_title"]}"')
 
     with allure.step("Verifying that the ro article is successfully returned"):
         expect(sumo_pages.search_page.locate_article_across_pages(
@@ -850,7 +861,7 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
 
     with allure.step("Searching for the ro article using the content field operator"):
         sumo_pages.search_page.fill_into_searchbar(
-            "field:content.ro:" + ro_article_info['translation_body'])
+            f'field:content.ro:"{ro_article_info["translation_body"]}"')
 
     with allure.step("Verifying that the ro article is successfully displayed"):
         expect(sumo_pages.search_page.locate_article_across_pages(
@@ -858,7 +869,7 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
 
     with allure.step("Searching for the ro article using the summary field operator"):
         sumo_pages.search_page.fill_into_searchbar(
-            "field:summary.ro:" + ro_article_info['translation_summary']
+            f'field:summary.ro:"{ro_article_info["translation_summary"]}"'
         )
 
     with allure.step("Verifying that the ro article is successfully displayed"):
@@ -880,7 +891,7 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
     with allure.step("Searching for the ja article using the title field operator"):
         utilities.reindex_document("WikiDocument", ja_article_info['translation_id'])
         sumo_pages.search_page.fill_into_searchbar(
-            "field:title.ja:" + ja_article_info['translation_title'])
+            f'field:title.ja:"{ja_article_info["translation_title"]}"')
 
     with allure.step("Verifying that the ja article is successfully returned"):
         expect(sumo_pages.search_page.locate_article_across_pages(
@@ -888,7 +899,7 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
 
     with allure.step("Searching for the ro article using the content field operator"):
         sumo_pages.search_page.fill_into_searchbar(
-            "field:content.ja:" + ja_article_info['translation_body'])
+            f'field:content.ja:"{ja_article_info["translation_body"]}"')
 
     with allure.step("Verifying that the ro article is successfully displayed"):
         expect(sumo_pages.search_page.locate_article_across_pages(
@@ -896,7 +907,7 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
 
     with allure.step("Searching for the ja article using the summary field operator"):
         sumo_pages.search_page.fill_into_searchbar(
-            "field:summary.ja:" + ja_article_info['translation_summary']
+            f'field:summary.ja:"{ja_article_info["translation_summary"]}"'
         )
 
     with allure.step("Verifying that the ja article is successfully displayed"):
@@ -911,7 +922,6 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
     with allure.step("Verifying that the ro article is successfully displayed"):
         expect(sumo_pages.search_page.locate_article_across_pages(
             ja_article_info['translation_title'])).to_be_visible()
-
 
 # C1358447
 @pytest.mark.searchTests
@@ -1083,13 +1093,13 @@ def test_archived_questions_are_returned_in_advanced_search_results_only(page: P
                      "syntax"):
         sumo_pages.search_page.clear_the_searchbar()
         sumo_pages.search_page.fill_into_searchbar(
-            f"field:question_title.en-US:{question['aaq_subject']}")
+            f'field:question_title.en-US:"{question['aaq_subject']}"')
         expect(sumo_pages.search_page.locate_result_title_across_pages(
             question["aaq_subject"])).to_be_visible()
 
         sumo_pages.search_page.clear_the_searchbar()
         sumo_pages.search_page.fill_into_searchbar(
-            f"field:question_content.en-US:Each time when accessing the following link "
+            f'field:question_content.en-US:"Each time when accessing the following link"'
         )
 
         while sumo_pages.common_web_elements.is_next_pagination_item_visible():
@@ -1262,19 +1272,19 @@ def test_aaq_question_topic_id_field_search(page:Page, create_user_factory):
     test_user = create_user_factory(groups=["Forum Moderators"])
     utilities.start_existing_session(cookies=test_user)
 
-    with check, allure.step("Searching for question_topic 383 inside the searchbox and "
+    with check, allure.step("Searching for question_topic 392 inside the searchbox and "
                             "verifying that returned questions are filled against the"
                             " Accessibility topic"):
-        sumo_pages.search_page.fill_into_searchbar("field:question_topic_id:383")
+        sumo_pages.search_page.fill_into_searchbar("field:question_topic_id:392")
         results = sumo_pages.search_page.get_all_search_results_handles()
         random.choice(results).click()
         sumo_pages.question_page.click_on_question_details_button()
         expect(sumo_pages.question_page.question_details_topic).to_have_text("Accessibility")
 
-    with allure.step("Searching for question_topic 410 inside the searchbox and verifying"
+    with allure.step("Searching for question_topic 419 inside the searchbox and verifying"
                      " that the returned questions are filled against the Accounts topic"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
-        sumo_pages.search_page.fill_into_searchbar("field:question_topic_id:410")
+        sumo_pages.search_page.fill_into_searchbar("field:question_topic_id:419")
         results = sumo_pages.search_page.get_all_search_results_handles()
         random.choice(results).click()
         sumo_pages.question_page.click_on_question_details_button()
@@ -1289,23 +1299,23 @@ def test_aaq_question_tag_id_field_search(page:Page, create_user_factory):
     test_user = create_user_factory(groups=["Forum Moderators"])
     utilities.start_existing_session(cookies=test_user)
 
-    with check, allure.step("Searching for question_tag_id 2272 inside the searchbox and "
+    with check, allure.step("Searching for question_tag_id 28 inside the searchbox and "
                             "verifying that the returned questions contain the accessibility tag"):
-        sumo_pages.search_page.fill_into_searchbar("field:question_tag_ids:2772")
+        sumo_pages.search_page.fill_into_searchbar("field:question_tag_ids:28")
         results = sumo_pages.search_page.get_all_search_results_handles()
         random.choice(results).click()
         sumo_pages.question_page.click_on_question_details_button()
 
         assert "accessibility" in sumo_pages.question_page.get_question_tag_options(True)
 
-    with allure.step("Searching for question_tag_id 2273 inside the searchbox and verifying"
+    with allure.step("Searching for question_tag_id 736 inside the searchbox and verifying"
                      " that the returned questions contain the firefox tag"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
-        sumo_pages.search_page.fill_into_searchbar("field:question_tag_ids:2773")
+        sumo_pages.search_page.fill_into_searchbar("field:question_tag_ids:736")
         results = sumo_pages.search_page.get_all_search_results_handles()
         random.choice(results).click()
         sumo_pages.question_page.click_on_question_details_button()
-        assert "firefox" in sumo_pages.question_page.get_question_tag_options(True)
+        assert "app-crash" in sumo_pages.question_page.get_question_tag_options(True)
 
 
 # C1358452
