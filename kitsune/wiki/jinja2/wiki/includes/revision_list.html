@@ -23,9 +23,7 @@
             <th class="status">{{ _('Status') }}</th>
             <th class="significance"><abbr title="{{ _('Significance - MT: Major Content Changes. M: Content Changes. Empty: Minor Changes.') }}"> {{ pgettext("First letter of 'Significance'", 'S') }}</abbr></th>
             <th class="creator">{{ _('Editor') }}</th>
-            {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
-            <th class="l10n"><abbr title="{{ _('Ready for localization') }}">{{ pgettext("First letter of 'Ready for localization'", 'R') }}</abbr></th>
-            {% endif %}
+            <th class="l10n">{% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}<abbr title="{{ _('Ready for localization') }}">{{ pgettext("First letter of 'Ready for localization'", 'R') }}</abbr>{% endif %}</th>
             {# L10n: A noun. There are comments for articles in general (on https://support.mozilla.org/contributors/need-changes) and every article revision. #}
             <th class="comment">{{ _('Comment') }}</th>
             <th class="edit"></th>
