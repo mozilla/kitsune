@@ -130,9 +130,9 @@ first creation is recovered only when a fresh external-ID lookup finds the same 
 (case-insensitively); a name collision alone remains a conflict. Existing organizations
 are not modified.
 
-For provisioning and current-company synchronization, users are linked by saved ID
-or invited email. Only active, unsuspended end users without elevated roles, whose
-primary email and Mozilla identity match, are eligible; existing names and
+Current-company synchronization links users by saved ID or account email; provisioning
+uses saved ID or the invited email. Only active, unsuspended end users without elevated
+roles, whose primary email and Mozilla identity match, are eligible; existing names and
 identities are preserved. Users created for unclaimed accounts get no Mozilla
 identity and skip the verification email; background profile synchronization leaves
 their identity alone until first login attaches it.
@@ -160,8 +160,9 @@ Setup queues captured-pair cleanup when email/FxA identity changes or profile re
 invalidate its resolved identity, even if the user stays in the same company. It does
 not persist the invalidated link.
 
-Remote requests use the account-email lock; hierarchy and row locks are limited to
-local preparation and revalidation. Provider failures and local-state changes use
+Remote requests use the account-email lock, except cleanup for a deleted account, which
+relies on the local-ownership check; hierarchy and row locks are limited to local
+preparation and revalidation. Provider failures and local-state changes use
 the existing task retries; permanent identity conflicts need administrator resolution.
 For membership events, deletion and in-flight cleanup, and the existing-member
 reconciliation command, see [membership mirroring](groups.md#membership-mirroring).

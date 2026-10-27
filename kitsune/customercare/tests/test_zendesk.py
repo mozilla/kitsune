@@ -319,6 +319,89 @@ class ZendeskClientTests(TestCase):
         mock_zenpy.assert_not_called()
 
     @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_unprovisioned_enterprise_requester_is_held_before_any_zendesk_call(self, mock_zenpy):
+        coverage = SupportCoverageFactory()
+        company = coverage.contract.company
+        ZendeskOrganization.objects.create(group_profile=company, zendesk_id="321")
+        self.user.groups.add(company.group)
+        context = accepted_context_for(coverage.product, coverage.zendesk_config, coverage)
+        ticket = SupportTicketFactory(
+            user=self.user,
+            product=coverage.product,
+            origin=SupportTicket.Origin.ENTERPRISE,
+            org_group=company,
+            coverage=coverage,
+            accepted_context=context,
+        )
+
+        self.assertFalse(send_support_ticket_to_zendesk(ticket))
+
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_FLAGGED)
+        self.assertEqual(ticket.org_group, company)
+        self.assertEqual(ticket.accepted_context, context)
+        flag = FlaggedObject.objects.get(object_id=ticket.pk)
+        self.assertEqual(flag.reason, FlaggedObject.REASON_OTHER)
+        self.assertIn(
+            "The requester has not been provisioned in the company's Zendesk organization",
+            flag.notes,
+        )
+        mock_zenpy.assert_not_called()
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_enterprise_ticket_refused_by_zendesk_is_held_instead_of_rejected(self, mock_zenpy):
+        self.user.profile.zendesk_id = "456"
+        self.user.profile.save(update_fields=["zendesk_id"])
+        mock_zenpy.return_value.users.update.return_value = Mock(id=456)
+        mock_zenpy.return_value.users.organization_memberships.return_value = [
+            Mock(user_id=456, organization_id=321)
+        ]
+        coverage = SupportCoverageFactory()
+        company = coverage.contract.company
+        ZendeskOrganization.objects.create(group_profile=company, zendesk_id="321")
+        self.user.groups.add(company.group)
+        for error_class, details in (
+            ("RecordInvalid", {"organization_id": [{"description": "Organization is invalid"}]}),
+            (
+                "UserSuspended",
+                {
+                    "requester": [
+                        {
+                            "description": f"Requester: {self.user.email} is suspended.",
+                            "error": "UserSuspended",
+                        }
+                    ]
+                },
+            ),
+        ):
+            with self.subTest(error_class=error_class):
+                ticket = SupportTicketFactory(
+                    user=self.user,
+                    product=coverage.product,
+                    origin=SupportTicket.Origin.ENTERPRISE,
+                    org_group=company,
+                    coverage=coverage,
+                    accepted_context=accepted_context_for(
+                        coverage.product, coverage.zendesk_config, coverage
+                    ),
+                )
+                mock_zenpy.return_value.tickets.create.side_effect = APIException(
+                    json.dumps({"error": "RecordInvalid", "details": details})
+                )
+
+                self.assertFalse(send_support_ticket_to_zendesk(ticket))
+
+                ticket.refresh_from_db()
+                self.assertEqual(ticket.submission_status, SupportTicket.STATUS_FLAGGED)
+                flag = FlaggedObject.objects.get(object_id=ticket.pk)
+                self.assertEqual(flag.reason, FlaggedObject.REASON_OTHER)
+                self.assertEqual(flag.status, FlaggedObject.FLAG_PENDING)
+                self.assertEqual(
+                    flag.notes,
+                    f"Failed to send to Zendesk: Zendesk refused the ticket ({error_class})",
+                )
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
     def test_product_ticket_does_not_set_or_read_organization(self, mock_zenpy):
         self.user.profile.zendesk_id = "456"
         mock_zenpy.return_value.users.update.return_value = Mock(id=456, organization_id=654)

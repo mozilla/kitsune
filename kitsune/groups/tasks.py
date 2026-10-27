@@ -2,14 +2,12 @@ import logging
 from contextlib import nullcontext
 from datetime import timedelta
 
-import requests
 from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Count, Exists, F, OuterRef, Q, Subquery
 from django.utils import timezone
-from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.customercare.zendesk import (
@@ -25,6 +23,7 @@ from kitsune.groups.membership import (
 )
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.provisioning import (
+    ZENDESK_PROVIDER_ERRORS,
     ZendeskProvisioningProgress,
     provision_zendesk_membership,
     save_zendesk_membership_links,
@@ -38,6 +37,18 @@ log = logging.getLogger("k.task")
 
 class ZendeskMembershipChanged(Exception):
     """Local membership or identity changed while Zendesk was being contacted."""
+
+
+class ZendeskUnavailable(Exception):
+    """A provider failure reduced to its class and HTTP status; messages can contain emails."""
+
+    @classmethod
+    def from_error(cls, error):
+        status = getattr(getattr(error, "response", None), "status_code", None)
+        return cls(type(error).__name__, status)
+
+
+RETRYABLE_ERRORS = (ZendeskUnavailable, ZendeskMembershipChanged)
 
 
 def get_sync_company(user, *, for_update=False):
@@ -66,17 +77,15 @@ def save_current_zendesk_membership(user, company, mapping, profile, progress):
         failure = None
         current_mapping = None
         if company is not None:
-            prepared_company = (
-                GroupProfile.objects.select_for_update().filter(pk=company.pk).first()
-            )
+            locked_company = GroupProfile.objects.select_for_update().filter(pk=company.pk).first()
             current_mapping = (
                 ZendeskOrganization.objects.select_for_update()
-                .filter(pk=mapping.pk, group_profile=prepared_company)
+                .filter(pk=mapping.pk, group_profile=locked_company)
                 .first()
             )
             if (
-                prepared_company is None
-                or prepared_company.group_id != company.group_id
+                locked_company is None
+                or locked_company.group_id != company.group_id
                 or current_mapping is None
                 or current_mapping.external_id != mapping.external_id
                 or current_mapping.zendesk_id not in (mapping.zendesk_id, progress.organization_id)
@@ -121,29 +130,17 @@ def save_current_zendesk_membership(user, company, mapping, profile, progress):
         return failure
 
 
-def remove_zendesk_company_memberships(client, profile, removed_organization_ids):
-    if not profile.zendesk_id:
-        return
-    if Profile.all_profiles.filter(zendesk_id=profile.zendesk_id).exclude(pk=profile.pk).exists():
+def remove_zendesk_company_memberships(client, *, user_id, zendesk_user_id, organization_ids):
+    """Remove organization memberships from a Zendesk user that no other profile owns."""
+    if Profile.all_profiles.filter(zendesk_id=zendesk_user_id).exclude(user_id=user_id).exists():
         raise ZendeskProvisioningConflict("account_conflict")
-    user_id = client.validate_removal_user(profile.zendesk_id)
-    organization_ids = set(
-        ZendeskOrganization.objects.exclude(zendesk_id__isnull=True)
-        .exclude(zendesk_id="")
-        .values_list("zendesk_id", flat=True)
-    )
-    organization_ids.update(removed_organization_ids)
-    client.remove_organization_memberships(user_id=user_id, organization_ids=organization_ids)
+    remote_id = client.validate_removal_user(zendesk_user_id)
+    client.remove_organization_memberships(user_id=remote_id, organization_ids=organization_ids)
 
 
 @shared_task(
     acks_late=True,
-    autoretry_for=(
-        APIException,
-        ZenpyException,
-        requests.RequestException,
-        ZendeskMembershipChanged,
-    ),
+    autoretry_for=RETRYABLE_ERRORS,
     retry_backoff=2,
     retry_kwargs={"max_retries": 3},
 )
@@ -176,9 +173,7 @@ def sync_enterprise_zendesk_membership(user_id, removed_organization_ids=()):
             client = ZendeskClient(disable_cache=True, ratelimit_budget=0)
             progress = ZendeskProvisioningProgress()
             try:
-                if company is None:
-                    remove_zendesk_company_memberships(client, profile, removed_organization_ids)
-                else:
+                if company is not None:
                     provision_zendesk_membership(
                         client=client,
                         company=company,
@@ -189,13 +184,21 @@ def sync_enterprise_zendesk_membership(user_id, removed_organization_ids=()):
                         progress=progress,
                         removed_organization_ids=removed_organization_ids,
                     )
-            except (
-                ZendeskProvisioningConflict,
-                APIException,
-                ZenpyException,
-                requests.RequestException,
-            ) as error:
+                elif profile.zendesk_id:
+                    remove_zendesk_company_memberships(
+                        client,
+                        user_id=user_id,
+                        zendesk_user_id=profile.zendesk_id,
+                        organization_ids={
+                            *ZendeskOrganization.objects.linked_ids(),
+                            *removed_organization_ids,
+                        },
+                    )
+            except ZendeskProvisioningConflict as error:
                 failure = error
+            except ZENDESK_PROVIDER_ERRORS as error:
+                failure = ZendeskUnavailable.from_error(error)
+                log.warning("Zendesk unavailable for user %s: %s %s", user_id, *failure.args)
             failure = (
                 save_current_zendesk_membership(user, company, mapping, profile, progress)
                 or failure
@@ -210,18 +213,14 @@ def sync_enterprise_zendesk_membership(user_id, removed_organization_ids=()):
 
 @shared_task(
     acks_late=True,
-    autoretry_for=(
-        APIException,
-        ZenpyException,
-        requests.RequestException,
-        ZendeskMembershipChanged,
-    ),
+    autoretry_for=RETRYABLE_ERRORS,
     retry_backoff=2,
     retry_kwargs={"max_retries": 3},
 )
 @skip_if_read_only_mode
 def remove_stale_zendesk_memberships(user_id, zendesk_user_id, organization_ids):
     """Remove captured company memberships, preserving this user's current company."""
+    failure = None
     try:
         user = get_user_model().all_users.filter(pk=user_id).first()
         email = user.email.strip().casefold() if user else None
@@ -229,11 +228,11 @@ def remove_stale_zendesk_memberships(user_id, zendesk_user_id, organization_ids)
             user = get_user_model().all_users.filter(pk=user_id).first()
             if user and user.email.strip().casefold() != email:
                 raise ZendeskMembershipChanged("Account email changed")
-            owners = Profile.all_profiles.filter(zendesk_id=zendesk_user_id)
-            if owners.exclude(user_id=user_id).exists():
-                raise ZendeskProvisioningConflict("account_conflict")
             organization_ids = {canonical_zendesk_id(value) for value in organization_ids}
-            if user and owners.exists():
+            if (
+                user
+                and Profile.all_profiles.filter(user=user, zendesk_id=zendesk_user_id).exists()
+            ):
                 company = get_sync_company(user)
                 current_id = (
                     ZendeskOrganization.objects.filter(group_profile=company)
@@ -244,13 +243,20 @@ def remove_stale_zendesk_memberships(user_id, zendesk_user_id, organization_ids)
                     organization_ids.discard(canonical_zendesk_id(current_id))
             if not organization_ids:
                 return
-            client = ZendeskClient(disable_cache=True, ratelimit_budget=0)
-            remote_id = client.validate_removal_user(zendesk_user_id)
-            client.remove_organization_memberships(
-                user_id=remote_id, organization_ids=organization_ids
+            remove_zendesk_company_memberships(
+                ZendeskClient(disable_cache=True, ratelimit_budget=0),
+                user_id=user_id,
+                zendesk_user_id=zendesk_user_id,
+                organization_ids=organization_ids,
             )
     except ZendeskProvisioningConflict as error:
         log.warning("Zendesk company membership conflict for user %s: %s", user_id, error.code)
+    except ZENDESK_PROVIDER_ERRORS as error:
+        failure = ZendeskUnavailable.from_error(error)
+        log.warning("Zendesk unavailable for user %s: %s %s", user_id, *failure.args)
+    # Raised outside the handler so the provider error is not chained as its context.
+    if failure is not None:
+        raise failure
 
 
 @shared_task

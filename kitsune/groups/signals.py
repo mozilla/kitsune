@@ -95,11 +95,7 @@ def remove_deleted_user_memberships(sender, instance, using, **kwargs):
         return
 
     organization_ids = tuple(
-        ZendeskOrganization.objects.using(using)
-        .exclude(zendesk_id__isnull=True)
-        .exclude(zendesk_id="")
-        .order_by("zendesk_id")
-        .values_list("zendesk_id", flat=True)
+        ZendeskOrganization.objects.using(using).linked_ids().order_by("zendesk_id")
     )
     if not organization_ids:
         return

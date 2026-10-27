@@ -6,7 +6,12 @@ from django.utils import timezone
 
 from kitsune.customercare.utils import ChatEligibility, resolve_chat_eligibility
 from kitsune.groups.models import GroupProfile
-from kitsune.products.models import ProductSupportConfig, SupportContract, SupportCoverage
+from kitsune.products.models import (
+    ProductSupportConfig,
+    SupportContract,
+    SupportCoverage,
+    ZendeskConfig,
+)
 from kitsune.sumo.urlresolvers import reverse
 
 ENTERPRISE_SUPPORT = "enterprise_support"
@@ -37,9 +42,11 @@ class EnterpriseSupport:
 
 
 @dataclass(frozen=True)
-class SupportForm:
+class SupportAction:
     action: str | None = None
     can_switch: bool = False
+    zendesk_config: ZendeskConfig | None = None
+    coverage: SupportCoverage | None = None
 
     @property
     def support_type(self) -> str | None:
@@ -153,7 +160,7 @@ class SupportRoute:
         return max(legs, key=TICKET_WEIGHTS.__getitem__, default=None)
 
     @cached_property
-    def aaq_action(self) -> SupportForm:
+    def aaq_action(self) -> SupportAction:
         has_forum = self.allows(ProductSupportConfig.SUPPORT_TYPE_FORUM)
         preferred_ticket = self.preferred_ticket
         requested_type = self.request.GET.get("support_type")
@@ -171,10 +178,21 @@ class SupportRoute:
             action = ProductSupportConfig.SUPPORT_TYPE_FORUM
         else:
             action = preferred_ticket
-        return SupportForm(
-            action=action,
-            can_switch=has_forum and preferred_ticket is not None,
+        return self.select(action)
+
+    def select(self, action) -> SupportAction:
+        """Return the selection for an action this route allows."""
+        can_switch = (
+            self.allows(ProductSupportConfig.SUPPORT_TYPE_FORUM)
+            and self.preferred_ticket is not None
         )
+        if action == ENTERPRISE_SUPPORT and (coverage := self.enterprise_support.coverage):
+            return SupportAction(
+                action, can_switch, zendesk_config=coverage.zendesk_config, coverage=coverage
+            )
+        if action == PRODUCT_SUPPORT and (config := self.product_support.config):
+            return SupportAction(action, can_switch, zendesk_config=config.zendesk_config)
+        return SupportAction(action, can_switch)
 
     def allows(self, action, coverage_id=None) -> bool:
         if action == ENTERPRISE_SUPPORT:

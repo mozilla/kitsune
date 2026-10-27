@@ -22,6 +22,10 @@ class MissingTicketContext(Exception):
     pass
 
 
+class TicketHeld(Exception):
+    pass
+
+
 def accepted_context_for(product, zendesk_config, coverage=None, *, topics=None) -> dict:
     if topics is None:
         topics = zendesk_config.topics.filter(topic__isnull=False)
@@ -53,6 +57,13 @@ def accepted_context_for(product, zendesk_config, coverage=None, *, topics=None)
     return context
 
 
+class ZendeskOrganizationQuerySet(models.QuerySet):
+    def linked_ids(self):
+        return self.exclude(Q(zendesk_id__isnull=True) | Q(zendesk_id="")).values_list(
+            "zendesk_id", flat=True
+        )
+
+
 class ZendeskOrganization(ModelBase):
     """Company-wide identity shared by its product support configurations."""
 
@@ -61,6 +72,8 @@ class ZendeskOrganization(ModelBase):
     )
     external_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     zendesk_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+
+    objects = ZendeskOrganizationQuerySet.as_manager()
 
 
 @dataclass(frozen=True)

@@ -1,10 +1,13 @@
-import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from zenpy.lib.exception import APIException, ZenpyException
+from django.db import DatabaseError
 
 from kitsune.groups.membership import enterprise_profiles
-from kitsune.groups.tasks import ZendeskMembershipChanged, sync_enterprise_zendesk_membership
+from kitsune.groups.tasks import (
+    ZendeskMembershipChanged,
+    ZendeskUnavailable,
+    sync_enterprise_zendesk_membership,
+)
 
 
 class Command(BaseCommand):
@@ -26,12 +29,10 @@ class Command(BaseCommand):
         for user_id in user_ids.iterator():
             try:
                 failure = sync_enterprise_zendesk_membership(user_id)
-            except (
-                APIException,
-                ZenpyException,
-                requests.RequestException,
-                ZendeskMembershipChanged,
-            ) as error:
+            except ZendeskUnavailable as error:
+                name, status = error.args
+                failure = f"ZendeskUnavailable {name} {status}"
+            except (ZendeskMembershipChanged, DatabaseError) as error:
                 failure = type(error).__name__
             if failure:
                 failed += 1

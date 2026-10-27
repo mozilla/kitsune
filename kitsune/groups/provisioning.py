@@ -29,6 +29,8 @@ from kitsune.users.models import Profile
 
 log = logging.getLogger("k.groups")
 
+ZENDESK_PROVIDER_ERRORS = (APIException, ZenpyException, requests.RequestException)
+
 
 @dataclass
 class ZendeskProvisioningProgress:
@@ -101,11 +103,7 @@ def provision_zendesk_membership(
     progress.user_id = user_id
     progress.action = "zendesk_membership"
     memberships = client.get_organization_memberships(user_id=user_id)
-    organization_ids = set(
-        ZendeskOrganization.objects.exclude(zendesk_id__isnull=True)
-        .exclude(zendesk_id="")
-        .values_list("zendesk_id", flat=True)
-    )
+    organization_ids = set(ZendeskOrganization.objects.linked_ids())
     organization_ids.update(removed_organization_ids)
     organization_ids = {canonical_zendesk_id(value) for value in organization_ids}
     organization_ids.discard(progress.organization_id)
@@ -161,12 +159,7 @@ def provision_enterprise_invitation(
                     name=user.get_full_name() if invitation.created_user else profile.display_name,
                     progress=progress,
                 )
-            except (
-                ZendeskProvisioningConflict,
-                APIException,
-                ZenpyException,
-                requests.RequestException,
-            ) as error:
+            except (ZendeskProvisioningConflict, *ZENDESK_PROVIDER_ERRORS) as error:
                 failed_action = progress.action
                 error_code = (
                     error.code

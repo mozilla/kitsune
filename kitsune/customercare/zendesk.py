@@ -13,7 +13,7 @@ from zenpy.lib.api_objects import OrganizationMembership, Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
 from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyException
 
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import SupportTicket, TicketHeld
 
 NO_RESPONSE = "No response provided."
 LOGINLESS_TAG = "loginless_ticket"
@@ -497,7 +497,7 @@ class ZendeskClient:
             if not self.has_organization_membership(
                 user_id=ticket.requester_id, organization_id=organization_id
             ):
-                raise ValueError(
+                raise TicketHeld(
                     "The requester is not a member of the company's Zendesk organization"
                 )
             ticket.organization_id = int(organization_id)

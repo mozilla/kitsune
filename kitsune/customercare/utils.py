@@ -11,7 +11,12 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
-from kitsune.customercare.models import MissingTicketContext, SupportTicket, ZendeskOrganization
+from kitsune.customercare.models import (
+    MissingTicketContext,
+    SupportTicket,
+    TicketHeld,
+    ZendeskOrganization,
+)
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.groups.models import GroupProfile
@@ -194,6 +199,8 @@ def create_support_ticket(
         fields["email"] = user.email
 
     if zd_ticket is None:
+        if not accepted_context:
+            raise ValueError("A new support ticket requires its accepted context")
         org_group = coverage.contract.company if coverage else None
         fields.update(
             origin=SupportTicket.Origin.ENTERPRISE if coverage else SupportTicket.Origin.PRODUCT,
@@ -382,7 +389,7 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
                 .first()
             )
             if not organization_id:
-                raise ValueError("The company has no linked Zendesk organization")
+                raise TicketHeld("The company has no linked Zendesk organization")
             if (
                 not submission.user
                 or not submission.user.is_active
@@ -393,16 +400,28 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
                 )
                 != [submission.org_group_id]
             ):
-                raise ValueError("The requester is no longer a member of the accepted company")
+                raise TicketHeld("The requester is no longer a member of the accepted company")
+            # Only membership synchronization may create enterprise requesters in Zendesk.
+            if not submission.user.profile.zendesk_id:
+                raise TicketHeld(
+                    "The requester has not been provisioned in the company's Zendesk organization"
+                )
             ticket_fields["organization_id"] = organization_id
         ticket_audit = ZendeskClient().create_ticket(submission.user, ticket_fields)
         submission.zendesk_ticket_id = str(ticket_audit.ticket.id)
         submission.submission_status = SupportTicket.STATUS_SENT
         submission.save(update_fields=["zendesk_ticket_id", "submission_status"])
         return True
+    except TicketHeld as e:
+        return _handle_zendesk_exception(e)
     except APIException as e:
         error_str = str(e)
         if "UserSuspended" in error_str or "RecordInvalid" in error_str:
+            if submission.origin == SupportTicket.Origin.ENTERPRISE:
+                error_class = "UserSuspended" if "UserSuspended" in error_str else "RecordInvalid"
+                return _handle_zendesk_exception(
+                    TicketHeld(f"Zendesk refused the ticket ({error_class})")
+                )
             submission.submission_status = SupportTicket.STATUS_REJECTED
             submission.save(update_fields=["submission_status"])
             return False

@@ -1162,4 +1162,4 @@ class UpdateTopicTests(TestCase):
         self.assertEqual(response.status_code, 200)
         ticket.refresh_from_db()
         self.assertEqual(ticket.topic, topic)
-        self.assertCountEqual(ticket.zendesk_tags, ["seg-rel-esr", "undefined", *topic.tier_tags])
+        self.assertCountEqual(ticket.zendesk_tags, ["seg-rel-esr", *topic.tier_tags, "general"])

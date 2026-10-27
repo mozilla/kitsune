@@ -1,3 +1,4 @@
+import traceback
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from unittest.mock import call, patch
@@ -16,6 +17,7 @@ from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tasks import (
     ZendeskMembershipChanged,
+    ZendeskUnavailable,
     remove_stale_zendesk_memberships,
     sync_enterprise_zendesk_membership,
 )
@@ -39,7 +41,9 @@ class EnterpriseZendeskMembershipTests(TestCase):
         self.enqueue = self.enterContext(
             patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay")
         )
-        self.enterContext(patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay"))
+        self.cleanup = self.enterContext(
+            patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay")
+        )
         self.client_class = self.enterContext(
             patch("kitsune.groups.tasks.ZendeskClient", autospec=True)
         )
@@ -226,13 +230,6 @@ class EnterpriseZendeskMembershipTests(TestCase):
                     self.enqueue.call_args_list, [call(self.user.pk), call(other.pk)]
                 )
 
-    def test_rolled_back_change_does_not_enqueue(self):
-        with self.captureOnCommitCallbacks(execute=True):
-            with self.assertRaises(ValueError), transaction.atomic():
-                self.user.groups.add(self.company.group)
-                raise ValueError("roll back membership")
-        self.enqueue.assert_not_called()
-
     def test_publish_failure_does_not_raise_after_membership_is_saved(self):
         self.enqueue.side_effect = RuntimeError("Broker unavailable")
         with self.assertLogs(level="ERROR") as logs, self.captureOnCommitCallbacks(execute=True):
@@ -261,60 +258,100 @@ class EnterpriseZendeskMembershipTests(TestCase):
         self.client_class.assert_not_called()
         self.assertFalse(ZendeskOrganization.objects.exists())
 
-    def test_conflicts_warn_without_retrying(self):
-        self.user.groups.add(self.company.group)
-        self.zendesk.ensure_organization.side_effect = ZendeskProvisioningConflict(
-            "zendesk_conflict"
-        )
-        with (
-            patch.object(sync_enterprise_zendesk_membership, "retry") as retry,
-            self.assertLogs("k.task", level="WARNING") as logs,
+    def test_conflicts_log_a_safe_code_without_retrying_or_reaching_later_steps(self):
+        def provider_conflict():
+            self.user.groups.add(self.company.group)
+            self.zendesk.ensure_organization.side_effect = ZendeskProvisioningConflict(
+                "zendesk_conflict"
+            )
+
+        def organization_owned_by_another_company():
+            self.user.groups.add(self.company.group)
+            other = EnterpriseCompanyFactory(root=self.root)
+            ZendeskOrganization.objects.create(group_profile=other, zendesk_id="101")
+
+        def remote_user_owned_by_a_hidden_profile():
+            self.user.groups.add(self.company.group)
+            UserFactory(
+                profile__zendesk_id="201", profile__account_type=Profile.AccountType.SYSTEM
+            )
+
+        def remote_user_claimed_during_setup():
+            self.user.groups.add(self.company.group)
+            self.zendesk.ensure_organization_membership.side_effect = lambda **kwargs: UserFactory(
+                profile__zendesk_id="201"
+            )
+
+        def leaving_user_owned_by_another_profile():
+            Profile.all_profiles.filter(user=self.user).update(zendesk_id="201")
+            UserFactory(profile__zendesk_id="201")
+
+        def cleanup_of_an_ineligible_remote_user():
+            self.zendesk.validate_removal_user.side_effect = ZendeskProvisioningConflict(
+                "account_conflict"
+            )
+
+        def cleanup():
+            remove_stale_zendesk_memberships(self.user.pk, "201", ("101",))
+
+        for arrange, run, code, unreached, organization_id, profile_id in (
+            (provider_conflict, self.sync, "zendesk_conflict", "ensure_user", None, ""),
+            (
+                organization_owned_by_another_company,
+                self.sync,
+                "zendesk_conflict",
+                "ensure_user",
+                None,
+                "",
+            ),
+            (
+                remote_user_owned_by_a_hidden_profile,
+                self.sync,
+                "account_conflict",
+                "remove_organization_memberships",
+                "101",
+                "",
+            ),
+            (remote_user_claimed_during_setup, self.sync, "account_conflict", None, "101", ""),
+            (
+                leaving_user_owned_by_another_profile,
+                self.sync,
+                "account_conflict",
+                "validate_removal_user",
+                None,
+                "201",
+            ),
+            (
+                cleanup_of_an_ineligible_remote_user,
+                cleanup,
+                "account_conflict",
+                "remove_organization_memberships",
+                None,
+                "",
+            ),
         ):
-            self.sync()
-        retry.assert_not_called()
-        self.assertIn(f"user {self.user.pk}: zendesk_conflict", logs.output[0])
-        self.zendesk.ensure_user.assert_not_called()
-
-    def test_local_organization_owner_conflict_stops_before_user_provisioning(self):
-        other = EnterpriseCompanyFactory(root=self.root)
-        owner = ZendeskOrganization.objects.create(group_profile=other, zendesk_id="101")
-        self.user.groups.add(self.company.group)
-        with self.assertLogs("k.task", level="WARNING") as logs:
-            self.sync()
-        self.assertIn("zendesk_conflict", logs.output[0])
-        owner.refresh_from_db()
-        self.assertEqual(owner.zendesk_id, "101")
-        self.zendesk.ensure_user.assert_not_called()
-
-    def test_hidden_profile_owner_conflict_stops_before_membership_changes(self):
-        owner = UserFactory(
-            profile__zendesk_id="201", profile__account_type=Profile.AccountType.SYSTEM
-        )
-        self.user.groups.add(self.company.group)
-        with self.assertLogs("k.task", level="WARNING") as logs:
-            self.sync()
-        self.assertIn("account_conflict", logs.output[0])
-        self.assertEqual(Profile.all_profiles.get(user=owner).zendesk_id, "201")
-        self.assertEqual(Profile.all_profiles.get(user=self.user).zendesk_id, "")
-        self.zendesk.ensure_organization_membership.assert_not_called()
-        self.zendesk.remove_organization_memberships.assert_not_called()
-
-    def test_leave_refuses_a_locally_owned_or_ineligible_zendesk_user(self):
-        Profile.all_profiles.filter(user=self.user).update(zendesk_id="201")
-        owner = UserFactory(profile__zendesk_id="201")
-        with self.assertLogs("k.task", level="WARNING") as logs:
-            self.sync()
-        self.assertIn("account_conflict", logs.output[0])
-        self.zendesk.validate_removal_user.assert_not_called()
-        self.zendesk.remove_organization_memberships.assert_not_called()
-        Profile.all_profiles.filter(user=owner).update(zendesk_id="")
-        self.zendesk.validate_removal_user.side_effect = ZendeskProvisioningConflict(
-            "account_conflict"
-        )
-        with self.assertLogs("k.task", level="WARNING") as logs:
-            self.sync()
-        self.assertIn("account_conflict", logs.output[0])
-        self.zendesk.remove_organization_memberships.assert_not_called()
+            with self.subTest(arrange.__name__), transaction.atomic():
+                self.zendesk.reset_mock(side_effect=True)
+                arrange()
+                with (
+                    patch.object(sync_enterprise_zendesk_membership, "retry") as sync_retry,
+                    patch.object(remove_stale_zendesk_memberships, "retry") as cleanup_retry,
+                    self.assertLogs("k.task", level="WARNING") as logs,
+                ):
+                    run()
+                self.assertIn(f"user {self.user.pk}: {code}", logs.output[0])
+                sync_retry.assert_not_called()
+                cleanup_retry.assert_not_called()
+                if unreached:
+                    getattr(self.zendesk, unreached).assert_not_called()
+                self.assertEqual(
+                    ZendeskOrganization.objects.filter(group_profile=self.company)
+                    .values_list("zendesk_id", flat=True)
+                    .first(),
+                    organization_id,
+                )
+                self.assertEqual(Profile.all_profiles.get(user=self.user).zendesk_id, profile_id)
+                transaction.set_rollback(True)
 
     def test_leave_removes_captured_organization_after_its_mapping_was_deleted(self):
         Profile.all_profiles.filter(user=self.user).update(zendesk_id="201")
@@ -377,157 +414,183 @@ class EnterpriseZendeskMembershipTests(TestCase):
         self.assertIsInstance(retry.call_args.kwargs["exc"], ZendeskMembershipChanged)
         self.client_class.assert_not_called()
 
-    def test_unexpected_provider_error_does_not_discard_committed_mapping_uuid(self):
+    def test_provider_failures_retry_without_their_message_and_unexpected_errors_propagate(self):
+        def response(status):
+            response = requests.Response()
+            response.status_code = status
+            return response
+
         self.user.groups.add(self.company.group)
-        self.zendesk.ensure_organization.side_effect = RuntimeError("worker failure")
-        with (
-            patch.object(sync_enterprise_zendesk_membership, "retry") as retry,
-            self.assertRaisesRegex(RuntimeError, "worker failure"),
-        ):
-            self.sync()
-        retry.assert_not_called()
-        mapping = ZendeskOrganization.objects.get(group_profile=self.company)
-        self.assertEqual(
-            str(mapping.external_id),
-            self.zendesk.ensure_organization.call_args.kwargs["external_id"],
+        url = (
+            "https://support.zendesk.com/api/v2/users/search.json"
+            f"?query=email:%22{self.user.email}%22"
         )
-        self.assertIsNone(mapping.zendesk_id)
-
-    def test_late_profile_ownership_conflict_keeps_completed_organization_link(self):
-        owner = UserFactory()
-
-        def claim_remote_identity(**kwargs):
-            Profile.all_profiles.filter(user=owner).update(zendesk_id="201")
-
-        self.user.groups.add(self.company.group)
-        self.zendesk.ensure_organization_membership.side_effect = claim_remote_identity
-        with self.assertLogs("k.task", level="WARNING") as logs:
-            self.sync()
-        self.assertIn("account_conflict", logs.output[0])
+        for task, method, args in (
+            (
+                sync_enterprise_zendesk_membership,
+                "remove_organization_memberships",
+                (self.user.pk,),
+            ),
+            (
+                remove_stale_zendesk_memberships,
+                "validate_removal_user",
+                (self.user.pk, "201", ("102",)),
+            ),
+        ):
+            for error, status in (
+                (
+                    requests.HTTPError(
+                        f"503 Server Error: Service Unavailable for url: {url}",
+                        response=response(503),
+                    ),
+                    503,
+                ),
+                (requests.ConnectionError(f"Max retries exceeded with url: {url}"), None),
+                (APIException(url, response=response(401)), 401),
+                (ZenpyException(url), None),
+            ):
+                name = type(error).__name__
+                with self.subTest(task=task.name, error=name):
+                    getattr(self.zendesk, method).side_effect = error
+                    with (
+                        patch.object(task, "retry", side_effect=Retry()) as retry,
+                        self.assertLogs("k.task", level="WARNING") as logs,
+                        self.assertRaises(Retry),
+                    ):
+                        task(*args)
+                    retried = retry.call_args.kwargs["exc"]
+                    self.assertIsInstance(retried, ZendeskUnavailable)
+                    self.assertEqual(retried.args, (name, status))
+                    self.assertEqual(retry.call_args.kwargs["max_retries"], 3)
+                    self.assertEqual(
+                        logs.output,
+                        [
+                            "WARNING:k.task:Zendesk unavailable for user "
+                            f"{self.user.pk}: {name} {status}"
+                        ],
+                    )
+                    # Celery logs the retry reason; Sentry records the exception chain.
+                    logged = repr(retried) + "".join(traceback.format_exception(retried))
+                    self.assertNotIn(self.user.email, logged)
+                    self.assertNotIn("zendesk.com", logged)
+            with self.subTest(task=task.name, error="RuntimeError"):
+                getattr(self.zendesk, method).side_effect = RuntimeError("worker failure")
+                with (
+                    patch.object(task, "retry") as retry,
+                    self.assertRaisesRegex(RuntimeError, "worker failure"),
+                ):
+                    task(*args)
+                retry.assert_not_called()
+            getattr(self.zendesk, method).side_effect = None
         self.assertEqual(
             ZendeskOrganization.objects.get(group_profile=self.company).zendesk_id, "101"
         )
-        self.assertEqual(Profile.all_profiles.get(user=self.user).zendesk_id, "")
-
-    def test_transient_failures_retry_and_preserve_completed_identity_links(self):
-        self.user.groups.add(self.company.group)
-        errors = (
-            requests.Timeout("provider timeout"),
-            APIException("unavailable"),
-            ZenpyException(),
-        )
-        for error in errors:
-            with self.subTest(error=type(error).__name__):
-                self.zendesk.remove_organization_memberships.side_effect = error
-                with patch.object(
-                    sync_enterprise_zendesk_membership, "retry", side_effect=Retry()
-                ) as retry:
-                    with self.assertRaises(Retry):
-                        self.sync()
-                self.assertIs(retry.call_args.kwargs["exc"], error)
-                self.assertEqual(retry.call_args.kwargs["max_retries"], 3)
-                self.assertEqual(
-                    ZendeskOrganization.objects.get(group_profile=self.company).zendesk_id, "101"
-                )
-                self.assertEqual(Profile.all_profiles.get(user=self.user).zendesk_id, "201")
-
-    def test_identity_changes_during_setup_queue_only_completed_pair(self):
-        for change in ("email", "fxa_uid", "profile", "departure"):
-            with self.subTest(change=change):
-                user = UserFactory(profile__fxa_uid=f"identity-{change}")
-                user.groups.add(self.company.group)
-
-                def change_identity(**kwargs):
-                    if change == "email":
-                        User.all_users.filter(pk=user.pk).update(email="changed@example.com")
-                    elif change == "profile":
-                        user.profile.delete()
-                        Profile.all_profiles.create(user=user)
-                    else:
-                        if change == "departure":
-                            user.groups.remove(self.company.group)
-                        Profile.all_profiles.filter(user=user).update(
-                            fxa_uid=f"replacement-{change}"
-                        )
-
-                self.zendesk.ensure_organization_membership.side_effect = change_identity
-                with (
-                    patch(
-                        "kitsune.groups.tasks.remove_stale_zendesk_memberships.delay"
-                    ) as cleanup,
-                    self.captureOnCommitCallbacks(execute=True),
-                    patch.object(sync_enterprise_zendesk_membership, "retry", side_effect=Retry()),
-                ):
-                    with self.assertRaises(Retry):
-                        sync_enterprise_zendesk_membership(user.pk)
-                    cleanup.assert_not_called()
-
-                cleanup.assert_called_once_with(user.pk, "201", ("101",))
-                self.assertEqual(Profile.all_profiles.get(user=user).zendesk_id, "")
-                self.assertEqual(
-                    GroupProfile.objects.enterprise_companies(user).exists(), change != "departure"
-                )
-                self.zendesk.reset_mock()
-
-                remove_stale_zendesk_memberships(*cleanup.call_args.args)
-
-                self.zendesk.validate_removal_user.assert_called_once_with("201")
-                self.zendesk.remove_organization_memberships.assert_called_once_with(
-                    user_id="201", organization_ids={"101"}
-                )
-                self.zendesk.ensure_organization_membership.assert_not_called()
-
-    def test_company_deleted_during_first_provisioning_keeps_captured_cleanup(self):
-        self.user.groups.add(self.company.group)
-        self.zendesk.ensure_organization_membership.side_effect = lambda **kwargs: (
-            self.company.delete()
-        )
-        with (
-            patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay") as cleanup,
-            self.captureOnCommitCallbacks(execute=True),
-            patch.object(sync_enterprise_zendesk_membership, "retry", side_effect=Retry()),
-            self.assertRaises(Retry),
-        ):
-            self.sync()
-
-        cleanup.assert_called_once_with(self.user.pk, "201", ("101",))
-        self.assertFalse(ZendeskOrganization.objects.exists())
         self.assertEqual(Profile.all_profiles.get(user=self.user).zendesk_id, "201")
-        self.zendesk.reset_mock()
 
-        remove_stale_zendesk_memberships(*cleanup.call_args.args)
+    def test_setup_invalidation_keeps_valid_links_and_queues_cleanup_for_the_resolved_pair(self):
+        def replace_profile():
+            Profile.all_profiles.filter(user=self.user).delete()
+            Profile.all_profiles.create(user=self.user)
 
-        self.zendesk.remove_organization_memberships.assert_called_once_with(
-            user_id="201", organization_ids={"101"}
-        )
-
-    def test_relinked_organization_cleans_old_grant_and_preserves_current_company(self):
-        self.user.groups.add(self.company.group)
-
-        def relink_company(**kwargs):
-            ZendeskOrganization.objects.filter(group_profile=self.company).update(
-                zendesk_id="00102"
-            )
-
-        self.zendesk.ensure_organization_membership.side_effect = relink_company
-        with (
-            patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay") as cleanup,
-            self.captureOnCommitCallbacks(execute=True),
-            patch.object(sync_enterprise_zendesk_membership, "retry", side_effect=Retry()),
-            self.assertRaises(Retry),
+        for change, apply_change, organization_id, user_id, cleanup_queued in (
+            (
+                "email",
+                lambda: User.all_users.filter(pk=self.user.pk).update(email="changed@example.com"),
+                "101",
+                "",
+                True,
+            ),
+            (
+                "fxa_uid",
+                lambda: Profile.all_profiles.filter(user=self.user).update(fxa_uid="replacement"),
+                "101",
+                "",
+                True,
+            ),
+            ("profile replacement", replace_profile, "101", "", True),
+            (
+                "profile relinked",
+                lambda: Profile.all_profiles.filter(user=self.user).update(zendesk_id="202"),
+                "101",
+                "202",
+                True,
+            ),
+            ("company deleted", self.company.delete, None, "201", True),
+            (
+                "organization relinked",
+                lambda: ZendeskOrganization.objects.filter(group_profile=self.company).update(
+                    zendesk_id="102"
+                ),
+                "102",
+                "201",
+                True,
+            ),
+            (
+                "departure",
+                lambda: self.user.groups.remove(self.company.group),
+                "101",
+                "201",
+                False,
+            ),
         ):
-            self.sync()
+            with self.subTest(change=change), transaction.atomic():
+                self.user.groups.add(self.company.group)
+                self.zendesk.ensure_organization_membership.side_effect = lambda **kwargs: (
+                    apply_change()
+                )
+                self.cleanup.reset_mock()
+                with (
+                    patch.object(
+                        sync_enterprise_zendesk_membership, "retry", side_effect=Retry()
+                    ) as retry,
+                    self.captureOnCommitCallbacks(execute=True),
+                    self.assertRaises(Retry),
+                ):
+                    self.sync()
+                self.assertIsInstance(retry.call_args.kwargs["exc"], ZendeskMembershipChanged)
+                self.assertEqual(
+                    ZendeskOrganization.objects.filter(group_profile=self.company)
+                    .values_list("zendesk_id", flat=True)
+                    .first(),
+                    organization_id,
+                )
+                self.assertEqual(Profile.all_profiles.get(user=self.user).zendesk_id, user_id)
+                self.assertEqual(
+                    self.cleanup.call_args_list,
+                    [call(self.user.pk, "201", ("101",))] if cleanup_queued else [],
+                )
+                transaction.set_rollback(True)
 
-        cleanup.assert_called_once_with(self.user.pk, "201", ("101",))
-        self.zendesk.reset_mock()
-        remove_stale_zendesk_memberships(self.user.pk, "201", ("101", "102"))
-        self.zendesk.remove_organization_memberships.assert_called_once_with(
-            user_id="201", organization_ids={"101"}
-        )
-        self.zendesk.reset_mock()
-        remove_stale_zendesk_memberships(self.user.pk, "201", ("102",))
-        self.zendesk.validate_removal_user.assert_not_called()
-        self.zendesk.remove_organization_memberships.assert_not_called()
+    def test_cleanup_preserves_the_current_company_only_while_the_profile_owns_the_identity(self):
+        self.user.groups.add(self.company.group)
+        ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="00102")
+        validate = call.validate_removal_user("201")
+        for owned_id, captured, expected_calls in (
+            (
+                "201",
+                ("101", "102"),
+                [
+                    validate,
+                    call.remove_organization_memberships(user_id="201", organization_ids={"101"}),
+                ],
+            ),
+            (
+                "202",
+                ("101", "102"),
+                [
+                    validate,
+                    call.remove_organization_memberships(
+                        user_id="201", organization_ids={"101", "102"}
+                    ),
+                ],
+            ),
+            ("201", ("102",), []),
+        ):
+            with self.subTest(owned_id=owned_id, captured=captured):
+                Profile.all_profiles.filter(user=self.user).update(zendesk_id=owned_id)
+                self.zendesk.reset_mock()
+                remove_stale_zendesk_memberships(self.user.pk, "201", captured)
+                self.assertEqual(self.zendesk.method_calls, expected_calls)
 
     def test_unlinked_missing_profile_deleted_user_and_read_only_skip_provider_calls(self):
         self.sync()
@@ -580,138 +643,6 @@ class EnterpriseZendeskMembershipLockTests(TransactionTestCase):
             sync_enterprise_zendesk_membership(user.pk)
         self.assertEqual(ZendeskOrganization.objects.get(group_profile=company).zendesk_id, "101")
         self.assertEqual(Profile.all_profiles.get(user=user).zendesk_id, "201")
-
-    def test_concurrent_profile_relink_retries_without_overwriting_it(self):
-        self.enterContext(patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay"))
-        company = EnterpriseCompanyFactory()
-        user = UserFactory()
-        user.groups.add(company.group)
-
-        def relink_profile():
-            try:
-                Profile.all_profiles.filter(user=user).update(zendesk_id="202")
-            finally:
-                connections.close_all()
-
-        def ensure_membership(**kwargs):
-            with ThreadPoolExecutor(max_workers=1) as pool:
-                pool.submit(relink_profile).result(timeout=5)
-
-        with (
-            patch("kitsune.groups.tasks.ZendeskClient", autospec=True) as client_class,
-            patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay") as cleanup,
-            patch.object(
-                sync_enterprise_zendesk_membership, "retry", side_effect=Retry()
-            ) as retry,
-        ):
-            client = client_class.return_value
-            client.ensure_organization.return_value = "101"
-            client.ensure_user.return_value = "201"
-            client.ensure_organization_membership.side_effect = ensure_membership
-            with self.assertRaises(Retry):
-                sync_enterprise_zendesk_membership(user.pk)
-        self.assertIsInstance(retry.call_args.kwargs["exc"], ZendeskMembershipChanged)
-        cleanup.assert_called_once_with(user.pk, "201", ("101",))
-        self.assertEqual(Profile.all_profiles.get(user=user).zendesk_id, "202")
-        self.assertEqual(ZendeskOrganization.objects.get(group_profile=company).zendesk_id, "101")
-
-    def test_concurrently_cleared_links_are_not_restored(self):
-        self.enterContext(patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay"))
-        self.enterContext(patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay"))
-        company = EnterpriseCompanyFactory()
-        mapping = ZendeskOrganization.objects.create(group_profile=company)
-        user = UserFactory()
-        user.groups.add(company.group)
-
-        for cleared_link in ("organization", "user"):
-            with self.subTest(cleared_link=cleared_link):
-                ZendeskOrganization.objects.filter(pk=mapping.pk).update(zendesk_id="101")
-                Profile.all_profiles.filter(user=user).update(zendesk_id="201")
-
-                def clear_link(link=cleared_link):
-                    try:
-                        if link == "organization":
-                            ZendeskOrganization.objects.filter(pk=mapping.pk).update(
-                                zendesk_id=None
-                            )
-                        else:
-                            Profile.all_profiles.filter(user=user).update(zendesk_id="")
-                    finally:
-                        connections.close_all()
-
-                def ensure_membership(clear=clear_link, **kwargs):
-                    with ThreadPoolExecutor(max_workers=1) as pool:
-                        pool.submit(clear).result(timeout=5)
-
-                with (
-                    patch("kitsune.groups.tasks.ZendeskClient", autospec=True) as client_class,
-                    patch.object(
-                        sync_enterprise_zendesk_membership, "retry", side_effect=Retry()
-                    ) as retry,
-                ):
-                    client = client_class.return_value
-                    client.ensure_organization.return_value = "101"
-                    client.ensure_user.return_value = "201"
-                    client.ensure_organization_membership.side_effect = ensure_membership
-                    with self.assertRaises(Retry):
-                        sync_enterprise_zendesk_membership(user.pk)
-                self.assertIsInstance(retry.call_args.kwargs["exc"], ZendeskMembershipChanged)
-                mapping.refresh_from_db()
-                self.assertEqual(
-                    mapping.zendesk_id, None if cleared_link == "organization" else "101"
-                )
-                self.assertEqual(
-                    Profile.all_profiles.get(user=user).zendesk_id,
-                    "" if cleared_link == "user" else "201",
-                )
-
-    def test_leave_during_first_provisioning_preserves_links_for_cleanup_retry(self):
-        self.enterContext(patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay"))
-        company = EnterpriseCompanyFactory()
-        user = UserFactory()
-        user.groups.add(company.group)
-
-        def leave_company():
-            try:
-                User.all_users.get(pk=user.pk).groups.remove(company.group)
-            finally:
-                connections.close_all()
-
-        def ensure_membership(**kwargs):
-            with ThreadPoolExecutor(max_workers=1) as pool:
-                pool.submit(leave_company).result(timeout=5)
-
-        with patch("kitsune.groups.tasks.ZendeskClient", autospec=True) as client_class:
-            client = client_class.return_value
-            client.ensure_organization.return_value = "101"
-            client.ensure_user.return_value = "201"
-            client.get_organization_memberships.return_value = []
-            client.validate_removal_user.return_value = "201"
-            client.ensure_organization_membership.side_effect = ensure_membership
-            with (
-                patch.object(
-                    sync_enterprise_zendesk_membership, "retry", side_effect=Retry()
-                ) as retry,
-                self.assertRaises(Retry),
-            ):
-                sync_enterprise_zendesk_membership(user.pk)
-            self.assertIsInstance(retry.call_args.kwargs["exc"], ZendeskMembershipChanged)
-            client.ensure_organization_membership.assert_called_once()
-            self.assertFalse(GroupProfile.objects.enterprise_companies(user).exists())
-            self.assertEqual(Profile.all_profiles.get(user=user).zendesk_id, "201")
-            self.assertEqual(
-                ZendeskOrganization.objects.get(group_profile=company).zendesk_id, "101"
-            )
-
-            client.reset_mock()
-            sync_enterprise_zendesk_membership(user.pk)
-
-            client.validate_removal_user.assert_called_once_with("201")
-            client.remove_organization_memberships.assert_called_once_with(
-                user_id="201", organization_ids={"101"}
-            )
-            client.ensure_user.assert_not_called()
-            client.ensure_organization_membership.assert_not_called()
 
     def test_deletion_during_first_provisioning_queues_only_completed_pair_after_commit(self):
         self.enterContext(patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay"))

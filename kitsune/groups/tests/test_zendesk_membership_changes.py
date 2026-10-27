@@ -2,7 +2,7 @@ import time
 from unittest.mock import call, patch
 
 from django.contrib import admin
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.test import RequestFactory, override_settings
@@ -10,7 +10,6 @@ from django.urls import path, reverse
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.groups.models import GroupProfile
-from kitsune.groups.tasks import sync_enterprise_zendesk_membership
 from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.urls import urlpatterns as sumo_urlpatterns
@@ -40,221 +39,172 @@ class EnterpriseZendeskMembershipChangesTests(TestCase):
         self.department = DepartmentFactory(company=self.company)
         self.user = UserFactory(profile__zendesk_id="201")
 
-    def test_company_group_deletion_captures_remote_id_for_all_members_once(self):
-        other = UserFactory()
-        self.user.groups.add(self.company.group, self.department.group)
-        other.groups.add(self.department.group)
-        mapping = ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
-
-        with self.captureOnCommitCallbacks(execute=True), transaction.atomic():
-            self.company.group.delete()
-            self.enqueue.assert_not_called()
-            self.client_class.assert_not_called()
-
-        self.assertCountEqual(
-            self.enqueue.call_args_list,
-            [
+    def test_hierarchy_changes_queue_affected_members_after_commit(self):
+        def company_group_deletion():
+            other = UserFactory()
+            self.user.groups.add(self.company.group, self.department.group)
+            other.groups.add(self.department.group)
+            ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
+            return self.company.group.delete, [
                 call(self.user.pk, removed_organization_ids=("101",)),
                 call(other.pk, removed_organization_ids=("101",)),
-            ],
-        )
-        self.assertFalse(ZendeskOrganization.objects.filter(pk=mapping.pk).exists())
-        sync_enterprise_zendesk_membership(self.user.pk, removed_organization_ids=("101",))
-        self.zendesk.remove_organization_memberships.assert_called_once_with(
-            user_id="201", organization_ids={"101"}
-        )
-        self.zendesk.ensure_organization_membership.assert_not_called()
+            ]
 
-    def test_moved_former_company_deletion_captures_retained_mapping(self):
-        outside = GroupProfileFactory()
-        self.user.groups.add(self.department.group)
-        mapping = ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
-        with self.captureOnCommitCallbacks(execute=True):
-            GroupProfile.objects.move(self.company, outside, "last-child")
-        self.assertFalse(GroupProfile.objects.enterprise_companies(self.user).exists())
-        self.assertTrue(ZendeskOrganization.objects.filter(pk=mapping.pk).exists())
-        self.enqueue.reset_mock()
+        def former_company_group_deletion():
+            self.user.groups.add(self.department.group)
+            ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
+            GroupProfile.objects.move(self.company, GroupProfileFactory(), "last-child")
+            return self.company.group.delete, [
+                call(self.user.pk, removed_organization_ids=("101",))
+            ]
 
-        with self.captureOnCommitCallbacks(execute=True), transaction.atomic():
-            self.company.group.delete()
-            self.enqueue.assert_not_called()
-            self.client_class.assert_not_called()
+        def department_group_deletion():
+            self.user.groups.add(self.company.group, self.department.group)
+            return self.department.group.delete, [call(self.user.pk)]
 
-        self.enqueue.assert_called_once_with(self.user.pk, removed_organization_ids=("101",))
-        self.assertFalse(ZendeskOrganization.objects.filter(pk=mapping.pk).exists())
+        def company_profile_deletion():
+            self.user.groups.add(self.company.group)
+            ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
+            return self.company.delete, [call(self.user.pk, removed_organization_ids=("101",))]
 
-    def test_department_group_deletion_reconciles_surviving_company_membership(self):
-        self.user.groups.add(self.company.group, self.department.group)
-        with self.captureOnCommitCallbacks(execute=True), transaction.atomic():
-            self.department.group.delete()
-            self.enqueue.assert_not_called()
-            self.client_class.assert_not_called()
+        def profile_queryset_deletion_with_a_shared_group():
+            DepartmentFactory(company=GroupProfileFactory(), group=self.department.group)
+            self.user.groups.add(self.department.group)
+            return GroupProfile.objects.filter(pk=self.company.pk).delete, [call(self.user.pk)]
 
-        self.enqueue.assert_called_once_with(self.user.pk)
-        self.assertQuerySetEqual(
-            GroupProfile.objects.enterprise_companies(self.user), [self.company]
-        )
+        def overlapping_bulk_group_deletion():
+            self.user.groups.add(self.company.group, self.department.group)
+            groups = Group.objects.filter(pk__in=[self.company.group_id, self.department.group_id])
+            return groups.delete, [call(self.user.pk)]
 
-    def test_direct_company_profile_deletion_preserves_group_but_captures_remote_id(self):
-        self.user.groups.add(self.company.group)
-        ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
-        group_id = self.company.group_id
-        company_id = self.company.pk
-        with self.captureOnCommitCallbacks(execute=True):
-            self.company.delete()
-            self.enqueue.assert_not_called()
-
-        self.enqueue.assert_called_once_with(self.user.pk, removed_organization_ids=("101",))
-        self.assertTrue(
-            User.groups.through.objects.filter(user=self.user, group_id=group_id).exists()
-        )
-        self.assertFalse(GroupProfile.objects.filter(pk=company_id).exists())
-        self.assertFalse(GroupProfile.objects.enterprise_companies(self.user).exists())
-
-    def test_profile_queryset_deletion_preserves_shared_groups_and_enqueues_members(self):
-        outside = GroupProfileFactory()
-        shared = DepartmentFactory(company=outside, group=self.department.group)
-        self.user.groups.add(self.department.group)
-        with self.captureOnCommitCallbacks(execute=True):
-            GroupProfile.objects.filter(pk=self.company.pk).delete()
-            self.enqueue.assert_not_called()
-
-        self.enqueue.assert_called_once_with(self.user.pk)
-        self.assertTrue(Group.objects.filter(pk=self.department.group_id).exists())
-        self.assertTrue(GroupProfile.objects.filter(pk=shared.pk).exists())
-        self.assertFalse(GroupProfile.objects.enterprise_companies(self.user).exists())
-
-    def test_bulk_group_deletion_handles_overlapping_subtrees(self):
-        self.user.groups.add(self.company.group, self.department.group)
-        with self.captureOnCommitCallbacks(execute=True):
-            Group.objects.filter(pk__in=[self.company.group_id, self.department.group_id]).delete()
-        self.enqueue.assert_called_once_with(self.user.pk)
-        self.assertFalse(GroupProfile.objects.enterprise_companies(self.user).exists())
-
-    def test_root_profile_deletion_captures_every_deleted_company_mapping(self):
-        other_company = EnterpriseCompanyFactory(root=self.root)
-        other_user = UserFactory()
-        self.user.groups.add(self.department.group)
-        other_user.groups.add(other_company.group)
-        ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
-        ZendeskOrganization.objects.create(group_profile=other_company, zendesk_id="102")
-        with self.captureOnCommitCallbacks(execute=True):
-            self.root.delete()
-
-        self.assertCountEqual(
-            self.enqueue.call_args_list,
-            [
+        def root_profile_deletion():
+            other_company = EnterpriseCompanyFactory(root=self.root)
+            other = UserFactory()
+            self.user.groups.add(self.department.group)
+            other.groups.add(other_company.group)
+            ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
+            ZendeskOrganization.objects.create(group_profile=other_company, zendesk_id="102")
+            return self.root.delete, [
                 call(self.user.pk, removed_organization_ids=("101", "102")),
-                call(other_user.pk, removed_organization_ids=("101", "102")),
-            ],
-        )
-        self.assertFalse(ZendeskOrganization.objects.exists())
+                call(other.pk, removed_organization_ids=("101", "102")),
+            ]
 
-    def test_unrelated_group_deletion_does_not_enqueue(self):
-        unrelated = GroupProfileFactory()
-        self.user.groups.add(unrelated.group)
-        with self.captureOnCommitCallbacks(execute=True):
-            unrelated.group.delete()
-        self.enqueue.assert_not_called()
+        def unrelated_group_deletion():
+            unrelated = GroupProfileFactory()
+            self.user.groups.add(unrelated.group)
+            return unrelated.group.delete, []
 
-    def test_department_move_between_companies_enqueues_current_company(self):
-        other_company = EnterpriseCompanyFactory(root=self.root)
-        nested = DepartmentFactory(company=self.department)
-        self.user.groups.add(self.department.group, nested.group)
-        with self.captureOnCommitCallbacks(execute=True), transaction.atomic():
-            GroupProfile.objects.move(self.department, other_company, "last-child")
-            self.enqueue.assert_not_called()
-            self.client_class.assert_not_called()
+        def department_move_between_companies():
+            other_company = EnterpriseCompanyFactory(root=self.root)
+            nested = DepartmentFactory(company=self.department)
+            self.user.groups.add(self.department.group, nested.group)
+            return (
+                lambda: GroupProfile.objects.move(self.department, other_company, "last-child"),
+                [call(self.user.pk)],
+            )
 
-        self.enqueue.assert_called_once_with(self.user.pk)
-        self.assertQuerySetEqual(
-            GroupProfile.objects.enterprise_companies(self.user), [other_company]
-        )
+        def subtree_move_into_a_company():
+            team = DepartmentFactory(company=GroupProfileFactory())
+            self.user.groups.add(team.group)
+            return (
+                lambda: GroupProfile.objects.move(team, self.company, "last-child"),
+                [call(self.user.pk)],
+            )
 
-    def test_subtree_moves_into_and_out_of_enterprise_tree_enqueue(self):
-        outside = GroupProfileFactory()
-        team = DepartmentFactory(company=outside)
-        self.user.groups.add(team.group)
-        for destination, companies in ((self.company, [self.company]), (outside, [])):
-            with self.subTest(destination=destination.pk):
+        def subtree_move_out_of_the_tree():
+            outside = GroupProfileFactory()
+            self.user.groups.add(self.department.group)
+            return (
+                lambda: GroupProfile.objects.move(self.department, outside, "last-child"),
+                [call(self.user.pk)],
+            )
+
+        def move_within_a_company():
+            sibling = DepartmentFactory(company=self.company)
+            self.user.groups.add(self.department.group)
+            return lambda: GroupProfile.objects.move(self.department, sibling, "last-child"), []
+
+        def child_profile_for_a_group_with_members():
+            group = GroupFactory()
+            group.user_set.add(self.user)
+            return (
+                lambda: GroupProfile.objects.add_child(
+                    self.company, create_kwargs={"group": group, "slug": "new-department"}
+                ),
+                [call(self.user.pk)],
+            )
+
+        def sibling_profile_for_a_group_with_members():
+            group = GroupFactory()
+            group.user_set.add(self.user)
+            return (
+                lambda: GroupProfile.objects.add_sibling(
+                    self.company, "left", create_kwargs={"group": group, "slug": "new-company"}
+                ),
+                [call(self.user.pk)],
+            )
+
+        for arrange in (
+            company_group_deletion,
+            former_company_group_deletion,
+            department_group_deletion,
+            company_profile_deletion,
+            profile_queryset_deletion_with_a_shared_group,
+            overlapping_bulk_group_deletion,
+            root_profile_deletion,
+            unrelated_group_deletion,
+            department_move_between_companies,
+            subtree_move_into_a_company,
+            subtree_move_out_of_the_tree,
+            move_within_a_company,
+            child_profile_for_a_group_with_members,
+            sibling_profile_for_a_group_with_members,
+        ):
+            with self.subTest(arrange.__name__), transaction.atomic():
+                # Rolled-back cases leave stale paths and deleted groups cached on these objects.
+                for profile in (self.root, self.company, self.department):
+                    profile.refresh_from_db()
+                operation, expected = arrange()
                 self.enqueue.reset_mock()
                 with self.captureOnCommitCallbacks(execute=True):
-                    GroupProfile.objects.move(team, destination, "last-child")
-                    self.enqueue.assert_not_called()
-                    self.client_class.assert_not_called()
-                self.enqueue.assert_called_once_with(self.user.pk)
-                self.assertQuerySetEqual(
-                    GroupProfile.objects.enterprise_companies(self.user), companies
-                )
-
-    def test_move_within_company_does_not_enqueue_unchanged_membership(self):
-        sibling = DepartmentFactory(company=self.company)
-        self.user.groups.add(self.department.group)
-        with self.captureOnCommitCallbacks(execute=True):
-            GroupProfile.objects.move(self.department, sibling, "last-child")
-        self.enqueue.assert_not_called()
-
-    def test_add_child_with_existing_group_members_enqueues(self):
-        group = GroupFactory()
-        group.user_set.add(self.user)
-        with self.captureOnCommitCallbacks(execute=True):
-            GroupProfile.objects.add_child(
-                self.company, create_kwargs={"group": group, "slug": "new-department"}
-            )
-            self.enqueue.assert_not_called()
-            self.client_class.assert_not_called()
-        self.enqueue.assert_called_once_with(self.user.pk)
-        self.assertQuerySetEqual(
-            GroupProfile.objects.enterprise_companies(self.user), [self.company]
-        )
-
-    def test_add_sibling_with_existing_group_members_enqueues(self):
-        group = GroupFactory()
-        group.user_set.add(self.user)
-        with self.captureOnCommitCallbacks(execute=True):
-            company = GroupProfile.objects.add_sibling(
-                self.company,
-                "left",
-                create_kwargs={"group": group, "slug": "new-company"},
-            )
-            self.enqueue.assert_not_called()
-        self.enqueue.assert_called_once_with(self.user.pk)
-        self.assertQuerySetEqual(GroupProfile.objects.enterprise_companies(self.user), [company])
-
-    def test_rollback_discards_clear_deletion_move_and_insertion_callbacks(self):
-        outside = GroupProfileFactory()
-        group = GroupFactory()
-        group.user_set.add(self.user)
-        self.user.groups.add(self.department.group)
-        operations = (
-            self.department.group.user_set.clear,
-            self.user.groups.clear,
-            self.company.group.delete,
-            lambda: GroupProfile.objects.move(self.department, outside, "last-child"),
-            lambda: GroupProfile.objects.add_child(
-                self.company, create_kwargs={"group": group, "slug": "rolled-back-department"}
-            ),
-        )
-        for operation in operations:
-            with self.subTest(operation=operation), self.captureOnCommitCallbacks(execute=True):
-                with self.assertRaises(ValueError), transaction.atomic():
                     operation()
-                    raise ValueError("roll back hierarchy change")
+                    self.enqueue.assert_not_called()
+                self.assertCountEqual(self.enqueue.call_args_list, expected)
+                transaction.set_rollback(True)
+        self.client_class.assert_not_called()
+
+    def test_rolled_back_or_rejected_changes_queue_nothing(self):
+        outside = GroupProfileFactory()
+        other_company = EnterpriseCompanyFactory(root=self.root)
+        group = GroupFactory()
+        group.user_set.add(self.user)
+        self.user.groups.add(self.company.group, self.department.group)
+        for change, operation in (
+            ("addition", lambda: UserFactory().groups.add(self.company.group)),
+            ("reverse clear", self.department.group.user_set.clear),
+            ("forward clear", self.user.groups.clear),
+            ("group deletion", self.company.group.delete),
+            ("move", lambda: GroupProfile.objects.move(self.department, outside, "last-child")),
+            (
+                "insertion",
+                lambda: GroupProfile.objects.add_child(
+                    self.company, create_kwargs={"group": group, "slug": "rolled-back-department"}
+                ),
+            ),
+            (
+                "rejected move",
+                lambda: GroupProfile.objects.move(self.department, other_company, "last-child"),
+            ),
+        ):
+            with self.subTest(change=change), self.captureOnCommitCallbacks(execute=True):
+                with self.assertRaises((ValueError, ValidationError)), transaction.atomic():
+                    operation()
+                    raise ValueError("roll back the change")
             self.enqueue.assert_not_called()
             self.assertQuerySetEqual(
                 GroupProfile.objects.enterprise_companies(self.user), [self.company]
             )
         self.client_class.assert_not_called()
-
-    def test_rejected_company_move_does_not_enqueue(self):
-        other_company = EnterpriseCompanyFactory(root=self.root)
-        self.user.groups.add(self.company.group, self.department.group)
-        with self.captureOnCommitCallbacks(execute=True), self.assertRaises(ValidationError):
-            GroupProfile.objects.move(self.department, other_company, "last-child")
-        self.enqueue.assert_not_called()
-        self.assertQuerySetEqual(
-            GroupProfile.objects.enterprise_companies(self.user), [self.company]
-        )
 
     def admin_reassign(self, group, **changes):
         operator = UserFactory(is_staff=True, is_superuser=True)

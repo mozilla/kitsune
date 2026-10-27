@@ -155,7 +155,7 @@ def classify_zendesk_submission(submission: SupportTicket) -> dict[str, Any]:
     def zendesk_on_reassignment(product_result: dict[str, Any], new_product: Product):
         """Handle product reassignment for Zendesk tickets."""
         if submission.accepted_context or product.has_ticketing_support:
-            # Original product has ticketing support - send to Zendesk with "other" tag, skip topic classification
+            # Accepted tickets, or products with ticketing support, send with the "other" tag
             return {
                 "action": ModerationAction.NOT_SPAM,
                 "product_result": product_result,

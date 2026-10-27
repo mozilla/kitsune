@@ -369,7 +369,8 @@ active/suspended-status drift; these do not justify retaining old company access
 Synchronization commits the organization mapping/UUID before provider calls and
 revalidates local state under short locks afterward. Safely validated links survive
 membership changes so retries can remove stale grants. Remote calls hold the account-email
-lock, never hierarchy or row locks.
+lock, never hierarchy or row locks. Cleanup for a deleted account runs without the
+account-email lock and relies on the local-ownership check.
 
 If the account or mapping disappears or is replaced during setup, queue cleanup after
 commit for that attempt's resolved remote user/organization pair. Do the same when an

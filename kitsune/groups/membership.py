@@ -19,10 +19,10 @@ _HIERARCHY_LOCK_KEY = int.from_bytes(
 def company_organization_ids(group_ids, *, using="default"):
     profiles = apps.get_model("groups", "GroupProfile").objects.db_manager(using)
     return (
-        profiles.containing_groups(group_ids)
-        .exclude(zendesk_organization__zendesk_id__isnull=True)
-        .exclude(zendesk_organization__zendesk_id="")
-        .values_list("zendesk_organization__zendesk_id", flat=True)
+        apps.get_model("customercare", "ZendeskOrganization")
+        .objects.using(using)
+        .filter(group_profile__in=profiles.containing_groups(group_ids))
+        .linked_ids()
     )
 
 
@@ -218,9 +218,7 @@ def guard_enterprise_group_move(node, target, *, using="default"):
                 apps.get_model("customercare", "ZendeskOrganization")
                 .objects.using(using)
                 .filter(group_profile_id__in={company_id for _, company_id in before.values()})
-                .exclude(zendesk_id__isnull=True)
-                .exclude(zendesk_id="")
-                .values_list("zendesk_id", flat=True)
+                .linked_ids()
             )
             yield
             after = _profile_companies(profile_ids, using)

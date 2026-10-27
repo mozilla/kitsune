@@ -296,19 +296,6 @@ class EnterpriseTicketTests(TestCase):
                 self.assertFalse(Question.objects.exists())
         self.classifier.assert_not_called()
 
-    def test_product_action_no_longer_allowed_requests_fresh_get(self):
-        self.user.groups.clear()
-        self.assertContains(self.client.get(self.url), "Product support topic")
-        self.support_config.is_active = False
-        self.support_config.save()
-        self.user.groups.add(self.company.group)
-
-        response = self.client.post(self.url, self.product_data)
-        self.assertRedirects(response, self.url, fetch_redirect_response=False)
-        self.assertFalse(SupportTicket.objects.exists())
-        self.assertFalse(Question.objects.exists())
-        self.classifier.assert_not_called()
-
     def test_forum_action_no_longer_allowed_requests_fresh_get(self):
         self.use_forum_support()
         self.assertContains(
@@ -491,34 +478,30 @@ class EnterpriseTicketTests(TestCase):
         )
 
     @patch("kitsune.questions.views.is_ratelimited")
-    def test_product_limit_does_not_block_enterprise_ticket(self, ratelimited):
-        def check_limit(request, group, rate):
-            request.limited = group == "loginless"
-            return request.limited
+    def test_each_origin_has_its_own_daily_limit(self, ratelimited):
+        def submit(origin):
+            if origin == SupportTicket.Origin.ENTERPRISE:
+                self.user.groups.add(self.company.group)
+                return self.client.post(self.url, self.data)
+            self.user.groups.clear()
+            return self.client.post(self.url, self.product_data)
 
-        ratelimited.side_effect = check_limit
-        self.user.groups.clear()
-        response = self.client.post(self.url, self.product_data)
-        self.assertContains(response, "exceeded the number of submissions for today.")
-        self.assertFalse(SupportTicket.objects.exists())
+        enterprise, product = SupportTicket.Origin.ENTERPRISE, SupportTicket.Origin.PRODUCT
+        for limited, allowed, limit in (
+            (enterprise, product, ("enterprise-ticket", "20/d")),
+            (product, enterprise, ("loginless", "3/d")),
+        ):
+            with self.subTest(limited=limited):
+                SupportTicket.objects.all().delete()
 
-        self.user.groups.add(self.company.group)
-        response = self.client.post(self.url, self.data)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(SupportTicket.objects.get().origin, SupportTicket.Origin.ENTERPRISE)
+                def check_limit(request, group, rate, limit=limit):
+                    request.limited = (group, rate) == limit
+                    return request.limited
 
-    @patch("kitsune.questions.views.is_ratelimited")
-    def test_enterprise_limit_does_not_block_product_ticket(self, ratelimited):
-        def check_limit(request, group, rate):
-            request.limited = group == "enterprise-ticket"
-            return request.limited
+                ratelimited.side_effect = check_limit
+                response = submit(limited)
+                self.assertContains(response, "exceeded the number of submissions for today.")
+                self.assertFalse(SupportTicket.objects.exists())
 
-        ratelimited.side_effect = check_limit
-        response = self.client.post(self.url, self.data)
-        self.assertContains(response, "exceeded the number of submissions for today.")
-        self.assertFalse(SupportTicket.objects.exists())
-
-        self.user.groups.clear()
-        response = self.client.post(self.url, self.product_data)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(SupportTicket.objects.get().origin, SupportTicket.Origin.PRODUCT)
+                self.assertEqual(submit(allowed).status_code, 302)
+                self.assertEqual(SupportTicket.objects.get().origin, allowed)

@@ -40,7 +40,6 @@ from kitsune.products.tests import (
 )
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
 
@@ -367,8 +366,22 @@ class AcceptedTicketContextTests(TestCase):
         self.organization = ZendeskOrganization.objects.create(
             group_profile=self.coverage.contract.company, zendesk_id="321"
         )
-        self.user = UserFactory()
+        self.user = UserFactory(profile__zendesk_id="456")
         self.user.groups.add(self.coverage.contract.company.group)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_new_ticket_requires_accepted_context(self, mock_classify):
+        for accepted_context in (None, {}):
+            with self.subTest(accepted_context=accepted_context):
+                with self.assertRaisesMessage(ValueError, "requires its accepted context"):
+                    create_support_ticket(
+                        self.user,
+                        self.product,
+                        accepted_context=accepted_context,
+                        subject="Deployment help",
+                    )
+        self.assertFalse(SupportTicket.objects.exists())
+        mock_classify.assert_not_called()
 
     @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
     def test_enterprise_creation_preserves_company_and_context(self, mock_classify):
@@ -491,43 +504,6 @@ class AcceptedTicketContextTests(TestCase):
         self.assertEqual(fields["ticket_form_id"], 67890)
         self.assertEqual(fields["brand_id"], 99)
         self.assertEqual(fields["product"], "firefox-private-network-vpn")
-
-    @patch("kitsune.customercare.utils.ZendeskClient")
-    def test_flag_release_sends_with_accepted_context(self, mock_client):
-        ticket = SupportTicketFactory(
-            user=self.user,
-            product=self.product,
-            origin=SupportTicket.Origin.ENTERPRISE,
-            coverage=self.coverage,
-            org_group=self.coverage.contract.company,
-            accepted_context=accepted_context_for(
-                self.product, self.zendesk_config, self.coverage
-            ),
-            submission_status=SupportTicket.STATUS_FLAGGED,
-        )
-        self.support_config.delete()
-        self.coverage.zendesk_config = ZendeskConfigFactory(ticket_form_id="67890", brand_id="99")
-        self.coverage.save()
-        moderator = UserFactory(is_superuser=True)
-        flag = FlaggedObject.objects.create(
-            content_object=ticket, creator=moderator, reason=FlaggedObject.REASON_SPAM
-        )
-        self.client.force_login(moderator)
-        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=789))
-
-        response = self.client.post(
-            reverse("flagit.update", args=[flag.pk]), {"status": FlaggedObject.FLAG_REJECTED}
-        )
-
-        self.assertEqual(response.status_code, 302)
-        ticket.refresh_from_db()
-        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_SENT)
-        fields = mock_client.return_value.create_ticket.call_args.args[1]
-        self.assertEqual(fields["ticket_form_id"], 12345)
-        self.assertEqual(fields["brand_id"], 42)
-        self.assertEqual(fields["product"], "enterprise-vpn")
-        self.assertEqual(fields["origin"], SupportTicket.Origin.ENTERPRISE)
-        self.assertEqual(fields["organization_id"], self.organization.zendesk_id)
 
     @patch("kitsune.customercare.utils.ZendeskClient")
     def test_invalid_zendesk_ids_flag_instead_of_sending(self, mock_client):

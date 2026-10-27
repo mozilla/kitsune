@@ -4,6 +4,7 @@ from unittest.mock import call, patch
 import requests
 from django.conf import settings
 from django.core.management import CommandError, call_command
+from django.db import OperationalError
 from django.test import override_settings
 
 from kitsune.customercare.zendesk import ZendeskProvisioningConflict
@@ -83,10 +84,12 @@ class SyncEnterpriseZendeskMembershipsTests(TestCase):
 
     def test_reports_failures_and_completes_remaining_members_without_queued_retries(self):
         company = EnterpriseCompanyFactory()
-        members = UserFactory.create_batch(4)
+        members = UserFactory.create_batch(5)
         company.group.user_set.add(*members)
         members[-1].profile.delete()
         self.synchronize.side_effect = sync_enterprise_zendesk_membership
+        unauthorized = requests.Response()
+        unauthorized.status_code = 401
 
         with (
             patch("kitsune.groups.tasks.ZendeskClient", autospec=True) as client_class,
@@ -98,7 +101,12 @@ class SyncEnterpriseZendeskMembershipsTests(TestCase):
             client.ensure_organization.return_value = "101"
             client.ensure_user.side_effect = (
                 ZendeskProvisioningConflict("account_conflict"),
-                requests.Timeout("private provider response"),
+                requests.HTTPError(
+                    "401 Client Error: Unauthorized for url: https://support.zendesk.com/api/v2/"
+                    f"users/search.json?query=email:%22{members[1].email}%22",
+                    response=unauthorized,
+                ),
+                OperationalError("private deadlock details"),
                 "201",
             )
             client.get_organization_memberships.return_value = []
@@ -111,12 +119,13 @@ class SyncEnterpriseZendeskMembershipsTests(TestCase):
             self.errors.getvalue().splitlines(),
             [
                 f"User {members[0].pk}: account_conflict.",
-                f"User {members[1].pk}: Timeout.",
-                f"User {members[3].pk}: profile_missing.",
+                f"User {members[1].pk}: ZendeskUnavailable HTTPError 401.",
+                f"User {members[2].pk}: OperationalError.",
+                f"User {members[4].pk}: profile_missing.",
             ],
         )
-        self.assertIn(f"Synchronized user {members[2].pk}.", self.output.getvalue())
-        self.assertIn("Synchronized: 1; failed: 3.", self.output.getvalue())
+        self.assertIn(f"Synchronized user {members[3].pk}.", self.output.getvalue())
+        self.assertIn("Synchronized: 1; failed: 4.", self.output.getvalue())
         enqueue.assert_not_called()
 
     @override_settings(READ_ONLY=True)

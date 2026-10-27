@@ -12,7 +12,7 @@ from kitsune.products.models import ProductSupportConfig, SupportContract
 from kitsune.products.routing import (
     ENTERPRISE_SUPPORT,
     PRODUCT_SUPPORT,
-    SupportForm,
+    SupportAction,
     route_support,
 )
 from kitsune.products.tests import (
@@ -44,7 +44,7 @@ class SupportRoutingTests(TestCase):
 
         self.assertIsNone(route.product_support.support_type)
         self.assertFalse(route.product_support.can_switch)
-        self.assertEqual(route.aaq_action, SupportForm())
+        self.assertEqual(route.aaq_action, SupportAction())
         for action in (
             ProductSupportConfig.SUPPORT_TYPE_FORUM,
             PRODUCT_SUPPORT,
@@ -295,7 +295,7 @@ class SupportRoutingTests(TestCase):
         ):
             with self.subTest(support_type=support_type):
                 product = ProductFactory()
-                ProductSupportConfigFactory(
+                config = ProductSupportConfigFactory(
                     product=product,
                     forum_config=(
                         AAQConfigFactory(enabled_locales=[QuestionLocaleFactory(locale="en-US")])
@@ -307,7 +307,9 @@ class SupportRoutingTests(TestCase):
                 request = self.factory.get("/", {"support_type": requested_type})
                 request.user = self.user
                 route = route_support(request, product)
-                self.assertEqual(route.aaq_action, SupportForm(action))
+                self.assertEqual(
+                    route.aaq_action, SupportAction(action, zendesk_config=config.zendesk_config)
+                )
                 self.assertEqual(route.aaq_action.support_type, support_type)
                 self.assertTrue(route.allows(action))
                 other_action = PRODUCT_SUPPORT if action == "forum" else "forum"
@@ -627,12 +629,18 @@ class EnterpriseSupportRoutingTests(TestCase):
             forum_config=AAQConfigFactory(),
             zendesk_config=ZendeskConfigFactory(),
         )
+        enterprise = SupportAction(
+            ENTERPRISE_SUPPORT,
+            can_switch=True,
+            zendesk_config=self.coverage.zendesk_config,
+            coverage=self.coverage,
+        )
         for default, requested, expected in (
-            ("forum", None, SupportForm(ENTERPRISE_SUPPORT, can_switch=True)),
-            ("zendesk", None, SupportForm(ENTERPRISE_SUPPORT, can_switch=True)),
-            ("forum", "invalid", SupportForm(ENTERPRISE_SUPPORT, can_switch=True)),
-            ("zendesk", "forum", SupportForm("forum", can_switch=True)),
-            ("forum", "zendesk", SupportForm(ENTERPRISE_SUPPORT, can_switch=True)),
+            ("forum", None, enterprise),
+            ("zendesk", None, enterprise),
+            ("forum", "invalid", enterprise),
+            ("zendesk", "forum", SupportAction("forum", can_switch=True)),
+            ("forum", "zendesk", enterprise),
         ):
             with self.subTest(default=default, requested=requested):
                 config.default_support_type = default
@@ -666,13 +674,12 @@ class EnterpriseSupportRoutingTests(TestCase):
                     route.product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM
                 )
                 self.assertTrue(route.product_support.can_switch)
-                self.assertEqual(
-                    route.aaq_action, SupportForm(ENTERPRISE_SUPPORT, can_switch=True)
-                )
+                self.assertEqual(route.aaq_action.action, ENTERPRISE_SUPPORT)
+                self.assertTrue(route.aaq_action.can_switch)
                 self.assertFalse(route.allows(PRODUCT_SUPPORT))
                 self.assertTrue(route.allows(ENTERPRISE_SUPPORT, str(self.coverage.pk)))
                 forum_route = self.route(support_type="forum")
-                self.assertEqual(forum_route.aaq_action, SupportForm("forum", can_switch=True))
+                self.assertEqual(forum_route.aaq_action, SupportAction("forum", can_switch=True))
 
     def test_repeated_product_support_routing_needs_no_queries(self):
         ProductSupportConfigFactory(product=self.product, zendesk_config=ZendeskConfigFactory())

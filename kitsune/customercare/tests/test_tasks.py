@@ -311,6 +311,7 @@ class ZendeskSubmissionClassifierTests(TestCase):
             group_profile=coverage.contract.company, zendesk_id="321"
         )
         ticket = SupportTicketFactory(
+            user=UserFactory(profile__zendesk_id="456"),
             product=self.product,
             origin=SupportTicket.Origin.ENTERPRISE,
             coverage=coverage,
@@ -472,61 +473,57 @@ class ProcessFailedZendeskTicketsTests(TestCase):
         )
 
     @patch("kitsune.customercare.utils.ZendeskClient")
-    def test_process_failed_tickets(self, mock_client):
-        context = accepted_context_for(self.product, self.zendesk_config)
-        ticket = SupportTicketFactory(
-            product=self.product,
-            accepted_context=context,
-            submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
-        )
-        self.support_config.delete()
-        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=123))
-
-        process_failed_zendesk_tickets()
-
-        ticket.refresh_from_db()
-        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_SENT)
-        fields = mock_client.return_value.create_ticket.call_args.args[1]
-        self.assertEqual(fields["ticket_form_id"], int(context["form_id"]))
-        self.assertIsNone(fields["brand_id"])
-        self.assertEqual(fields["product"], self.product.slug)
-        self.assertEqual(fields["origin"], SupportTicket.Origin.PRODUCT)
-
-    @patch("kitsune.customercare.utils.ZendeskClient")
     def test_recovery_sends_with_accepted_context(self, mock_client):
         coverage = SupportCoverageFactory(
             product=self.product,
             zendesk_config=self.zendesk_config,
             zendesk_product_value="enterprise-firefox",
         )
-        ZendeskOrganization.objects.create(
-            group_profile=coverage.contract.company, zendesk_id="321"
-        )
-        context = accepted_context_for(self.product, self.zendesk_config, coverage)
-        submission = SupportTicketFactory(
-            product=self.product,
-            origin=SupportTicket.Origin.ENTERPRISE,
-            coverage=coverage,
-            org_group=coverage.contract.company,
-            accepted_context=context,
-            submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
-        )
-        submission.user.groups.add(coverage.contract.company.group)
+        company = coverage.contract.company
+        ZendeskOrganization.objects.create(group_profile=company, zendesk_id="321")
+        tickets = [
+            SupportTicketFactory(
+                user=UserFactory(profile__zendesk_id="456", groups=[company.group]),
+                product=self.product,
+                origin=origin,
+                coverage=ticket_coverage,
+                org_group=company if ticket_coverage else None,
+                accepted_context=accepted_context_for(
+                    self.product, self.zendesk_config, ticket_coverage
+                ),
+                submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
+            )
+            for origin, ticket_coverage in (
+                (SupportTicket.Origin.PRODUCT, None),
+                (SupportTicket.Origin.ENTERPRISE, coverage),
+            )
+        ]
         self.support_config.delete()
         coverage.zendesk_config = ZendeskConfigFactory(ticket_form_id="123", brand_id="42")
         coverage.save()
-        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=789))
+        mock_client.return_value.create_ticket.side_effect = [
+            Mock(ticket=Mock(id=123)),
+            Mock(ticket=Mock(id=789)),
+        ]
 
         process_failed_zendesk_tickets()
 
-        submission.refresh_from_db()
-        self.assertEqual(submission.submission_status, SupportTicket.STATUS_SENT)
-        fields = mock_client.return_value.create_ticket.call_args.args[1]
-        self.assertEqual(fields["ticket_form_id"], int(context["form_id"]))
-        self.assertIsNone(fields["brand_id"])
-        self.assertEqual(fields["product"], "enterprise-firefox")
-        self.assertEqual(fields["origin"], SupportTicket.Origin.ENTERPRISE)
-        self.assertEqual(fields["organization_id"], "321")
+        sent = {
+            call.args[1]["origin"]: call.args[1]
+            for call in mock_client.return_value.create_ticket.call_args_list
+        }
+        for ticket, product_value, organization_id in (
+            (tickets[0], self.product.slug, None),
+            (tickets[1], "enterprise-firefox", "321"),
+        ):
+            with self.subTest(origin=ticket.origin):
+                ticket.refresh_from_db()
+                self.assertEqual(ticket.submission_status, SupportTicket.STATUS_SENT)
+                fields = sent[ticket.origin]
+                self.assertEqual(fields["ticket_form_id"], int(ticket.accepted_context["form_id"]))
+                self.assertIsNone(fields["brand_id"])
+                self.assertEqual(fields["product"], product_value)
+                self.assertEqual(fields.get("organization_id"), organization_id)
 
     @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
     def test_process_failed_tickets_ignores_other_statuses(self, mock_send):

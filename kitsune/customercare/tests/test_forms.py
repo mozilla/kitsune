@@ -756,6 +756,7 @@ class ZendeskFormTests(TestCase):
             self.assertNotIn(tag, submission.zendesk_tags)
 
     def test_config_controls_required_fields_and_rejects_other_configs_topics(self):
+        self.relay_zendesk.enable_os_field = True
         self.relay_zendesk.enable_urgency_field = True
         self.relay_zendesk.enable_deployment_fields = True
         data = {
@@ -778,11 +779,19 @@ class ZendeskFormTests(TestCase):
         )
 
         data.update(
-            category="relay-email-forwarding",
+            category="None",
+            os="None",
             urgency="normal",
             update_channel="esr",
             policy_distribution="policies_json",
         )
+        relay_form = ZendeskForm(
+            data, product=self.vpn_product, zendesk_config=self.relay_zendesk, user=self.user
+        )
+        self.assertFalse(relay_form.is_valid())
+        self.assertEqual(set(relay_form.errors), {"category", "os"})
+
+        data.update(category="relay-email-forwarding", os="win64")
         relay_form = ZendeskForm(
             data, product=self.vpn_product, zendesk_config=self.relay_zendesk, user=self.user
         )
@@ -820,19 +829,22 @@ class ZendeskFormTests(TestCase):
             ticket.accepted_context["automation_tags"][str(topic.pk)], ["accepted-automation"]
         )
 
-    def test_subject_must_fit_the_saved_ticket(self):
-        form = ZendeskForm(
-            {
-                "category": "vpn-connection-issues",
-                "subject": "x" * 256,
-                "description": "Cannot connect",
-            },
-            product=self.vpn_product,
-            zendesk_config=self.vpn_zendesk,
-            user=self.user,
-        )
-        self.assertFalse(form.is_valid())
-        self.assertEqual(set(form.errors), {"subject"})
+    def test_text_fields_must_fit_the_saved_ticket(self):
+        for field in ("subject", "country"):
+            with self.subTest(field=field):
+                form = ZendeskForm(
+                    {
+                        "category": "vpn-connection-issues",
+                        "subject": "Connection trouble",
+                        "description": "Cannot connect",
+                        field: "x" * 256,
+                    },
+                    product=self.vpn_product,
+                    zendesk_config=self.vpn_zendesk,
+                    user=self.user,
+                )
+                self.assertFalse(form.is_valid())
+                self.assertEqual(set(form.errors), {field})
 
     @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
     def test_disabled_fields_drop_submitted_values(self, mock_task):

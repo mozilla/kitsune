@@ -41,7 +41,7 @@ from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
 from kitsune.products.models import Product, ProductSupportConfig, Topic, TopicSlugHistory
-from kitsune.products.routing import ENTERPRISE_SUPPORT, SupportForm, route_support
+from kitsune.products.routing import ENTERPRISE_SUPPORT, SupportAction, route_support
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
@@ -880,8 +880,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
     if product_slug:
         product = get_object_or_404(Product.active, slug=product_slug)
 
-    selected = SupportForm()
-    coverage = None
+    selected = SupportAction()
     if step > 1:
         route = route_support(request, product)
         if step == 3 or request.method == "GET":
@@ -901,9 +900,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                     )
                 messages.error(request, _("This form changed. Review it and submit again."))
                 return HttpResponseRedirect(request.get_full_path())
-            selected = SupportForm(action=action, can_switch=selected.can_switch)
-        if selected.action == ENTERPRISE_SUPPORT:
-            coverage = route.enterprise_support.coverage
+            selected = route.select(action)
 
     if product and not selected.action and product not in products_with_support:
         raise Http404
@@ -953,7 +950,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         context["SUPPORT_TYPE_FORUM"] = ProductSupportConfig.SUPPORT_TYPE_FORUM
         context["SUPPORT_TYPE_ZENDESK"] = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
         context["support_action"] = selected.action
-        context["coverage"] = coverage
+        context["coverage"] = selected.coverage
 
     if step == 2:
         topics = topics_for(request.user, product, parent=None)
@@ -1022,9 +1019,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         )
 
         if support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK:
-            return zendesk_ticket(
-                request, product, route.product_support.config, context, coverage=coverage
-            )
+            return zendesk_ticket(request, product, selected, context)
 
         form = NewQuestionForm(
             product=product,
@@ -1088,17 +1083,16 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
     return render(request, template, context)
 
 
-def zendesk_ticket(request, product, product_config, context, *, coverage=None):
-    zendesk_config = coverage.zendesk_config if coverage else product_config.zendesk_config
+def zendesk_ticket(request, product, selected, context):
     form = ZendeskForm(
         request.POST or None,
         product=product,
-        zendesk_config=zendesk_config,
-        coverage=coverage,
+        zendesk_config=selected.zendesk_config,
+        coverage=selected.coverage,
         user=request.user,
         initial={"country": request.headers.get("X-Client-Geo-Country-Name", "")},
     )
-    group, rate = ("enterprise-ticket", "20/d") if coverage else ("loginless", "3/d")
+    group, rate = ("enterprise-ticket", "20/d") if selected.coverage else ("loginless", "3/d")
     if form.is_valid() and not is_ratelimited(request, group, rate):
         form.send(request.user)
         messages.add_message(

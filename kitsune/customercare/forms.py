@@ -9,7 +9,7 @@ from kitsune.customercare.utils import create_support_ticket
 from kitsune.products.models import ZendeskTopicConfiguration
 
 OS_CHOICES = [
-    (None, _lazy("Select platform")),
+    ("", _lazy("Select platform")),
     ("win64", _lazy("Windows 64-bit")),
     ("win_arm64", _lazy("Windows ARM64/AArch64")),
     ("win32", _lazy("Windows 32-bit")),
@@ -134,7 +134,7 @@ class ZendeskForm(forms.Form):
     )
     subject = forms.CharField(label=_lazy("Subject"), max_length=255)
     description = forms.CharField(label=_lazy("Tell us more"), widget=forms.Textarea())
-    country = forms.CharField(widget=forms.HiddenInput, required=False)
+    country = forms.CharField(widget=forms.HiddenInput, required=False, max_length=255)
 
     def __init__(self, *args, product, zendesk_config, coverage=None, user=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -161,7 +161,7 @@ class ZendeskForm(forms.Form):
         )
         self.topics = {config.zendesk_topic.slug: config.zendesk_topic for config in topic_configs}
         self.fields["category"].choices = [
-            (None, _lazy("Select a reason for contacting")),
+            ("", _lazy("Select a reason for contacting")),
             *[
                 (config.zendesk_topic.slug, config.zendesk_topic.form_title)
                 for config in topic_configs
