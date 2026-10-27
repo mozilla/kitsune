@@ -378,7 +378,6 @@ class AAQContextTests(TestCase):
         expected = {
             "product_slug": self.product.slug,
             "multiple_products": True,
-            "has_ticketing_support": True,
             "has_public_forum": True,
             "current_support_type": ProductSupportConfig.SUPPORT_TYPE_FORUM,
             "can_switch": True,

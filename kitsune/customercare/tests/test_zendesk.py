@@ -8,12 +8,15 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, Group
 from django.core.cache import cache
 from django.core.checks import Warning
+from django.db import ProgrammingError
 from django.test import SimpleTestCase, override_settings
 from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RatelimitBudgetExceeded, ZenpyException
 
 from kitsune.customercare.checks import (
     check_zendesk_chat_configuration,
+    check_zendesk_chat_switch,
     check_zendesk_oauth_configuration,
 )
 from kitsune.customercare.models import SupportTicket, ZendeskOrganization, accepted_context_for
@@ -2307,7 +2310,7 @@ class ZendeskMembershipProvisioningTests(ZendeskProvisioningTransportMixin, Test
                 )
 
 
-class ZendeskConfigurationChecksTests(SimpleTestCase):
+class ZendeskConfigurationChecksTests(TestCase):
     def test_partial_oauth_configuration_warns(self):
         for client_id, client_secret in (("sumo", ""), ("", "secret")):
             with self.subTest(client_id=client_id, client_secret=client_secret):
@@ -2328,18 +2331,37 @@ class ZendeskConfigurationChecksTests(SimpleTestCase):
                 ):
                     self.assertEqual(check_zendesk_oauth_configuration(None), [])
 
-    def test_chat_configuration_warns_only_when_partial(self):
-        for widget, secret, key_id, expected in (
-            ("", "", "", []),
-            ("widget", "", "", ["customercare.W002"]),
-            ("", "secret", "key-id", ["customercare.W002"]),
-            ("widget", "secret", "key-id", []),
+    def test_chat_configuration_warns_when_partial_or_missing_while_switched_on(self):
+        for widget, secret, key_id, switch, expected in (
+            ("", "", "", False, []),
+            ("", "", "", True, ["customercare.W003"]),
+            ("widget", "", "", True, ["customercare.W002"]),
+            ("", "secret", "key-id", False, ["customercare.W002"]),
+            ("widget", "secret", "key-id", True, []),
         ):
-            with self.subTest(widget=widget, secret=secret, key_id=key_id):
-                with self.settings(
-                    ZENDESK_CHAT_WIDGET_KEY=widget,
-                    ZENDESK_CHAT_SIGNING_SECRET=secret,
-                    ZENDESK_CHAT_SIGNING_KEY_ID=key_id,
+            with self.subTest(widget=widget, secret=secret, key_id=key_id, switch=switch):
+                with (
+                    self.settings(
+                        ZENDESK_CHAT_WIDGET_KEY=widget,
+                        ZENDESK_CHAT_SIGNING_SECRET=secret,
+                        ZENDESK_CHAT_SIGNING_KEY_ID=key_id,
+                    ),
+                    override_switch("zendesk-chat", active=switch),
                 ):
-                    warnings = check_zendesk_chat_configuration(None)
+                    warnings = check_zendesk_chat_configuration(None) + check_zendesk_chat_switch(
+                        None, databases=["default"]
+                    )
                 self.assertEqual([warning.id for warning in warnings], expected)
+
+        # Quiet unless databases are named, and before the switch table exists.
+        with (
+            self.settings(
+                ZENDESK_CHAT_WIDGET_KEY="",
+                ZENDESK_CHAT_SIGNING_SECRET="",
+                ZENDESK_CHAT_SIGNING_KEY_ID="",
+            ),
+            override_switch("zendesk-chat", active=True),
+        ):
+            self.assertEqual(check_zendesk_chat_switch(None), [])
+            with patch("waffle.switch_is_active", side_effect=ProgrammingError):
+                self.assertEqual(check_zendesk_chat_switch(None, databases=["default"]), [])

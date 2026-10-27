@@ -425,7 +425,6 @@ def get_aaq_context(request, product, multiple_products=False):
     aaq_context = {
         "product_slug": product.slug,
         "multiple_products": multiple_products,
-        "has_ticketing_support": product.has_ticketing_support,
         "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
         "current_support_type": support_type,
         "can_switch": product_support.can_switch,

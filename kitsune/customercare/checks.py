@@ -1,5 +1,7 @@
+import waffle
 from django.conf import settings
-from django.core.checks import Warning, register
+from django.core.checks import Tags, Warning, register
+from django.db import DatabaseError
 
 
 @register()
@@ -35,6 +37,34 @@ def check_zendesk_chat_configuration(app_configs, **kwargs):
                     "ZENDESK_CHAT_SIGNING_KEY_ID to enable chat, or clear all three."
                 ),
                 id="customercare.W002",
+            )
+        ]
+    return []
+
+
+@register(Tags.database)
+def check_zendesk_chat_switch(app_configs, databases=None, **kwargs):
+    if not databases or (
+        settings.ZENDESK_CHAT_WIDGET_KEY
+        or settings.ZENDESK_CHAT_SIGNING_SECRET
+        or settings.ZENDESK_CHAT_SIGNING_KEY_ID
+    ):
+        return []
+    try:
+        switched_on = waffle.switch_is_active("zendesk-chat")
+    except DatabaseError:
+        # On a fresh database, migrate runs checks before the switch table exists.
+        return []
+    if switched_on:
+        return [
+            Warning(
+                "The zendesk-chat switch is active but Zendesk chat is not configured; chat "
+                "will be unavailable.",
+                hint=(
+                    "Set ZENDESK_CHAT_WIDGET_KEY, ZENDESK_CHAT_SIGNING_SECRET, and "
+                    "ZENDESK_CHAT_SIGNING_KEY_ID, or turn off the zendesk-chat switch."
+                ),
+                id="customercare.W003",
             )
         ]
     return []
