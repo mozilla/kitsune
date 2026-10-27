@@ -66,9 +66,8 @@ def get_enterprise_company(root, *, viewer=None, for_update=False, **lookup) -> 
 
 def get_live_chat_config() -> ProductSupportConfig:
     """Return the enterprise product's support configuration, which carries company live chat."""
-    products = list(
-        Product.objects.filter(slug=settings.ENTERPRISE_GROUP_SLUG, is_archived=False)[:2]
-    )
+    slug = settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG
+    products = list(Product.objects.filter(slug=slug, is_archived=False)[:2])
     config = ProductSupportConfig.objects.active_for(products[0]) if len(products) == 1 else None
     # Chat eligibility applies the subscription gate, so a subscription-only config hides chat.
     if (
@@ -262,7 +261,7 @@ def save_live_chat(company, include_live_chat):
         ]
     else:
         organizations = organizations.filter(
-            config__product__slug=settings.ENTERPRISE_GROUP_SLUG, include_live_chat=True
+            config__product__slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG, include_live_chat=True
         )
     for organization in organizations:
         organization.include_live_chat = include_live_chat

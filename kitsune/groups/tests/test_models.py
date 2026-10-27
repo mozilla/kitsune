@@ -1436,9 +1436,9 @@ class CanViewInactiveMembersTests(TestCase):
 
 class EnterpriseGroupTests(TestCase):
     def setUp(self):
-        root_group = Group.objects.create(name="firefox-enterprise")
+        root_group = Group.objects.create(name="professional-support")
         self.root = GroupProfile.objects.add_root(
-            create_kwargs={"group": root_group, "slug": "firefox-enterprise"}
+            create_kwargs={"group": root_group, "slug": settings.ENTERPRISE_GROUP_SLUG}
         )
         self.root_leader = UserFactory(username="root-leader")
         self.root.leaders.add(self.root_leader)

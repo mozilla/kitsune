@@ -595,7 +595,7 @@ class ProfessionalSupportPresentationTests(TestCase):
         today = timezone.localdate()
         current = {"starts_on": today - timedelta(days=1), "ends_on": today + timedelta(days=1)}
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        self.enterprise = ProductFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
+        self.enterprise = ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG)
         ProductSupportConfigFactory(
             product=self.enterprise,
             forum_config=AAQConfigFactory(enabled_locales=[locale]),

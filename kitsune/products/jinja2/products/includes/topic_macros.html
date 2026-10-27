@@ -48,7 +48,7 @@
 
 {% macro support_callout(product=None, aaq_context=None, extra_class=None) %}
 {% set is_ticketed = (aaq_context.current_support_type == 'zendesk') if aaq_context else False %}
-{% set is_enterprise = (product.slug == settings.ENTERPRISE_GROUP_SLUG) if product else False %}
+{% set is_enterprise = (product.slug == settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG) if product else False %}
 {% set enterprise_logged_out_url = "https://www.firefox.com/en-US/browsers/enterprise/contact/?utm_source=sumo-announcement" %}
 {% if product and has_support_action and not settings.READ_ONLY %}
   <section class="support-callouts mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
@@ -151,7 +151,7 @@
 {%- endmacro %}
 
 {% macro professional_support_section(product, extra_class=None) %}
-{% set is_enterprise_product = product.slug == settings.ENTERPRISE_GROUP_SLUG %}
+{% set is_enterprise_product = product.slug == settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG %}
   <section class="get-support mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
     <h2 class="sumo-page-subheading">{{ _('Get help') }}</h2>
     <div class="get-support--grid">

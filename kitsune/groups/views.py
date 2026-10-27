@@ -283,7 +283,7 @@ def manage_company(request, group_slug):
     if company is not None:
         support = SupportOrganization.objects.filter(
             group=company.group,
-            config__product__slug=settings.ENTERPRISE_GROUP_SLUG,
+            config__product__slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG,
             config__is_active=True,
         ).first()
         linked_id = (

@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import psycopg
 import requests
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core import mail
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -237,7 +238,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                         group=self.company.group,
                         include_live_chat=True,
                         config=ProductSupportConfigFactory(
-                            product=ProductFactory(slug=self.root.slug),
+                            product=ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG),
                             zendesk_config=ZendeskConfigFactory(),
                         ),
                     )
@@ -250,7 +251,7 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
 
     def test_thunderbird_only_company_is_onboarded_without_enterprise_product_access(self):
         today = timezone.localdate()
-        enterprise_product = ProductFactory(slug=self.root.slug)
+        enterprise_product = ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG)
         thunderbird = ProductFactory(title="Thunderbird")
         company = create_enterprise_company(
             actor=self.actor, name="Thunderbird Customer", include_live_chat=False

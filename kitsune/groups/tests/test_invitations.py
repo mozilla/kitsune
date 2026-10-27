@@ -344,7 +344,8 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
         user = self.eligible_user()
         unrelated = GroupProfileFactory()
         enterprise_config = ProductSupportConfigFactory(
-            product=ProductFactory(slug=self.root.slug), zendesk_config=ZendeskConfigFactory()
+            product=ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG),
+            zendesk_config=ZendeskConfigFactory(),
         )
         organization = SupportOrganizationFactory(group=unrelated.group, config=enterprise_config)
         user.groups.add(unrelated.group)

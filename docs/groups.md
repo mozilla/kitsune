@@ -176,13 +176,14 @@ a company does not make the operator a member or leader of it.
 
 Deployment prerequisites:
 
-- `ENTERPRISE_GROUP_SLUG` (default `firefox-enterprise`) identifies the depth-1
-  enterprise root group. The root must have PRIVATE or MODERATED visibility and
-  sibling isolation enabled. Company setup, invitations, and enterprise tickets do not
-  depend on a product support configuration; ticket support comes from
-  [contracts](#enterprise-support-contracts).
-- Optional live chat requires exactly one nonarchived product whose slug matches
-  `ENTERPRISE_GROUP_SLUG`, with an active support configuration that has a Zendesk
+- `ENTERPRISE_GROUP_SLUG` (default `professional-support`) identifies the depth-1
+  enterprise root group. Changing it requires renaming the root group's slug to match;
+  until both match, no company is recognized and enterprise support is unavailable.
+  The root must have PRIVATE or MODERATED visibility and sibling isolation enabled.
+  Company setup, invitations, and enterprise tickets do not depend on a product support
+  configuration; ticket support comes from [contracts](#enterprise-support-contracts).
+- Optional live chat requires exactly one nonarchived Firefox Enterprise product
+  (`firefox-enterprise`), with an active support configuration that has a Zendesk
   configuration and does not require a product subscription. It also requires the
   `zendesk-chat` switch, `ZENDESK_CHAT_WIDGET_KEY`, `ZENDESK_CHAT_SIGNING_KEY_ID`, and
   `ZENDESK_CHAT_SIGNING_SECRET`. The form does not change these deployment settings.

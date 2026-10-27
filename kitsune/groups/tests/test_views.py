@@ -506,11 +506,11 @@ class GroupTicketsViewTests(TestCase):
         self.SupportTicket = SupportTicket
         product = ProductFactory()
 
-        root_group = Group.objects.create(name="firefox-enterprise")
+        root_group = Group.objects.create(name="professional-support")
         self.root = GroupProfile.objects.add_root(
             create_kwargs={
                 "group": root_group,
-                "slug": "firefox-enterprise",
+                "slug": settings.ENTERPRISE_GROUP_SLUG,
                 "visibility": GroupProfile.Visibility.PRIVATE,
             }
         )

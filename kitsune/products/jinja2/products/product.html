@@ -13,9 +13,9 @@
 {% set matomo_mzla = matomo_mzla_enabled([product]) %}
 {% set show_chat = chat_is_available(request, product) %}
 {# Pro support goes at the top; the product's own callout goes in the middle, or at the top on the enterprise page. #}
-{% set own_callout_at_top = product.slug == settings.ENTERPRISE_GROUP_SLUG and not professional_support_products %}
+{% set own_callout_at_top = product.slug == settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG and not professional_support_products %}
 {% set own_callout_in_middle = product not in professional_support_products and not own_callout_at_top %}
-{% set pro_support_masthead = product.slug == settings.ENTERPRISE_GROUP_SLUG or product in professional_support_products %}
+{% set pro_support_masthead = product.slug == settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG or product in professional_support_products %}
 
 {% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 

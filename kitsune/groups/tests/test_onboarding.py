@@ -3,6 +3,7 @@ from threading import Barrier
 from unittest.mock import patch
 
 import requests
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, Group
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, connections, transaction
@@ -58,7 +59,8 @@ class EnterpriseCompanyTests(TestCase):
 
     def _chat_config(self):
         return ProductSupportConfigFactory(
-            product=ProductFactory(slug=self.root.slug), zendesk_config=ZendeskConfigFactory()
+            product=ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG),
+            zendesk_config=ZendeskConfigFactory(),
         )
 
     def _child(self, parent=None, **kwargs):
@@ -215,7 +217,10 @@ class EnterpriseCompanyTests(TestCase):
                 "archived product",
                 lambda: Product.objects.filter(pk=config.product_id).update(is_archived=True),
             ),
-            ("ambiguous product", lambda: ProductFactory(slug=self.root.slug)),
+            (
+                "ambiguous product",
+                lambda: ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG),
+            ),
             (
                 "inactive config",
                 lambda: ProductSupportConfig.objects.filter(pk=config.pk).update(is_active=False),
