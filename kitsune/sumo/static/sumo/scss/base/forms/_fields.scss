@@ -164,6 +164,7 @@ label {
   }
 
   &.mzp-c-emphasis-box {
+    @include c.elevation-01(var(--card-bg));
     margin-left: 0;
     margin-right: 0;
   }
