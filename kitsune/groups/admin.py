@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest
 from django.utils.text import capfirst
+from django.utils.translation import gettext_lazy as _lazy
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
@@ -158,6 +159,11 @@ class GroupProfileAdmin(TreeAdmin):
 
         super().save_model(request, obj, form, change)
         if "group" in form.changed_data:
+            if change and obj.support_contracts.exists():
+                raise ValidationError(
+                    _lazy("Companies with support contracts cannot change their group."),
+                    code="contracted_company",
+                )
             validate_enterprise_group_memberships(obj)
 
     def save_related(self, request, form, formsets, change):

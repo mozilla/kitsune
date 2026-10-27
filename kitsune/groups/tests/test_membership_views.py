@@ -7,6 +7,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupProfileFactory
+from kitsune.products.models import SupportContract
 from kitsune.products.tests import SupportContractFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -392,6 +393,20 @@ class EnterpriseMembershipAdminTests(EnterpriseMembershipFixtures, TestCase):
         self.assert_company_form_error(response)
         self.assertEqual(self.tree_state(), before)
         self.assertEqual(self.memberships(member), memberships)
+
+    def test_contracted_company_group_cannot_be_reassigned(self):
+        SupportContractFactory(company=self.company_a, status=SupportContract.Status.CANCELLED)
+        before = self.tree_state()
+
+        response = self.client.post(
+            reverse("admin:groups_groupprofile_change", args=[self.company_a.pk]),
+            self.profile_data(self.company_a, group=GroupFactory().pk),
+        )
+
+        self.assertContains(
+            response, "Companies with support contracts cannot change their group."
+        )
+        self.assertEqual(self.tree_state(), before)
 
     def test_move_form_rolls_back_descendant_conflict_and_earlier_profile_save(self):
         member = UserFactory()
