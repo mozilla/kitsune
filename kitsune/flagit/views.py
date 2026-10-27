@@ -32,7 +32,7 @@ from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate
+from kitsune.sumo.utils import in_staff_group, paginate
 from kitsune.tags.models import SumoTag
 
 
@@ -405,6 +405,9 @@ def zendesk_spam_queue(request):
 def update(request, flagged_object_id):
     """Update the status of a flagged object."""
     flagged = get_object_or_404(FlaggedObject, pk=flagged_object_id)
+    # Support ticket flags are reviewed only in the staff-only queues.
+    if isinstance(flagged.content_object, SupportTicket) and not in_staff_group(request.user):
+        return HttpResponseForbidden()
     new_status = request.POST.get("status")
     reason = request.GET.get("reason")
     product = request.GET.get("product")

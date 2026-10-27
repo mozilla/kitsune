@@ -1,29 +1,47 @@
 import json
 
 import yaml
-from django.db.models import Exists, OuterRef, Prefetch, Q
+from django.db.models import Count, Prefetch, Q
 
-from kitsune.products.models import Product, SupportOrganization, Topic
+from kitsune.groups.models import GroupProfile
+from kitsune.products.models import Product, SupportCoverage, Topic
 
 
-def get_professional_support_products(user) -> list[Product]:
-    """Get the set of products for which this user has access to professional support."""
+def get_enterprise_companies(request) -> list[GroupProfile]:
+    """Return up to two of the active requesting user's enterprise companies.
 
-    if not (user and user.is_authenticated):
-        return []
-
-    # TODO: The following is a placeholder until support plans are implemented.
-    return list(
-        Product.active.filter(
-            Exists(
-                SupportOrganization.objects.containing(user).filter(
-                    config__product=OuterRef("pk"),
-                    config__is_active=True,
-                    config__zendesk_config__isnull=False,
-                )
-            )
+    More than one means the company is ambiguous. They are resolved once per request.
+    """
+    if not hasattr(request, "_enterprise_companies"):
+        user = request.user
+        request._enterprise_companies = (
+            list(GroupProfile.objects.enterprise_companies(user)[:2])
+            if user and user.is_authenticated and user.is_active
+            else []
         )
+    return request._enterprise_companies
+
+
+def get_support_company(request) -> GroupProfile | None:
+    """Return the requesting user's single enterprise company, or None for none or several."""
+    companies = get_enterprise_companies(request)
+    return companies[0] if len(companies) == 1 else None
+
+
+def get_covered_products(company: GroupProfile) -> list[Product]:
+    """Return the active products the company has effective enterprise coverage for."""
+    # Overlapping coverages of one product are ambiguous, and the router denies them.
+    return list(
+        Product.active.filter(support_coverages__in=SupportCoverage.objects.effective(company))
+        .annotate(coverage_count=Count("support_coverages"))
+        .filter(coverage_count=1)
     )
+
+
+def get_professional_support_products(request) -> list[Product]:
+    """Return the active products the requesting user has effective enterprise coverage for."""
+    company = get_support_company(request)
+    return get_covered_products(company) if company else []
 
 
 def get_taxonomy(

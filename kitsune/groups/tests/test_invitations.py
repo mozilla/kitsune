@@ -15,21 +15,19 @@ from django.http import Http404
 from django.test import RequestFactory, TransactionTestCase, override_settings
 from django.utils import timezone
 from post_office.models import Email
-from waffle.testutils import override_switch
 
 from kitsune.customercare.models import SupportTicket, ZendeskOrganization
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.groups.onboarding import invite_enterprise_user
 from kitsune.groups.tests import EnterpriseInvitationFactory, GroupProfileFactory
-from kitsune.products.models import Product, ProductSupportConfig, SupportOrganization
+from kitsune.products.models import SupportOrganization
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
     SupportOrganizationFactory,
     ZendeskConfigFactory,
 )
-from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.auth import FXAAuthBackend
 from kitsune.users.models import Profile
@@ -67,10 +65,6 @@ class InvitationFixtures:
         )
         self.actor = UserFactory(is_staff=True)
         self.root.leaders.add(self.actor)
-        self.product = ProductFactory(slug=self.root.slug)
-        self.config = ProductSupportConfigFactory(
-            product=self.product, zendesk_config=ZendeskConfigFactory()
-        )
         self.company = self.child(self.root)
         self.other_company = self.child(self.root)
 
@@ -171,11 +165,6 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
         self.assertEqual(len(mail.outbox), sent_before)
         mapping = ZendeskOrganization.objects.get(group_profile=self.company)
         self.assertIsNone(mapping.zendesk_id)
-        self.assertTrue(
-            SupportOrganization.objects.filter(
-                group=self.company.group, config=self.config
-            ).exists()
-        )
 
     def test_each_required_field_and_length_is_validated_before_any_writes(self):
         invalid = (
@@ -231,7 +220,7 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
         unrelated = GroupProfileFactory()
         user.groups.add(unrelated.group)
         unrelated.leaders.add(user)
-        ticket = SupportTicketFactory(user=user, product=self.product)
+        ticket = SupportTicketFactory(user=user)
         before_user = User.all_users.filter(pk=user.pk).values().get()
         before_profile = Profile.all_profiles.filter(pk=user.pk).values().get()
         before_ticket = SupportTicket.objects.filter(pk=ticket.pk).values().get()
@@ -337,29 +326,8 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
         invitation.refresh_from_db()
         self.assertIsNone(invitation.user_id)
 
-    def test_missing_current_config_refuses_repeated_intake(self):
+    def test_deleted_mapping_is_not_recreated_for_existing_invitation(self):
         self.invite()
-        self.config.delete()
-        self.assert_rejected(code="configuration_error")
-
-    def test_repeated_intake_uses_replacement_active_company_config(self):
-        invitation = self.invite()
-        ProductSupportConfig.objects.filter(pk=self.config.pk).update(is_active=False)
-        current_config = ProductSupportConfigFactory(
-            product=self.product, zendesk_config=ZendeskConfigFactory()
-        )
-        self.assert_rejected(code="configuration_error")
-        SupportOrganizationFactory(group=self.company.group, config=current_config)
-        before = self.snapshot()
-        repeated = self.invite(first_name="Replacement", last_name="Names")
-        self.assertEqual(repeated.pk, invitation.pk)
-        self.assertEqual(self.snapshot(), before)
-
-    def test_deleted_support_or_mapping_is_not_recreated_for_existing_invitation(self):
-        self.invite()
-        SupportOrganization.objects.filter(group=self.company.group).delete()
-        self.assert_rejected(code="configuration_error")
-        SupportOrganizationFactory(group=self.company.group, config=self.config)
         ZendeskOrganization.objects.filter(group_profile=self.company).delete()
         self.assert_rejected(code="configuration_error")
 
@@ -372,23 +340,17 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
                 self.assert_rejected(code="company_conflict")
                 user.groups.remove(membership.group)
 
-    def test_other_organization_for_current_config_conflicts_even_outside_enterprise_tree(self):
+    def test_support_organizations_outside_the_enterprise_tree_are_preserved(self):
         user = self.eligible_user()
         unrelated = GroupProfileFactory()
-        SupportOrganizationFactory(group=unrelated.group, config=self.config)
-        department = self.child(unrelated)
-        user.groups.add(department.group)
-        self.assert_rejected(code="company_conflict")
-
-    def test_other_product_organization_is_preserved(self):
-        user = self.eligible_user()
-        unrelated = GroupProfileFactory()
-        other_config = ProductSupportConfigFactory(zendesk_config=ZendeskConfigFactory())
-        organization = SupportOrganizationFactory(group=unrelated.group, config=other_config)
+        enterprise_config = ProductSupportConfigFactory(
+            product=ProductFactory(slug=self.root.slug), zendesk_config=ZendeskConfigFactory()
+        )
+        organization = SupportOrganizationFactory(group=unrelated.group, config=enterprise_config)
         user.groups.add(unrelated.group)
         invitation = self.invite()
         self.assertEqual(invitation.user_id, user.pk)
-        self.assertTrue(SupportOrganization.objects.filter(pk=organization.pk).exists())
+        self.assertQuerySetEqual(SupportOrganization.objects.all(), [organization])
         self.assertTrue(
             User.groups.through.objects.filter(user=user, group=unrelated.group).exists()
         )
@@ -449,64 +411,6 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
             with self.subTest(changes=changes):
                 GroupProfile.objects.filter(pk=self.root.pk).update(**changes)
                 self.assert_rejected(code="configuration_error")
-
-    def test_unusable_product_and_support_prerequisites_refuse_intake(self):
-        for changes in ({"slug": "unrelated-product"}, {"is_archived": True}):
-            with self.subTest(product=changes):
-                Product.objects.filter(pk=self.product.pk).update(**changes)
-                self.assert_rejected(code="configuration_error")
-                Product.objects.filter(pk=self.product.pk).update(
-                    slug=self.root.slug, is_archived=False
-                )
-        duplicate = ProductFactory(slug=self.product.slug)
-        self.assert_rejected(code="configuration_error")
-        duplicate.delete()
-        for changes in (
-            {"is_active": False},
-            {"subscription_only": True},
-            {"zendesk_config": None, "forum_config": AAQConfigFactory()},
-            {"unsubscribed_redirect_product": ProductFactory()},
-        ):
-            with self.subTest(config=changes):
-                ProductSupportConfig.objects.filter(pk=self.config.pk).update(**changes)
-                self.assert_rejected(code="configuration_error")
-                self.config.save()
-        self.config.delete()
-        self.assert_rejected(code="configuration_error")
-
-    def test_invalid_ticket_form_refuses_intake(self):
-        zendesk = self.config.zendesk_config
-        for ticket_form_id in ("", " ", "0", "-1", "1.5", "invalid", "１２"):
-            with self.subTest(ticket_form_id=ticket_form_id):
-                zendesk.ticket_form_id = ticket_form_id
-                zendesk.save()
-                self.assert_rejected(code="configuration_error")
-
-    @override_settings(
-        ZENDESK_CHAT_WIDGET_KEY="test-widget",
-        ZENDESK_CHAT_SIGNING_KEY_ID="test-key",
-        ZENDESK_CHAT_SIGNING_SECRET="test-secret",
-    )
-    def test_existing_chat_entitlement_requires_usable_chat_deployment(self):
-        SupportOrganizationFactory(
-            group=self.company.group, config=self.config, include_live_chat=True
-        )
-        with override_switch("zendesk-chat", active=False):
-            self.assert_rejected(code="configuration_error")
-        with override_switch("zendesk-chat", active=True):
-            for setting in (
-                "ZENDESK_CHAT_WIDGET_KEY",
-                "ZENDESK_CHAT_SIGNING_KEY_ID",
-                "ZENDESK_CHAT_SIGNING_SECRET",
-            ):
-                with self.subTest(setting=setting), override_settings(**{setting: ""}):
-                    self.assert_rejected(code="configuration_error")
-            self.invite()
-        self.assertTrue(
-            SupportOrganization.objects.get(
-                group=self.company.group, config=self.config
-            ).include_live_chat
-        )
 
     def test_invalid_landing_path_or_expiry_leaves_no_partial_account(self):
         for path in (

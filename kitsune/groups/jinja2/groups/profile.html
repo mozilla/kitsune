@@ -132,7 +132,7 @@
       {% endif %}
     </header>
 
-    {% if profile.is_org_root() and profile.can_view_tickets(request.user) %}
+    {% if show_tickets_tab %}
       <nav class="tabs">
         <ul class="tabs--list">
           <li class="tabs--item">
@@ -143,6 +143,46 @@
           </li>
         </ul>
       </nav>
+    {% endif %}
+
+    {% if department_company %}
+      <p class="group-company-support">
+        <a href="{{ url('groups.profile', department_company.slug) }}#your-support">{{ _("Your company’s support") }}</a>
+      </p>
+    {% endif %}
+
+    {% if covered_products is not none %}
+    <section class="group-section your-support" id="your-support">
+      <div class="section-heading">
+        <h2>{{ _('Your support') }}</h2>
+      </div>
+      {% if covered_products %}
+        <ul class="your-support--products">
+          {% for product, can_contact in covered_products %}
+            {% set product_title = pgettext('DB: products.Product.title', product.title) %}
+            <li class="your-support--product">
+              <div>
+                <h3 class="your-support--title" id="your-support-{{ product.slug }}">{{ product_title }}</h3>
+                {# L10n: The scope of a company's support for a product. {product} is the product name. #}
+                <p class="your-support--scope">{{ _('All {product} support topics')|f(product=product_title) }}</p>
+              </div>
+              {% if can_contact and not settings.READ_ONLY %}
+                <a class="sumo-button {{ 'primary-button' if covered_products|length == 1 else 'secondary-button' }}"
+                  href="{{ url('questions.aaq_step3', product_slug=product.slug) }}"
+                  aria-describedby="your-support-{{ product.slug }}">{{ _('Contact support') }}</a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>{{ _('This company has no active support coverage.') }}</p>
+      {% endif %}
+      {% if can_view_tickets %}
+        <p class="your-support--history">
+          <a href="{{ url('groups.tickets', profile.slug) }}">{{ _('View ticket history') }}</a>
+        </p>
+      {% endif %}
+    </section>
     {% endif %}
 
     {% if profile.information_html %}

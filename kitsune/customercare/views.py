@@ -286,7 +286,7 @@ def ticket_detail(request, username, ticket_id):
     # Determine the proper breadcrumbs.
     crumbs = [(None, ticket.subject)]
     is_owner = request.user.id == ticket.user_id
-    has_group = bool(ticket.org_group)
+    has_group = bool(ticket.org_group) and ticket.org_group.is_enterprise()
 
     show_group_crumbs = False
     if has_group:

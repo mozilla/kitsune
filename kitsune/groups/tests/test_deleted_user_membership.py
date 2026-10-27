@@ -65,6 +65,7 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
         ZendeskOrganization.objects.create(group_profile=other_company, zendesk_id="102")
         for state, arrange in (
             ("no membership", lambda user: None),
+            ("missing enterprise root", lambda user: None),
             ("department only", lambda user: user.groups.add(self.department.group)),
             ("root only", lambda user: user.groups.add(self.root.group)),
             ("company leader", self.company.leaders.add),
@@ -76,7 +77,16 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
                 ),
             ),
         ):
-            with self.subTest(state=state):
+            with (
+                self.subTest(state=state),
+                override_settings(
+                    ENTERPRISE_GROUP_SLUG=(
+                        "missing-enterprise-root"
+                        if state == "missing enterprise root"
+                        else self.root.slug
+                    )
+                ),
+            ):
                 user = UserFactory(profile__zendesk_id="202")
                 arrange(user)
                 user_id = user.pk
@@ -189,6 +199,29 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
         self.enqueue.assert_not_called()
         self.client_class.assert_not_called()
 
+    def test_task_rejects_saved_id_claimed_after_deletion(self):
+        self.user.groups.add(self.company.group)
+        user_id = self.user.pk
+        self.user.delete()
+        self.enqueue.assert_called_once_with(user_id, "201", ("101",))
+        owner = UserFactory(
+            profile__zendesk_id="201", profile__account_type=Profile.AccountType.SYSTEM
+        )
+
+        with self.assertLogs("k.task", level="WARNING") as logs:
+            remove_stale_zendesk_memberships(*self.enqueue.call_args.args)
+
+        self.assertEqual(
+            logs.output,
+            [
+                "WARNING:k.task:Zendesk company membership conflict "
+                f"for user {user_id}: account_conflict"
+            ],
+        )
+        self.assertTrue(Profile.all_profiles.filter(user=owner, zendesk_id="201").exists())
+        self.zendesk.validate_removal_user.assert_not_called()
+        self.zendesk.remove_organization_memberships.assert_not_called()
+
     def test_rollback_suppresses_cleanup_callback(self):
         self.user.groups.add(self.company.group)
         user_id = self.user.pk
@@ -204,4 +237,18 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
             User.groups.through.objects.filter(user_id=user_id, group=self.company.group).exists()
         )
         self.enqueue.assert_not_called()
+        self.client_class.assert_not_called()
+
+    def test_cleanup_publish_failure_does_not_undo_committed_deletion(self):
+        self.user.groups.add(self.company.group)
+        user_id = self.user.pk
+        self.enqueue.side_effect = RuntimeError("Broker unavailable")
+
+        with self.assertLogs("django.db.backends.base", level="ERROR"):
+            self.user.delete()
+
+        self.assertFalse(User.all_users.filter(pk=user_id).exists())
+        self.assertFalse(Profile.all_profiles.filter(user_id=user_id).exists())
+        self.assertFalse(User.groups.through.objects.filter(user_id=user_id).exists())
+        self.enqueue.assert_called_once_with(user_id, "201", ("101",))
         self.client_class.assert_not_called()

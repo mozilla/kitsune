@@ -43,6 +43,8 @@ from kitsune.groups.onboarding import (
 )
 from kitsune.groups.provisioning import provision_enterprise_invitation
 from kitsune.products.models import SupportOrganization
+from kitsune.products.routing import ENTERPRISE_SUPPORT, route_support
+from kitsune.products.utils import get_covered_products, get_support_company
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate
 from kitsune.upload.utils import create_image_thumbnail
@@ -189,6 +191,33 @@ def profile(request, group_slug, user_form=None, invitation_form=None):
     )
     enterprise_is_company = can_onboard and prof.depth == 2 and parent.pk == enterprise_root.pk
 
+    support_company = get_support_company(request)
+    is_enterprise = prof.is_enterprise()
+    can_view_tickets = is_enterprise and prof.can_view_tickets(request.user)
+    # Departments keep a Tickets tab only for the history they own.
+    show_tickets_tab = can_view_tickets and (
+        prof.depth == 2
+        or SupportTicket.objects.filter(
+            org_group=prof, submission_status=SupportTicket.STATUS_SENT
+        ).exists()
+    )
+    department_company = None
+    if support_company and prof.depth > 2 and prof.path.startswith(support_company.path):
+        department_company = support_company
+    # None hides the section; administrators see coverage but get no customer action.
+    covered_products = None
+    if is_enterprise and prof.depth == 2:
+        is_company_member = prof == support_company
+        if is_company_member or user_can_moderate or request.user.is_staff:
+            covered_products = [
+                (
+                    product,
+                    is_company_member
+                    and route_support(request, product).preferred_ticket == ENTERPRISE_SUPPORT,
+                )
+                for product in get_covered_products(prof)
+            ]
+
     return render(
         request,
         "groups/profile.html",
@@ -203,6 +232,10 @@ def profile(request, group_slug, user_form=None, invitation_form=None):
             "children": children,
             "enterprise_is_root": can_onboard and prof.pk == enterprise_root.pk,
             "enterprise_is_company": enterprise_is_company,
+            "covered_products": covered_products,
+            "can_view_tickets": can_view_tickets,
+            "show_tickets_tab": show_tickets_tab,
+            "department_company": department_company,
             "invitation_form": invitation_form or EnterpriseInvitationForm(),
             # Accepted people are company members, so the member list already shows them.
             "invitations": (
@@ -565,9 +598,9 @@ def _get_group_profile_or_404(user, slug):
 
 @login_required
 def tickets(request, group_slug):
-    """Pool of Zendesk tickets owned by an org-root group's subtree."""
+    """Zendesk tickets owned by an enterprise company or department."""
     profile = _get_group_profile_or_404(request.user, group_slug)
-    if not profile.is_org_root():
+    if not profile.is_enterprise():
         raise Http404
     if not profile.can_view_tickets(request.user):
         raise PermissionDenied

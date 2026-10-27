@@ -342,8 +342,11 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
         (
             "Routing Configuration",
             {
-                "fields": ("default_support_type", "group_default_support_type"),
-                "description": "Set default support type for all users and optionally for organization members.",
+                "fields": ("default_support_type",),
+                "description": (
+                    "Set the default support type for hybrid configurations. Support "
+                    "organizations only carry live chat access."
+                ),
             },
         ),
         (

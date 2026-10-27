@@ -20,6 +20,7 @@ from kitsune.customercare.models import SupportTicket, accepted_context_for
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.customercare.zendesk import ENTERPRISE_SUPPORT_TAG
 from kitsune.groups.models import GroupProfile
+from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.journal.models import RECORD_INFO, Record
 from kitsune.products.tests import (
     ProductFactory,
@@ -48,24 +49,14 @@ def _sign_payload(body, timestamp="1234567890", secret=WEBHOOK_SIGNING_SECRET):
 
 
 def _make_viewable_by_teammate(owner, ticket):
-    """Wire up a support organization so a teammate in the same company subtree can VIEW
-    `ticket`. Per issue #3069 such a teammate still must not be able to reply."""
-    config = ProductSupportConfigFactory(
-        product=ticket.product, zendesk_config=ZendeskConfigFactory(name="zd")
-    )
-    company_group = Group.objects.create(name="company1")
-    root = GroupProfile.objects.add_root(
-        create_kwargs={"group": Group.objects.create(name="enterprise"), "slug": "enterprise"}
-    )
-    company = GroupProfile.objects.add_child(
-        root, create_kwargs={"group": company_group, "slug": "company1"}
-    )
-    SupportOrganizationFactory(config=config, group=company_group)
-    owner.groups.add(company_group)
+    """Give `ticket` to the owner's company so a teammate can VIEW it. Per issue #3069
+    such a teammate still must not be able to reply."""
+    company = EnterpriseCompanyFactory()
+    owner.groups.add(company.group)
     ticket.org_group = company
     ticket.save(update_fields=["org_group"])
     teammate = UserFactory()
-    teammate.groups.add(company_group)
+    teammate.groups.add(company.group)
     return teammate
 
 
@@ -223,33 +214,6 @@ class TicketDetailViewTests(TestCase):
     def test_staff_can_view_any_ticket(self):
         staff = UserFactory(is_staff=True)
         self.client.force_login(staff)
-        response = self.client.get(
-            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
-        )
-        self.assertEqual(200, response.status_code)
-
-    def test_subtree_member_can_view_org_ticket(self):
-        """A teammate in the same org subtree can view tickets they didn't submit."""
-        config = ProductSupportConfigFactory(
-            product=self.ticket.product, zendesk_config=ZendeskConfigFactory(name="zd")
-        )
-        c1_group = Group.objects.create(name="company1")
-        root_group = Group.objects.create(name="enterprise")
-        root = GroupProfile.objects.add_root(
-            create_kwargs={"group": root_group, "slug": "enterprise"}
-        )
-        c1 = GroupProfile.objects.add_child(
-            root, create_kwargs={"group": c1_group, "slug": "company1"}
-        )
-        SupportOrganizationFactory(config=config, group=c1_group)
-
-        self.owner.groups.add(c1_group)
-        self.ticket.org_group = c1
-        self.ticket.save(update_fields=["org_group"])
-
-        teammate = UserFactory()
-        teammate.groups.add(c1_group)
-        self.client.force_login(teammate)
         response = self.client.get(
             reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
         )
@@ -898,6 +862,13 @@ class TicketDetailBreadcrumbsTests(TestCase):
         subject: no personal trail (not theirs) and no group trail (no org)."""
         staff = UserFactory(is_staff=True)
         self.assertSubjectOnlyTrail(self._get(staff))
+
+    def test_group_outside_the_enterprise_tree_gets_no_group_trail(self):
+        """A legacy owner outside the enterprise tree has no ticket list to link to."""
+        self.ticket.org_group = DepartmentFactory(company=GroupProfileFactory())
+        self.ticket.save(update_fields=["org_group"])
+        self.assertMyQuestionsTrail(self._get(self.owner, referer=self._group_pool_url()))
+        self.assertSubjectOnlyTrail(self._get(UserFactory(is_staff=True)))
 
 
 CHAT_WIDGET_KEY = "test-chat-widget-key"

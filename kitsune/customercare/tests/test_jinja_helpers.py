@@ -64,10 +64,6 @@ class ChatIsAvailableTests(TestCase):
     def test_switch_off(self):
         self.assertFalse(chat_is_available(self._request(), self.product))
 
-    @override_settings(ZENDESK_CHAT_WIDGET_KEY="")
-    def test_switched_on_but_not_configured(self):
-        self.assertFalse(chat_is_available(self._request(), self.product))
-
 
 @override_settings(ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES="de,pt-BR")
 class SelectZendeskLocaleTests(TestCase):

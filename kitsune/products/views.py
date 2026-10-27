@@ -6,7 +6,6 @@ from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
-from kitsune.customercare.utils import resolve_org_group
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
 from kitsune.products.models import (
@@ -16,7 +15,7 @@ from kitsune.products.models import (
     Topic,
     TopicSlugHistory,
 )
-from kitsune.products.utils import get_professional_support_products
+from kitsune.products.utils import get_professional_support_products, get_support_company
 from kitsune.sumo.utils import get_aaq_context, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
@@ -29,12 +28,15 @@ def product_list(request):
     """The product picker page."""
     template = "products/products.html"
     products = Product.active.filter(visible=True)
+    professional_support_products = get_professional_support_products(request)
     return render(
         request,
         template,
         {
             "products": products,
-            "professional_support_products": get_professional_support_products(request.user),
+            "support_company": (
+                get_support_company(request) if professional_support_products else None
+            ),
         },
     )
 
@@ -74,11 +76,10 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             latest_version = 0
     topics = topics_for(request.user, product=product, parent=None)
     aaq_context = get_aaq_context(request, product)
-    professional_support_products = get_professional_support_products(request.user)
-    support_org_group = None
+    professional_support_products = get_professional_support_products(request)
+    support_company = get_support_company(request) if professional_support_products else None
     getting_started_topic = None
     if product in professional_support_products:
-        support_org_group = resolve_org_group(request.user, product)
         getting_started_topic = Topic.active.filter(
             slug="getting-started", products=product, parent__isnull=True
         ).first()
@@ -93,13 +94,12 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product=product, locale=request.LANGUAGE_CODE),
-            "has_support_config": bool(aaq_context)
+            "has_support_action": bool(aaq_context)
             and aaq_context.get("current_support_type") != ProductSupportConfig.SUPPORT_TYPE_HIDE,
             "aaq_context": aaq_context,
             "professional_support_products": professional_support_products,
-            "support_org_group": support_org_group,
+            "support_company": support_company,
             "getting_started_topic": getting_started_topic,
-            "SUPPORT_TYPE_ZENDESK": ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
         },
     )
 

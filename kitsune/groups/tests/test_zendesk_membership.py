@@ -461,7 +461,7 @@ class EnterpriseZendeskMembershipTests(TestCase):
                     retried = retry.call_args.kwargs["exc"]
                     self.assertIsInstance(retried, ZendeskUnavailable)
                     self.assertEqual(retried.args, (name, status))
-                    self.assertEqual(retry.call_args.kwargs["max_retries"], 3)
+                    self.assertEqual(retry.call_args.kwargs["max_retries"], 6)
                     self.assertEqual(
                         logs.output,
                         [
@@ -560,6 +560,44 @@ class EnterpriseZendeskMembershipTests(TestCase):
                     [call(self.user.pk, "201", ("101",))] if cleanup_queued else [],
                 )
                 transaction.set_rollback(True)
+
+    def test_saved_links_cleared_during_setup_are_not_restored(self):
+        self.user.groups.add(self.company.group)
+        mapping = ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
+        profile = Profile.all_profiles.filter(user=self.user)
+        organization = ZendeskOrganization.objects.filter(pk=mapping.pk)
+
+        for cleared_link, queryset, cleared_id in (
+            ("organization", organization, None),
+            ("organization", organization, ""),
+            ("user", profile, ""),
+        ):
+            with self.subTest(cleared_link=cleared_link, cleared_id=cleared_id):
+                organization.update(zendesk_id="101")
+                profile.update(zendesk_id="201")
+                self.zendesk.ensure_organization_membership.side_effect = lambda **kwargs: (
+                    queryset.update(zendesk_id=cleared_id)
+                )
+                self.cleanup.reset_mock()
+
+                with (
+                    patch.object(
+                        sync_enterprise_zendesk_membership, "retry", side_effect=Retry()
+                    ) as retry,
+                    self.captureOnCommitCallbacks(execute=True),
+                    self.assertRaises(Retry),
+                ):
+                    self.sync()
+
+                self.assertIsInstance(retry.call_args.kwargs["exc"], ZendeskMembershipChanged)
+                mapping.refresh_from_db()
+                self.assertEqual(
+                    mapping.zendesk_id, cleared_id if cleared_link == "organization" else "101"
+                )
+                self.assertEqual(
+                    profile.get().zendesk_id, cleared_id if cleared_link == "user" else "201"
+                )
+                self.cleanup.assert_called_once_with(self.user.pk, "201", ("101",))
 
     def test_cleanup_preserves_the_current_company_only_while_the_profile_owns_the_identity(self):
         self.user.groups.add(self.company.group)

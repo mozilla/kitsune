@@ -23,8 +23,10 @@ from kitsune.products.tests import (
     SupportOrganizationFactory,
     ZendeskConfigFactory,
 )
+from kitsune.products.utils import get_professional_support_products, get_support_company
 from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
-from kitsune.users.tests import GroupFactory, UserFactory
+from kitsune.sumo.utils import get_aaq_context
+from kitsune.users.tests import UserFactory
 
 
 class SupportRoutingTests(TestCase):
@@ -151,80 +153,6 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
         self.assertTrue(product_support.can_switch)
 
-    def test_hybrid_with_organizations_nonmember(self):
-        """Hybrid with organizations: a nonmember is locked to default."""
-        aaq_config = AAQConfigFactory()
-        zendesk_config = ZendeskConfigFactory()
-        group = GroupFactory(name="beta-testers")
-        config = ProductSupportConfigFactory(
-            product=self.product,
-            forum_config=aaq_config,
-            zendesk_config=zendesk_config,
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            is_active=True,
-        )
-        SupportOrganizationFactory(config=config, group=group)
-
-        request = self.factory.get("/", {"support_type": "zendesk"})
-        request.user = self.user  # User NOT in group
-
-        product_support = route_support(request, self.product).product_support
-
-        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
-        self.assertFalse(product_support.can_switch)
-
-    def test_hybrid_with_organizations_member_can_switch(self):
-        """Hybrid with organizations: a member can switch."""
-        aaq_config = AAQConfigFactory()
-        zendesk_config = ZendeskConfigFactory()
-        group = GroupFactory(name="beta-testers")
-        config = ProductSupportConfigFactory(
-            product=self.product,
-            forum_config=aaq_config,
-            zendesk_config=zendesk_config,
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            is_active=True,
-        )
-        SupportOrganizationFactory(config=config, group=group)
-
-        # Add user to group
-        self.user.groups.add(group)
-
-        request = self.factory.get("/", {"support_type": "zendesk"})
-        request.user = self.user
-
-        product_support = route_support(request, self.product).product_support
-
-        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-        self.assertTrue(product_support.can_switch)
-
-    def test_hybrid_organization_member_default_override(self):
-        """Hybrid organization members use group_default_support_type over default."""
-        aaq_config = AAQConfigFactory()
-        zendesk_config = ZendeskConfigFactory()
-        group = GroupFactory(name="beta-testers")
-        config = ProductSupportConfigFactory(
-            product=self.product,
-            forum_config=aaq_config,
-            zendesk_config=zendesk_config,
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-            is_active=True,
-        )
-        SupportOrganizationFactory(config=config, group=group)
-
-        # Add user to group
-        self.user.groups.add(group)
-
-        request = self.factory.get("/")  # No requested_type
-        request.user = self.user
-
-        product_support = route_support(request, self.product).product_support
-
-        # Should use group_default_support_type (Zendesk), not default (Forum)
-        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-        self.assertTrue(product_support.can_switch)
-
     def test_invalid_requested_type_ignored(self):
         """Invalid requested_type query param is ignored."""
         aaq_config = AAQConfigFactory()
@@ -266,28 +194,6 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
         self.assertTrue(product_support.can_switch)
 
-    def test_anonymous_user_hybrid_with_organizations(self):
-        """Anonymous user on hybrid with organizations is locked to default."""
-        aaq_config = AAQConfigFactory()
-        zendesk_config = ZendeskConfigFactory()
-        group = GroupFactory(name="beta-testers")
-        config = ProductSupportConfigFactory(
-            product=self.product,
-            forum_config=aaq_config,
-            zendesk_config=zendesk_config,
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            is_active=True,
-        )
-        SupportOrganizationFactory(config=config, group=group)
-
-        request = self.factory.get("/")
-        request.user = AnonymousUser()
-
-        product_support = route_support(request, self.product).product_support
-
-        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
-        self.assertFalse(product_support.can_switch)
-
     def test_single_channel_forms_ignore_unavailable_channel_choices(self):
         for support_type, requested_type, action in (
             ("forum", "zendesk", "forum"),
@@ -328,74 +234,6 @@ class SupportRoutingTests(TestCase):
             )
 
         self.assertIn("at_least_one_support_channel", str(context.exception))
-
-
-class SubtreeSupportRoutingTests(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.user = UserFactory()
-        self.product = ProductFactory()
-        config = ProductSupportConfigFactory(
-            product=self.product,
-            forum_config=AAQConfigFactory(),
-            zendesk_config=ZendeskConfigFactory(),
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-            is_active=True,
-        )
-        self.root = GroupProfile.objects.add_root(
-            create_kwargs={"group": GroupFactory(), "slug": "firefox-enterprise"}
-        )
-        self.parent = GroupProfile.objects.add_child(
-            self.root, create_kwargs={"group": GroupFactory(), "slug": "division"}
-        )
-        self.company = GroupProfile.objects.add_child(
-            self.parent, create_kwargs={"group": GroupFactory(), "slug": "company"}
-        )
-        team = GroupProfile.objects.add_child(
-            self.company, create_kwargs={"group": GroupFactory(), "slug": "team"}
-        )
-        self.descendant = GroupProfile.objects.add_child(
-            team, create_kwargs={"group": GroupFactory(), "slug": "subteam"}
-        )
-        SupportOrganizationFactory(config=config, group=self.company.group)
-
-    def test_deep_descendant_uses_group_default(self):
-        self.user.groups.add(self.descendant.group)
-        request = self.factory.get("/")
-        request.user = self.user
-
-        product_support = route_support(request, self.product).product_support
-        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
-        self.assertTrue(product_support.can_switch)
-
-    def test_deep_descendant_can_override_group_default(self):
-        self.user.groups.add(self.descendant.group)
-        request = self.factory.get("/", {"support_type": "forum"})
-        request.user = self.user
-
-        product_support = route_support(request, self.product).product_support
-        self.assertEqual(product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
-        self.assertTrue(product_support.can_switch)
-
-    def test_members_outside_company_cannot_use_organization_support(self):
-        sibling = GroupProfile.objects.add_child(
-            self.parent, create_kwargs={"group": GroupFactory(), "slug": "unmapped-company"}
-        )
-        unrelated = GroupProfile.objects.add_root(
-            create_kwargs={"group": GroupFactory(), "slug": "unrelated"}
-        )
-        for profile in (self.root, self.parent, sibling, unrelated):
-            with self.subTest(group=profile.slug):
-                self.user.groups.set([profile.group])
-                request = self.factory.get("/", {"support_type": "zendesk"})
-                request.user = self.user
-
-                product_support = route_support(request, self.product).product_support
-                self.assertEqual(
-                    product_support.support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM
-                )
-                self.assertFalse(product_support.can_switch)
 
 
 class SubscriptionRoutingTests(TestCase):
@@ -547,7 +385,7 @@ class EnterpriseSupportRoutingTests(TestCase):
         ):
             with (
                 self.subTest(day=day),
-                patch("kitsune.products.routing.timezone.localdate", return_value=day),
+                patch("kitsune.products.models.timezone.localdate", return_value=day),
             ):
                 enterprise_support = self.route().enterprise_support
                 self.assertEqual(enterprise_support.eligible, eligible)
@@ -651,6 +489,33 @@ class EnterpriseSupportRoutingTests(TestCase):
                 self.assertFalse(route.allows(PRODUCT_SUPPORT))
                 self.assertTrue(route.allows(ENTERPRISE_SUPPORT, str(self.coverage.pk)))
 
+    def test_support_organizations_do_not_change_ticket_access(self):
+        config = ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=AAQConfigFactory(),
+            zendesk_config=ZendeskConfigFactory(),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
+        )
+        organization = SupportOrganizationFactory(
+            config=config, group=EnterpriseCompanyFactory().group, include_live_chat=True
+        )
+        product_ticket = SupportAction(
+            PRODUCT_SUPPORT, can_switch=True, zendesk_config=config.zendesk_config
+        )
+        enterprise = SupportAction(
+            ENTERPRISE_SUPPORT,
+            can_switch=True,
+            zendesk_config=self.coverage.zendesk_config,
+            coverage=self.coverage,
+        )
+        user = UserFactory()
+        for change in ("added", "removed"):
+            if change == "removed":
+                organization.delete()
+            with self.subTest(organization=change):
+                self.assertEqual(self.route(user=user).aaq_action, product_ticket)
+                self.assertEqual(self.route().aaq_action, enterprise)
+
     def test_ticket_weights_prefer_enterprise_without_changing_forum_access(self):
         ProductSupportConfigFactory(
             product=self.product,
@@ -699,3 +564,170 @@ class EnterpriseSupportRoutingTests(TestCase):
             enterprise_support = self.route(user=AnonymousUser()).enterprise_support
             self.assertFalse(enterprise_support.eligible)
             self.assertEqual(enterprise_support.reason, "not_authenticated")
+
+
+class SupportPresentationTests(TestCase):
+    """Pages present the router's decision for each persona."""
+
+    def setUp(self):
+        today = timezone.localdate()
+        self.current = {
+            "starts_on": today - timedelta(days=1),
+            "ends_on": today + timedelta(days=1),
+        }
+        self.company = EnterpriseCompanyFactory()
+        self.vpn = ProductFactory(slug="vpn")
+        ProductSupportConfigFactory(
+            product=self.vpn, zendesk_config=ZendeskConfigFactory(), subscription_only=True
+        )
+        self.forum_product = ProductFactory(slug="forum-product")
+        ProductSupportConfigFactory(
+            product=self.forum_product,
+            forum_config=AAQConfigFactory(enabled_locales=[QuestionLocaleFactory(locale="en-US")]),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
+        self.unconfigured = ProductFactory(slug="unconfigured")
+        self.archived = ProductFactory(is_archived=True)
+        contract = SupportContractFactory(company=self.company, **self.current)
+        for product in (self.vpn, self.forum_product, self.unconfigured, self.archived):
+            SupportCoverageFactory(contract=contract, product=product)
+
+    def user(self, *groups, subscribed=False):
+        user = UserFactory()
+        user.groups.set([group.group for group in groups])
+        if subscribed:
+            user.profile.products.add(self.vpn)
+        return user
+
+    def request_for(self, user):
+        request = RequestFactory().get("/")
+        request.user = user
+        return request
+
+    def presented(self, product, support_type, *, can_switch=False, is_enterprise=False):
+        return {
+            "product_slug": product.slug,
+            "multiple_products": False,
+            "has_public_forum": product == self.forum_product,
+            "current_support_type": support_type,
+            "can_switch": can_switch,
+            "is_enterprise": is_enterprise,
+        }
+
+    def test_presented_support_and_professional_products_follow_the_router(self):
+        expired_company = EnterpriseCompanyFactory()
+        SupportCoverageFactory(
+            product=self.vpn,
+            contract__company=expired_company,
+            contract__starts_on=self.current["starts_on"] - timedelta(days=30),
+            contract__ends_on=self.current["starts_on"],
+        )
+        forum_company = EnterpriseCompanyFactory()
+        SupportCoverageFactory(
+            product=self.forum_product,
+            contract__company=forum_company,
+            contract__starts_on=self.current["starts_on"],
+            contract__ends_on=self.current["ends_on"],
+        )
+        renewed_company = EnterpriseCompanyFactory()
+        expired = {
+            "starts_on": self.current["starts_on"] - timedelta(days=30),
+            "ends_on": self.current["starts_on"],
+        }
+        for period in (expired, self.current):
+            SupportCoverageFactory(
+                product=self.vpn,
+                contract=SupportContractFactory(company=renewed_company, **period),
+            )
+        leader = self.user()
+        self.company.leaders.add(leader)
+
+        vpn_hidden = {"current_support_type": ProductSupportConfig.SUPPORT_TYPE_HIDE}
+        vpn_product = self.presented(self.vpn, "zendesk")
+        vpn_enterprise = self.presented(self.vpn, "zendesk", is_enterprise=True)
+        forum = self.presented(self.forum_product, "forum")
+        forum_enterprise = self.presented(
+            self.forum_product, "zendesk", can_switch=True, is_enterprise=True
+        )
+        unconfigured_enterprise = self.presented(self.unconfigured, "zendesk", is_enterprise=True)
+        covered_products = [self.vpn, self.forum_product, self.unconfigured]
+        covered_contexts = (vpn_enterprise, forum_enterprise, unconfigured_enterprise)
+        for persona, user, products, contexts in (
+            ("anonymous", AnonymousUser(), [], (vpn_hidden, forum, {})),
+            ("uncovered", self.user(), [], (vpn_hidden, forum, {})),
+            ("subscriber", self.user(subscribed=True), [], (vpn_product, forum, {})),
+            ("company member", self.user(self.company), covered_products, covered_contexts),
+            (
+                "department member",
+                self.user(DepartmentFactory(company=self.company)),
+                covered_products,
+                covered_contexts,
+            ),
+            ("root member", self.user(self.company.get_parent()), [], (vpn_hidden, forum, {})),
+            ("company leader", leader, [], (vpn_hidden, forum, {})),
+            (
+                "expired subscriber",
+                self.user(expired_company, subscribed=True),
+                [],
+                (vpn_product, forum, {}),
+            ),
+            (
+                "other product subscriber",
+                self.user(forum_company, subscribed=True),
+                [self.forum_product],
+                (vpn_product, forum_enterprise, {}),
+            ),
+            (
+                "renewed company member",
+                self.user(renewed_company),
+                [self.vpn],
+                (vpn_enterprise, forum, {}),
+            ),
+        ):
+            with self.subTest(persona=persona):
+                request = RequestFactory().get("/")
+                request.user = user
+                request.LANGUAGE_CODE = "en-US"
+                professional_products = get_professional_support_products(request)
+                self.assertCountEqual(professional_products, products)
+                for product, context in zip(
+                    (self.vpn, self.forum_product, self.unconfigured), contexts, strict=True
+                ):
+                    self.assertEqual(get_aaq_context(request, product), context)
+                for product in (self.vpn, self.forum_product, self.unconfigured, self.archived):
+                    self.assertEqual(
+                        product in professional_products,
+                        route_support(request, product).enterprise_support.eligible,
+                    )
+
+    def test_professional_products_deny_ambiguity_and_inactive_users(self):
+        member = self.user(self.company)
+        with self.assertNumQueries(2):
+            self.assertCountEqual(
+                get_professional_support_products(self.request_for(member)),
+                [self.vpn, self.forum_product, self.unconfigured],
+            )
+
+        overlapping = SupportContractFactory(company=self.company, **self.current)
+        SupportCoverageFactory(contract=overlapping, product=self.vpn)
+        self.assertCountEqual(
+            get_professional_support_products(self.request_for(member)),
+            [self.forum_product, self.unconfigured],
+        )
+
+        inactive = UserFactory(is_active=False)
+        inactive.groups.add(self.company.group)
+        User.groups.through.objects.bulk_create(
+            [User.groups.through(user_id=member.pk, group_id=EnterpriseCompanyFactory().group_id)]
+        )
+        for user in (inactive, member):
+            with self.subTest(user=user):
+                self.assertEqual(get_professional_support_products(self.request_for(user)), [])
+
+    def test_support_company_is_resolved_once_per_request(self):
+        request = self.request_for(self.user(DepartmentFactory(company=self.company)))
+        with self.assertNumQueries(1):
+            self.assertEqual(get_support_company(request), self.company)
+        with self.assertNumQueries(0):
+            self.assertEqual(get_support_company(request), self.company)
+            self.assertIsNone(get_support_company(self.request_for(AnonymousUser())))

@@ -120,7 +120,7 @@ class SupportTicketQuerySet(models.QuerySet):
             return self.all()
 
         accessible_orgs = (
-            GroupProfile.objects.org_roots()
+            GroupProfile.objects.enterprise()
             .alias(root_path=Substr("path", 1, GroupProfile.steplen))
             .filter(
                 Q(pk__in=GroupProfile.objects.containing(user))
@@ -232,7 +232,10 @@ class SupportTicket(ModelBase):
     policy_distribution = models.CharField(max_length=255, blank=True, default="")
     urgency = models.CharField(max_length=50, blank=True, default="")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="support_tickets")
-    origin = models.CharField(max_length=20, choices=Origin.choices, default=Origin.PRODUCT)
+    # Database defaults let processes without these fields keep inserting during a rollout.
+    origin = models.CharField(
+        max_length=20, choices=Origin.choices, default=Origin.PRODUCT, db_default=Origin.PRODUCT
+    )
     coverage = models.ForeignKey(
         "products.SupportCoverage",
         on_delete=models.PROTECT,
@@ -240,7 +243,7 @@ class SupportTicket(ModelBase):
         blank=True,
         related_name="support_tickets",
     )
-    accepted_context = models.JSONField(default=dict, blank=True)
+    accepted_context = models.JSONField(default=dict, db_default={}, blank=True)
     topic = models.ForeignKey(
         Topic, on_delete=models.SET_NULL, null=True, blank=True, related_name="support_tickets"
     )

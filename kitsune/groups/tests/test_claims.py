@@ -30,7 +30,6 @@ from kitsune.groups.invitations import (
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.groups.tests.test_invitations import InvitationFixtures
-from kitsune.products.models import SupportOrganization
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
@@ -276,11 +275,11 @@ class EnterpriseClaimTests(InvitationFixtures, TestCase):
         ).update(zendesk_id="999")
         self.assert_claim_rejected("account_conflict")
 
-    def test_landing_path_is_server_configured_and_defaults_to_saved_locale(self):
+    def test_landing_path_is_server_configured_and_defaults_to_the_company_page(self):
         Profile.all_profiles.filter(user=self.user).update(locale="fr")
         self.assertEqual(
             invitation_landing_path(self.invitation),
-            reverse("products.product", kwargs={"slug": self.product.slug}, locale="fr"),
+            reverse("groups.profile", args=[self.company.slug], locale="fr"),
         )
         with self.settings(ENTERPRISE_ONBOARDING_LANDING_PATH="/enterprise/help?source=invite"):
             self.assertEqual(
@@ -392,9 +391,6 @@ class EnterpriseClaimLockTests(InvitationFixtures, TransactionTestCase):
                     GroupProfile.objects.select_for_update(nowait=True).get(pk=self.company.pk)
                     ZendeskOrganization.objects.select_for_update(nowait=True).get(
                         group_profile=self.company
-                    )
-                    SupportOrganization.objects.select_for_update(nowait=True).get(
-                        group=self.company.group
                     )
                     User.all_users.select_for_update(nowait=True).get(pk=invitation.user_id)
                     Profile.all_profiles.select_for_update(nowait=True).get(

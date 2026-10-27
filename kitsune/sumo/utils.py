@@ -363,39 +363,13 @@ def in_staff_group(user: User | None) -> bool:
     return bool(user and user.is_authenticated and user.profile.in_staff_group)
 
 
-def has_support_config(product=None):
-    """Check if a product has an active support configuration (forum or Zendesk).
-
-    This checks ProductSupportConfig.is_active and ensures at least one support channel
-    is properly configured:
-    - For forum support: AAQConfig must have an enabled locale
-    - For Zendesk support: ZendeskConfig just needs to be configured
-
-    Returns True if the product has any active support channel.
-    """
-    # Avoid cycles: products.models -> sumo.utils.
-    from kitsune.products.models import Product, ProductSupportConfig
-
-    if not product:
-        return False
-
-    if isinstance(product, str):
-        try:
-            product = Product.objects.get(slug=product)
-        except Product.DoesNotExist:
-            return False
-
-    config = ProductSupportConfig.objects.active_for(product)
-    return bool(config and config.has_channel)
-
-
 def get_aaq_context(request, product, multiple_products=False):
     """
-    Given a request and a product, determine the AAQ context and return it.
+    Given a request and a product, present the support action the AAQ form would select.
 
-    Returns an empty dict when there is no support config for the product.
+    Returns an empty dict when the user has no forum, product ticket, or enterprise option.
 
-    When subscription_only is enabled and the user lacks a subscription:
+    When only the subscription gate remains:
     - current_support_type is SUPPORT_TYPE_REDIRECT with redirect_url set, or
     - current_support_type is SUPPORT_TYPE_HIDE (caller should return Http404)
     """
@@ -403,31 +377,31 @@ def get_aaq_context(request, product, multiple_products=False):
     from kitsune.products.models import ProductSupportConfig
 
     # Avoid cycles: products.models -> sumo.utils -> products.routing -> products.models.
-    from kitsune.products.routing import route_support
+    from kitsune.products.routing import ENTERPRISE_SUPPORT, route_support
 
     if not product:
         return {}
 
-    product_support = route_support(request, product).product_support
-    support_type = product_support.support_type
-    if support_type is None:
+    route = route_support(request, product)
+    selected = route.aaq_action
+    if not selected.action:
+        product_support = route.product_support
+        if product_support.support_type == ProductSupportConfig.SUPPORT_TYPE_REDIRECT:
+            return {
+                "current_support_type": product_support.support_type,
+                "redirect_url": product_support.redirect_url,
+            }
+        if product_support.support_type == ProductSupportConfig.SUPPORT_TYPE_HIDE:
+            return {"current_support_type": product_support.support_type}
         return {}
-
-    if support_type == ProductSupportConfig.SUPPORT_TYPE_REDIRECT:
-        return {
-            "current_support_type": support_type,
-            "redirect_url": product_support.redirect_url,
-        }
-
-    if support_type == ProductSupportConfig.SUPPORT_TYPE_HIDE:
-        return {"current_support_type": support_type}
 
     aaq_context = {
         "product_slug": product.slug,
         "multiple_products": multiple_products,
         "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
-        "current_support_type": support_type,
-        "can_switch": product_support.can_switch,
+        "current_support_type": selected.support_type,
+        "can_switch": selected.can_switch,
+        "is_enterprise": selected.action == ENTERPRISE_SUPPORT,
     }
 
     if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE:

@@ -26,9 +26,7 @@
 
 
 {% block contentwrap %}
-  {% if professional_support_products %}
-    {{ professional_support_banner(professional_support_products[0]) }}
-  {% endif %}
+  {{ professional_support_banner() }}
   <section class="mzp-l-content sumo-page-section" id="main-content">
     {{ product_cards(products) }}
   </section>

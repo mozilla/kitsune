@@ -2436,7 +2436,6 @@ class ZendeskConfigurationChecksTests(TestCase):
                     )
                 self.assertEqual([warning.id for warning in warnings], expected)
 
-        # Quiet unless databases are named, and before the switch table exists.
         with (
             self.settings(
                 ZENDESK_CHAT_WIDGET_KEY="",
@@ -2445,6 +2444,7 @@ class ZendeskConfigurationChecksTests(TestCase):
             ),
             override_switch("zendesk-chat", active=True),
         ):
-            self.assertEqual(check_zendesk_chat_switch(None), [])
-            with patch("waffle.switch_is_active", side_effect=ProgrammingError):
+            with self.assertNumQueries(0):
+                self.assertEqual(check_zendesk_chat_switch(None), [])
+            with patch("waffle.get_waffle_switch_model", side_effect=ProgrammingError):
                 self.assertEqual(check_zendesk_chat_switch(None, databases=["default"]), [])

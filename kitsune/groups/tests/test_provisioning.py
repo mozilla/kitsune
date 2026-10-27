@@ -5,7 +5,7 @@ from queue import Queue
 from threading import Barrier, Event
 from time import monotonic
 from unittest.mock import patch
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 from uuid import uuid4
 
 import psycopg
@@ -15,7 +15,7 @@ from django.core import mail
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import connections, transaction
 from django.http import Http404
-from django.test import Client, TransactionTestCase, override_settings
+from django.test import Client, RequestFactory, TransactionTestCase, override_settings
 from django.utils import timezone
 from kombu.exceptions import OperationalError
 from post_office.models import STATUS, Email
@@ -32,12 +32,21 @@ from kitsune.groups.invitations import (
     load_enterprise_invitation,
 )
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
+from kitsune.groups.onboarding import configure_enterprise_company, create_enterprise_company
 from kitsune.groups.provisioning import provision_enterprise_invitation
 from kitsune.groups.tests import GroupProfileFactory
 from kitsune.groups.tests.test_invitations import InvitationFixtures
 from kitsune.groups.views import INVITATION_FAILURES
-from kitsune.products.models import ProductSupportConfig, SupportOrganization
-from kitsune.products.tests import ProductSupportConfigFactory, SupportOrganizationFactory
+from kitsune.products.models import SupportContract, SupportOrganization
+from kitsune.products.routing import ENTERPRISE_SUPPORT, route_support
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    SupportContractFactory,
+    SupportCoverageFactory,
+    SupportOrganizationFactory,
+    ZendeskConfigFactory,
+)
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
@@ -183,7 +192,9 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         self.assertIsNotNone(result.accepted_at)
         self.assertTrue(self.company.group.user_set.filter(pk=user.pk).exists())
         email, link = self.welcome(result)
-        self.assertEqual(urlsplit(link).path, invitation_landing_path(result))
+        sign_in = urlsplit(link)
+        self.assertEqual(sign_in.path, reverse("users.fxa_authentication_init"))
+        self.assertEqual(parse_qs(sign_in.query), {"next": [invitation_landing_path(result)]})
         self.assertNotIn("/groups/invitation/", email.message)
         self.assertIsNone(email.expires_at)
 
@@ -191,23 +202,84 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         moved = self.invite(company=self.other_company)
         self.assertEqual(moved.company_id, self.other_company.pk)
 
-    def test_welcome_mentions_chat_only_when_the_company_has_it(self):
+    @override_settings(
+        ZENDESK_CHAT_WIDGET_KEY="widget",
+        ZENDESK_CHAT_SIGNING_KEY_ID="key",
+        ZENDESK_CHAT_SIGNING_SECRET="secret",
+    )
+    def test_welcome_lists_covered_products_shared_history_and_chat(self):
+        today = timezone.localdate()
+        tickets = "Open support tickets for Thunderbird, VPN with Mozilla support agents"
+        history = f"See support tickets opened by others at {self.company.group.name}"
         chat = "Chat live with a support agent"
-        email, _link = self.welcome(self.provision(self.invite(email="no-chat@example.com")))
-        self.assertNotIn(chat, email.message)
-        SupportOrganization.objects.filter(group=self.company.group).update(include_live_chat=True)
-        self.client.ensure_user.return_value = "202"
-        with (
-            override_switch("zendesk-chat", active=True),
-            override_settings(
-                ZENDESK_CHAT_WIDGET_KEY="widget",
-                ZENDESK_CHAT_SIGNING_KEY_ID="key",
-                ZENDESK_CHAT_SIGNING_SECRET="secret",
-            ),
+        for name, covered, chat_switch, expected in (
+            ("no coverage", False, None, {history}),
+            ("bundle", True, None, {tickets, history}),
+            ("chat", False, True, {history, chat}),
+            ("chat switched off", False, False, {history}),
         ):
-            email, _link = self.welcome(self.provision(self.invite(email="chat@example.com")))
-        self.assertIn(chat, email.message)
-        self.assertIn(chat, email.html_message)
+            with (
+                self.subTest(name),
+                override_switch("zendesk-chat", active=bool(chat_switch)),
+                transaction.atomic(),
+            ):
+                if covered:
+                    contract = SupportContractFactory(
+                        company=self.company, starts_on=today, ends_on=today
+                    )
+                    for order, title in enumerate(("Thunderbird", "VPN")):
+                        SupportCoverageFactory(
+                            contract=contract,
+                            product=ProductFactory(title=title, display_order=order),
+                        )
+                if chat_switch is not None:
+                    SupportOrganizationFactory(
+                        group=self.company.group,
+                        include_live_chat=True,
+                        config=ProductSupportConfigFactory(
+                            product=ProductFactory(slug=self.root.slug),
+                            zendesk_config=ZendeskConfigFactory(),
+                        ),
+                    )
+                email, _link = self.welcome(self.provision(self.invite()))
+                for message in (email.message, email.html_message):
+                    self.assertEqual(
+                        {line for line in (tickets, history, chat) if line in message}, expected
+                    )
+                transaction.set_rollback(True)
+
+    def test_thunderbird_only_company_is_onboarded_without_enterprise_product_access(self):
+        today = timezone.localdate()
+        enterprise_product = ProductFactory(slug=self.root.slug)
+        thunderbird = ProductFactory(title="Thunderbird")
+        company = create_enterprise_company(
+            actor=self.actor, name="Thunderbird Customer", include_live_chat=False
+        )
+        configure_enterprise_company(actor=self.actor, company=company, include_live_chat=False)
+        user = self.eligible_user()
+        invitation = self.provision(self.invite(company=company))
+        self.assertEqual(invitation.status, EnterpriseInvitation.Status.ACCEPTED)
+        self.assertTrue(company.group.user_set.filter(pk=user.pk).exists())
+        self.assertFalse(SupportContract.objects.exists())
+        self.assertFalse(SupportOrganization.objects.exists())
+
+        def preferred_tickets():
+            request = RequestFactory().get("/")
+            request.user = user
+            return [
+                route_support(request, product).preferred_ticket
+                for product in (enterprise_product, thunderbird)
+            ]
+
+        contract = SupportContractFactory(
+            company=company,
+            starts_on=today + timedelta(days=1),
+            ends_on=today + timedelta(days=30),
+        )
+        SupportCoverageFactory(contract=contract, product=thunderbird)
+        self.assertEqual(preferred_tickets(), [None, None])
+        SupportContract.objects.filter(pk=contract.pk).update(starts_on=today)
+        self.assertEqual(preferred_tickets(), [None, ENTERPRISE_SUPPORT])
 
     def test_provider_failures_keep_saved_ids_and_full_retry_reuses_them(self):
         operations = (
@@ -387,7 +459,6 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
             error_code="historic-code",
         )
         ZendeskOrganization.objects.filter(group_profile=self.company).delete()
-        ProductSupportConfig.objects.filter(pk=self.config.pk).update(is_active=False)
         staff_without_leadership = UserFactory(is_staff=True)
         before = self.snapshot()
         with (
@@ -484,32 +555,6 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                 self.assert_provision_rejected(invitation, code="resource_missing")
                 transaction.set_rollback(True)
 
-    def test_changed_active_config_uses_current_company_binding(self):
-        invitation = self.invite()
-        ProductSupportConfig.objects.filter(pk=self.config.pk).update(is_active=False)
-        replacement = ProductSupportConfigFactory(
-            product=self.product, zendesk_config=self.config.zendesk_config
-        )
-        self.assert_provision_rejected(invitation, code="configuration_error")
-        SupportOrganizationFactory(group=self.company.group, config=replacement)
-        ready = self.provision(invitation)
-        self.assertEqual(ready.status, EnterpriseInvitation.Status.READY)
-
-    def test_current_support_configuration_is_revalidated(self):
-        invitation = self.invite()
-        for changes in ({"is_active": False}, {"subscription_only": True}):
-            with self.subTest(changes=changes):
-                ProductSupportConfig.objects.filter(pk=self.config.pk).update(**changes)
-                self.assert_provision_rejected(invitation, code="configuration_error")
-                ProductSupportConfig.objects.filter(pk=self.config.pk).update(
-                    is_active=True, subscription_only=False
-                )
-        SupportOrganization.objects.filter(group=self.company.group).update(include_live_chat=True)
-        with override_settings(ZENDESK_CHAT_WIDGET_KEY=""):
-            self.assert_provision_rejected(invitation, code="configuration_error")
-        SupportOrganization.objects.filter(group=self.company.group, config=self.config).delete()
-        self.assert_provision_rejected(invitation, code="configuration_error")
-
     def test_duplicate_hidden_email_or_changed_local_email_is_not_rebound(self):
         invitation = self.invite()
         hidden = UserFactory(
@@ -545,16 +590,11 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                 Profile.all_profiles.filter(user_id=invitation.user_id).update(**changes)
                 self.assert_provision_rejected(invitation, code="account_conflict")
 
-    def test_other_enterprise_or_support_memberships_are_rechecked(self):
+    def test_other_company_membership_is_rechecked(self):
         invitation = self.invite()
         user = User.all_users.get(pk=invitation.user_id)
         department = self.child(self.other_company)
         user.groups.add(department.group)
-        self.assert_provision_rejected(invitation, code="company_conflict")
-        user.groups.remove(department.group)
-        unrelated = GroupProfileFactory()
-        SupportOrganizationFactory(group=unrelated.group, config=self.config)
-        user.groups.add(unrelated.group)
         self.assert_provision_rejected(invitation, code="company_conflict")
 
     def test_invalid_remote_ids_are_rejected_before_provider_calls(self):
@@ -879,9 +919,6 @@ class EnterpriseProvisioningConcurrencyTests(ProvisioningFixtures, TransactionTe
                     GroupProfile.objects.filter(pk=self.company.pk).update(
                         information="Updated during provider I/O"
                     )
-                    SupportOrganization.objects.select_for_update().get(
-                        group_id=self.company.group_id, config=self.config
-                    )
                     ZendeskOrganization.objects.select_for_update().get(group_profile=self.company)
                     User.all_users.filter(pk=invitation.user_id).update(first_name="Updated")
                     Profile.all_profiles.filter(user_id=invitation.user_id).update(
@@ -929,9 +966,6 @@ class EnterpriseProvisioningConcurrencyTests(ProvisioningFixtures, TransactionTe
         replacement = GroupFactory()
 
         def relink_company():
-            SupportOrganization.objects.filter(group_id=self.company.group_id).update(
-                group=replacement
-            )
             company = GroupProfile.objects.get(pk=self.company.pk)
             company.group = replacement
             company.save(update_fields=["group"])
@@ -1025,19 +1059,6 @@ class EnterpriseProvisioningConcurrencyTests(ProvisioningFixtures, TransactionTe
             exception=ValidationError,
         )
         self.assertEqual(error.code, "company_conflict")
-
-    def test_invalid_current_config_blocks_saving_partial_remote_success(self):
-        invitation = self.invite()
-        self.client.ensure_organization_membership.side_effect = requests.Timeout()
-        error = self.during_provider_call(
-            invitation,
-            lambda: ProductSupportConfig.objects.filter(pk=self.config.pk).update(
-                subscription_only=True
-            ),
-            provider="ensure_user",
-            exception=ValidationError,
-        )
-        self.assertEqual(error.code, "configuration_error")
 
     def test_inflight_acceptance_keeps_accepted_history_immutable(self):
         invitation = self.invite()

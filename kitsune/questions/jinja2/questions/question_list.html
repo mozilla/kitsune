@@ -119,7 +119,7 @@
         {% endif %}
       </div>
       <div class="sumo-l-two-col--sidebar forum--masthead-cta">
-      {% if product_slug and has_support_config %}
+      {% if product_slug and has_support_action %}
         {% set aaq_url = url('questions.aaq_step2', product_slug=product_slug) %}
       {% else %}
         {% set aaq_url = url('questions.aaq_step1') %}
@@ -127,7 +127,11 @@
         <a
           class="sumo-button primary-button button-lg feature-box"
           href="{{ aaq_url }}">
-          {{ _('Ask the Community') }}
+          {% if offers_ticket %}
+            {{ _('Contact Support') }}
+          {% else %}
+            {{ _('Ask the Community') }}
+          {% endif %}
         </a>
       </div>
     </div>

@@ -1,5 +1,6 @@
+from django.conf import settings
 from django.contrib.auth.models import Group, User
-from django.db.models import Exists, Max, OuterRef, Q
+from django.db.models import Exists, Max, OuterRef, Q, Subquery
 from django.db.models.functions import Length, Substr
 from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
 
@@ -110,9 +111,9 @@ class GroupProfileManager(MP_NodeManager):
         with guard_enterprise_group_move(node, target, using=self.db):
             return super().move(node, target, pos)
 
-    def org_roots(self):
-        """All GroupProfiles whose group is configured as a support organization."""
-        return self.filter(group__support_organizations__isnull=False).distinct()
+    def enterprise(self):
+        """Enterprise companies and their departments, below the enterprise root."""
+        return enterprise_profiles(self.db)
 
     def containing_groups(self, groups):
         """These groups and every group above them."""
@@ -131,9 +132,9 @@ class GroupProfileManager(MP_NodeManager):
     def enterprise_companies(self, user):
         if not (user and user.is_authenticated):
             return self.none()
-        return self.containing(user).filter(
-            depth=2, pk__in=enterprise_profiles(self.db).values("pk")
-        )
+        # The root is a subquery, so resolving a user's company takes one query.
+        root_path = self.filter(depth=1, slug=settings.ENTERPRISE_GROUP_SLUG).values("path")
+        return self.containing(user).filter(depth=2, path__startswith=Subquery(root_path))
 
     def visible(self, user: User | None = None):
         """

@@ -88,27 +88,6 @@ def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
             return ChatEligibility(reason="ambiguous_multi_org", conflicting_orgs=chat_orgs)
 
 
-def resolve_org_group(submitter, product: Product) -> GroupProfile | None:
-    config = ProductSupportConfig.objects.active_for(product)
-    if config is None or config.zendesk_config is None:
-        return None
-    return (
-        GroupProfile.objects.containing(submitter)
-        .filter(group__support_organizations__config=config)
-        .order_by("-depth", "slug")
-        .first()
-    )
-
-
-def resolve_user_org_group(user) -> GroupProfile | None:
-    return (
-        GroupProfile.objects.containing(user)
-        .filter(group__support_organizations__isnull=False)
-        .order_by("-depth", "slug")
-        .first()
-    )
-
-
 def fetch_zendesk_ticket_data(zendesk_ticket_id: str):
     """Fetch ticket and comments from Zendesk."""
     client = ZendeskClient()
@@ -412,8 +391,6 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
         submission.submission_status = SupportTicket.STATUS_SENT
         submission.save(update_fields=["zendesk_ticket_id", "submission_status"])
         return True
-    except TicketHeld as e:
-        return _handle_zendesk_exception(e)
     except APIException as e:
         error_str = str(e)
         if "UserSuspended" in error_str or "RecordInvalid" in error_str:

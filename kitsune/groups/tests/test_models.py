@@ -7,13 +7,7 @@ from django.contrib.auth.models import AnonymousUser, Group
 
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import GroupProfile
-from kitsune.groups.tests import GroupFactory, GroupProfileFactory
-from kitsune.products.tests import (
-    ProductFactory,
-    ProductSupportConfigFactory,
-    SupportOrganizationFactory,
-    ZendeskConfigFactory,
-)
+from kitsune.groups.tests import DepartmentFactory, GroupFactory, GroupProfileFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -1440,7 +1434,7 @@ class CanViewInactiveMembersTests(TestCase):
         self.assertFalse(self.root.can_view_inactive_members(self.regular_member))
 
 
-class OrgRootTests(TestCase):
+class EnterpriseGroupTests(TestCase):
     def setUp(self):
         root_group = Group.objects.create(name="firefox-enterprise")
         self.root = GroupProfile.objects.add_root(
@@ -1463,11 +1457,6 @@ class OrgRootTests(TestCase):
             self.c1, create_kwargs={"group": it_group, "slug": "company1-it"}
         )
 
-        product = ProductFactory()
-        zd = ZendeskConfigFactory(name="zd")
-        config = ProductSupportConfigFactory(product=product, zendesk_config=zd)
-        SupportOrganizationFactory(config=config, group=c1_group)
-
         self.c1_member = UserFactory(username="c1-member")
         self.c1_member.groups.add(c1_group)
         self.it_member = UserFactory(username="it-member")
@@ -1476,11 +1465,18 @@ class OrgRootTests(TestCase):
         self.c2_member.groups.add(c2_group)
         self.stranger = UserFactory(username="stranger")
 
-    def test_is_org_root_only_for_listed_group(self):
-        self.assertTrue(self.c1.is_org_root())
-        self.assertFalse(self.c2.is_org_root())
-        self.assertFalse(self.c1_it.is_org_root())
-        self.assertFalse(self.root.is_org_root())
+    def test_enterprise_groups_are_companies_and_departments_below_the_root(self):
+        foreign = DepartmentFactory(company=GroupProfileFactory())
+        self.assertCountEqual(GroupProfile.objects.enterprise(), [self.c1, self.c2, self.c1_it])
+        for profile, expected in (
+            (self.c1, True),
+            (self.c2, True),
+            (self.c1_it, True),
+            (self.root, False),
+            (foreign, False),
+        ):
+            with self.subTest(group=profile.slug):
+                self.assertEqual(profile.is_enterprise(), expected)
 
     def test_can_view_tickets_anonymous_denied(self):
         self.assertFalse(self.c1.can_view_tickets(AnonymousUser()))

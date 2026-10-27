@@ -1,17 +1,9 @@
 from dataclasses import dataclass
 from functools import cached_property
 
-from django.db.models import Q
-from django.utils import timezone
-
 from kitsune.customercare.utils import ChatEligibility, resolve_chat_eligibility
-from kitsune.groups.models import GroupProfile
-from kitsune.products.models import (
-    ProductSupportConfig,
-    SupportContract,
-    SupportCoverage,
-    ZendeskConfig,
-)
+from kitsune.products.models import ProductSupportConfig, SupportCoverage, ZendeskConfig
+from kitsune.products.utils import get_enterprise_companies
 from kitsune.sumo.urlresolvers import reverse
 
 ENTERPRISE_SUPPORT = "enterprise_support"
@@ -94,24 +86,10 @@ class SupportRoute:
             ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
         ):
             requested_type = None
-
-        user = self.request.user
-        default = config.default_support_type
-        if config.support_organizations.exists():
-            # Direct membership counts too: legacy organizations may lack a group profile.
-            is_member = (
-                user.is_authenticated
-                and config.support_organizations.filter(
-                    Q(group_id__in=user.groups.values_list("id", flat=True))
-                    | Q(group_id__in=GroupProfile.objects.containing(user).values("group_id"))
-                ).exists()
-            )
-            if not is_member:
-                return ProductSupport(config=config, support_type=default)
-            default = config.group_default_support_type or default
-
         return ProductSupport(
-            config=config, support_type=requested_type or default, can_switch=True
+            config=config,
+            support_type=requested_type or config.default_support_type,
+            can_switch=True,
         )
 
     @cached_property
@@ -124,21 +102,16 @@ class SupportRoute:
         if self.product.is_archived:
             return EnterpriseSupport(reason="product_unavailable")
 
-        companies = list(GroupProfile.objects.enterprise_companies(user)[:2])
+        companies = get_enterprise_companies(self.request)
         if not companies:
             return EnterpriseSupport(reason="no_company")
         if len(companies) > 1:
             return EnterpriseSupport(reason="ambiguous_company")
 
-        today = timezone.localdate()
         coverages = list(
-            SupportCoverage.objects.filter(
-                product=self.product,
-                contract__company=companies[0],
-                contract__status=SupportContract.Status.ACTIVE,
-                contract__starts_on__lte=today,
-                contract__ends_on__gte=today,
-            ).select_related("contract", "zendesk_config")[:2]
+            SupportCoverage.objects.effective(companies[0])
+            .filter(product=self.product)
+            .select_related("contract__company", "zendesk_config")[:2]
         )
         if not coverages:
             return EnterpriseSupport(reason="no_coverage")

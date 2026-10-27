@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="supportticket",
             name="accepted_context",
-            field=models.JSONField(blank=True, default=dict),
+            field=models.JSONField(blank=True, db_default={}, default=dict),
         ),
         migrations.AddField(
             model_name="supportticket",
@@ -32,6 +32,7 @@ class Migration(migrations.Migration):
             name="origin",
             field=models.CharField(
                 choices=[("product", "Product support"), ("enterprise", "Enterprise support")],
+                db_default="product",
                 default="product",
                 max_length=20,
             ),

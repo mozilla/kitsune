@@ -1,8 +1,9 @@
 import os
+from datetime import timedelta
 from unittest import mock
 
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import AnonymousUser, Group
 from django.core.files import File
 from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
@@ -12,11 +13,12 @@ from pyquery import PyQuery as pq
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import GroupProfile
-from kitsune.groups.tests import GroupProfileFactory
+from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
-    SupportOrganizationFactory,
+    SupportContractFactory,
+    SupportCoverageFactory,
     ZendeskConfigFactory,
 )
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -503,9 +505,6 @@ class GroupTicketsViewTests(TestCase):
     def setUp(self):
         self.SupportTicket = SupportTicket
         product = ProductFactory()
-        config = ProductSupportConfigFactory(
-            product=product, zendesk_config=ZendeskConfigFactory(name="zd")
-        )
 
         root_group = Group.objects.create(name="firefox-enterprise")
         self.root = GroupProfile.objects.add_root(
@@ -519,7 +518,6 @@ class GroupTicketsViewTests(TestCase):
         self.c1 = GroupProfile.objects.add_child(
             self.root, create_kwargs={"group": self.c1_group, "slug": "company1"}
         )
-        SupportOrganizationFactory(config=config, group=self.c1_group)
 
         self.c2_group = Group.objects.create(name="company2")
         self.c2 = GroupProfile.objects.add_child(
@@ -544,11 +542,32 @@ class GroupTicketsViewTests(TestCase):
             zd_status=SupportTicket.ZD_STATUS_SOLVED,
         )
 
-    def test_non_org_group_returns_404(self):
-        """A group that isn't an org root returns 404 (only its members can even see it)."""
-        self.client.force_login(self.outsider)
-        response = self.client.get(reverse("groups.tickets", args=[self.c2.slug]))
-        self.assertEqual(response.status_code, 404)
+    def test_only_enterprise_groups_have_ticket_lists_regardless_of_coverage(self):
+        """company2 has no contract; a department lists only the tickets it owns."""
+        root_member = UserFactory()
+        root_member.groups.add(self.root.group)
+        foreign_group = DepartmentFactory(company=GroupProfileFactory())
+        foreign_member = UserFactory()
+        foreign_member.groups.add(foreign_group.group)
+        department = DepartmentFactory(company=self.c1)
+        department_member = UserFactory()
+        department_member.groups.add(department.group)
+        department_ticket = SupportTicketFactory(
+            user=department_member, org_group=department, zd_status=SupportTicket.ZD_STATUS_OPEN
+        )
+        for profile, user, status_code in (
+            (self.root, root_member, 404),
+            (foreign_group, foreign_member, 404),
+            (self.c2, self.outsider, 200),
+            (department, department_member, 200),
+        ):
+            with self.subTest(group=profile.slug):
+                self.client.force_login(user)
+                response = self.client.get(reverse("groups.tickets", args=[profile.slug]))
+                self.assertEqual(response.status_code, status_code)
+
+        self.assertContains(response, department_ticket.subject)
+        self.assertNotContains(response, self.open_ticket.subject)
 
     def test_outsider_cannot_reach_private_group(self):
         """Private + isolated group is invisible to non-members; 404 from visibility gate."""
@@ -661,3 +680,191 @@ class GroupTicketsViewTests(TestCase):
         self.assertIn(reverse("groups.profile", args=[self.root.slug]), hrefs)
         self.assertIn(reverse("groups.profile", args=[self.c1.slug]), hrefs)
         self.assertContains(response, "Tickets")
+
+
+class CompanySupportSectionTests(TestCase):
+    """The company page's Your support section, department links, and My support."""
+
+    def setUp(self):
+        today = timezone.localdate()
+        self.company = EnterpriseCompanyFactory()
+        self.root = GroupProfile.objects.get_parent(self.company)
+        self.root.update_visibility(GroupProfile.Visibility.MODERATED)
+        self.department = DepartmentFactory(company=self.company)
+        self.auditors = GroupFactory()
+        self.company.visible_to_groups.add(self.auditors)
+
+        self.thunderbird = ProductFactory(title="Thunderbird")
+        self.vpn = ProductFactory(title="VPN")
+        ProductSupportConfigFactory(
+            product=self.vpn, zendesk_config=ZendeskConfigFactory(), subscription_only=True
+        )
+        contract = SupportContractFactory(
+            company=self.company,
+            starts_on=today - timedelta(days=1),
+            ends_on=today + timedelta(days=1),
+        )
+        for product in (self.thunderbird, self.vpn):
+            SupportCoverageFactory(contract=contract, product=product)
+        self.expired_company = EnterpriseCompanyFactory()
+        SupportCoverageFactory(
+            product=self.vpn,
+            contract__company=self.expired_company,
+            contract__starts_on=today - timedelta(days=60),
+            contract__ends_on=today - timedelta(days=1),
+        )
+
+    def user(self, *profiles, subscribed=False, **kwargs):
+        user = UserFactory(**kwargs)
+        user.groups.add(*(profile.group for profile in profiles))
+        if subscribed:
+            user.profile.products.add(self.vpn)
+        return user
+
+    def leader(self, profile):
+        user = UserFactory()
+        profile.leaders.add(user)
+        return user
+
+    def get(self, user, url):
+        self.client.logout()
+        if user.is_authenticated:
+            self.client.force_login(user)
+        return self.client.get(url)
+
+    def test_section_by_persona(self):
+        auditor = UserFactory()
+        auditor.groups.add(self.auditors)
+        covered = ["Thunderbird", "VPN"]
+        for persona, user, company, status_code, expected in (
+            ("anonymous", AnonymousUser(), self.company, 404, None),
+            ("non-member", self.user(), self.company, 404, None),
+            ("individual subscriber", self.user(subscribed=True), self.company, 404, None),
+            ("company member", self.user(self.company), self.company, 200, (covered, True)),
+            ("department member", self.user(self.department), self.company, 200, (covered, True)),
+            (
+                "both entitlements",
+                self.user(self.company, subscribed=True),
+                self.company,
+                200,
+                (covered, True),
+            ),
+            ("company leader", self.leader(self.company), self.company, 200, (covered, False)),
+            ("root leader", self.leader(self.root), self.company, 200, (covered, False)),
+            ("staff", self.user(self.root, is_staff=True), self.company, 200, (covered, False)),
+            ("view-only", auditor, self.company, 200, None),
+            ("root-only member", self.user(self.root), self.company, 200, None),
+            (
+                "expired coverage",
+                self.user(self.expired_company),
+                self.expired_company,
+                200,
+                ([], False),
+            ),
+        ):
+            with self.subTest(persona=persona):
+                response = self.get(user, reverse("groups.profile", args=[company.slug]))
+                self.assertEqual(response.status_code, status_code)
+                section = pq(response.content)("#your-support")
+                if expected is None:
+                    self.assertFalse(section)
+                    continue
+                titles, has_actions = expected
+                self.assertCountEqual(
+                    [pq(title).text() for title in section(".your-support--title")], titles
+                )
+                self.assertCountEqual(
+                    [link.attrib["href"] for link in section(".your-support--product a")],
+                    [
+                        reverse("questions.aaq_step3", kwargs={"product_slug": product.slug})
+                        for product in (self.thunderbird, self.vpn)
+                        if has_actions
+                    ],
+                )
+                self.assertEqual(
+                    "This company has no active support coverage." in section.text(), not titles
+                )
+                tickets_url = reverse("groups.tickets", args=[company.slug])
+                self.assertTrue(section(f'a[href="{tickets_url}"]'))
+
+    @override_settings(READ_ONLY=True)
+    def test_read_only_mode_lists_coverage_without_submission_actions(self):
+        response = self.get(
+            self.user(self.company), reverse("groups.profile", args=[self.company.slug])
+        )
+        section = pq(response.content)("#your-support")
+        self.assertCountEqual(
+            [pq(title).text() for title in section(".your-support--title")], ["Thunderbird", "VPN"]
+        )
+        self.assertFalse(section(".your-support--product a"))
+
+    def test_pages_resolve_the_company_once_per_request(self):
+        self.client.force_login(self.user(self.company))
+        for url in (
+            reverse("groups.profile", args=[self.company.slug]),
+            reverse("products.product", args=[self.thunderbird.slug]),
+        ):
+            with self.subTest(url=url):
+                with mock.patch.object(
+                    GroupProfile.objects,
+                    "enterprise_companies",
+                    wraps=GroupProfile.objects.enterprise_companies,
+                ) as lookup:
+                    response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(lookup.call_count, 1)
+
+    def test_department_page_links_to_the_viewers_company_support(self):
+        auditor = UserFactory()
+        auditor.groups.add(self.auditors)
+        company_support = reverse("groups.profile", args=[self.company.slug]) + "#your-support"
+        for persona, user, linked in (
+            ("department member", self.user(self.department), True),
+            ("company member", self.user(self.company), True),
+            ("root leader", self.leader(self.root), False),
+            ("view-only", auditor, False),
+        ):
+            with self.subTest(persona=persona):
+                response = self.get(user, reverse("groups.profile", args=[self.department.slug]))
+                self.assertEqual(response.status_code, 200)
+                self.assertFalse(pq(response.content)("#your-support"))
+                self.assertEqual(
+                    bool(
+                        pq(response.content)(f'.group-company-support a[href="{company_support}"]')
+                    ),
+                    linked,
+                )
+
+    def test_tickets_tab_on_company_pages_and_departments_with_history(self):
+        member = self.user(self.department)
+
+        def has_tab(profile):
+            response = self.get(member, reverse("groups.profile", args=[profile.slug]))
+            tickets_url = reverse("groups.tickets", args=[profile.slug])
+            return bool(pq(response.content)(f'.tabs a[href="{tickets_url}"]'))
+
+        self.assertTrue(has_tab(self.company))
+        self.assertFalse(has_tab(self.department))
+        SupportTicketFactory(user=member, org_group=self.department)
+        self.assertTrue(has_tab(self.department))
+
+    def test_my_support_links_to_the_users_company_regardless_of_coverage(self):
+        for persona, user, company in (
+            ("company member", self.user(self.company), self.company),
+            ("department member", self.user(self.department), self.company),
+            ("member without coverage", self.user(self.expired_company), self.expired_company),
+            ("root-only member", self.user(self.root), None),
+            ("company leader", self.leader(self.company), None),
+            ("anonymous", AnonymousUser(), None),
+        ):
+            with self.subTest(persona=persona):
+                response = self.get(user, reverse("products"))
+                links = pq(response.content)('#mzp-c-menu-panel-profile a[href$="#your-support"]')
+                self.assertEqual(
+                    [link.attrib["href"] for link in links],
+                    (
+                        [reverse("groups.profile", args=[company.slug]) + "#your-support"]
+                        if company
+                        else []
+                    ),
+                )

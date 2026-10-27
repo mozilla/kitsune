@@ -11,7 +11,6 @@ from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
     SupportCoverageFactory,
-    SupportOrganizationFactory,
     TopicFactory,
     ZendeskConfigFactory,
     ZendeskTopicConfigurationFactory,
@@ -20,7 +19,7 @@ from kitsune.questions.models import Question, QuestionLocale
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import GroupFactory, UserFactory
+from kitsune.users.tests import UserFactory
 
 
 class EnterpriseTicketTests(TestCase):
@@ -405,34 +404,6 @@ class EnterpriseTicketTests(TestCase):
         self.assertIsNone(ticket.org_group)
         self.assertFalse(Question.objects.exists())
 
-    def test_legacy_organization_members_keep_product_ticket_access(self):
-        self.user.groups.clear()
-        self.use_forum_support(hybrid=True)
-        self.support_config.default_support_type = ProductSupportConfig.SUPPORT_TYPE_FORUM
-        self.support_config.group_default_support_type = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
-        self.support_config.save()
-        organization = GroupFactory()
-        SupportOrganizationFactory(config=self.support_config, group=organization)
-
-        response = self.client.get(self.url, {"support_type": "zendesk"})
-        self.assertContains(response, "Ask your question")
-        self.assertFalse(pq(response.content)(".switcher-actions"))
-        self.assertRedirects(
-            self.client.post(self.url, self.product_data),
-            self.url,
-            fetch_redirect_response=False,
-        )
-        self.assertFalse(SupportTicket.objects.exists())
-
-        self.user.groups.add(organization)
-        response = self.client.get(self.url)
-        self.assertContains(response, "Product support topic")
-        self.assertTrue(pq(response.content)(".switcher-actions"))
-        response = self.client.post(self.url, self.product_data)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(SupportTicket.objects.get().origin, SupportTicket.Origin.PRODUCT)
-        self.assertFalse(Question.objects.exists())
-
     def test_coverage_without_product_support_config_shows_enterprise_form(self):
         self.support_config.delete()
         response = self.client.get(self.url)
@@ -447,6 +418,44 @@ class EnterpriseTicketTests(TestCase):
         step2 = self.client.get(cancel_url)
         self.assertEqual(step2.status_code, 200)
         self.assertEqual(pq(step2.content)(".aaq-widget a").attr("href"), self.url)
+
+    def test_step1_and_question_list_offer_products_with_a_support_action(self):
+        self.support_config.delete()
+        configured = ProductSupportConfigFactory(zendesk_config=self.product_config).product
+        step1_url = reverse("questions.aaq_step1")
+        step2_url = reverse("questions.aaq_step2", args=[self.product.slug])
+        question_list_url = reverse("questions.list", args=[self.product.slug])
+        community_cta = (step1_url, "Ask the Community")
+
+        def question_list_cta():
+            response = self.client.get(question_list_url, follow=True)
+            cta = pq(response.content)(".forum--masthead-cta a")
+            return cta.attr("href"), cta.text()
+
+        for persona, user, offered in (
+            ("covered member", self.user, True),
+            ("uncovered user", UserFactory(), False),
+            ("anonymous", None, False),
+        ):
+            with self.subTest(persona=persona):
+                if user:
+                    self.client.force_login(user)
+                else:
+                    self.client.logout()
+                picker = pq(self.client.get(step1_url).content)("#product-picker .card--title a")
+                hrefs = [a.attr("href") for a in picker.items()]
+                self.assertEqual(step2_url in hrefs, offered)
+                self.assertIn(reverse("questions.aaq_step2", args=[configured.slug]), hrefs)
+                self.assertEqual(
+                    question_list_cta(),
+                    (step2_url, "Contact Support") if offered else community_cta,
+                )
+
+        ProductSupportConfigFactory(
+            product=self.product, zendesk_config=self.product_config, subscription_only=True
+        )
+        self.client.force_login(UserFactory())
+        self.assertEqual(question_list_cta(), community_cta)
 
     def test_covered_non_subscriber_gets_enterprise_instead_of_redirect_or_hide(self):
         self.support_config.subscription_only = True

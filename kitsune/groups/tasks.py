@@ -49,6 +49,15 @@ class ZendeskUnavailable(Exception):
 
 
 RETRYABLE_ERRORS = (ZendeskUnavailable, ZendeskMembershipChanged)
+# Backoff spans minutes so membership removals outlast a Zendesk rate-limit window.
+MEMBERSHIP_SYNC_RETRY = {
+    "acks_late": True,
+    "autoretry_for": RETRYABLE_ERRORS,
+    "retry_backoff": 30,
+    "retry_backoff_max": 600,
+    "retry_jitter": True,
+    "retry_kwargs": {"max_retries": 6},
+}
 
 
 def get_sync_company(user, *, for_update=False):
@@ -138,12 +147,7 @@ def remove_zendesk_company_memberships(client, *, user_id, zendesk_user_id, orga
     client.remove_organization_memberships(user_id=remote_id, organization_ids=organization_ids)
 
 
-@shared_task(
-    acks_late=True,
-    autoretry_for=RETRYABLE_ERRORS,
-    retry_backoff=2,
-    retry_kwargs={"max_retries": 3},
-)
+@shared_task(**MEMBERSHIP_SYNC_RETRY)
 @skip_if_read_only_mode
 def sync_enterprise_zendesk_membership(user_id, removed_organization_ids=()):
     """Converge on current membership; return a safe failure code or None on success."""
@@ -211,12 +215,7 @@ def sync_enterprise_zendesk_membership(user_id, removed_organization_ids=()):
         return error.code
 
 
-@shared_task(
-    acks_late=True,
-    autoretry_for=RETRYABLE_ERRORS,
-    retry_backoff=2,
-    retry_kwargs={"max_retries": 3},
-)
+@shared_task(**MEMBERSHIP_SYNC_RETRY)
 @skip_if_read_only_mode
 def remove_stale_zendesk_memberships(user_id, zendesk_user_id, organization_ids):
     """Remove captured company memberships, preserving this user's current company."""

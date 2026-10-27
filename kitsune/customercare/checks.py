@@ -51,7 +51,12 @@ def check_zendesk_chat_switch(app_configs, databases=None, **kwargs):
     ):
         return []
     try:
-        switched_on = waffle.switch_is_active("zendesk-chat")
+        # Read the row, not waffle's cache, so migrate never depends on Redis.
+        switched_on = (
+            waffle.get_waffle_switch_model()
+            .objects.filter(name="zendesk-chat", active=True)
+            .exists()
+        )
     except DatabaseError:
         # On a fresh database, migrate runs checks before the switch table exists.
         return []

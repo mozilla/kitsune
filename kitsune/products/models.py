@@ -5,6 +5,7 @@ from django.contrib.auth.models import Group, User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.managers import (
@@ -495,8 +496,8 @@ class Platform(ModelBase):
 class ProductSupportConfig(ModelBase):
     """Configuration for product support routing (forums and/or Zendesk).
 
-    This model acts as a routing layer that determines which support channel(s)
-    are available for a product and handles group-based access control for hybrid support.
+    Determines which support channels a product offers. Support organizations only carry
+    live chat access; enterprise tickets come from company support coverage.
     """
 
     SUPPORT_TYPE_FORUM = "forum"
@@ -532,7 +533,7 @@ class ProductSupportConfig(ModelBase):
         max_length=20,
         choices=SUPPORT_TYPE_CHOICES,
         default=SUPPORT_TYPE_FORUM,
-        help_text="Default support channel for users (used when only one channel or no group access)",
+        help_text="Default support channel when both channels are enabled.",
     )
     # Retained until the next release for compatibility with older application instances.
     hybrid_support_groups = models.ManyToManyField(
@@ -554,7 +555,7 @@ class ProductSupportConfig(ModelBase):
         choices=SUPPORT_TYPE_CHOICES,
         null=True,
         blank=True,
-        help_text="Default support type for organization members (if not set, uses default_support_type)",
+        help_text="Not used for support routing.",
     )
     subscription_only = models.BooleanField(
         default=False,
@@ -663,11 +664,10 @@ class SupportOrganizationQuerySet(models.QuerySet):
 
 
 class SupportOrganization(ModelBase):
-    """Support options for a group under a product's support configuration.
+    """Live chat access for a group under a product's support configuration.
 
-    The group and all of its subgroups form one organization; the options apply to every
-    member. Each option here is an addition to the support the configuration already
-    provides.
+    The group and all of its subgroups form one organization. Organizations grant no ticket
+    access or channel choice; company support coverage supplies enterprise tickets.
     """
 
     config = models.ForeignKey(
@@ -678,8 +678,8 @@ class SupportOrganization(ModelBase):
         on_delete=models.CASCADE,
         related_name="support_organizations",
         help_text=(
-            "Includes all subgroups. Cannot be a top-level group or nested with another "
-            "configured group."
+            "Live chat access applies to this group and all of its subgroups. Cannot be a "
+            "top-level group or nested with another configured group."
         ),
     )
     include_live_chat = models.BooleanField(
@@ -859,6 +859,22 @@ class SupportContract(ModelBase):
         return self.name
 
 
+class SupportCoverageQuerySet(models.QuerySet):
+    def effective(self, company, day=None):
+        """The company's coverages whose contract is in effect on `day` (today by default)."""
+        day = day or timezone.localdate()
+        return (
+            self.filter(
+                contract__company=company,
+                contract__status=SupportContract.Status.ACTIVE,
+                contract__starts_on__lte=day,
+                contract__ends_on__gte=day,
+            )
+            .select_related("product")
+            .order_by()
+        )
+
+
 class SupportCoverage(ModelBase):
     contract = models.ForeignKey(
         SupportContract, on_delete=models.CASCADE, related_name="coverages"
@@ -871,6 +887,8 @@ class SupportCoverage(ModelBase):
     )
     zendesk_product_value = models.CharField(max_length=255)
     includes_chat = models.BooleanField(default=False)
+
+    objects = SupportCoverageQuerySet.as_manager()
 
     class Meta:
         verbose_name = _lazy("Support coverage")

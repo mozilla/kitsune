@@ -47,12 +47,12 @@ from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
 from kitsune.community.utils import num_deleted_contributions
 from kitsune.customercare.models import SupportTicket
-from kitsune.customercare.utils import resolve_user_org_group
 from kitsune.forums.models import Post, Thread
 from kitsune.groups.invitations import invitation_error, load_enterprise_invitation
 from kitsune.kbadge.models import Award
 from kitsune.kbforums.models import Post as KBForumPost
 from kitsune.kbforums.models import Thread as KBForumThread
+from kitsune.products.utils import get_support_company
 from kitsune.questions.utils import mark_content_as_spam, num_answers, num_questions, num_solutions
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.theme import DARK_MODE_FLAG, dark_mode_enabled
@@ -304,7 +304,7 @@ def questions_contributed(request, username):
 
     questions = paginate(request, combined)
 
-    org_profile = resolve_user_org_group(request.user) if is_owner else None
+    org_profile = get_support_company(request) if is_owner else None
     org_active_count = 0
     org_solved_count = 0
     if org_profile:
