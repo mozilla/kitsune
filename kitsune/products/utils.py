@@ -44,6 +44,12 @@ def get_professional_support_products(request) -> list[Product]:
     return get_covered_products(company) if company else []
 
 
+def get_professional_support(request) -> tuple[GroupProfile | None, list[Product]]:
+    """Return the requesting user's company and covered products; no company without products."""
+    products = get_professional_support_products(request)
+    return (get_support_company(request) if products else None), products
+
+
 def get_taxonomy(
     product: Product | str | None = None,
     include_metadata: list[str] | tuple[str, ...] | None = None,

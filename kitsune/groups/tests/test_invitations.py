@@ -21,13 +21,7 @@ from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.groups.onboarding import invite_enterprise_user
 from kitsune.groups.tests import EnterpriseInvitationFactory, GroupProfileFactory
-from kitsune.products.models import SupportOrganization
-from kitsune.products.tests import (
-    ProductFactory,
-    ProductSupportConfigFactory,
-    SupportOrganizationFactory,
-    ZendeskConfigFactory,
-)
+from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.auth import FXAAuthBackend
 from kitsune.users.models import Profile
@@ -100,7 +94,6 @@ class InvitationFixtures:
             Profile.all_profiles,
             EnterpriseInvitation.objects,
             ZendeskOrganization.objects,
-            SupportOrganization.objects,
             User.groups.through.objects,
             GroupProfile.leaders.through.objects,
             Email.objects,
@@ -339,25 +332,6 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
                 user.groups.add(membership.group)
                 self.assert_rejected(code="company_conflict")
                 user.groups.remove(membership.group)
-
-    def test_support_organizations_outside_the_enterprise_tree_are_preserved(self):
-        user = self.eligible_user()
-        unrelated = GroupProfileFactory()
-        enterprise_config = ProductSupportConfigFactory(
-            product=ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG),
-            zendesk_config=ZendeskConfigFactory(),
-        )
-        organization = SupportOrganizationFactory(group=unrelated.group, config=enterprise_config)
-        user.groups.add(unrelated.group)
-        invitation = self.invite()
-        self.assertEqual(invitation.user_id, user.pk)
-        self.assertQuerySetEqual(SupportOrganization.objects.all(), [organization])
-        self.assertTrue(
-            User.groups.through.objects.filter(user=user, group=unrelated.group).exists()
-        )
-        self.assertFalse(
-            User.groups.through.objects.filter(user=user, group=self.company.group).exists()
-        )
 
     def test_only_active_staff_root_moderators_can_invite(self):
         root_leader = UserFactory()

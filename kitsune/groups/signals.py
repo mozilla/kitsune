@@ -10,6 +10,7 @@ from kitsune.groups.membership import (
     company_organization_ids,
     enterprise_profiles,
     guard_enterprise_memberships,
+    queue_chat_revocation,
     queue_enterprise_zendesk_sync,
 )
 from kitsune.groups.models import GroupProfile
@@ -72,6 +73,7 @@ def sync_company_memberships(sender, instance, action, reverse, pk_set, using, *
     organization_ids = ()
     if action != "post_add":
         organization_ids = company_organization_ids(group_ids, using=using)
+        queue_chat_revocation(user_ids, group_ids, using=using)
     queue_enterprise_zendesk_sync(user_ids, using=using, removed_organization_ids=organization_ids)
 
 

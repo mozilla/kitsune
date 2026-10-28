@@ -70,6 +70,7 @@ from kitsune.sumo.utils import (
     build_paged_url,
     get_aaq_context,
     get_next_url,
+    has_support_action,
     is_ratelimited,
     paginate,
     set_aaq_context,
@@ -203,17 +204,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         products = Product.active.with_question_forums(request.LANGUAGE_CODE)
 
     multiple = (len(products) > 1) or ("all" in product_slugs)
-    has_support_action = False
-    offers_ticket = False
-    if products and not multiple:
-        aaq_context = get_aaq_context(request, products[0])
-        has_support_action = (
-            bool(aaq_context)
-            and aaq_context.get("current_support_type") != ProductSupportConfig.SUPPORT_TYPE_HIDE
-        )
-        offers_ticket = (
-            aaq_context.get("current_support_type") == ProductSupportConfig.SUPPORT_TYPE_ZENDESK
-        )
+    aaq_context = get_aaq_context(request, products[0]) if products and not multiple else {}
 
     topics = []
 
@@ -432,8 +423,10 @@ def question_list(request, product_slug=None, topic_slug=None):
         "selected_topic_slug": topics[0].slug if topics else None,
         "product_slug": product_slug,
         "topic_navigation": topic_navigation,
-        "has_support_action": has_support_action,
-        "offers_ticket": offers_ticket,
+        "has_support_action": has_support_action(aaq_context),
+        "offers_ticket": (
+            aaq_context.get("current_support_type") == ProductSupportConfig.SUPPORT_TYPE_ZENDESK
+        ),
     }
 
     if products:
@@ -936,12 +929,8 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
 
         support_type = selected.support_type or aaq_context.get("current_support_type")
         if selected.action:
-            aaq_context.update(
-                product_slug=product.slug,
-                current_support_type=support_type,
-                can_switch=selected.can_switch,
-                is_enterprise=selected.action == ENTERPRISE_SUPPORT,
-            )
+            # A posted action can differ from the default that get_aaq_context presents.
+            aaq_context["current_support_type"] = support_type
 
         # Handle missing config
         if support_type is None:

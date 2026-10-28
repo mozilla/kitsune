@@ -21,7 +21,13 @@ from kitsune.search.utils import locale_or_default
 from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.sumo.templatetags.jinja_helpers import Paginator as PaginatorRenderer
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import build_paged_url, get_aaq_context, get_aaq_url, paginate
+from kitsune.sumo.utils import (
+    build_paged_url,
+    get_aaq_context,
+    get_aaq_url,
+    has_support_action,
+    paginate,
+)
 from kitsune.wiki.facets import documents_for
 
 log = logging.getLogger("k.search")
@@ -205,9 +211,9 @@ def simple_search(request):
     if not settings.READ_ONLY:
         if product:
             aaq_context = get_aaq_context(request, product)
-            support_type = aaq_context.get("current_support_type")
-            if support_type and support_type != ProductSupportConfig.SUPPORT_TYPE_HIDE:
+            if has_support_action(aaq_context):
                 support_aaq_url = get_aaq_url(aaq_context)
+                support_type = aaq_context["current_support_type"]
                 is_ticketed = support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK
         else:
             support_aaq_url = reverse("questions.aaq_step1")

@@ -22,8 +22,8 @@ from kitsune.groups.membership import (
     queue_enterprise_zendesk_sync,
 )
 from kitsune.groups.models import GroupProfile
+from kitsune.groups.onboarding import ZENDESK_PROVIDER_ERRORS
 from kitsune.groups.provisioning import (
-    ZENDESK_PROVIDER_ERRORS,
     ZendeskProvisioningProgress,
     provision_zendesk_membership,
     save_zendesk_membership_links,
@@ -118,9 +118,7 @@ def save_current_zendesk_membership(user, company, mapping, profile, progress):
         except ZendeskProvisioningConflict as error:
             failure = error
         else:
-            if (current_company.pk if current_company else None) != (
-                company.pk if company else None
-            ):
+            if current_company != company:
                 failure = ZendeskMembershipChanged("Company membership changed")
         if link_failure := save_zendesk_membership_links(
             current_mapping, current_profile, progress

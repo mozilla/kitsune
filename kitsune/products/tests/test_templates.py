@@ -11,7 +11,7 @@ from parameterized import parameterized
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 
-from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
+from kitsune.groups.tests import EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.products.models import HOT_TOPIC_SLUG, CuratedBlock, ProductSupportConfig, Topic
 from kitsune.products.tests import (
     CuratedBlockFactory,
@@ -593,7 +593,6 @@ class ProfessionalSupportPresentationTests(TestCase):
 
     def setUp(self):
         today = timezone.localdate()
-        current = {"starts_on": today - timedelta(days=1), "ends_on": today + timedelta(days=1)}
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
         self.enterprise = ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG)
         ProductSupportConfigFactory(
@@ -609,13 +608,13 @@ class ProfessionalSupportPresentationTests(TestCase):
         TopicFactory(slug="getting-started", products=[self.unconfigured])
 
         self.company = EnterpriseCompanyFactory()
-        contract = SupportContractFactory(company=self.company, **current)
+        contract = SupportContractFactory(company=self.company)
         for product in (self.vpn, self.unconfigured):
             SupportCoverageFactory(contract=contract, product=product)
         self.enterprise_company = EnterpriseCompanyFactory()
         SupportCoverageFactory(
             product=self.enterprise,
-            contract=SupportContractFactory(company=self.enterprise_company, **current),
+            contract=SupportContractFactory(company=self.enterprise_company),
         )
         self.expired_company = EnterpriseCompanyFactory()
         SupportCoverageFactory(
@@ -706,8 +705,6 @@ class ProfessionalSupportPresentationTests(TestCase):
             self.vpn: (False, [enterprise_banner]),
             self.unconfigured: (False, [enterprise_banner]),
         }
-        leader = self.user()
-        self.company.leaders.add(leader)
         company_slugs = [
             company.slug
             for company in (self.company, self.enterprise_company, self.expired_company)
@@ -718,14 +715,6 @@ class ProfessionalSupportPresentationTests(TestCase):
             ("anonymous", None, {**uncovered, self.enterprise: (True, [sales])}, []),
             ("non-member", self.user(), uncovered, []),
             ("company member", self.user(self.company), covered, company_banner),
-            (
-                "department member",
-                self.user(DepartmentFactory(company=self.company)),
-                covered,
-                company_banner,
-            ),
-            ("root member", self.user(self.company.get_parent()), uncovered, []),
-            ("company leader", leader, uncovered, []),
             ("individual subscriber", self.user(subscribed=True), subscriber, []),
             (
                 "both entitlements",

@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import connections, transaction
+from django.db.models import Subquery
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import SupportContract
@@ -65,6 +66,29 @@ def queue_enterprise_zendesk_sync(user_ids, *, using="default", removed_organiza
         )
 
 
+def queue_chat_revocation(user_ids, group_ids, *, left_companies=None, using="default"):
+    """Tag chats after commit for active users whom leaving these groups leaves without chat.
+
+    `left_companies` defaults to the groups' profiles and ancestors; moves pass the old companies.
+    """
+    # Break the GroupProfile -> managers -> membership -> customercare.tasks import cycle.
+    from kitsune.customercare.tasks import had_chat, revoke_chat_tickets
+
+    profiles = apps.get_model("groups", "GroupProfile").objects.db_manager(using)
+    if left_companies is None:
+        left_companies = profiles.containing_groups(group_ids)
+    if not had_chat(left_companies):
+        return
+    memberships = User.groups.through.objects.using(using)
+    users = User.objects.using(using).filter(pk__in=user_ids, is_active=True)
+    for user in users.select_related("profile"):
+        remaining = (
+            memberships.filter(user_id=user.pk).exclude(group_id__in=group_ids).values("group_id")
+        )
+        if not had_chat(profiles.containing_groups(remaining)):
+            revoke_chat_tickets(user, using=using)
+
+
 @contextmanager
 def lock_enterprise_hierarchy(*, using="default", exclusive=False):
     """Hold the tree stable until commit, before locking company or user rows.
@@ -86,14 +110,9 @@ def enterprise_profiles(using="default"):
     """Return profiles below the configured enterprise root, excluding the root."""
     # The manager calls the move guard, so importing GroupProfile here would cycle.
     profiles = apps.get_model("groups", "GroupProfile").objects.using(using)
-    root_path = (
-        profiles.filter(slug=settings.ENTERPRISE_GROUP_SLUG, depth=1)
-        .values_list("path", flat=True)
-        .first()
-    )
-    if root_path is None:
-        return profiles.none()
-    return profiles.filter(path__startswith=root_path, depth__gte=2)
+    root_path = profiles.filter(slug=settings.ENTERPRISE_GROUP_SLUG, depth=1).values("path")
+    # Without a root the subquery is NULL, which matches no path.
+    return profiles.filter(path__startswith=Subquery(root_path), depth__gte=2)
 
 
 def _company_paths(group_ids, using):
@@ -255,6 +274,13 @@ def guard_enterprise_group_move(node, target, *, using="default"):
                 _lock_users(user_ids, using)
                 _validate_memberships(
                     user_ids, (), replace=False, using=using, check_existing=True
+                )
+                # The moved groups now sit under their new company, so pass the old ones.
+                queue_chat_revocation(
+                    user_ids,
+                    changed_groups,
+                    left_companies={company_id for _, company_id in before.values()},
+                    using=using,
                 )
                 queue_enterprise_zendesk_sync(
                     user_ids, using=using, removed_organization_ids=organization_ids

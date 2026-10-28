@@ -265,20 +265,22 @@ class ZendeskClient:
         except (APIException, requests.HTTPError) as exc:
             ZendeskProvisioningConflict.raise_from(exc)
 
-    def has_organization_membership(self, *, user_id: str, organization_id: str) -> bool:
-        """Read whether this user currently belongs to the target organization."""
+    def has_organization_membership(
+        self, *, user_id: str, organization_id: str, memberships=None
+    ) -> bool:
+        """Whether this user belongs to the target organization, in a snapshot or a fresh read."""
         user_id = canonical_zendesk_id(user_id)
         organization_id = canonical_zendesk_id(organization_id)
         try:
-            for membership in self.client.users.organization_memberships(user=int(user_id)):
-                if (
-                    canonical_zendesk_id(membership.user_id) == user_id
-                    and canonical_zendesk_id(membership.organization_id) == organization_id
-                ):
-                    return True
+            if memberships is None:
+                memberships = self.client.users.organization_memberships(user=int(user_id))
+            return any(
+                canonical_zendesk_id(membership.user_id) == user_id
+                and canonical_zendesk_id(membership.organization_id) == organization_id
+                for membership in memberships
+            )
         except (APIException, requests.HTTPError) as exc:
             ZendeskProvisioningConflict.raise_from(exc)
-        return False
 
     def ensure_organization_membership(
         self, *, user_id: str, organization_id: str, memberships=None
@@ -286,13 +288,8 @@ class ZendeskClient:
         """Add the target membership, reusing an optional snapshot only for the initial check."""
         user_id = canonical_zendesk_id(user_id)
         organization_id = canonical_zendesk_id(organization_id)
-        if memberships is None:
-            if self.has_organization_membership(user_id=user_id, organization_id=organization_id):
-                return
-        elif any(
-            canonical_zendesk_id(membership.user_id) == user_id
-            and canonical_zendesk_id(membership.organization_id) == organization_id
-            for membership in memberships
+        if self.has_organization_membership(
+            user_id=user_id, organization_id=organization_id, memberships=memberships
         ):
             return
         try:
@@ -452,7 +449,7 @@ class ZendeskClient:
             ticket_kwargs["brand_id"] = int(brand_id)
 
         tags = []
-        is_enterprise = ticket_fields.get("origin") == SupportTicket.Origin.ENTERPRISE
+        # If this is the normal, athenticated form we want to use the category field
         if user and user.is_authenticated:
             custom_fields.append(
                 {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": ticket_fields.get("category")},
@@ -474,7 +471,7 @@ class ZendeskClient:
         tags.extend(
             tag for tag in ticket_fields.get("zendesk_tags", []) if tag != ENTERPRISE_SUPPORT_TAG
         )
-        if is_enterprise:
+        if ticket_fields.get("origin") == SupportTicket.Origin.ENTERPRISE:
             tags.append(ENTERPRISE_SUPPORT_TAG)
 
         if tags:

@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import GroupProfile
-from kitsune.groups.onboarding import get_enterprise_root, link_zendesk_organization
+from kitsune.groups.onboarding import link_zendesk_organization
 from kitsune.products.models import (
     CuratedBlock,
     CuratedBlockItem,
@@ -20,7 +20,6 @@ from kitsune.products.models import (
     ProductTopic,
     SupportContract,
     SupportCoverage,
-    SupportOrganization,
     Topic,
     TopicSlugHistory,
     Version,
@@ -250,45 +249,7 @@ class ZendeskConfigAdmin(admin.ModelAdmin):
         return obj.topic_configurations.count()
 
 
-class SupportOrganizationInlineFormSet(BaseInlineFormSet):
-    """Reject nested groups submitted together for one configuration.
-
-    The model's ``clean()`` checks each row against saved rows; this catches the same
-    conflict between rows in the same submission.
-    """
-
-    def clean(self):
-        super().clean()
-        seen = []
-        for form in self.forms:
-            if not hasattr(form, "cleaned_data") or form.cleaned_data.get("DELETE"):
-                continue
-            group = form.cleaned_data.get("group")
-            if group is None:
-                continue
-            profile = GroupProfile.objects.filter(group=group).first()
-            if profile is None:
-                continue
-            for other_group, other_profile in seen:
-                if profile.path.startswith(other_profile.path) or other_profile.path.startswith(
-                    profile.path
-                ):
-                    raise forms.ValidationError(
-                        f"'{group.name}' and '{other_group.name}' are nested. Configure one "
-                        f"of them, not both."
-                    )
-            seen.append((group, profile))
-
-
-class SupportOrganizationInline(admin.TabularInline):
-    model = SupportOrganization
-    formset = SupportOrganizationInlineFormSet
-    extra = 0
-    autocomplete_fields = ("group",)
-
-
 class ProductSupportConfigAdmin(admin.ModelAdmin):
-    inlines = (SupportOrganizationInline,)
     list_display = (
         "product",
         "is_active",
@@ -343,10 +304,7 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
             "Routing Configuration",
             {
                 "fields": ("default_support_type",),
-                "description": (
-                    "Set the default support type for hybrid configurations. Support "
-                    "organizations only carry live chat access."
-                ),
+                "description": "Set the default support type for hybrid configurations.",
             },
         ),
         (
@@ -513,10 +471,9 @@ class SupportContractForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if "company" in self.fields:
             company = self.fields["company"]
-            try:
-                company.queryset = get_enterprise_root().get_children().select_related("group")
-            except forms.ValidationError:
-                company.queryset = GroupProfile.objects.none()
+            company.queryset = (
+                GroupProfile.objects.enterprise().filter(depth=2).select_related("group")
+            )
             company.widget.can_add_related = False
             company.widget.can_change_related = False
             company.widget.can_delete_related = False

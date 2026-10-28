@@ -4,6 +4,14 @@ from django.core.checks import Tags, Warning, register
 from django.db import DatabaseError
 
 
+def chat_settings():
+    return (
+        settings.ZENDESK_CHAT_WIDGET_KEY,
+        settings.ZENDESK_CHAT_SIGNING_SECRET,
+        settings.ZENDESK_CHAT_SIGNING_KEY_ID,
+    )
+
+
 @register()
 def check_zendesk_oauth_configuration(app_configs, **kwargs):
     if bool(settings.ZENDESK_OAUTH_CLIENT_ID) != bool(settings.ZENDESK_OAUTH_CLIENT_SECRET):
@@ -23,11 +31,7 @@ def check_zendesk_oauth_configuration(app_configs, **kwargs):
 
 @register()
 def check_zendesk_chat_configuration(app_configs, **kwargs):
-    configured = (
-        settings.ZENDESK_CHAT_WIDGET_KEY,
-        settings.ZENDESK_CHAT_SIGNING_SECRET,
-        settings.ZENDESK_CHAT_SIGNING_KEY_ID,
-    )
+    configured = chat_settings()
     if any(configured) and not all(configured):
         return [
             Warning(
@@ -44,11 +48,7 @@ def check_zendesk_chat_configuration(app_configs, **kwargs):
 
 @register(Tags.database)
 def check_zendesk_chat_switch(app_configs, databases=None, **kwargs):
-    if not databases or (
-        settings.ZENDESK_CHAT_WIDGET_KEY
-        or settings.ZENDESK_CHAT_SIGNING_SECRET
-        or settings.ZENDESK_CHAT_SIGNING_KEY_ID
-    ):
+    if not databases or any(chat_settings()):
         return []
     try:
         # Read the row, not waffle's cache, so migrate never depends on Redis.

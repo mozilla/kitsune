@@ -1,14 +1,7 @@
-from django.contrib.auth.models import Group
 from django.test.utils import override_settings
 from waffle.testutils import override_switch
 
-from kitsune.groups.models import GroupProfile
-from kitsune.products.tests import (
-    ProductFactory,
-    ProductSupportConfigFactory,
-    SupportOrganizationFactory,
-    ZendeskConfigFactory,
-)
+from kitsune.products.tests import ProductFactory, SupportCoverageFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.tests.test_middleware import csp_directives
 from kitsune.sumo.urlresolvers import reverse
@@ -30,18 +23,9 @@ class ChatWidgetTemplateTests(TestCase):
 
     def setUp(self):
         self.product = ProductFactory(slug="firefox-enterprise")
-        config = ProductSupportConfigFactory(
-            product=self.product, zendesk_config=ZendeskConfigFactory()
-        )
-        root = GroupProfile.objects.add_root(
-            create_kwargs={"group": Group.objects.create(name="chat"), "slug": "chat"}
-        )
-        company = GroupProfile.objects.add_child(
-            root, create_kwargs={"group": Group.objects.create(name="company"), "slug": "company"}
-        )
-        SupportOrganizationFactory(config=config, group=company.group, include_live_chat=True)
+        coverage = SupportCoverageFactory(product=self.product, includes_chat=True)
         self.user = UserFactory()
-        self.user.groups.add(company.group)
+        self.user.groups.add(coverage.contract.company.group)
 
     def _get(self, locale=None):
         url = reverse("products.product", args=[self.product.slug], locale=locale)

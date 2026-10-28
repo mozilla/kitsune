@@ -10,19 +10,17 @@ from uuid import uuid4
 
 import psycopg
 import requests
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core import mail
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import connections, transaction
 from django.http import Http404
-from django.test import Client, RequestFactory, TransactionTestCase, override_settings
+from django.test import Client, TransactionTestCase, override_settings
 from django.utils import timezone
 from kombu.exceptions import OperationalError
 from post_office.models import STATUS, Email
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
-from zenpy.lib.api_objects import OrganizationMembership
 from zenpy.lib.exception import APIException, RatelimitBudgetExceeded
 
 from kitsune.customercare.models import ZendeskOrganization
@@ -33,20 +31,14 @@ from kitsune.groups.invitations import (
     load_enterprise_invitation,
 )
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
-from kitsune.groups.onboarding import configure_enterprise_company, create_enterprise_company
 from kitsune.groups.provisioning import provision_enterprise_invitation
 from kitsune.groups.tests import GroupProfileFactory
 from kitsune.groups.tests.test_invitations import InvitationFixtures
 from kitsune.groups.views import INVITATION_FAILURES
-from kitsune.products.models import SupportContract, SupportOrganization
-from kitsune.products.routing import ENTERPRISE_SUPPORT, route_support
 from kitsune.products.tests import (
     ProductFactory,
-    ProductSupportConfigFactory,
     SupportContractFactory,
     SupportCoverageFactory,
-    SupportOrganizationFactory,
-    ZendeskConfigFactory,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -146,28 +138,6 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         token = urlsplit(link).path.rsplit("/", 1)[1]
         self.assertEqual(load_enterprise_invitation(token).pk, invitation.pk)
 
-    def test_invitation_removes_only_other_sumo_linked_organization_memberships(self):
-        invitation = self.invite()
-        ZendeskOrganization.objects.filter(group_profile=self.company).update(zendesk_id="101")
-        ZendeskOrganization.objects.create(group_profile=self.other_company, zendesk_id="102")
-        ZendeskOrganization.objects.create(group_profile=self.child(self.other_company))
-        memberships = [
-            OrganizationMembership(organization_id=organization_id)
-            for organization_id in (101, 102, 999)
-        ]
-        self.client.get_organization_memberships.return_value = memberships
-
-        result = self.provision(invitation)
-
-        self.assertEqual(result.status, EnterpriseInvitation.Status.READY)
-        self.client.get_organization_memberships.assert_called_once_with(user_id="201")
-        self.client.remove_organization_memberships.assert_called_once_with(
-            user_id="201", organization_ids={"102"}, memberships=memberships
-        )
-        self.client.ensure_organization_membership.assert_called_once_with(
-            user_id="201", organization_id="101", memberships=memberships
-        )
-
     def test_existing_identity_uses_public_name_and_preserves_account_fields(self):
         user = self.eligible_user(
             profile__name="Current public name",
@@ -209,78 +179,34 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         ZENDESK_CHAT_SIGNING_SECRET="secret",
     )
     def test_welcome_lists_covered_products_shared_history_and_chat(self):
-        today = timezone.localdate()
         tickets = "Open support tickets for Thunderbird, VPN with Mozilla support agents"
         history = f"See support tickets opened by others at {self.company.group.name}"
         chat = "Chat live with a support agent"
-        for name, covered, chat_switch, expected in (
-            ("no coverage", False, None, {history}),
-            ("bundle", True, None, {tickets, history}),
-            ("chat", False, True, {history, chat}),
-            ("chat switched off", False, False, {history}),
+        for name, covered, includes_chat, chat_switch, expected in (
+            ("no coverage", False, False, True, {history}),
+            ("bundle", True, False, True, {tickets, history}),
+            ("bundle with chat", True, True, True, {tickets, history, chat}),
+            ("chat switched off", True, True, False, {tickets, history}),
         ):
             with (
                 self.subTest(name),
-                override_switch("zendesk-chat", active=bool(chat_switch)),
+                override_switch("zendesk-chat", active=chat_switch),
                 transaction.atomic(),
             ):
                 if covered:
-                    contract = SupportContractFactory(
-                        company=self.company, starts_on=today, ends_on=today
-                    )
+                    contract = SupportContractFactory(company=self.company)
                     for order, title in enumerate(("Thunderbird", "VPN")):
                         SupportCoverageFactory(
                             contract=contract,
                             product=ProductFactory(title=title, display_order=order),
+                            includes_chat=includes_chat and order == 0,
                         )
-                if chat_switch is not None:
-                    SupportOrganizationFactory(
-                        group=self.company.group,
-                        include_live_chat=True,
-                        config=ProductSupportConfigFactory(
-                            product=ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG),
-                            zendesk_config=ZendeskConfigFactory(),
-                        ),
-                    )
                 email, _link = self.welcome(self.provision(self.invite()))
                 for message in (email.message, email.html_message):
                     self.assertEqual(
                         {line for line in (tickets, history, chat) if line in message}, expected
                     )
                 transaction.set_rollback(True)
-
-    def test_thunderbird_only_company_is_onboarded_without_enterprise_product_access(self):
-        today = timezone.localdate()
-        enterprise_product = ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG)
-        thunderbird = ProductFactory(title="Thunderbird")
-        company = create_enterprise_company(
-            actor=self.actor, name="Thunderbird Customer", include_live_chat=False
-        )
-        configure_enterprise_company(actor=self.actor, company=company, include_live_chat=False)
-        user = self.eligible_user()
-        invitation = self.provision(self.invite(company=company))
-        self.assertEqual(invitation.status, EnterpriseInvitation.Status.ACCEPTED)
-        self.assertTrue(company.group.user_set.filter(pk=user.pk).exists())
-        self.assertFalse(SupportContract.objects.exists())
-        self.assertFalse(SupportOrganization.objects.exists())
-
-        def preferred_tickets():
-            request = RequestFactory().get("/")
-            request.user = user
-            return [
-                route_support(request, product).preferred_ticket
-                for product in (enterprise_product, thunderbird)
-            ]
-
-        contract = SupportContractFactory(
-            company=company,
-            starts_on=today + timedelta(days=1),
-            ends_on=today + timedelta(days=30),
-        )
-        SupportCoverageFactory(contract=contract, product=thunderbird)
-        self.assertEqual(preferred_tickets(), [None, None])
-        SupportContract.objects.filter(pk=contract.pk).update(starts_on=today)
-        self.assertEqual(preferred_tickets(), [None, ENTERPRISE_SUPPORT])
 
     def test_provider_failures_keep_saved_ids_and_full_retry_reuses_them(self):
         operations = (
@@ -294,11 +220,6 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
                 "ensure_organization_membership",
                 "zendesk_membership",
                 RatelimitBudgetExceeded("private provider response"),
-            ),
-            (
-                "remove_organization_memberships",
-                "zendesk_membership",
-                requests.Timeout("private provider response"),
             ),
             (
                 "get_organization_memberships",

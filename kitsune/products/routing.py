@@ -1,7 +1,10 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import cached_property
 
-from kitsune.customercare.utils import ChatEligibility, resolve_chat_eligibility
+import waffle
+from django.conf import settings
+
 from kitsune.products.models import ProductSupportConfig, SupportCoverage, ZendeskConfig
 from kitsune.products.utils import get_enterprise_companies
 from kitsune.sumo.urlresolvers import reverse
@@ -34,6 +37,20 @@ class EnterpriseSupport:
 
 
 @dataclass(frozen=True)
+class ChatSupport:
+    coverage: SupportCoverage | None = None
+    reason: str | None = None
+
+    @property
+    def eligible(self) -> bool:
+        return self.coverage is not None
+
+    @property
+    def disabled_site_wide(self) -> bool:
+        return self.reason == "chat_is_disabled"
+
+
+@dataclass(frozen=True)
 class SupportAction:
     action: str | None = None
     can_switch: bool = False
@@ -45,6 +62,63 @@ class SupportAction:
         if self.action == ProductSupportConfig.SUPPORT_TYPE_FORUM:
             return ProductSupportConfig.SUPPORT_TYPE_FORUM
         return ProductSupportConfig.SUPPORT_TYPE_ZENDESK if self.action else None
+
+
+def chat_unavailable_reason() -> str | None:
+    """Why the site can't offer chat to anyone, or None when it can."""
+    if not waffle.switch_is_active("zendesk-chat"):
+        return "chat_is_disabled"
+    if not (
+        settings.ZENDESK_CHAT_WIDGET_KEY
+        and settings.ZENDESK_CHAT_SIGNING_SECRET
+        and settings.ZENDESK_CHAT_SIGNING_KEY_ID
+    ):
+        return "chat_not_configured"
+    return None
+
+
+def resolve_enterprise_support(user, product, companies) -> EnterpriseSupport:
+    """Resolve the single effective coverage of the product for the user's single company.
+
+    `companies` holds up to two of the user's enterprise companies; two are ambiguous.
+    """
+    if not (user and user.is_authenticated):
+        return EnterpriseSupport(reason="not_authenticated")
+    if not user.is_active:
+        return EnterpriseSupport(reason="inactive_user")
+    if product.is_archived:
+        return EnterpriseSupport(reason="product_unavailable")
+
+    if not companies:
+        return EnterpriseSupport(reason="no_company")
+    if len(companies) > 1:
+        return EnterpriseSupport(reason="ambiguous_company")
+
+    coverages = list(
+        SupportCoverage.objects.effective(companies[0])
+        .filter(product=product)
+        .select_related("contract__company", "zendesk_config")[:2]
+    )
+    if not coverages:
+        return EnterpriseSupport(reason="no_coverage")
+    if len(coverages) > 1:
+        return EnterpriseSupport(reason="ambiguous_coverage")
+    return EnterpriseSupport(coverage=coverages[0])
+
+
+def resolve_chat(get_enterprise_support: Callable[[], EnterpriseSupport]) -> ChatSupport:
+    """Chat needs the site's prerequisites, enterprise support, and its coverage's chat.
+
+    Enterprise support is resolved only when the site can offer chat.
+    """
+    if reason := chat_unavailable_reason():
+        return ChatSupport(reason=reason)
+    enterprise_support = get_enterprise_support()
+    if not (coverage := enterprise_support.coverage):
+        return ChatSupport(reason=enterprise_support.reason)
+    if not coverage.includes_chat:
+        return ChatSupport(reason="chat_not_included")
+    return ChatSupport(coverage=coverage)
 
 
 class SupportRoute:
@@ -94,34 +168,13 @@ class SupportRoute:
 
     @cached_property
     def enterprise_support(self) -> EnterpriseSupport:
-        user = self.request.user
-        if not user.is_authenticated:
-            return EnterpriseSupport(reason="not_authenticated")
-        if not user.is_active:
-            return EnterpriseSupport(reason="inactive_user")
-        if self.product.is_archived:
-            return EnterpriseSupport(reason="product_unavailable")
-
-        companies = get_enterprise_companies(self.request)
-        if not companies:
-            return EnterpriseSupport(reason="no_company")
-        if len(companies) > 1:
-            return EnterpriseSupport(reason="ambiguous_company")
-
-        coverages = list(
-            SupportCoverage.objects.effective(companies[0])
-            .filter(product=self.product)
-            .select_related("contract__company", "zendesk_config")[:2]
+        return resolve_enterprise_support(
+            self.request.user, self.product, get_enterprise_companies(self.request)
         )
-        if not coverages:
-            return EnterpriseSupport(reason="no_coverage")
-        if len(coverages) > 1:
-            return EnterpriseSupport(reason="ambiguous_coverage")
-        return EnterpriseSupport(coverage=coverages[0])
 
     @cached_property
-    def chat(self) -> ChatEligibility:
-        return resolve_chat_eligibility(self.request.user, self.product)
+    def chat(self) -> ChatSupport:
+        return resolve_chat(lambda: self.enterprise_support)
 
     @property
     def preferred_ticket(self) -> str | None:
@@ -139,15 +192,9 @@ class SupportRoute:
         requested_type = self.request.GET.get("support_type")
         if requested_type == ProductSupportConfig.SUPPORT_TYPE_FORUM and has_forum:
             action: str | None = ProductSupportConfig.SUPPORT_TYPE_FORUM
-        elif preferred_ticket and (
-            requested_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK
-            or preferred_ticket == ENTERPRISE_SUPPORT
-        ):
-            action = preferred_ticket
-        elif (
-            has_forum
-            and self.product_support.support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM
-        ):
+        elif preferred_ticket == ENTERPRISE_SUPPORT:
+            action = ENTERPRISE_SUPPORT
+        elif self.product_support.support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM:
             action = ProductSupportConfig.SUPPORT_TYPE_FORUM
         else:
             action = preferred_ticket

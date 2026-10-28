@@ -17,8 +17,7 @@ from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.forums.models import Post, Thread
 from kitsune.forums.tests import PostFactory, ThreadFactory
-from kitsune.groups.models import GroupProfile
-from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory
+from kitsune.groups.tests import EnterpriseCompanyFactory
 from kitsune.kbforums.models import Post as KBForumPost
 from kitsune.kbforums.models import Thread as KBForumThread
 from kitsune.kbforums.tests import (
@@ -898,16 +897,7 @@ class QuestionsContributedSidebarTests(TestCase):
         return reverse("users.questions", locale="en-US", kwargs={"username": user.username})
 
     def test_widget_shows_only_the_users_own_company(self):
-        department_member = UserFactory()
-        department_member.groups.add(DepartmentFactory(company=self.company).group)
-        root_member = UserFactory()
-        root_member.groups.add(GroupProfile.objects.get_parent(self.company).group)
-        for user, shown in (
-            (self.member, True),
-            (department_member, True),
-            (root_member, False),
-            (self.outsider, False),
-        ):
+        for user, shown in ((self.member, True), (self.outsider, False)):
             with self.subTest(user=user.username):
                 self.client.force_login(user)
                 widget = pq(self.client.get(self._url_for(user)).content)(

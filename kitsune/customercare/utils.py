@@ -1,5 +1,4 @@
 import logging
-from dataclasses import dataclass
 from typing import Any
 
 import waffle
@@ -16,17 +15,14 @@ from kitsune.customercare.models import (
     SupportTicket,
     TicketHeld,
     ZendeskOrganization,
+    accepted_context_for,
 )
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
-from kitsune.products.models import (
-    Product,
-    ProductSupportConfig,
-    SupportOrganization,
-    Topic,
-)
+from kitsune.products.models import Product, Topic
+from kitsune.products.routing import resolve_chat, resolve_enterprise_support
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
 
@@ -34,58 +30,6 @@ log = logging.getLogger("k.customercare")
 
 # The channel of comments in which Zendesk records a live chat's messages, in batches.
 CHAT_TRANSCRIPT_CHANNEL = "chat_transcript"
-
-
-@dataclass(frozen=True)
-class ChatEligibility:
-    org: SupportOrganization | None = None
-    reason: str | None = None
-    conflicting_orgs: tuple[SupportOrganization, ...] = ()
-
-    @property
-    def eligible(self) -> bool:
-        return self.org is not None
-
-    @property
-    def disabled_site_wide(self) -> bool:
-        return self.reason == "chat_is_disabled"
-
-
-def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
-    """Require one chat-enabled organization so ticket ownership is unambiguous."""
-    if not waffle.switch_is_active("zendesk-chat"):
-        return ChatEligibility(reason="chat_is_disabled")
-
-    if not (
-        settings.ZENDESK_CHAT_WIDGET_KEY
-        and settings.ZENDESK_CHAT_SIGNING_SECRET
-        and settings.ZENDESK_CHAT_SIGNING_KEY_ID
-    ):
-        return ChatEligibility(reason="chat_not_configured")
-
-    if not (user and user.is_authenticated):
-        return ChatEligibility(reason="not_authenticated")
-    if not user.is_active:
-        return ChatEligibility(reason="inactive_user")
-    if product.is_archived:
-        return ChatEligibility(reason="product_unavailable")
-
-    config = ProductSupportConfig.objects.active_for(product)
-    if config is None or config.zendesk_config is None:
-        return ChatEligibility(reason="no_ticketing_support")
-    if not config.admits(user):
-        return ChatEligibility(reason="subscription_required")
-
-    organizations = list(config.support_organizations.containing(user))
-    chat_orgs = tuple(org for org in organizations if org.include_live_chat)
-    match chat_orgs:
-        case []:
-            reason = "org_without_chat" if organizations else "no_entitled_org"
-            return ChatEligibility(reason=reason)
-        case [org]:
-            return ChatEligibility(org=org)
-        case _:
-            return ChatEligibility(reason="ambiguous_multi_org", conflicting_orgs=chat_orgs)
 
 
 def fetch_zendesk_ticket_data(zendesk_ticket_id: str):
@@ -180,23 +124,32 @@ def create_support_ticket(
     if zd_ticket is None:
         if not accepted_context:
             raise ValueError("A new support ticket requires its accepted context")
-        org_group = coverage.contract.company if coverage else None
-        fields.update(
-            origin=SupportTicket.Origin.ENTERPRISE if coverage else SupportTicket.Origin.PRODUCT,
-            coverage=coverage,
-            accepted_context=accepted_context,
-        )
+    elif ticket := SupportTicket.objects.filter(zendesk_ticket_id=str(zd_ticket.id)).first():
+        return ticket
     else:
-        # The organization that let the person chat, if they still can.
-        eligibility = resolve_chat_eligibility(user, product)
-        if eligibility.reason == "chat_not_configured":
+        # Adoption runs without a request, so it looks up the person's companies itself.
+        chat = resolve_chat(
+            lambda: resolve_enterprise_support(
+                user, product, list(GroupProfile.objects.enterprise_companies(user)[:2])
+            )
+        )
+        if chat.reason == "chat_not_configured":
             raise ImproperlyConfigured(
                 "Chat requires a widget key, and a signing key and its secret."
             )
-        org = eligibility.org
-        org_group = GroupProfile.objects.filter(group_id=org.group_id).first() if org else None
+        coverage = chat.coverage
+        accepted_context = (
+            accepted_context_for(product, coverage.zendesk_config, coverage) if coverage else {}
+        )
 
-    fields.update(user=user, product=product, org_group=org_group)
+    fields.update(
+        user=user,
+        product=product,
+        origin=SupportTicket.Origin.ENTERPRISE if coverage else SupportTicket.Origin.PRODUCT,
+        coverage=coverage,
+        org_group=coverage.contract.company if coverage else None,
+        accepted_context=accepted_context,
+    )
 
     if zd_ticket is None:
         ticket = SupportTicket.objects.create(
@@ -361,7 +314,7 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
         if submission.origin == SupportTicket.Origin.ENTERPRISE:
             organization_id = (
                 ZendeskOrganization.objects.filter(
-                    external_id=context.get("company", {}).get("external_id"),
+                    external_id=context["company"]["external_id"],
                     group_profile_id=submission.org_group_id,
                 )
                 .values_list("zendesk_id", flat=True)
@@ -369,19 +322,14 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
             )
             if not organization_id:
                 raise TicketHeld("The company has no linked Zendesk organization")
-            if (
-                not submission.user
-                or not submission.user.is_active
-                or list(
-                    GroupProfile.objects.enterprise_companies(submission.user).values_list(
-                        "pk", flat=True
-                    )[:2]
-                )
-                != [submission.org_group_id]
-            ):
+            user = submission.user
+            companies = GroupProfile.objects.enterprise_companies(user).values_list(
+                "pk", flat=True
+            )
+            if not (user and user.is_active) or list(companies[:2]) != [submission.org_group_id]:
                 raise TicketHeld("The requester is no longer a member of the accepted company")
             # Only membership synchronization may create enterprise requesters in Zendesk.
-            if not submission.user.profile.zendesk_id:
+            if not user.profile.zendesk_id:
                 raise TicketHeld(
                     "The requester has not been provisioned in the company's Zendesk organization"
                 )

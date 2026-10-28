@@ -42,7 +42,6 @@ from kitsune.groups.onboarding import (
     invite_enterprise_user,
 )
 from kitsune.groups.provisioning import provision_enterprise_invitation
-from kitsune.products.models import SupportOrganization
 from kitsune.products.routing import ENTERPRISE_SUPPORT, route_support
 from kitsune.products.utils import get_covered_products, get_support_company
 from kitsune.sumo.urlresolvers import reverse
@@ -278,14 +277,8 @@ def manage_company(request, group_slug):
     creating = group_slug == root.slug
     prof = root if creating else get_enterprise_company(root, viewer=request.user, slug=group_slug)
     company = None if creating else prof
-    support = None
     linked_id = None
     if company is not None:
-        support = SupportOrganization.objects.filter(
-            group=company.group,
-            config__product__slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG,
-            config__is_active=True,
-        ).first()
         linked_id = (
             ZendeskOrganization.objects.filter(group_profile=company)
             .values_list("zendesk_id", flat=True)
@@ -294,7 +287,6 @@ def manage_company(request, group_slug):
     form = EnterpriseCompanyForm(
         request.POST or None,
         company=company,
-        initial={"include_live_chat": support.include_live_chat if support else False},
         linked_organization_id=linked_id,
     )
     if form.is_valid():

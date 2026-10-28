@@ -11,12 +11,11 @@ from kitsune.products import get_product_redirect_response
 from kitsune.products.models import (
     CuratedBlock,
     Product,
-    ProductSupportConfig,
     Topic,
     TopicSlugHistory,
 )
-from kitsune.products.utils import get_professional_support_products, get_support_company
-from kitsune.sumo.utils import get_aaq_context, set_aaq_context
+from kitsune.products.utils import get_professional_support
+from kitsune.sumo.utils import get_aaq_context, has_support_action, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document
@@ -28,15 +27,13 @@ def product_list(request):
     """The product picker page."""
     template = "products/products.html"
     products = Product.active.filter(visible=True)
-    professional_support_products = get_professional_support_products(request)
+    support_company, _ = get_professional_support(request)
     return render(
         request,
         template,
         {
             "products": products,
-            "support_company": (
-                get_support_company(request) if professional_support_products else None
-            ),
+            "support_company": support_company,
         },
     )
 
@@ -76,8 +73,7 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             latest_version = 0
     topics = topics_for(request.user, product=product, parent=None)
     aaq_context = get_aaq_context(request, product)
-    professional_support_products = get_professional_support_products(request)
-    support_company = get_support_company(request) if professional_support_products else None
+    support_company, professional_support_products = get_professional_support(request)
     getting_started_topic = None
     if product in professional_support_products:
         getting_started_topic = Topic.active.filter(
@@ -94,8 +90,7 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product=product, locale=request.LANGUAGE_CODE),
-            "has_support_action": bool(aaq_context)
-            and aaq_context.get("current_support_type") != ProductSupportConfig.SUPPORT_TYPE_HIDE,
+            "has_support_action": has_support_action(aaq_context),
             "aaq_context": aaq_context,
             "professional_support_products": professional_support_products,
             "support_company": support_company,

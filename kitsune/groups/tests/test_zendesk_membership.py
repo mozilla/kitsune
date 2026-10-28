@@ -109,18 +109,6 @@ class EnterpriseZendeskMembershipTests(TestCase):
                 )
                 self.enqueue.assert_called_once_with(member.pk)
 
-    def test_department_membership_syncs_the_company(self):
-        self.user.groups.add(self.department.group)
-        self.sync()
-        mapping = ZendeskOrganization.objects.get(group_profile=self.company)
-        self.assertEqual(mapping.zendesk_id, "101")
-        self.assertFalse(
-            ZendeskOrganization.objects.filter(group_profile=self.department).exists()
-        )
-        self.assertEqual(
-            self.zendesk.ensure_organization.call_args.kwargs["name"], self.company.group.name
-        )
-
     def test_repeated_sync_reuses_saved_links_without_local_writes(self):
         self.user.groups.add(self.company.group)
         ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="00101")
@@ -156,39 +144,36 @@ class EnterpriseZendeskMembershipTests(TestCase):
             user_id="201", organization_id="101", memberships=memberships
         )
 
-    def test_last_company_membership_removal_cleans_only_sumo_linked_organizations(self):
+    def test_department_member_syncs_the_company_and_leaving_cleans_linked_organizations(self):
         self.user.groups.add(self.department.group)
         self.sync()
+        mapping = ZendeskOrganization.objects.get(group_profile=self.company)
+        self.assertEqual(mapping.zendesk_id, "101")
+        self.assertFalse(
+            ZendeskOrganization.objects.filter(group_profile=self.department).exists()
+        )
+        self.assertEqual(
+            self.zendesk.ensure_organization.call_args.kwargs["name"], self.company.group.name
+        )
         other = EnterpriseCompanyFactory(root=self.root)
         ZendeskOrganization.objects.create(group_profile=other, zendesk_id="102")
         self.zendesk.reset_mock()
         with self.captureOnCommitCallbacks(execute=True):
             self.user.groups.remove(self.department.group)
         self.enqueue.assert_called_once_with(self.user.pk, removed_organization_ids=("101",))
-        self.sync()
-        kwargs = self.zendesk.remove_organization_memberships.call_args.kwargs
-        self.assertEqual(kwargs["user_id"], "201")
-        self.assertEqual(set(kwargs["organization_ids"]), {"101", "102"})
-        self.zendesk.ensure_organization.assert_not_called()
-        self.zendesk.validate_removal_user.assert_called_once_with("201")
-        self.zendesk.ensure_user.assert_not_called()
-        self.zendesk.ensure_organization_membership.assert_not_called()
-
-    def test_queued_removal_uses_current_company_after_rejoining(self):
-        self.user.groups.add(self.company.group, self.department.group)
-        self.user.groups.remove(self.company.group)
-        self.sync()
-        self.zendesk.remove_organization_memberships.assert_called_once_with(
-            user_id="201", organization_ids=set(), memberships=[]
+        # The captured organization is still removed after its mapping is deleted.
+        mapping.delete()
+        sync_enterprise_zendesk_membership(
+            *self.enqueue.call_args.args, **self.enqueue.call_args.kwargs
         )
-        self.user.groups.remove(self.department.group)
-        other = EnterpriseCompanyFactory(root=self.root)
-        self.user.groups.add(other.group)
-        self.zendesk.ensure_organization.return_value = "102"
-        self.zendesk.reset_mock()
-        self.sync()
-        self.zendesk.remove_organization_memberships.assert_called_once_with(
-            user_id="201", organization_ids={"101"}, memberships=[]
+        self.assertEqual(
+            self.zendesk.method_calls,
+            [
+                call.validate_removal_user("201"),
+                call.remove_organization_memberships(
+                    user_id="201", organization_ids={"101", "102"}
+                ),
+            ],
         )
 
     def test_root_unrelated_and_empty_changes_do_not_enqueue(self):
@@ -284,7 +269,9 @@ class EnterpriseZendeskMembershipTests(TestCase):
 
         def leaving_user_owned_by_another_profile():
             Profile.all_profiles.filter(user=self.user).update(zendesk_id="201")
-            UserFactory(profile__zendesk_id="201")
+            UserFactory(
+                profile__zendesk_id="201", profile__account_type=Profile.AccountType.SYSTEM
+            )
 
         def cleanup_of_an_ineligible_remote_user():
             self.zendesk.validate_removal_user.side_effect = ZendeskProvisioningConflict(
@@ -352,13 +339,6 @@ class EnterpriseZendeskMembershipTests(TestCase):
                 )
                 self.assertEqual(Profile.all_profiles.get(user=self.user).zendesk_id, profile_id)
                 transaction.set_rollback(True)
-
-    def test_leave_removes_captured_organization_after_its_mapping_was_deleted(self):
-        Profile.all_profiles.filter(user=self.user).update(zendesk_id="201")
-        sync_enterprise_zendesk_membership(self.user.pk, removed_organization_ids=("101",))
-        self.zendesk.remove_organization_memberships.assert_called_once_with(
-            user_id="201", organization_ids={"101"}
-        )
 
     def test_join_removes_captured_company_membership_but_not_target_or_external(self):
         self.user.groups.add(self.company.group)

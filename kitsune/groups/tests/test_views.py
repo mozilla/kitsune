@@ -699,11 +699,7 @@ class CompanySupportSectionTests(TestCase):
         ProductSupportConfigFactory(
             product=self.vpn, zendesk_config=ZendeskConfigFactory(), subscription_only=True
         )
-        contract = SupportContractFactory(
-            company=self.company,
-            starts_on=today - timedelta(days=1),
-            ends_on=today + timedelta(days=1),
-        )
+        contract = SupportContractFactory(company=self.company)
         for product in (self.thunderbird, self.vpn):
             SupportCoverageFactory(contract=contract, product=product)
         self.expired_company = EnterpriseCompanyFactory()

@@ -1,7 +1,6 @@
 from datetime import timedelta
 from email.utils import make_msgid
 
-import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -16,19 +15,20 @@ from django.utils.translation import pgettext
 from post_office.models import PRIORITY, STATUS, Email
 from post_office.settings import get_message_id_enabled, get_message_id_fqdn
 from post_office.tasks import send_queued_mail
-from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.zendesk import ZendeskClient, ZendeskProvisioningConflict
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.groups.onboarding import (
+    ZENDESK_PROVIDER_ERRORS,
     get_enterprise_root,
-    get_live_chat_config,
     get_prepared_resources,
     invitation_settings_valid,
     require_isolated_root,
     require_onboarding_allowed,
 )
+from kitsune.products.models import SupportCoverage
+from kitsune.products.routing import chat_unavailable_reason
 from kitsune.products.utils import get_covered_products
 from kitsune.sumo.email_utils import make_mail, safe_translation
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -135,16 +135,14 @@ def queue_welcome_email(invitation, *, company, user):
         start_path = urlparams(
             reverse("users.fxa_authentication_init"), next=invitation_landing_path(invitation)
         )
-    # Promise chat only while the site can deliver it; membership never depends on chat.
-    try:
-        chat_config = get_live_chat_config()
-    except ValidationError:
-        include_live_chat = False
-    else:
-        include_live_chat = chat_config.support_organizations.filter(
-            group_id=company.group_id, include_live_chat=True
-        ).exists()
     covered_products = get_covered_products(company)
+    # Promise chat only while the site can deliver it; membership never depends on chat.
+    includes_chat = (
+        chat_unavailable_reason() is None
+        and SupportCoverage.objects.effective(company)
+        .filter(product__in=covered_products, includes_chat=True)
+        .exists()
+    )
     host = Site.objects.get_current().domain
 
     @safe_translation
@@ -167,7 +165,7 @@ def queue_welcome_email(invitation, *, company, user):
                     pgettext("DB: products.Product.title", product.title)
                     for product in covered_products
                 ),
-                "include_live_chat": include_live_chat,
+                "includes_chat": includes_chat,
                 "start_url": f"https://{host}{path}",
             },
             from_email=settings.DEFAULT_FROM_EMAIL,
@@ -274,7 +272,7 @@ def claim_enterprise_invitation(token, claims) -> User:
             raise invitation_error(
                 error.code if error.code in INVITATION_ERRORS else "account_conflict"
             ) from None
-        except APIException, ZenpyException, requests.RequestException:
+        except ZENDESK_PROVIDER_ERRORS:
             raise invitation_error("zendesk_unavailable") from None
 
         # Zendesk was bound without row locks, so recheck everything once they are held.

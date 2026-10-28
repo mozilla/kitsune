@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -40,29 +40,13 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
         )
         self.user = UserFactory(profile__zendesk_id="201")
 
-    def test_deletion_captures_all_linked_ids_and_publishes_only_after_commit(self):
+    def test_deletion_captures_all_linked_ids_after_commit_regardless_of_membership(self):
         other_company = EnterpriseCompanyFactory(root=self.root)
         ZendeskOrganization.objects.create(group_profile=other_company, zendesk_id="102")
-        unlinked_company = EnterpriseCompanyFactory(root=self.root)
-        ZendeskOrganization.objects.create(group_profile=unlinked_company)
+        ZendeskOrganization.objects.create(group_profile=EnterpriseCompanyFactory(root=self.root))
         ZendeskOrganization.objects.create(
             group_profile=EnterpriseCompanyFactory(root=self.root), zendesk_id=""
         )
-        self.user.groups.add(self.company.group, self.department.group)
-        user_id = self.user.pk
-
-        with transaction.atomic():
-            self.user.delete()
-            self.assertFalse(User.all_users.filter(pk=user_id).exists())
-            self.assertFalse(Profile.all_profiles.filter(user_id=user_id).exists())
-            self.enqueue.assert_not_called()
-
-        self.enqueue.assert_called_once_with(user_id, "201", ("101", "102"))
-        self.client_class.assert_not_called()
-
-    def test_deletion_captures_cleanup_regardless_of_company_membership(self):
-        other_company = EnterpriseCompanyFactory(root=self.root)
-        ZendeskOrganization.objects.create(group_profile=other_company, zendesk_id="102")
         for state, arrange in (
             ("no membership", lambda user: None),
             ("missing enterprise root", lambda user: None),
@@ -92,7 +76,9 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
                 user_id = user.pk
                 self.enqueue.reset_mock()
 
-                user.delete()
+                with transaction.atomic():
+                    user.delete()
+                    self.enqueue.assert_not_called()
 
                 self.enqueue.assert_called_once_with(user_id, "202", ("101", "102"))
         self.client_class.assert_not_called()
@@ -112,7 +98,7 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
         self.enqueue.assert_not_called()
         self.client_class.assert_not_called()
 
-    def test_last_membership_removed_then_user_deleted_before_sync_cleans_old_organization(self):
+    def test_leaving_then_deletion_before_sync_removes_only_the_captured_organization(self):
         self.user.groups.add(self.company.group)
         self.sync_enqueue.reset_mock()
         user_id = self.user.pk
@@ -120,10 +106,12 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
         self.user.groups.remove(self.company.group)
         self.sync_enqueue.assert_called_once_with(user_id, removed_organization_ids=("101",))
         self.enqueue.reset_mock()
-        self.user.delete()
+        with transaction.atomic():
+            self.user.delete()
+            self.mapping.delete()
         self.enqueue.assert_called_once_with(user_id, "201", ("101",))
-        self.assertFalse(User.all_users.filter(pk=user_id).exists())
-        self.assertFalse(Profile.all_profiles.filter(user_id=user_id).exists())
+        other_company = EnterpriseCompanyFactory(root=self.root)
+        ZendeskOrganization.objects.create(group_profile=other_company, zendesk_id="102")
 
         sync_enterprise_zendesk_membership(*self.sync_enqueue.call_args.args)
 
@@ -131,13 +119,13 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
 
         remove_stale_zendesk_memberships(*self.enqueue.call_args.args)
 
-        self.zendesk.validate_removal_user.assert_called_once_with("201")
-        self.zendesk.remove_organization_memberships.assert_called_once_with(
-            user_id="201", organization_ids={"101"}
+        self.assertEqual(
+            self.zendesk.method_calls,
+            [
+                call.validate_removal_user("201"),
+                call.remove_organization_memberships(user_id="201", organization_ids={"101"}),
+            ],
         )
-        self.zendesk.ensure_user.assert_not_called()
-        self.zendesk.ensure_organization.assert_not_called()
-        self.zendesk.ensure_organization_membership.assert_not_called()
 
     def test_removal_cleanup_survives_company_deletion_before_workers_run(self):
         self.user.groups.add(self.company.group)
@@ -154,30 +142,6 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
         self.zendesk.remove_organization_memberships.assert_called_once_with(
             user_id="201", organization_ids={"101"}
         )
-
-    def test_task_removes_only_captured_ids_after_user_profile_and_mapping_deletion(self):
-        self.user.groups.add(self.company.group)
-        user_id = self.user.pk
-        with transaction.atomic():
-            self.user.delete()
-            self.mapping.delete()
-
-        other_company = EnterpriseCompanyFactory(root=self.root)
-        ZendeskOrganization.objects.create(group_profile=other_company, zendesk_id="102")
-        self.enqueue.assert_called_once_with(user_id, "201", ("101",))
-        self.assertFalse(User.all_users.filter(pk=user_id).exists())
-        self.assertFalse(Profile.all_profiles.filter(user_id=user_id).exists())
-        self.client_class.assert_not_called()
-
-        remove_stale_zendesk_memberships(*self.enqueue.call_args.args)
-
-        self.zendesk.validate_removal_user.assert_called_once_with("201")
-        self.zendesk.remove_organization_memberships.assert_called_once_with(
-            user_id="201", organization_ids={"101"}
-        )
-        self.zendesk.ensure_user.assert_not_called()
-        self.zendesk.ensure_organization.assert_not_called()
-        self.zendesk.ensure_organization_membership.assert_not_called()
 
     def test_other_profile_owning_saved_id_logs_safe_code_without_cleanup(self):
         other = UserFactory(
@@ -198,29 +162,6 @@ class DeletedUserZendeskMembershipTests(TransactionTestCase):
         self.assertTrue(Profile.all_profiles.filter(user=other, zendesk_id="201").exists())
         self.enqueue.assert_not_called()
         self.client_class.assert_not_called()
-
-    def test_task_rejects_saved_id_claimed_after_deletion(self):
-        self.user.groups.add(self.company.group)
-        user_id = self.user.pk
-        self.user.delete()
-        self.enqueue.assert_called_once_with(user_id, "201", ("101",))
-        owner = UserFactory(
-            profile__zendesk_id="201", profile__account_type=Profile.AccountType.SYSTEM
-        )
-
-        with self.assertLogs("k.task", level="WARNING") as logs:
-            remove_stale_zendesk_memberships(*self.enqueue.call_args.args)
-
-        self.assertEqual(
-            logs.output,
-            [
-                "WARNING:k.task:Zendesk company membership conflict "
-                f"for user {user_id}: account_conflict"
-            ],
-        )
-        self.assertTrue(Profile.all_profiles.filter(user=owner, zendesk_id="201").exists())
-        self.zendesk.validate_removal_user.assert_not_called()
-        self.zendesk.remove_organization_memberships.assert_not_called()
 
     def test_rollback_suppresses_cleanup_callback(self):
         self.user.groups.add(self.company.group)

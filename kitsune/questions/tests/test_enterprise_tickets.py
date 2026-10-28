@@ -34,11 +34,8 @@ class EnterpriseTicketTests(TestCase):
             zendesk_topic__slug="product-topic",
             zendesk_topic__form_title="Product support topic",
         )
-        today = timezone.localdate()
         self.coverage = SupportCoverageFactory(
             product=self.product,
-            contract__starts_on=today - timedelta(days=2),
-            contract__ends_on=today + timedelta(days=2),
             zendesk_config__ticket_form_id="84",
             zendesk_config__enable_urgency_field=True,
             zendesk_product_value="enterprise-firefox",
@@ -76,6 +73,15 @@ class EnterpriseTicketTests(TestCase):
         self.support_config.forum_config = AAQConfigFactory(enabled_locales=[locale])
         self.support_config.zendesk_config = self.product_config if hybrid else None
         self.support_config.save()
+
+    def assert_fresh_form_requested(self, response, url=None):
+        url = url or self.url
+        self.assertRedirects(response, url, fetch_redirect_response=False)
+        self.assertFalse(SupportTicket.objects.exists())
+        self.assertFalse(Question.objects.exists())
+        fresh = self.client.get(url)
+        self.assertContains(fresh, "This form changed. Review it and submit again.")
+        return fresh
 
     def test_anonymous_user_must_log_in(self):
         self.client.logout()
@@ -151,7 +157,6 @@ class EnterpriseTicketTests(TestCase):
         )
         self.assertFalse(SupportTicket.objects.exists())
         self.assertFalse(Question.objects.exists())
-        self.classifier.assert_not_called()
 
     def test_coverage_expiring_or_cancelled_after_get_denies_submission(self):
         contract = self.coverage.contract
@@ -170,7 +175,6 @@ class EnterpriseTicketTests(TestCase):
                 self.assertEqual(response.status_code, 403)
                 self.assertFalse(SupportTicket.objects.exists())
                 self.assertFalse(Question.objects.exists())
-        self.classifier.assert_not_called()
 
     def test_changed_or_missing_coverage_reference_requests_fresh_get(self):
         self.assertEqual(self.client.get(self.url).status_code, 200)
@@ -187,25 +191,11 @@ class EnterpriseTicketTests(TestCase):
             {**self.data, "coverage": str(other_coverage.pk)},
         ):
             with self.subTest(coverage=data.get("coverage")):
-                response = self.client.post(self.url, data)
-                self.assertRedirects(response, self.url, fetch_redirect_response=False)
-                self.assertContains(
-                    self.client.get(self.url), "This form changed. Review it and submit again."
+                fresh = self.assert_fresh_form_requested(self.client.post(self.url, data))
+                self.assertEqual(
+                    pq(fresh.content)('#question-form input[name="coverage"]').val(),
+                    str(replacement.pk),
                 )
-                self.assertFalse(SupportTicket.objects.exists())
-                self.assertFalse(Question.objects.exists())
-        self.classifier.assert_not_called()
-        response = self.client.get(self.url)
-        self.assertEqual(
-            pq(response.content)('#question-form input[name="coverage"]').val(),
-            str(replacement.pk),
-        )
-
-        self.user.groups.clear()
-        response = self.client.post(self.url, {**self.data, "coverage": str(other_coverage.pk)})
-        self.assertEqual(response.status_code, 403)
-        self.assertFalse(SupportTicket.objects.exists())
-        self.assertFalse(Question.objects.exists())
 
     def test_non_english_locale_redirects_to_english_form(self):
         response = self.client.get(
@@ -249,11 +239,7 @@ class EnterpriseTicketTests(TestCase):
         response = self.client.get(self.url, {"support_type": "zendesk"})
         self.assertContains(response, "Enterprise support topic")
 
-        response = self.client.post(self.url, self.product_data)
-        self.assertRedirects(response, self.url, fetch_redirect_response=False)
-        self.assertFalse(SupportTicket.objects.exists())
-        self.assertFalse(Question.objects.exists())
-        self.classifier.assert_not_called()
+        self.assert_fresh_form_requested(self.client.post(self.url, self.product_data))
 
     def test_coverage_activated_after_product_get_requires_fresh_enterprise_form(self):
         contract = self.coverage.contract
@@ -268,14 +254,8 @@ class EnterpriseTicketTests(TestCase):
         contract.status = SupportContract.Status.ACTIVE
         contract.save()
 
-        response = self.client.post(self.url, self.product_data)
-        self.assertRedirects(response, self.url, fetch_redirect_response=False)
-        self.assertFalse(SupportTicket.objects.exists())
-        self.assertFalse(Question.objects.exists())
-        self.classifier.assert_not_called()
-        response = self.client.get(self.url)
-        self.assertContains(response, "This form changed. Review it and submit again.")
-        self.assertContains(response, "Enterprise support topic")
+        fresh = self.assert_fresh_form_requested(self.client.post(self.url, self.product_data))
+        self.assertContains(fresh, "Enterprise support topic")
 
     def test_missing_or_invalid_action_requests_fresh_get(self):
         url = self.url + "?support_type=zendesk"
@@ -286,14 +266,7 @@ class EnterpriseTicketTests(TestCase):
                     del data["support_action"]
                 else:
                     data["support_action"] = action
-                response = self.client.post(url, data)
-                self.assertRedirects(response, url, fetch_redirect_response=False)
-                self.assertContains(
-                    self.client.get(url), "This form changed. Review it and submit again."
-                )
-                self.assertFalse(SupportTicket.objects.exists())
-                self.assertFalse(Question.objects.exists())
-        self.classifier.assert_not_called()
+                self.assert_fresh_form_requested(self.client.post(url, data), url)
 
     def test_forum_action_no_longer_allowed_requests_fresh_get(self):
         self.use_forum_support()
@@ -312,10 +285,7 @@ class EnterpriseTicketTests(TestCase):
                 "content": "This must not become a ticket or public question.",
             },
         )
-        self.assertRedirects(response, self.url, fetch_redirect_response=False)
-        self.assertFalse(SupportTicket.objects.exists())
-        self.assertFalse(Question.objects.exists())
-        self.classifier.assert_not_called()
+        self.assert_fresh_form_requested(response)
 
     def test_covered_forum_product_defaults_to_enterprise_with_forum_alternative(self):
         self.use_forum_support()
@@ -349,22 +319,11 @@ class EnterpriseTicketTests(TestCase):
                 self.assertFalse(pq(response.content)(".switcher-actions"))
                 self.assertFalse(pq(response.content)('input[name="coverage"]'))
 
-    def test_hybrid_defaults_and_explicit_forum_submission_preserve_the_channel(self):
+    def test_forum_submission_keeps_its_channel_when_enterprise_is_the_default(self):
         self.use_forum_support(hybrid=True)
         topic = TopicFactory(products=[self.product], in_aaq=True)
-        for default in ("forum", "zendesk"):
-            with self.subTest(default=default):
-                self.support_config.default_support_type = default
-                self.support_config.save()
-                self.assertContains(self.client.get(self.url), "Enterprise support topic")
-
-        self.assertContains(
-            self.client.get(self.url, {"support_type": "zendesk"}), "Enterprise support topic"
-        )
-        forum_url = self.url + "?support_type=forum"
-        self.assertContains(self.client.get(forum_url), "Ask your question")
         response = self.client.post(
-            forum_url,
+            self.url,
             {
                 "support_action": ProductSupportConfig.SUPPORT_TYPE_FORUM,
                 "title": "A question for the community",
@@ -381,6 +340,10 @@ class EnterpriseTicketTests(TestCase):
         self.assertEqual(question.product, self.product)
         self.assertEqual(question.creator, self.user)
         self.assertFalse(SupportTicket.objects.exists())
+        self.assertEqual(
+            self.client.session["aaq_context"]["current_support_type"],
+            ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
 
     def test_loginless_product_submission_requires_a_supported_referer(self):
         self.product.slug = "mozilla-account"

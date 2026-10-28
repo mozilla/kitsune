@@ -1,14 +1,12 @@
 import logging
 from dataclasses import dataclass
 
-import requests
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
 from django.http import Http404
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from kombu.exceptions import OperationalError
-from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.customercare.zendesk import (
@@ -20,6 +18,7 @@ from kitsune.groups.invitations import queue_welcome_email
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import EnterpriseInvitation
 from kitsune.groups.onboarding import (
+    ZENDESK_PROVIDER_ERRORS,
     get_enterprise_root,
     get_prepared_resources,
     require_onboarding_allowed,
@@ -28,8 +27,6 @@ from kitsune.users.identity import lock_account_email
 from kitsune.users.models import Profile
 
 log = logging.getLogger("k.groups")
-
-ZENDESK_PROVIDER_ERRORS = (APIException, ZenpyException, requests.RequestException)
 
 
 @dataclass

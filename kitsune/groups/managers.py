@@ -1,6 +1,5 @@
-from django.conf import settings
 from django.contrib.auth.models import Group, User
-from django.db.models import Exists, Max, OuterRef, Q, Subquery
+from django.db.models import Exists, Max, OuterRef, Q
 from django.db.models.functions import Length, Substr
 from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
 
@@ -9,6 +8,7 @@ from kitsune.groups.membership import (
     enterprise_profiles,
     guard_enterprise_group_move,
     lock_enterprise_hierarchy,
+    queue_chat_revocation,
     queue_enterprise_zendesk_sync,
     validate_enterprise_group_memberships,
 )
@@ -60,16 +60,18 @@ class GroupProfileQuerySet(MP_NodeQuerySet):
                     Q(pk__in=self.values("pk")) | Q(pk__in=self.descendants().values("pk")),
                     Q(pk__in=enterprise_profiles(self.db).values("pk")) | Exists(mapped_ancestor),
                 )
+                deleted_group_ids = deleted_profiles.values("group_id")
                 user_ids = (
                     User.groups.through.objects.using(self.db)
-                    .filter(group_id__in=deleted_profiles.values("group_id"))
+                    .filter(group_id__in=deleted_group_ids)
                     .values_list("user_id", flat=True)
                 )
+                queue_chat_revocation(user_ids, deleted_group_ids, using=self.db)
                 queue_enterprise_zendesk_sync(
                     user_ids,
                     using=self.db,
                     removed_organization_ids=company_organization_ids(
-                        deleted_profiles.values("group_id"), using=self.db
+                        deleted_group_ids, using=self.db
                     ),
                 )
             # Deepest first, so each subgroup's delete handlers still see the tree above it.
@@ -130,11 +132,7 @@ class GroupProfileManager(MP_NodeManager):
         )
 
     def enterprise_companies(self, user):
-        if not (user and user.is_authenticated):
-            return self.none()
-        # The root is a subquery, so resolving a user's company takes one query.
-        root_path = self.filter(depth=1, slug=settings.ENTERPRISE_GROUP_SLUG).values("path")
-        return self.containing(user).filter(depth=2, path__startswith=Subquery(root_path))
+        return self.containing(user).filter(depth=2, pk__in=self.enterprise())
 
     def visible(self, user: User | None = None):
         """

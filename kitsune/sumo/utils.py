@@ -377,7 +377,7 @@ def get_aaq_context(request, product, multiple_products=False):
     from kitsune.products.models import ProductSupportConfig
 
     # Avoid cycles: products.models -> sumo.utils -> products.routing -> products.models.
-    from kitsune.products.routing import ENTERPRISE_SUPPORT, route_support
+    from kitsune.products.routing import route_support
 
     if not product:
         return {}
@@ -401,7 +401,6 @@ def get_aaq_context(request, product, multiple_products=False):
         "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
         "current_support_type": selected.support_type,
         "can_switch": selected.can_switch,
-        "is_enterprise": selected.action == ENTERPRISE_SUPPORT,
     }
 
     if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE:
@@ -410,6 +409,17 @@ def get_aaq_context(request, product, multiple_products=False):
         )
 
     return aaq_context
+
+
+def has_support_action(aaq_context) -> bool:
+    """Return whether an AAQ context from get_aaq_context offers support to link to."""
+    # Avoid cycles: products.models -> sumo.utils.
+    from kitsune.products.models import ProductSupportConfig
+
+    return aaq_context.get("current_support_type") not in (
+        None,
+        ProductSupportConfig.SUPPORT_TYPE_HIDE,
+    )
 
 
 def set_aaq_context(request, product, multiple_products=False):

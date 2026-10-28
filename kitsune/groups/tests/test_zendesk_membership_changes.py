@@ -1,5 +1,5 @@
 import time
-from unittest.mock import call, patch
+from unittest.mock import ANY, call, patch
 
 from django.contrib import admin
 from django.contrib.auth.models import Group
@@ -11,6 +11,7 @@ from django.urls import path, reverse
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
+from kitsune.products.tests import SupportCoverageFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.urls import urlpatterns as sumo_urlpatterns
 from kitsune.users.tests import GroupFactory, UserFactory
@@ -28,6 +29,9 @@ class EnterpriseZendeskMembershipChangesTests(TestCase):
             patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay")
         )
         self.enterContext(patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay"))
+        self.tag = self.enterContext(
+            patch("kitsune.customercare.tasks.tag_revoked_chat_tickets.delay")
+        )
         self.client_class = self.enterContext(
             patch("kitsune.groups.tasks.ZendeskClient", autospec=True)
         )
@@ -206,6 +210,9 @@ class EnterpriseZendeskMembershipChangesTests(TestCase):
             )
         self.client_class.assert_not_called()
 
+    def include_chat(self):
+        SupportCoverageFactory(contract__company=self.company, includes_chat=True)
+
     def admin_reassign(self, group, **changes):
         operator = UserFactory(is_staff=True, is_superuser=True)
         self.client.force_login(operator, backend="kitsune.users.auth.SumoOIDCAuthBackend")
@@ -245,6 +252,18 @@ class EnterpriseZendeskMembershipChangesTests(TestCase):
         self.assertFalse(GroupProfile.objects.enterprise_companies(self.user).exists())
         self.assertQuerySetEqual(GroupProfile.objects.enterprise_companies(other), [self.company])
 
+    def test_admin_reassignment_tags_chats_of_members_who_leave_the_company(self):
+        self.include_chat()
+        replacement = GroupFactory()
+        staying = UserFactory(profile__zendesk_id="202")
+        self.user.groups.add(self.department.group)
+        staying.groups.add(self.department.group, replacement)
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.admin_reassign(replacement)
+            self.tag.assert_not_called()
+        self.assertEqual(response.status_code, 302)
+        self.tag.assert_called_once_with("201", product_slugs=None, before=ANY)
+
     def test_admin_reassignment_and_move_out_enqueues_former_members(self):
         self.user.groups.add(self.department.group)
         outside = GroupProfileFactory()
@@ -258,6 +277,7 @@ class EnterpriseZendeskMembershipChangesTests(TestCase):
         self.assertFalse(GroupProfile.objects.enterprise_companies(self.user).exists())
 
     def test_rejected_admin_reassignment_discards_old_member_callback(self):
+        self.include_chat()
         self.user.groups.add(self.department.group)
         other_company = EnterpriseCompanyFactory(root=self.root)
         other = UserFactory()
@@ -266,6 +286,7 @@ class EnterpriseZendeskMembershipChangesTests(TestCase):
             response = self.admin_reassign(other_company.group)
         self.assertEqual(response.status_code, 200)
         self.enqueue.assert_not_called()
+        self.tag.assert_not_called()
         self.assertQuerySetEqual(
             GroupProfile.objects.enterprise_companies(self.user), [self.company]
         )

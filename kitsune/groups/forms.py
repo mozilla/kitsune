@@ -76,11 +76,6 @@ class EnterpriseCompanyForm(forms.Form):
         label=_lazy("Company name"),
         max_length=Group._meta.get_field("name").max_length,
     )
-    include_live_chat = forms.BooleanField(
-        label=_lazy("Include live chat"),
-        required=False,
-        help_text=_lazy("Requires live chat to be enabled and configured for this site."),
-    )
     zendesk_organization_id = forms.RegexField(
         label=_lazy("Existing Zendesk organization ID"),
         regex=r"^[0-9]+$",

@@ -88,12 +88,17 @@ class AcceptedTicketContextTests(TestCase):
         self.config = ZendeskConfigFactory(ticket_form_id="42", brand_id="17")
         ProductSupportConfigFactory(product=self.product, zendesk_config=self.config)
         self.topic = TopicFactory(products=[self.product])
-        ZendeskTopicConfigurationFactory(
-            zendesk_config=self.config,
-            zendesk_topic__topic=self.topic,
-            zendesk_topic__slug="a-first",
-            zendesk_topic__automation_tags=["vpn-automation"],
-        )
+        # Created out of slug order: the first topic by slug supplies the automation tags.
+        for slug, automation_tags in (
+            ("z-last", ["other-automation"]),
+            ("a-first", ["vpn-automation"]),
+        ):
+            ZendeskTopicConfigurationFactory(
+                zendesk_config=self.config,
+                zendesk_topic__topic=self.topic,
+                zendesk_topic__slug=slug,
+                zendesk_topic__automation_tags=automation_tags,
+            )
         ZendeskTopicConfigurationFactory(
             zendesk_config=self.config, zendesk_topic__automation_tags=["unlinked"]
         )
@@ -144,16 +149,6 @@ class AcceptedTicketContextTests(TestCase):
             },
         )
         self.assertEqual(context, accepted_context_for(self.product, self.config, coverage))
-
-    def test_first_zendesk_topic_by_slug_supplies_automation_tags(self):
-        ZendeskTopicConfigurationFactory(
-            zendesk_config=self.config,
-            zendesk_topic__topic=self.topic,
-            zendesk_topic__slug="z-last",
-            zendesk_topic__automation_tags=["other-automation"],
-        )
-        context = accepted_context_for(self.product, self.config)
-        self.assertEqual(context["automation_tags"], {str(self.topic.pk): ["vpn-automation"]})
 
     def test_missing_live_zendesk_config_raises_missing_context(self):
         config = ProductSupportConfigFactory(

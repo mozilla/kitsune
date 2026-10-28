@@ -1,5 +1,4 @@
 import requests
-import waffle
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -20,10 +19,11 @@ from kitsune.customercare.zendesk import (
 )
 from kitsune.groups.membership import lock_enterprise_hierarchy, validate_enterprise_memberships
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
-from kitsune.products.models import Product, ProductSupportConfig, SupportOrganization
 from kitsune.users.identity import lock_account_email
 from kitsune.users.models import Profile
 from kitsune.users.utils import normalize_username, suggest_username
+
+ZENDESK_PROVIDER_ERRORS = (APIException, ZenpyException, requests.RequestException)
 
 
 def get_enterprise_root(*, for_update=False) -> GroupProfile:
@@ -62,30 +62,6 @@ def get_enterprise_company(root, *, viewer=None, for_update=False, **lookup) -> 
     if for_update:
         profiles = profiles.select_for_update(of=("self",))
     return get_object_or_404(profiles, **lookup)
-
-
-def get_live_chat_config() -> ProductSupportConfig:
-    """Return the enterprise product's support configuration, which carries company live chat."""
-    slug = settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG
-    products = list(Product.objects.filter(slug=slug, is_archived=False)[:2])
-    config = ProductSupportConfig.objects.active_for(products[0]) if len(products) == 1 else None
-    # Chat eligibility applies the subscription gate, so a subscription-only config hides chat.
-    if (
-        config is None
-        or config.zendesk_config_id is None
-        or config.subscription_only
-        or not (
-            waffle.switch_is_active("zendesk-chat")
-            and settings.ZENDESK_CHAT_WIDGET_KEY
-            and settings.ZENDESK_CHAT_SIGNING_KEY_ID
-            and settings.ZENDESK_CHAT_SIGNING_SECRET
-        )
-    ):
-        raise ValidationError(
-            _("Live chat is not configured. Disable live chat or contact an administrator."),
-            code="configuration_error",
-        )
-    return config
 
 
 def require_onboarding_allowed(actor, root):
@@ -248,50 +224,6 @@ def require_unique_company_identity(name, slug):
         )
 
 
-def save_live_chat(company, include_live_chat):
-    """Record the company's live chat choice; turning chat off never creates an organization."""
-    organizations = SupportOrganization.objects.select_for_update(of=("self",)).filter(
-        group=company.group
-    )
-    if include_live_chat:
-        config = get_live_chat_config()
-        organizations = [
-            organizations.filter(config=config).first()
-            or SupportOrganization(config=config, group=company.group)
-        ]
-    else:
-        organizations = organizations.filter(
-            config__product__slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG, include_live_chat=True
-        )
-    for organization in organizations:
-        organization.include_live_chat = include_live_chat
-        try:
-            organization.full_clean()
-        except ValidationError:
-            raise ValidationError(
-                _(
-                    "These support settings conflict with the existing organization configuration. "
-                    "Contact an administrator."
-                ),
-                code="configuration_error",
-            ) from None
-        try:
-            with transaction.atomic():
-                organization.save()
-        except IntegrityError:
-            if (
-                organization.pk is None
-                and SupportOrganization.objects.filter(
-                    config=organization.config, group=company.group
-                ).exists()
-            ):
-                raise ValidationError(
-                    _("This company's support settings changed. Reload the page and try again."),
-                    code="company_conflict",
-                ) from None
-            raise
-
-
 def validate_zendesk_organization_id(zendesk_organization_id, *, company=None):
     requested_id = (zendesk_organization_id or "").strip()
     if not requested_id:
@@ -319,7 +251,7 @@ def validate_zendesk_organization_id(zendesk_organization_id, *, company=None):
                 )
             }
         ) from None
-    except APIException, ZenpyException, requests.RequestException:
+    except ZENDESK_PROVIDER_ERRORS:
         raise ValidationError(
             {
                 "zendesk_organization_id": ValidationError(
@@ -371,12 +303,10 @@ def link_zendesk_organization(company, canonical_id):
 
 
 def create_enterprise_company(
-    *, actor, name: str, include_live_chat: bool, zendesk_organization_id: str | None = None
+    *, actor, name: str, zendesk_organization_id: str | None = None
 ) -> GroupProfile:
     root = get_enterprise_root()
     require_onboarding_allowed(actor, root)
-    if include_live_chat:
-        get_live_chat_config()
     name = name.strip()
     if not name or len(name) > Group._meta.get_field("name").max_length:
         raise ValidationError(
@@ -415,26 +345,20 @@ def create_enterprise_company(
         except IntegrityError:
             require_unique_company_identity(name, slug)
             raise
-        save_live_chat(company, include_live_chat)
         link_zendesk_organization(company, canonical_id)
         return company
 
 
-def configure_enterprise_company(
-    *, actor, company, include_live_chat: bool, zendesk_organization_id: str | None = None
-):
+def configure_enterprise_company(*, actor, company, zendesk_organization_id: str | None = None):
     root = get_enterprise_root()
     require_onboarding_allowed(actor, root)
     company = get_enterprise_company(root, pk=company.pk)
-    if include_live_chat:
-        get_live_chat_config()
     canonical_id = validate_zendesk_organization_id(zendesk_organization_id, company=company)
 
     with lock_enterprise_hierarchy():
         root = get_enterprise_root()
         require_onboarding_allowed(actor, root)
         company = get_enterprise_company(root, pk=company.pk, for_update=True)
-        save_live_chat(company, include_live_chat)
         link_zendesk_organization(company, canonical_id)
 
 

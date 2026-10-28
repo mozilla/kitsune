@@ -15,6 +15,7 @@ from kitsune.groups.membership import (
     company_organization_ids,
     enterprise_profiles,
     lock_enterprise_hierarchy,
+    queue_chat_revocation,
     queue_enterprise_zendesk_sync,
     validate_enterprise_group_memberships,
 )
@@ -40,13 +41,23 @@ class GroupProfileAdminForm(movenodeform_factory(GroupProfile)):  # type: ignore
             using = self.instance._state.db or "default"
             if enterprise_profiles(using).filter(pk=self.instance.pk).exists():
                 # Treebeard saves the reassigned group before save_model or its move guard.
+                memberships = User.groups.through.objects.using(using)
+                old_group_id = self.initial["group"]
+                member_ids = memberships.filter(group_id=old_group_id).values_list(
+                    "user_id", flat=True
+                )
+                # The remaining-groups check can't see that new-group members stay in the company.
+                staying_ids = memberships.filter(group=self.cleaned_data["group"]).values(
+                    "user_id"
+                )
+                queue_chat_revocation(
+                    member_ids.exclude(user_id__in=staying_ids), (old_group_id,), using=using
+                )
                 queue_enterprise_zendesk_sync(
-                    User.groups.through.objects.using(using)
-                    .filter(group_id=self.initial["group"])
-                    .values_list("user_id", flat=True),
+                    member_ids,
                     using=using,
                     removed_organization_ids=company_organization_ids(
-                        (self.initial["group"],), using=using
+                        (old_group_id,), using=using
                     ),
                 )
         reference_node = self.cleaned_data.get("treebeard_ref_node")

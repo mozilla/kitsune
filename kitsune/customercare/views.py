@@ -33,7 +33,6 @@ from kitsune.customercare.utils import (
     system_tags,
 )
 from kitsune.customercare.zendesk import ZendeskClient
-from kitsune.groups.models import GroupProfile
 from kitsune.groups.templatetags.jinja_helpers import group_breadcrumbs
 from kitsune.journal.models import Record
 from kitsune.products.models import Product, Topic
@@ -102,15 +101,6 @@ def chat_jwt(request, product_slug):
                 CHAT_JOURNAL_SRC,
                 f"{user_info} is not eligible for chat for {product_slug}: {eligibility.reason}",
             )
-        if eligibility.conflicting_orgs:
-            # Separate entries keep long org slugs within the journal's message limit.
-            for slug in GroupProfile.objects.filter(
-                group_id__in=[org.group_id for org in eligibility.conflicting_orgs]
-            ).values_list("slug", flat=True):
-                Record.objects.info(
-                    CHAT_JOURNAL_SRC,
-                    f"{eligibility.reason} for user #{user.id}, product {product_slug}: org {slug}",
-                )
         return HttpResponse(status=403)
 
     # Once saved, the zendesk_id lets later account changes, like a new email, reach Zendesk.

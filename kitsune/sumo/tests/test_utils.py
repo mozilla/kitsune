@@ -348,7 +348,6 @@ class AAQContextTests(TestCase):
             "has_public_forum": True,
             "current_support_type": ProductSupportConfig.SUPPORT_TYPE_FORUM,
             "can_switch": True,
-            "is_enterprise": False,
         }
         self.assertEqual(
             get_aaq_context(self.request, self.product, multiple_products=True), expected
@@ -361,17 +360,15 @@ class AAQContextTests(TestCase):
         )
         self.assertEqual(self.request.session["aaq_context"], expected)
 
-    def test_unusable_forum_config_has_no_context_even_when_subscription_only(self):
-        ProductSupportConfigFactory(
-            product=self.product, forum_config=AAQConfigFactory(), subscription_only=True
-        )
-        self.assertEqual(get_aaq_context(self.request, self.product), {})
-
-    def test_inactive_config_offers_no_support(self):
-        ProductSupportConfigFactory(
-            product=self.product, zendesk_config=ZendeskConfigFactory(), is_active=False
-        )
-        self.assertEqual(get_aaq_context(self.request, self.product), {})
+    def test_configs_without_a_usable_channel_offer_no_context(self):
+        for config in (
+            {"zendesk_config": ZendeskConfigFactory(), "is_active": False},
+            {"forum_config": AAQConfigFactory(), "subscription_only": True},
+        ):
+            with self.subTest(config=config):
+                product = ProductFactory()
+                ProductSupportConfigFactory(product=product, **config)
+                self.assertEqual(get_aaq_context(self.request, product), {})
 
     def test_subscription_gate_returns_only_gate_context(self):
         config = ProductSupportConfigFactory(
