@@ -80,3 +80,5 @@ gcloud/
 .superpowers
 .claude.json
 .idea
+.agents
+skills-lock.json
