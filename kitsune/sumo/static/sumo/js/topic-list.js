@@ -6,6 +6,12 @@ function pageLocale() {
   }
 }
 
+// Skip leading punctuation when filing a title, and list titles that start with a digit after Z.
+function titleSortKey(title) {
+  const key = title.replace(/^[^\p{L}\p{N}]+/u, "");
+  return { key, group: /^\p{L}/u.test(key) ? 0 : 1 };
+}
+
 export function initTopicList(root = document) {
   const toolbar = root.querySelector("[data-list-toolbar]");
   const list = root.querySelector("[data-topic-list]");
@@ -26,7 +32,7 @@ export function initTopicList(root = document) {
     return {
       element,
       index,
-      title: element.dataset.title || "",
+      title: titleSortKey(element.dataset.title || ""),
       updated: Number.isNaN(updated) ? -Infinity : updated,
     };
   });
@@ -34,7 +40,8 @@ export function initTopicList(root = document) {
   const comparators = {
     server: (a, b) => a.index - b.index,
     updated: (a, b) => b.updated - a.updated || a.index - b.index,
-    title: (a, b) => collator.compare(a.title, b.title) || a.index - b.index,
+    title: (a, b) =>
+      a.title.group - b.title.group || collator.compare(a.title.key, b.title.key) || a.index - b.index,
   };
 
   function applySort() {

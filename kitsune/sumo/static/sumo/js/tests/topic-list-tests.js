@@ -24,7 +24,7 @@ function renderList(rows = ROWS) {
       ${rows
         .map(
           (row) => `
-        <article class="topic-doc-list--item" data-title="${row.title}" data-updated="${row.updated}"></article>`
+        <article class="topic-doc-list--item" data-title="${row.title.replaceAll('"', "&quot;")}" data-updated="${row.updated}"></article>`
         )
         .join("")}
     </section>`;
@@ -72,6 +72,27 @@ describe("topic-list", () => {
 
       expect(titles()).to.deep.equal(expected);
     });
+  });
+
+  it("files A-Z titles by their first letter, after leading punctuation, and lists digit-led titles last", () => {
+    const rows = [
+      "64-bit Firefox crashes",
+      "Zoom in on pages",
+      '"Firefox is already running" error',
+      "Avoid crashes",
+      "(Beta) features",
+    ].map((title) => ({ title, updated: "" }));
+    renderList(rows);
+
+    sortBy("title");
+
+    expect(titles()).to.deep.equal([
+      "Avoid crashes",
+      "(Beta) features",
+      '"Firefox is already running" error',
+      "Zoom in on pages",
+      "64-bit Firefox crashes",
+    ]);
   });
 
   it("uses the page language's collation for A-Z", () => {
