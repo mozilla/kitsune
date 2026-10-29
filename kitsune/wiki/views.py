@@ -635,6 +635,7 @@ def edit_document(request, document_slug, revision_id=None):
         {
             "revision_form": rev_form,
             "document": doc,
+            "base_revision": rev,
             "show_revision_warning": show_revision_warning,
             "locked": locked,
             "locked_by": locked_by,
@@ -1216,6 +1217,7 @@ def translate(request, document_slug, revision_id=None):
             "document_form": doc_form,
             "revision_form": rev_form,
             "locale": request.LANGUAGE_CODE,
+            "base_revision": base_rev,
             "based_on": based_on_rev,
             "disclose_description": disclose_description,
             "show_revision_warning": show_revision_warning,
