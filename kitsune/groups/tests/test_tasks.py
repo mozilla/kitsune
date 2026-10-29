@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tasks import remove_inactive_users_from_groups
-from kitsune.groups.tests import GroupProfileFactory
+from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Deactivation
 from kitsune.users.tests import GroupFactory, UserFactory
@@ -190,3 +190,23 @@ class RemoveInactiveUsersTests(TestCase):
         remove_inactive_users_from_groups()
 
         self.assertTrue(self.group_profile.group.user_set.filter(pk=user.pk).exists())
+
+    @override_settings(ENTERPRISE_GROUP_SLUG="cleanup-enterprise")
+    def test_bulk_cleanup_enqueues_only_enterprise_members_after_commit(self):
+        root = GroupProfileFactory(slug="cleanup-enterprise")
+        company = EnterpriseCompanyFactory(root=root)
+        department = DepartmentFactory(company=company)
+        member, root_member, unrelated = UserFactory.create_batch(3)
+        member.groups.add(company.group, department.group)
+        root_member.groups.add(root.group)
+        unrelated.groups.add(self.group_profile.group)
+        for user in (member, root_member, unrelated):
+            self._deactivate(user, days_ago=181)
+
+        with patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay") as enqueue:
+            with self.captureOnCommitCallbacks(execute=True):
+                remove_inactive_users_from_groups()
+                enqueue.assert_not_called()
+            enqueue.assert_called_once_with(member.pk)
+        self.assertFalse(company.group.user_set.filter(pk=member.pk).exists())
+        self.assertFalse(department.group.user_set.filter(pk=member.pk).exists())

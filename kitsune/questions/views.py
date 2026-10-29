@@ -41,6 +41,8 @@ from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
 from kitsune.products.models import Product, ProductSupportConfig, Topic, TopicSlugHistory
+from kitsune.products.routing import ENTERPRISE_SUPPORT, SupportAction, route_support
+from kitsune.products.utils import get_professional_support_products
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
@@ -66,8 +68,9 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
     build_paged_url,
+    get_aaq_context,
     get_next_url,
-    has_support_config,
+    has_support_action,
     is_ratelimited,
     paginate,
     set_aaq_context,
@@ -201,9 +204,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         products = Product.active.with_question_forums(request.LANGUAGE_CODE)
 
     multiple = (len(products) > 1) or ("all" in product_slugs)
-    product_with_aaq = False
-    if products and not multiple:
-        product_with_aaq = has_support_config(products[0])
+    aaq_context = get_aaq_context(request, products[0]) if products and not multiple else {}
 
     topics = []
 
@@ -422,7 +423,10 @@ def question_list(request, product_slug=None, topic_slug=None):
         "selected_topic_slug": topics[0].slug if topics else None,
         "product_slug": product_slug,
         "topic_navigation": topic_navigation,
-        "has_support_config": product_with_aaq,
+        "has_support_action": has_support_action(aaq_context),
+        "offers_ticket": (
+            aaq_context.get("current_support_type") == ProductSupportConfig.SUPPORT_TYPE_ZENDESK
+        ),
     }
 
     if products:
@@ -877,13 +881,32 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         | Q(support_configs__zendesk_config__isnull=False)
     )
     if product_slug:
-        try:
-            product = Product.active.get(slug=product_slug)
-        except Product.DoesNotExist:
-            raise Http404
-        else:
-            if product not in products_with_support:
-                raise Http404
+        product = get_object_or_404(Product.active, slug=product_slug)
+
+    selected = SupportAction()
+    if step > 1:
+        route = route_support(request, product)
+        if step == 3 or request.method == "GET":
+            selected = route.aaq_action
+        if step == 3 and request.method == "POST":
+            action = request.POST.get("support_action")
+            if not route.allows(action, request.POST.get("coverage")):
+                if action == ENTERPRISE_SUPPORT and not route.enterprise_support.eligible:
+                    return render(
+                        request,
+                        "questions/enterprise_support_unavailable.html",
+                        {
+                            "current_product": product,
+                            "product_url": reverse("products.product", args=[product.slug]),
+                        },
+                        status=403,
+                    )
+                messages.error(request, _("This form changed. Review it and submit again."))
+                return HttpResponseRedirect(request.get_full_path())
+            selected = route.select(action)
+
+    if product and not selected.action and product not in products_with_support:
+        raise Http404
 
     context = {
         "products": products_with_support,
@@ -893,11 +916,21 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         "is_loginless": is_loginless,
         "ga_content_group": f"aaq-step-{step}",
     }
-    # If the selected product doesn't exist in DB, render a 404
+    if step == 1:
+        covered_products = get_professional_support_products(request)
+        if covered_products:
+            # Enterprise coverage needs no product support config.
+            context["products"] = Product.active.filter(
+                Q(pk__in=products_with_support.values("pk"))
+                | Q(pk__in=[covered.pk for covered in covered_products])
+            )
     if step > 1:
         aaq_context = set_aaq_context(request, product)
 
-        support_type = aaq_context.get("current_support_type")
+        support_type = selected.support_type or aaq_context.get("current_support_type")
+        if selected.action:
+            # A posted action can differ from the default that get_aaq_context presents.
+            aaq_context["current_support_type"] = support_type
 
         # Handle missing config
         if support_type is None:
@@ -924,7 +957,8 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         context["can_switch"] = aaq_context.get("can_switch", False)
         context["SUPPORT_TYPE_FORUM"] = ProductSupportConfig.SUPPORT_TYPE_FORUM
         context["SUPPORT_TYPE_ZENDESK"] = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
-        context["has_ticketing_support"] = aaq_context.get("has_ticketing_support", False)
+        context["support_action"] = selected.action
+        context["coverage"] = selected.coverage
 
     if step == 2:
         topics = topics_for(request.user, product, parent=None)
@@ -942,22 +976,25 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             (support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
             and (request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE)
         ):
-            old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-            new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
-
             if support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM:
-                msg = _(
+                message = _(
                     "The questions forum isn't available for {product} in {old_lang}, we "
                     "have redirected you to the {new_lang} questions forum."
-                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
+                )
             else:
-                msg = _(
+                message = _(
                     "Mozilla Support isn't available for {product} in {old_lang}, we "
                     "have redirected you to Mozilla Support in {new_lang}."
-                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
-
-            messages.add_message(request, messages.WARNING, msg)
-
+                )
+            messages.add_message(
+                request,
+                messages.WARNING,
+                message.format(
+                    product=product.title,
+                    old_lang=settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()],
+                    new_lang=settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()],
+                ),
+            )
             params = request.GET.copy()
             params["from_locale"] = request.LANGUAGE_CODE
             return HttpResponseRedirect(
@@ -990,41 +1027,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         )
 
         if support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK:
-            zendesk_form = ZendeskForm(
-                data=request.POST or None,
-                product=product,
-                user=request.user,
-                initial={"country": request.headers.get("X-Client-Geo-Country-Name", "")},
-            )
-            context["form"] = zendesk_form
-            context["submit_event_parameters"] = get_ga_submit_event_parameters_as_json(
-                request.session, product
-            )
-
-            if zendesk_form.is_valid() and not is_ratelimited(request, "loginless", "3/d"):
-                zendesk_form.send(request.user, product)
-                email = zendesk_form.cleaned_data["email"]
-
-                messages.add_message(
-                    request,
-                    messages.SUCCESS,
-                    _(
-                        "Thank you for reaching out to Mozilla Support. "
-                        "We're reviewing your submission and will send a confirmation email to {email} shortly."
-                    ).format(email=email),
-                )
-
-                url = reverse("products.product", args=[product.slug])
-                return HttpResponseRedirect(f"{url}#user-messages")
-
-            if getattr(request, "limited", False):
-                messages.add_message(
-                    request,
-                    messages.ERROR,
-                    _("You've exceeded the number of submissions for today."),
-                )
-
-            return render(request, template, context)
+            return zendesk_ticket(request, product, selected, context)
 
         form = NewQuestionForm(
             product=product,
@@ -1086,6 +1089,43 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             context["submit_event_parameters"] = get_ga_submit_event_parameters_as_json()
 
     return render(request, template, context)
+
+
+def zendesk_ticket(request, product, selected, context):
+    form = ZendeskForm(
+        request.POST or None,
+        product=product,
+        zendesk_config=selected.zendesk_config,
+        coverage=selected.coverage,
+        user=request.user,
+        initial={"country": request.headers.get("X-Client-Geo-Country-Name", "")},
+    )
+    group, rate = ("enterprise-ticket", "20/d") if selected.coverage else ("loginless", "3/d")
+    if form.is_valid() and not is_ratelimited(request, group, rate):
+        form.send(request.user)
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            _(
+                "Thank you for reaching out to Mozilla Support. "
+                "We're reviewing your submission and will send a confirmation email to {email} shortly."
+            ).format(email=form.cleaned_data["email"]),
+        )
+        product_url = reverse("products.product", args=[product.slug])
+        return HttpResponseRedirect(f"{product_url}#user-messages")
+
+    if getattr(request, "limited", False):
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("You've exceeded the number of submissions for today."),
+        )
+
+    context.update(
+        form=form,
+        submit_event_parameters=get_ga_submit_event_parameters_as_json(request.session, product),
+    )
+    return render(request, "questions/new_question.html", context)
 
 
 def aaq_step2(request, product_slug):

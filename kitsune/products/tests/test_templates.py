@@ -1,23 +1,25 @@
 import json
+from datetime import timedelta
 from unittest import mock
 
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.test.utils import CaptureQueriesContext, modify_settings, override_settings
+from django.utils import timezone
 from parameterized import parameterized
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 
-from kitsune.groups.models import GroupProfile
-from kitsune.groups.tests import GroupProfileFactory
+from kitsune.groups.tests import EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.products.models import HOT_TOPIC_SLUG, CuratedBlock, ProductSupportConfig, Topic
 from kitsune.products.tests import (
     CuratedBlockFactory,
     CuratedBlockItemFactory,
     ProductFactory,
     ProductSupportConfigFactory,
-    SupportOrganizationFactory,
+    SupportContractFactory,
+    SupportCoverageFactory,
     TopicFactory,
     ZendeskConfigFactory,
 )
@@ -26,7 +28,7 @@ from kitsune.questions.tests import AAQConfigFactory, QuestionFactory
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import GroupFactory, UserFactory
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
 
 Kind = CuratedBlock.Kind
@@ -582,226 +584,176 @@ class TopicPageSortLabelTests(TestCase):
         self.assertEqual(label, doc('#list-sort option[value="server"]').text())
 
 
-class ProfessionalSupportTestCase(TestCase):
-    """Sets up a product with professional support and an organization that has it."""
+class ProfessionalSupportPresentationTests(TestCase):
+    """Product pages and the professional support banner present each persona's support."""
+
+    sales_url = (
+        "https://www.firefox.com/en-US/browsers/enterprise/contact/?utm_source=sumo-announcement"
+    )
 
     def setUp(self):
-        self.product = ProductFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
+        today = timezone.localdate()
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        self.config = ProductSupportConfigFactory(
-            product=self.product,
-            forum_config=AAQConfigFactory(enabled_locales=[locale]),
-            zendesk_config=ZendeskConfigFactory(),
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
-            group_default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
-        )
-        self.root = GroupProfileFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
-        self.org = self.add_org(self.config, "acme")
-        self.team = GroupProfile.objects.add_child(
-            self.org, create_kwargs={"group": GroupFactory(), "slug": "acme-it"}
-        )
-        self.url = reverse("products.product", args=[self.product.slug])
-
-    def add_org(self, config, slug):
-        """Add a company under the enterprise group and make it a support organization."""
-        org = GroupProfile.objects.add_child(
-            self.root, create_kwargs={"group": GroupFactory(), "slug": slug}
-        )
-        SupportOrganizationFactory(config=config, group=org.group).full_clean()
-        return org
-
-    def login_member(self, group_profile=None):
-        user = UserFactory()
-        user.groups.add((group_profile or self.team).group)
-        self.client.login(username=user.username, password="testpass")
-
-
-class EnterpriseGetSupportTests(ProfessionalSupportTestCase):
-    """Users with professional support for the product get the Get help section;
-    everyone else gets a banner."""
-
-    def test_member_sees_get_support(self):
-        TopicFactory(slug="getting-started", products=[self.product])
-        self.login_member()
-
-        doc = pq(self.client.get(self.url, follow=True).content)
-
-        self.assertEqual(0, len(doc(".support-callouts")))
-        section = doc(".get-support.support-callouts--top")
-        self.assertEqual(3, len(section(".get-support--item")))
-        # Each card's title is its link.
-        links = [pq(a).attr("href") for a in section(".get-support--title a")]
-        self.assertEqual(
-            links,
-            [
-                reverse("questions.aaq_step3", kwargs={"product_slug": self.product.slug})
-                + f"?support_type={ProductSupportConfig.SUPPORT_TYPE_ZENDESK}",
-                reverse("products.documents", args=[self.product.slug, "getting-started"]),
-                reverse("groups.profile", args=[self.org.slug]),
-            ],
-        )
-        self.assertEqual("Get help", section("h2").text())
-
-    def test_direct_company_member_sees_get_support(self):
-        self.login_member(self.org)
-
-        doc = pq(self.client.get(self.url, follow=True).content)
-
-        section = doc(".get-support.support-callouts--top")
-        self.assertEqual(1, len(section))
-        links = [pq(a).attr("href") for a in section(".get-support--title a")]
-        self.assertIn(reverse("groups.profile", args=[self.org.slug]), links)
-
-    def test_get_started_card_hidden_without_topic(self):
-        self.login_member()
-
-        doc = pq(self.client.get(self.url, follow=True).content)
-
-        section = doc(".get-support.support-callouts--top")
-        self.assertEqual(2, len(section(".get-support--item")))
-        self.assertEqual(0, len(section(".get-support--badge.is-getting-started")))
-
-    def test_member_without_zendesk_sees_still_need_help(self):
-        self.config.zendesk_config = None
-        self.config.save()
-        self.login_member()
-
-        doc = pq(self.client.get(self.url, follow=True).content)
-
-        self.assertEqual(0, len(doc(".get-support")))
-        self.assertIn("Still need help?", doc(".support-callouts--top .card--title").text())
-
-    def test_member_on_other_product_is_sent_to_their_support_page(self):
-        other = ProductFactory()
-        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
+        self.enterprise = ProductFactory(slug=settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG)
         ProductSupportConfigFactory(
-            product=other,
+            product=self.enterprise,
             forum_config=AAQConfigFactory(enabled_locales=[locale]),
-            zendesk_config=None,
             default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
         )
-        self.login_member()
-
-        url = reverse("products.product", args=[other.slug])
-        doc = pq(self.client.get(url, follow=True).content)
-
-        self.assertEqual(0, len(doc(".get-support")))
-        self.assertEqual(1, len(doc(".support-callouts--top")))
-        self.assertEqual(1, len(doc(".support-callouts--bottom")))
-        # The product's own support stays available alongside the pro banner.
-        middle = doc(
-            ".support-callouts:not(.support-callouts--top):not(.support-callouts--bottom)"
+        self.vpn = ProductFactory()
+        ProductSupportConfigFactory(
+            product=self.vpn, zendesk_config=ZendeskConfigFactory(), subscription_only=True
         )
-        self.assertEqual(1, len(middle))
-        self.assertEqual("Still need help?", middle(".card--title").text())
-        banner = doc(".support-callouts--top")
-        self.assertEqual("Firefox Professional Support", banner(".card--title").text())
-        self.assertEqual(
-            "Visit your organization’s dedicated support page to contact our team and access "
-            "your support services.",
-            banner(".card--desc").text(),
+        self.unconfigured = ProductFactory()
+        TopicFactory(slug="getting-started", products=[self.unconfigured])
+
+        self.company = EnterpriseCompanyFactory()
+        contract = SupportContractFactory(company=self.company)
+        for product in (self.vpn, self.unconfigured):
+            SupportCoverageFactory(contract=contract, product=product)
+        self.enterprise_company = EnterpriseCompanyFactory()
+        SupportCoverageFactory(
+            product=self.enterprise,
+            contract=SupportContractFactory(company=self.enterprise_company),
         )
-        button = banner("a.sumo-button")
-        self.assertEqual("Access Support", button.text())
-        self.assertEqual(self.url, button.attr("href"))
-
-    def test_member_on_product_without_support_config_is_sent_to_their_support_page(self):
-        other = ProductFactory()
-        self.login_member()
-
-        url = reverse("products.product", args=[other.slug])
-        doc = pq(self.client.get(url, follow=True).content)
-
-        banner = doc(".support-callouts--top")
-        self.assertEqual("Firefox Professional Support", banner(".card--title").text())
-        self.assertEqual(self.url, banner("a.sumo-button").attr("href"))
-
-    def test_logged_out_sees_talk_to_an_expert(self):
-        doc = pq(self.client.get(self.url, follow=True).content)
-
-        self.assertEqual(0, len(doc(".get-support")))
-        banner = doc(".support-callouts--top")
-        self.assertEqual("Need dedicated support?", banner(".card--title").text())
-        self.assertIn(
-            "firefox.com/en-US/browsers/enterprise/contact/", banner("a.sumo-button").attr("href")
+        self.expired_company = EnterpriseCompanyFactory()
+        SupportCoverageFactory(
+            product=self.vpn,
+            contract=SupportContractFactory(
+                company=self.expired_company,
+                starts_on=today - timedelta(days=30),
+                ends_on=today - timedelta(days=1),
+            ),
         )
 
-    def test_non_member_sees_still_need_help(self):
+    def user(self, group=None, *, subscribed=False):
         user = UserFactory()
-        self.client.login(username=user.username, password="testpass")
+        if group:
+            user.groups.add(group.group)
+        if subscribed:
+            user.profile.products.add(self.vpn)
+        return user
 
-        doc = pq(self.client.get(self.url, follow=True).content)
+    def blocks(self, doc):
+        """Summarize the page's support blocks in order; bottom copies repeat the top ones."""
+        blocks = []
+        shown = doc(".support-callouts, .get-support").not_(".support-callouts--bottom")
+        for block in shown.items():
+            if block.has_class("get-support"):
+                titles = block(".get-support--title a").items()
+                links = [(a.text(), a.attr("href")) for a in titles]
+                branded = "Firefox Professional Support" in block.text()
+                blocks.append((block("h2").text(), links, branded))
+            else:
+                button = block("a.sumo-button")
+                blocks.append((block(".card--title").text(), button.text(), button.attr("href")))
+        return blocks
 
-        self.assertEqual(0, len(doc(".get-support")))
-        banner = doc(".support-callouts--top")
-        self.assertIn("Still need help?", banner(".card--title").text())
-        self.assertEqual(
-            reverse("questions.aaq_step3", kwargs={"product_slug": self.product.slug}),
-            banner("a.sumo-button").attr("href"),
+    def analytics_events(self, doc):
+        """Return the parameters analytics.js would send for each tracked element."""
+        events = []
+        for element in doc("[data-event-name]").items():
+            parameters = json.loads(element.attr("data-event-parameters") or "{}")
+            href = element.attr("href")
+            if element.attr("data-event-name") == "link_click" and href is not None:
+                parameters.setdefault("link_url", href)
+            events.append(json.dumps(parameters))
+        return events
+
+    def step3(self, product):
+        return reverse("questions.aaq_step3", args=[product.slug])
+
+    def banner(self, company):
+        return (
+            "Your company’s support",
+            "Access Support",
+            reverse("groups.profile", args=[company.slug]) + "#your-support",
         )
 
+    def section(self, product, company, *, branded=False, get_started=False):
+        links = [("Contact support", self.step3(product))]
+        if get_started:
+            url = reverse("products.documents", args=[product.slug, "getting-started"])
+            links.append(("Get started", url))
+        links.append(("Manage your account", reverse("groups.profile", args=[company.slug])))
+        return ("Get help", links, branded)
 
-class ProfessionalSupportBannerTests(ProfessionalSupportTestCase):
-    """The home page and the product list point members to their support page."""
+    def test_presentation_per_persona(self):
+        forum = ("Still need help?", "Ask the Community", self.step3(self.enterprise))
+        product_ticket = ("Still need help?", "Contact Support", self.step3(self.vpn))
+        sales = ("Need dedicated support?", "Talk to an Expert", self.sales_url)
+        uncovered = {
+            self.enterprise: (True, [forum]),
+            self.vpn: (False, []),
+            self.unconfigured: (False, []),
+        }
+        subscriber = {**uncovered, self.vpn: (False, [product_ticket])}
+        covered = {
+            self.enterprise: (True, [self.banner(self.company), forum]),
+            self.vpn: (True, [self.section(self.vpn, self.company)]),
+            self.unconfigured: (
+                True,
+                [self.section(self.unconfigured, self.company, get_started=True)],
+            ),
+        }
+        enterprise_banner = self.banner(self.enterprise_company)
+        enterprise_covered = {
+            self.enterprise: (
+                True,
+                [self.section(self.enterprise, self.enterprise_company, branded=True)],
+            ),
+            self.vpn: (False, [enterprise_banner]),
+            self.unconfigured: (False, [enterprise_banner]),
+        }
+        company_slugs = [
+            company.slug
+            for company in (self.company, self.enterprise_company, self.expired_company)
+        ]
 
-    pages = ("home", "products")
-
-    def test_member_sees_banner(self):
-        self.login_member()
-
-        for page in self.pages:
-            with self.subTest(page=page):
-                doc = pq(self.client.get(reverse(page), follow=True).content)
-
-                banner = doc(".support-callouts")
-                self.assertEqual(1, len(banner))
-                self.assertEqual("Firefox Professional Support", banner(".card--title").text())
-                self.assertEqual(self.url, banner("a.sumo-button").attr("href"))
-
-    def test_non_member_sees_no_banner(self):
-        user = UserFactory()
-        self.client.login(username=user.username, password="testpass")
-
-        for page in self.pages:
-            with self.subTest(page=page):
-                doc = pq(self.client.get(reverse(page), follow=True).content)
-                self.assertEqual(0, len(doc(".support-callouts")))
-
-    def test_logged_out_sees_no_banner(self):
-        for page in self.pages:
-            with self.subTest(page=page):
-                doc = pq(self.client.get(reverse(page), follow=True).content)
-                self.assertEqual(0, len(doc(".support-callouts")))
-
-
-class ProMastheadTests(ProfessionalSupportTestCase):
-    """The enterprise page always gets the pro support masthead; other products only for
-    users with professional support for them."""
-
-    masthead = ".home-search-section.pro-support-masthead"
-
-    def test_enterprise_page_always_has_it(self):
-        doc = pq(self.client.get(self.url, follow=True).content)
-        self.assertEqual(1, len(doc(self.masthead)))
-
-    def test_other_product_without_pro_support_does_not(self):
-        other = ProductFactory()
-        self.login_member()
-
-        doc = pq(
-            self.client.get(reverse("products.product", args=[other.slug]), follow=True).content
-        )
-        self.assertEqual(0, len(doc(self.masthead)))
-
-    def test_other_product_with_pro_support_does(self):
-        other = ProductFactory()
-        config = ProductSupportConfigFactory(product=other, zendesk_config=ZendeskConfigFactory())
-        self.login_member(self.add_org(config, "globex"))
-
-        doc = pq(
-            self.client.get(reverse("products.product", args=[other.slug]), follow=True).content
-        )
-        self.assertEqual(1, len(doc(self.masthead)))
+        company_banner = [self.banner(self.company)]
+        for persona, user, pages, banner in (
+            ("anonymous", None, {**uncovered, self.enterprise: (True, [sales])}, []),
+            ("non-member", self.user(), uncovered, []),
+            ("company member", self.user(self.company), covered, company_banner),
+            ("individual subscriber", self.user(subscribed=True), subscriber, []),
+            (
+                "both entitlements",
+                self.user(self.company, subscribed=True),
+                covered,
+                company_banner,
+            ),
+            ("expired coverage", self.user(self.expired_company, subscribed=True), subscriber, []),
+            (
+                "other product coverage",
+                self.user(self.enterprise_company),
+                enterprise_covered,
+                [enterprise_banner],
+            ),
+        ):
+            if user:
+                self.client.force_login(user)
+            else:
+                self.client.logout()
+            expected = {
+                reverse("products.product", args=[product.slug]): presentation
+                for product, presentation in pages.items()
+            }
+            expected.update({reverse(page): (False, banner) for page in ("home", "products")})
+            for url, presentation in expected.items():
+                with self.subTest(persona=persona, url=url):
+                    response = self.client.get(url)
+                    self.assertEqual(response.status_code, 200)
+                    doc = pq(response.content)
+                    self.assertEqual(
+                        (bool(doc(".home-search-section.pro-support-masthead")), self.blocks(doc)),
+                        presentation,
+                    )
+                    leaked = [
+                        event
+                        for event in self.analytics_events(doc)
+                        if any(slug in event for slug in company_slugs)
+                    ]
+                    self.assertEqual(leaked, [])
 
 
 _MZLA_SLUGS = ["thunderbird", "thunderbird-android"]

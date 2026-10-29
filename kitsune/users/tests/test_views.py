@@ -4,7 +4,6 @@ from textwrap import dedent
 from unittest import mock
 
 from django.contrib import messages
-from django.contrib.auth.models import Group
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
@@ -16,10 +15,9 @@ from pyquery import PyQuery as pq
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
-from kitsune.customercare.utils import resolve_user_org_group
 from kitsune.forums.models import Post, Thread
 from kitsune.forums.tests import PostFactory, ThreadFactory
-from kitsune.groups.models import GroupProfile
+from kitsune.groups.tests import EnterpriseCompanyFactory
 from kitsune.kbforums.models import Post as KBForumPost
 from kitsune.kbforums.models import Thread as KBForumThread
 from kitsune.kbforums.tests import (
@@ -30,12 +28,6 @@ from kitsune.kbforums.tests import (
 )
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.messages.utils import send_message
-from kitsune.products.tests import (
-    ProductFactory,
-    ProductSupportConfigFactory,
-    SupportOrganizationFactory,
-    ZendeskConfigFactory,
-)
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
@@ -885,51 +877,41 @@ class QuestionsContributedSidebarTests(TestCase):
     def setUp(self):
         self.SupportTicket = SupportTicket
 
-        product = ProductFactory()
-        config = ProductSupportConfigFactory(
-            product=product, zendesk_config=ZendeskConfigFactory(name="zd")
-        )
-        root_group = Group.objects.create(name="enterprise")
-        root = GroupProfile.objects.add_root(
-            create_kwargs={"group": root_group, "slug": "enterprise"}
-        )
-        c1_group = Group.objects.create(name="company1")
-        self.c1 = GroupProfile.objects.add_child(
-            root, create_kwargs={"group": c1_group, "slug": "company1"}
-        )
-        SupportOrganizationFactory(config=config, group=c1_group)
-
+        self.company = EnterpriseCompanyFactory()
         self.member = UserFactory(username="member")
-        self.member.groups.add(c1_group)
+        self.member.groups.add(self.company.group)
         self.outsider = UserFactory(username="outsider")
 
         SupportTicketFactory(
             user=self.member,
-            product=product,
-            org_group=self.c1,
+            org_group=self.company,
             zd_status=SupportTicket.ZD_STATUS_OPEN,
         )
         SupportTicketFactory(
             user=self.member,
-            product=product,
-            org_group=self.c1,
+            org_group=self.company,
             zd_status=SupportTicket.ZD_STATUS_SOLVED,
         )
 
     def _url_for(self, user):
         return reverse("users.questions", locale="en-US", kwargs={"username": user.username})
 
-    def test_widget_renders_for_org_member_own_page(self):
-        self.client.force_login(self.member)
-        response = self.client.get(self._url_for(self.member))
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, "company1")
-        self.assertContains(response, "Your company")
-
-    def test_widget_hidden_for_outsider(self):
-        self.client.force_login(self.outsider)
-        response = self.client.get(self._url_for(self.outsider))
-        self.assertNotContains(response, "Your company")
+    def test_widget_shows_only_the_users_own_company(self):
+        for user, shown in ((self.member, True), (self.outsider, False)):
+            with self.subTest(user=user.username):
+                self.client.force_login(user)
+                widget = pq(self.client.get(self._url_for(user)).content)(
+                    ".company-tickets-widget"
+                )
+                self.assertEqual(bool(widget), shown)
+                if shown:
+                    self.assertEqual(
+                        widget(".company-tickets-widget--name").text(), self.company.group.name
+                    )
+                    self.assertEqual(
+                        widget("a").attr("href"),
+                        reverse("groups.tickets", locale="en-US", args=[self.company.slug]),
+                    )
 
     def test_widget_hidden_when_viewing_other_user(self):
         """When you view someone else's profile, the widget should not show."""
@@ -939,19 +921,18 @@ class QuestionsContributedSidebarTests(TestCase):
 
     def test_deleted_ticket_excluded_from_org_counts(self):
         """A ticket deleted in Zendesk must not inflate the org's counts."""
-        org = resolve_user_org_group(self.member)
         # The set-up already creates one active and one solved ticket for the org. Adding
         # tickets in each category that have been deleted in Zendesk shouldn't add to the
         # active or solved counts.
         SupportTicketFactory(
             user=self.member,
-            org_group=org,
+            org_group=self.company,
             zd_status=SupportTicket.ZD_STATUS_OPEN,
             zd_deleted_at=timezone.now(),
         )
         SupportTicketFactory(
             user=self.member,
-            org_group=org,
+            org_group=self.company,
             zd_status=SupportTicket.ZD_STATUS_SOLVED,
             zd_deleted_at=timezone.now(),
         )

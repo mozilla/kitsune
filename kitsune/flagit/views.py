@@ -32,7 +32,7 @@ from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate
+from kitsune.sumo.utils import in_staff_group, paginate
 from kitsune.tags.models import SumoTag
 
 
@@ -370,14 +370,12 @@ def moderate_content(request):
 
 @group_required(settings.STAFF_GROUP)
 def zendesk_spam_queue(request):
-    """Display Zendesk spam tickets for review by Staff members."""
+    """Display Zendesk spam and delivery holds for review by Staff members."""
     ct_support_ticket = ContentType.objects.get_for_model(SupportTicket)
 
     objects = (
-        get_flagged_objects(
-            reason=FlaggedObject.REASON_SPAM,
-            content_types=[ct_support_ticket],
-        )
+        get_flagged_objects(content_types=[ct_support_ticket])
+        .filter(reason__in=(FlaggedObject.REASON_SPAM, FlaggedObject.REASON_OTHER))
         .select_related("content_type", "creator")
         .prefetch_related(
             "content_object",
@@ -407,6 +405,9 @@ def zendesk_spam_queue(request):
 def update(request, flagged_object_id):
     """Update the status of a flagged object."""
     flagged = get_object_or_404(FlaggedObject, pk=flagged_object_id)
+    # Support ticket flags are reviewed only in the staff-only queues.
+    if isinstance(flagged.content_object, SupportTicket) and not in_staff_group(request.user):
+        return HttpResponseForbidden()
     new_status = request.POST.get("status")
     reason = request.GET.get("reason")
     product = request.GET.get("product")

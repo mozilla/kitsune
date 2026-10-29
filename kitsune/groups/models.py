@@ -184,8 +184,9 @@ class GroupProfile(TreeModelBase):
         """Check if user can view this group based on visibility and isolation settings."""
         return self.__class__.objects.visible(user).filter(pk=self.pk).exists()
 
-    def is_org_root(self):
-        return self.group.support_organizations.exists()
+    def is_enterprise(self):
+        """Whether this is an enterprise company or one of its departments."""
+        return self.depth > 1 and self.__class__.objects.enterprise().filter(pk=self.pk).exists()
 
     def can_view_tickets(self, user):
         if not (user and user.is_authenticated):

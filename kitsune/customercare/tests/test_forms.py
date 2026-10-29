@@ -156,7 +156,9 @@ class ZendeskFormTests(TestCase):
 
     def test_authenticated_form_gets_correct_categories(self):
         """Test that authenticated users get product-specific categories."""
-        form = ZendeskForm(product=self.vpn_product, user=self.user)
+        form = ZendeskForm(
+            product=self.vpn_product, zendesk_config=self.vpn_zendesk, user=self.user
+        )
 
         category_topics = [choice[1] for choice in form.fields["category"].choices if choice[0]]
         self.assertIn("I can't connect to Mozilla VPN", category_topics)
@@ -165,8 +167,12 @@ class ZendeskFormTests(TestCase):
 
     def test_different_products_get_different_categories(self):
         """Test that different products get different categories."""
-        vpn_form = ZendeskForm(product=self.vpn_product, user=self.user)
-        relay_form = ZendeskForm(product=self.relay_product, user=self.user)
+        vpn_form = ZendeskForm(
+            product=self.vpn_product, zendesk_config=self.vpn_zendesk, user=self.user
+        )
+        relay_form = ZendeskForm(
+            product=self.relay_product, zendesk_config=self.relay_zendesk, user=self.user
+        )
 
         vpn_topics = [choice[1] for choice in vpn_form.fields["category"].choices if choice[0]]
         relay_topics = [choice[1] for choice in relay_form.fields["category"].choices if choice[0]]
@@ -180,7 +186,11 @@ class ZendeskFormTests(TestCase):
     def test_loginless_form_gets_loginless_categories(self):
         """Test that loginless users get FxA-specific categories."""
         anonymous_user = AnonymousUser()
-        form = ZendeskForm(product=self.accounts_product, user=anonymous_user)
+        form = ZendeskForm(
+            product=self.accounts_product,
+            zendesk_config=self.accounts_zendesk,
+            user=anonymous_user,
+        )
 
         category_topics = [choice[1] for choice in form.fields["category"].choices if choice[0]]
         self.assertIn("I forgot my password", category_topics)
@@ -189,7 +199,9 @@ class ZendeskFormTests(TestCase):
 
     def test_form_stores_product_and_user(self):
         """Test that form stores product and user for later use."""
-        form = ZendeskForm(product=self.vpn_product, user=self.user)
+        form = ZendeskForm(
+            product=self.vpn_product, zendesk_config=self.vpn_zendesk, user=self.user
+        )
 
         self.assertEqual(form.product, self.vpn_product)
         self.assertEqual(form.user, self.user)
@@ -206,11 +218,12 @@ class ZendeskFormTests(TestCase):
                 "country": "US",
             },
             product=self.vpn_product,
+            zendesk_config=self.vpn_zendesk,
             user=self.user,
         )
 
         self.assertTrue(form.is_valid())
-        submission = form.send(self.user, self.vpn_product)
+        submission = form.send(self.user)
 
         expected_tags = [
             "technical",  # legacy
@@ -243,11 +256,12 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.relay_product,
+            zendesk_config=self.relay_zendesk,
             user=self.user,
         )
 
         self.assertTrue(form.is_valid())
-        submission = form.send(self.user, self.relay_product)
+        submission = form.send(self.user)
 
         expected_tags = [
             "technical",  # legacy
@@ -273,11 +287,12 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.vpn_product,
+            zendesk_config=self.vpn_zendesk,
             user=self.user,
         )
 
         self.assertTrue(form.is_valid())
-        submission = form.send(self.user, self.vpn_product)
+        submission = form.send(self.user)
 
         expected_tags = ["payments", "t1-billing-and-subscriptions"]
 
@@ -320,11 +335,12 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.vpn_product,
+            zendesk_config=self.vpn_zendesk,
             user=self.user,
         )
 
         self.assertTrue(form.is_valid())
-        submission = form.send(self.user, self.vpn_product)
+        submission = form.send(self.user)
 
         expected_tags = ["payments", "t1-billing-and-subscriptions", "ssa-billing-automation"]
 
@@ -343,6 +359,7 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.vpn_product,
+            zendesk_config=self.vpn_zendesk,
             user=self.user,
         )
 
@@ -353,7 +370,7 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
                 "category": "",  # Empty category
             }
-        submission = form.send(self.user, self.vpn_product)
+        submission = form.send(self.user)
 
         self.assertIsInstance(submission, SupportTicket)
         self.assertEqual(submission.zendesk_tags, [])
@@ -361,21 +378,17 @@ class ZendeskFormTests(TestCase):
         self.assertEqual(submission.category, "")
         mock_task.assert_called_once_with(submission.id)
 
-    def test_product_without_categories_gets_empty_choices(self):
-        """Test that products without ProductSupportConfig get no choices."""
-        unknown_product = ProductFactory(
-            title="Unknown Product", slug="unknown-product", codename="unknown"
+    def test_config_controls_topics_without_product_support_config(self):
+        form = ZendeskForm(
+            product=ProductFactory(), zendesk_config=self.vpn_zendesk, user=self.user
         )
-
-        form = ZendeskForm(product=unknown_product, user=self.user)
-
-        category_choices = form.fields["category"].choices
-        # Without ProductSupportConfig, no categories are populated
-        self.assertEqual(len(category_choices), 0)
+        self.assertIn("payments", dict(form.fields["category"].choices))
 
     def test_base_categories_are_properly_expanded(self):
         """Test that topics are properly loaded from database."""
-        form = ZendeskForm(product=self.vpn_product, user=self.user)
+        form = ZendeskForm(
+            product=self.vpn_product, zendesk_config=self.vpn_zendesk, user=self.user
+        )
 
         category_choices = form.fields["category"].choices
         category_dict = {slug: topic for slug, topic in category_choices if slug}
@@ -398,11 +411,12 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.accounts_product,
+            zendesk_config=self.accounts_zendesk,
             user=anonymous_user,
         )
 
         self.assertTrue(form.is_valid())
-        submission = form.send(anonymous_user, self.accounts_product)
+        submission = form.send(anonymous_user)
 
         expected_tags = [
             "accounts",
@@ -431,6 +445,7 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.accounts_product,
+            zendesk_config=self.accounts_zendesk,
             user=anonymous_user,
         )
 
@@ -450,6 +465,7 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.accounts_product,
+            zendesk_config=self.accounts_zendesk,
             user=anonymous_user,
         )
 
@@ -468,6 +484,7 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.accounts_product,
+            zendesk_config=self.accounts_zendesk,
             user=anonymous_user,
         )
 
@@ -486,6 +503,7 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.accounts_product,
+            zendesk_config=self.accounts_zendesk,
             user=anonymous_user,
         )
 
@@ -503,6 +521,7 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.accounts_product,
+            zendesk_config=self.accounts_zendesk,
             user=anonymous_user,
         )
 
@@ -510,7 +529,9 @@ class ZendeskFormTests(TestCase):
 
     def test_deployment_fields_hidden_by_default(self):
         """Test that deployment fields are hidden when not enabled."""
-        form = ZendeskForm(product=self.vpn_product, user=self.user)
+        form = ZendeskForm(
+            product=self.vpn_product, zendesk_config=self.vpn_zendesk, user=self.user
+        )
 
         self.assertEqual(form.fields["update_channel"].widget.__class__.__name__, "HiddenInput")
         self.assertEqual(
@@ -524,7 +545,9 @@ class ZendeskFormTests(TestCase):
         self.vpn_zendesk.enable_deployment_fields = True
         self.vpn_zendesk.save()
 
-        form = ZendeskForm(product=self.vpn_product, user=self.user)
+        form = ZendeskForm(
+            product=self.vpn_product, zendesk_config=self.vpn_zendesk, user=self.user
+        )
 
         self.assertEqual(form.fields["update_channel"].widget.__class__.__name__, "Select")
         self.assertEqual(form.fields["policy_distribution"].widget.__class__.__name__, "Select")
@@ -555,11 +578,12 @@ class ZendeskFormTests(TestCase):
                 "policy_distribution": "group_policy_admx",
             },
             product=self.vpn_product,
+            zendesk_config=self.vpn_zendesk,
             user=self.user,
         )
 
         self.assertTrue(form.is_valid())
-        submission = form.send(self.user, self.vpn_product)
+        submission = form.send(self.user)
 
         self.assertEqual(submission.update_channel, "esr")
         self.assertEqual(submission.policy_distribution, "group_policy_admx")
@@ -583,10 +607,11 @@ class ZendeskFormTests(TestCase):
                         "policy_distribution": "group_policy_admx",
                     },
                     product=self.vpn_product,
+                    zendesk_config=self.vpn_zendesk,
                     user=self.user,
                 )
                 self.assertTrue(form.is_valid())
-                submission = form.send(self.user, self.vpn_product)
+                submission = form.send(self.user)
                 self.assertIn(expected_tag, submission.zendesk_tags)
 
     @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
@@ -607,10 +632,11 @@ class ZendeskFormTests(TestCase):
                         "policy_distribution": distribution,
                     },
                     product=self.vpn_product,
+                    zendesk_config=self.vpn_zendesk,
                     user=self.user,
                 )
                 self.assertTrue(form.is_valid())
-                submission = form.send(self.user, self.vpn_product)
+                submission = form.send(self.user)
                 self.assertIn(expected_tag, submission.zendesk_tags)
 
     @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
@@ -624,10 +650,11 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.vpn_product,
+            zendesk_config=self.vpn_zendesk,
             user=self.user,
         )
         self.assertTrue(form.is_valid())
-        submission = form.send(self.user, self.vpn_product)
+        submission = form.send(self.user)
 
         for tag in UPDATE_CHANNEL_TAGS.values():
             self.assertNotIn(tag, submission.zendesk_tags)
@@ -636,7 +663,9 @@ class ZendeskFormTests(TestCase):
 
     def test_urgency_field_hidden_by_default(self):
         """Test that the urgency field is hidden when not enabled."""
-        form = ZendeskForm(product=self.vpn_product, user=self.user)
+        form = ZendeskForm(
+            product=self.vpn_product, zendesk_config=self.vpn_zendesk, user=self.user
+        )
 
         self.assertEqual(form.fields["urgency"].widget.__class__.__name__, "HiddenInput")
         self.assertFalse(form.fields["urgency"].required)
@@ -646,7 +675,9 @@ class ZendeskFormTests(TestCase):
         self.vpn_zendesk.enable_urgency_field = True
         self.vpn_zendesk.save()
 
-        form = ZendeskForm(product=self.vpn_product, user=self.user)
+        form = ZendeskForm(
+            product=self.vpn_product, zendesk_config=self.vpn_zendesk, user=self.user
+        )
 
         self.assertEqual(form.fields["urgency"].widget.__class__.__name__, "Select")
         self.assertTrue(form.fields["urgency"].required)
@@ -669,11 +700,12 @@ class ZendeskFormTests(TestCase):
                 "urgency": "critical",
             },
             product=self.vpn_product,
+            zendesk_config=self.vpn_zendesk,
             user=self.user,
         )
 
         self.assertTrue(form.is_valid())
-        submission = form.send(self.user, self.vpn_product)
+        submission = form.send(self.user)
 
         self.assertEqual(submission.urgency, "critical")
         mock_task.assert_called_once_with(submission.id)
@@ -695,10 +727,11 @@ class ZendeskFormTests(TestCase):
                         "urgency": urgency,
                     },
                     product=self.vpn_product,
+                    zendesk_config=self.vpn_zendesk,
                     user=self.user,
                 )
                 self.assertTrue(form.is_valid())
-                submission = form.send(self.user, self.vpn_product)
+                submission = form.send(self.user)
                 self.assertIn(expected_tag, submission.zendesk_tags)
 
     @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
@@ -712,11 +745,128 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
             },
             product=self.vpn_product,
+            zendesk_config=self.vpn_zendesk,
             user=self.user,
         )
         self.assertTrue(form.is_valid())
-        submission = form.send(self.user, self.vpn_product)
+        submission = form.send(self.user)
 
         self.assertEqual(submission.urgency, "")
         for tag in URGENCY_TAGS.values():
             self.assertNotIn(tag, submission.zendesk_tags)
+
+    def test_config_controls_required_fields_and_rejects_other_configs_topics(self):
+        self.relay_zendesk.enable_os_field = True
+        self.relay_zendesk.enable_urgency_field = True
+        self.relay_zendesk.enable_deployment_fields = True
+        data = {
+            "email": self.user.email,
+            "category": "vpn-connection-issues",
+            "subject": "Connection trouble",
+            "description": "Cannot connect",
+        }
+        vpn_form = ZendeskForm(
+            data, product=self.vpn_product, zendesk_config=self.vpn_zendesk, user=self.user
+        )
+        relay_form = ZendeskForm(
+            data, product=self.vpn_product, zendesk_config=self.relay_zendesk, user=self.user
+        )
+        self.assertTrue(vpn_form.is_valid(), vpn_form.errors)
+        self.assertFalse(relay_form.is_valid())
+        self.assertEqual(
+            set(relay_form.errors),
+            {"category", "urgency", "update_channel", "policy_distribution"},
+        )
+
+        data.update(
+            category="None",
+            os="None",
+            urgency="normal",
+            update_channel="esr",
+            policy_distribution="policies_json",
+        )
+        relay_form = ZendeskForm(
+            data, product=self.vpn_product, zendesk_config=self.relay_zendesk, user=self.user
+        )
+        self.assertFalse(relay_form.is_valid())
+        self.assertEqual(set(relay_form.errors), {"category", "os"})
+
+        data.update(category="relay-email-forwarding", os="win64")
+        relay_form = ZendeskForm(
+            data, product=self.vpn_product, zendesk_config=self.relay_zendesk, user=self.user
+        )
+        self.assertTrue(relay_form.is_valid(), relay_form.errors)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_authenticated_submission_uses_account_email_and_validated_topics(self, mock_task):
+        topic = TopicFactory(products=[self.vpn_product])
+        selected = ZendeskTopicFactory(topic=topic, automation_tags=["accepted-automation"])
+        mapping = ZendeskTopicConfigurationFactory(
+            zendesk_config=self.vpn_zendesk, zendesk_topic=selected
+        )
+        form = ZendeskForm(
+            {
+                "email": "someone-else@example.com",
+                "category": selected.slug,
+                "subject": "Connection trouble",
+                "description": "Cannot connect",
+            },
+            product=self.vpn_product,
+            zendesk_config=self.vpn_zendesk,
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        mapping.delete()
+        selected.automation_tags = ["changed-automation"]
+        selected.save()
+
+        ticket = form.send(self.user)
+
+        self.assertEqual(ticket.email, self.user.email)
+        self.assertIn("accepted-automation", ticket.zendesk_tags)
+        self.assertEqual(ticket.accepted_context["selected_topic_id"], topic.pk)
+        self.assertEqual(
+            ticket.accepted_context["automation_tags"][str(topic.pk)], ["accepted-automation"]
+        )
+
+    def test_text_fields_must_fit_the_saved_ticket(self):
+        for field in ("subject", "country"):
+            with self.subTest(field=field):
+                form = ZendeskForm(
+                    {
+                        "category": "vpn-connection-issues",
+                        "subject": "Connection trouble",
+                        "description": "Cannot connect",
+                        field: "x" * 256,
+                    },
+                    product=self.vpn_product,
+                    zendesk_config=self.vpn_zendesk,
+                    user=self.user,
+                )
+                self.assertFalse(form.is_valid())
+                self.assertEqual(set(form.errors), {field})
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_disabled_fields_drop_submitted_values(self, mock_task):
+        for value in ("invalid-choice", "critical"):
+            with self.subTest(value=value):
+                form = ZendeskForm(
+                    {
+                        "email": self.user.email,
+                        "category": "vpn-connection-issues",
+                        "subject": "Connection trouble",
+                        "description": "Cannot connect",
+                        "os": "win64",
+                        "urgency": value,
+                        "update_channel": "esr",
+                        "policy_distribution": "policies_json",
+                    },
+                    product=self.vpn_product,
+                    zendesk_config=self.vpn_zendesk,
+                    user=self.user,
+                )
+                self.assertTrue(form.is_valid(), form.errors)
+                ticket = form.send(self.user)
+                for field in ("os", "urgency", "update_channel", "policy_distribution"):
+                    self.assertEqual(getattr(ticket, field), "")
+                self.assertFalse(any(tag.startswith("seg-") for tag in ticket.zendesk_tags))

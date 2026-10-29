@@ -74,6 +74,11 @@ PERIODIC_TASKS_ALL = {
         "task": "kitsune.customercare.tasks.adopt_chat_tickets",
         "schedule": crontab(minute="45"),
     },
+    # Daily at 08:30 UTC, shortly after the site's day (US/Pacific) rolls over.
+    "revoke_expired_chat": {
+        "task": "kitsune.customercare.tasks.revoke_expired_chat",
+        "schedule": crontab(hour="8", minute="30"),
+    },
     # Questions Periodic Tasks
     # Daily at 04:00.
     "auto_archive_old_questions": {

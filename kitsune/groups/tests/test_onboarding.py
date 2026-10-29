@@ -5,11 +5,10 @@ from unittest.mock import patch
 import requests
 from django.contrib.auth.models import AnonymousUser, Group
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, connections, transaction
+from django.db import connections, transaction
 from django.http import Http404
 from django.test import TransactionTestCase, override_settings
 from pyquery import PyQuery as pq
-from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RatelimitBudgetExceeded
 
 from kitsune.customercare.models import ZendeskOrganization
@@ -22,30 +21,14 @@ from kitsune.groups.onboarding import (
     create_enterprise_company,
     get_enterprise_company,
     get_enterprise_root,
-    get_enterprise_support_config,
 )
 from kitsune.groups.tests import GroupProfileFactory
-from kitsune.products.models import SupportOrganization
-from kitsune.products.tests import (
-    ProductFactory,
-    ProductSupportConfigFactory,
-    SupportOrganizationFactory,
-    ZendeskConfigFactory,
-)
-from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
 
 
-@override_settings(
-    ENTERPRISE_GROUP_SLUG="enterprise-root",
-    READ_ONLY=False,
-    ZENDESK_CHAT_WIDGET_KEY="test-widget",
-    ZENDESK_CHAT_SIGNING_KEY_ID="test-key",
-    ZENDESK_CHAT_SIGNING_SECRET="test-secret",
-)
-@override_switch("zendesk-chat", active=True)
+@override_settings(ENTERPRISE_GROUP_SLUG="enterprise-root", READ_ONLY=False)
 class EnterpriseCompanyTests(TestCase):
     def setUp(self):
         super().setUp()
@@ -56,10 +39,6 @@ class EnterpriseCompanyTests(TestCase):
         )
         self.actor = UserFactory(is_staff=True)
         self.root.leaders.add(self.actor)
-        self.product = ProductFactory(slug=self.root.slug)
-        self.config = ProductSupportConfigFactory(
-            product=self.product, zendesk_config=ZendeskConfigFactory()
-        )
 
     def _child(self, parent=None, **kwargs):
         return GroupProfile.objects.add_child(
@@ -68,16 +47,11 @@ class EnterpriseCompanyTests(TestCase):
 
     def _create(self, **kwargs):
         return create_enterprise_company(
-            **{
-                "actor": self.actor,
-                "name": "Example Company",
-                "include_live_chat": False,
-                **kwargs,
-            }
+            **{"actor": self.actor, "name": "Example Company", **kwargs}
         )
 
     def _assert_rejected_creation(self, exception=ValidationError, **kwargs):
-        models = (Group, GroupProfile, SupportOrganization, ZendeskOrganization)
+        models = (Group, GroupProfile, ZendeskOrganization)
         before = [model.objects.count() for model in models]
         with self.assertRaises(exception) as raised:
             self._create(**kwargs)
@@ -95,7 +69,7 @@ class EnterpriseCompanyTests(TestCase):
             "kitsune.groups.onboarding.ZendeskClient.validate_organization",
             side_effect=AssertionError("Unlinked company creation must remain local"),
         ):
-            company = self._create(name="  Café Software  ", include_live_chat=True)
+            company = self._create(name="  Café Software  ")
 
         self.assertEqual(company.group.name, "Café Software")
         self.assertEqual(company.slug, "cafe-software")
@@ -105,9 +79,6 @@ class EnterpriseCompanyTests(TestCase):
         self.assertQuerySetEqual(company.visible_to_groups.all(), [allowed_group])
         self.assertFalse(company.group.user_set.exists())
         self.assertFalse(company.leaders.exists())
-        self.assertFalse(self.config.hybrid_support_groups.exists())
-        organization = SupportOrganization.objects.get(group=company.group, config=self.config)
-        self.assertTrue(organization.include_live_chat)
         mapping = ZendeskOrganization.objects.get(group_profile=company)
         self.assertIsNone(mapping.zendesk_id)
         self.assertIsNotNone(mapping.external_id)
@@ -135,10 +106,7 @@ class EnterpriseCompanyTests(TestCase):
                 self.assertFalse(can_onboard_enterprise(actor, self.root))
                 self._assert_rejected_creation(PermissionDenied, actor=actor)
                 with self.assertRaises(PermissionDenied):
-                    configure_enterprise_company(
-                        actor=actor, company=company, include_live_chat=True
-                    )
-        self.assertFalse(SupportOrganization.objects.filter(group=company.group).exists())
+                    configure_enterprise_company(actor=actor, company=company)
         self.assertFalse(ZendeskOrganization.objects.filter(group_profile=company).exists())
 
     def test_staff_superuser_needs_no_root_membership(self):
@@ -160,10 +128,7 @@ class EnterpriseCompanyTests(TestCase):
                 with self.assertRaises(Http404):
                     get_enterprise_company(self.root, pk=candidate.pk)
                 with self.assertRaises(Http404):
-                    configure_enterprise_company(
-                        actor=self.actor, company=candidate, include_live_chat=False
-                    )
-        self.assertFalse(SupportOrganization.objects.exists())
+                    configure_enterprise_company(actor=self.actor, company=candidate)
         self.assertFalse(ZendeskOrganization.objects.exists())
 
     def test_company_lookup_respects_sibling_visibility(self):
@@ -206,70 +171,6 @@ class EnterpriseCompanyTests(TestCase):
                 self.assertEqual(error.code, "configuration_error")
                 self._assert_rejected_creation(PermissionDenied, actor=UserFactory())
 
-    def test_missing_archived_or_ambiguous_product_refused(self):
-        self.product.slug = "unrelated-product"
-        self.product.save()
-        self._assert_rejected_creation()
-        self.product.slug = self.root.slug
-        self.product.is_archived = True
-        self.product.save()
-        self._assert_rejected_creation()
-        self.product.is_archived = False
-        self.product.save()
-        ProductFactory(slug=self.product.slug)
-        error = self._assert_rejected_creation()
-        self.assertEqual(error.code, "configuration_error")
-
-    def test_inactive_missing_and_forum_only_support_refused(self):
-        self.config.is_active = False
-        self.config.save()
-        self._assert_rejected_creation()
-        self.config.is_active = True
-        self.config.zendesk_config = None
-        self.config.forum_config = AAQConfigFactory()
-        self.config.save()
-        self._assert_rejected_creation()
-        self.config.delete()
-        self._assert_rejected_creation()
-
-    def test_subscription_only_support_refused_without_changing_configuration(self):
-        self.config.subscription_only = True
-        self.config.save()
-        error = self._assert_rejected_creation()
-        self.assertEqual(error.code, "configuration_error")
-        self.config.refresh_from_db()
-        self.assertTrue(self.config.subscription_only)
-
-    def test_support_configuration_full_validation_precedes_creation(self):
-        self.config.unsubscribed_redirect_product = ProductFactory()
-        self.config.save()
-        error = self._assert_rejected_creation()
-        self.assertEqual(error.code, "configuration_error")
-
-    def test_ticket_form_requires_positive_numeric_id(self):
-        zendesk = self.config.zendesk_config
-        for ticket_form_id in ("", " ", "0", "-12", "1.5", "invalid", "１２"):
-            with self.subTest(ticket_form_id=ticket_form_id):
-                zendesk.ticket_form_id = ticket_form_id
-                zendesk.save()
-                error = self._assert_rejected_creation()
-                self.assertEqual(error.code, "configuration_error")
-
-    def test_live_chat_requires_switch_and_each_deployment_setting(self):
-        with override_switch("zendesk-chat", active=False):
-            self._assert_rejected_creation(include_live_chat=True)
-            self.assertEqual(get_enterprise_support_config(include_live_chat=False), self.config)
-        for key in (
-            "ZENDESK_CHAT_WIDGET_KEY",
-            "ZENDESK_CHAT_SIGNING_KEY_ID",
-            "ZENDESK_CHAT_SIGNING_SECRET",
-        ):
-            with self.subTest(setting=key), override_settings(**{key: ""}):
-                self._assert_rejected_creation(include_live_chat=True)
-                self.assertEqual(
-                    get_enterprise_support_config(include_live_chat=False), self.config
-                )
-
     def test_invalid_names_and_generated_slugs_leave_no_company(self):
         for name in ("", " \t", "x" * 151, "x" * 81, "!!!", "中文"):
             with self.subTest(name=name):
@@ -292,55 +193,24 @@ class EnterpriseCompanyTests(TestCase):
     @override_settings(READ_ONLY=True)
     def test_read_only_refuses_creation_and_settings(self):
         company = self._child()
-        organization = SupportOrganizationFactory(config=self.config, group=company.group)
         self._assert_rejected_creation(PermissionDenied)
         with self.assertRaises(PermissionDenied):
-            configure_enterprise_company(actor=self.actor, company=company, include_live_chat=True)
-        organization.refresh_from_db()
-        self.assertFalse(organization.include_live_chat)
+            configure_enterprise_company(actor=self.actor, company=company)
         self.assertFalse(ZendeskOrganization.objects.filter(group_profile=company).exists())
 
-    def test_settings_reuse_company_and_preserve_unrelated_support(self):
+    def test_settings_preserve_company_identity_members_and_mapping(self):
         company = self._child()
         member = UserFactory(groups=[company.group])
         company.leaders.add(member)
-        other_config = ProductSupportConfigFactory(zendesk_config=ZendeskConfigFactory())
-        unrelated = SupportOrganizationFactory(
-            config=other_config, group=company.group, include_live_chat=True
-        )
         identity = (company.group_id, company.slug, company.path)
-        first = configure_enterprise_company(
-            actor=self.actor, company=company, include_live_chat=True
-        )
+        configure_enterprise_company(actor=self.actor, company=company)
         mapping = ZendeskOrganization.objects.get(group_profile=company)
-        second = configure_enterprise_company(
-            actor=self.actor, company=company, include_live_chat=False
-        )
-        self.assertEqual(first.pk, second.pk)
-        self.assertFalse(second.include_live_chat)
+        configure_enterprise_company(actor=self.actor, company=company)
         company.refresh_from_db()
         self.assertEqual((company.group_id, company.slug, company.path), identity)
         self.assertQuerySetEqual(company.group.user_set.all(), [member])
         self.assertQuerySetEqual(company.leaders.all(), [member])
-        unrelated.refresh_from_db()
-        self.assertTrue(unrelated.include_live_chat)
-        mapping.refresh_from_db()
         self.assertEqual(company.zendesk_organization.pk, mapping.pk)
-        self.assertFalse(self.config.hybrid_support_groups.exists())
-
-    def test_overlapping_support_configuration_rolls_back_creation(self):
-        SupportOrganizationFactory(config=self.config, group=self.root.group)
-        error = self._assert_rejected_creation()
-        self.assertEqual(error.code, "configuration_error")
-
-    def test_existing_department_support_prevents_parent_support(self):
-        company = self._child()
-        department = self._child(company)
-        SupportOrganizationFactory(config=self.config, group=department.group)
-        with self.assertRaises(ValidationError):
-            configure_enterprise_company(actor=self.actor, company=company, include_live_chat=True)
-        self.assertFalse(SupportOrganization.objects.filter(group=company.group).exists())
-        self.assertFalse(ZendeskOrganization.objects.filter(group_profile=company).exists())
 
     def test_canonical_remote_id_cannot_be_linked_to_second_company(self):
         with patch(
@@ -362,28 +232,19 @@ class EnterpriseCompanyTests(TestCase):
             "kitsune.groups.onboarding.ZendeskClient.validate_organization", return_value="123"
         ):
             configure_enterprise_company(
-                actor=self.actor,
-                company=company,
-                include_live_chat=True,
-                zendesk_organization_id="00123",
+                actor=self.actor, company=company, zendesk_organization_id="00123"
             )
         with patch(
             "kitsune.groups.onboarding.ZendeskClient.validate_organization", return_value="456"
         ):
             with self.assertRaises(ValidationError) as raised:
                 configure_enterprise_company(
-                    actor=self.actor,
-                    company=company,
-                    include_live_chat=False,
-                    zendesk_organization_id="456",
+                    actor=self.actor, company=company, zendesk_organization_id="456"
                 )
         self.assertEqual(
             raised.exception.error_dict["zendesk_organization_id"][0].code, "company_conflict"
         )
-        self.assertTrue(SupportOrganization.objects.get(group=company.group).include_live_chat)
-        configure_enterprise_company(
-            actor=self.actor, company=company, include_live_chat=False, zendesk_organization_id=""
-        )
+        configure_enterprise_company(actor=self.actor, company=company, zendesk_organization_id="")
         mapping.refresh_from_db()
         self.assertEqual(mapping.zendesk_id, "123")
         self.assertEqual(mapping.external_id, external_id)
@@ -391,13 +252,9 @@ class EnterpriseCompanyTests(TestCase):
             "kitsune.groups.onboarding.ZendeskClient.validate_organization",
             side_effect=AssertionError("An unchanged link must not require Zendesk availability"),
         ):
-            organization = configure_enterprise_company(
-                actor=self.actor,
-                company=company,
-                include_live_chat=True,
-                zendesk_organization_id="123",
+            configure_enterprise_company(
+                actor=self.actor, company=company, zendesk_organization_id="123"
             )
-        self.assertTrue(organization.include_live_chat)
 
     def test_canonical_id_replay_preserves_company_mapping(self):
         company = self._create()
@@ -408,17 +265,12 @@ class EnterpriseCompanyTests(TestCase):
         with patch(
             "kitsune.groups.onboarding.ZendeskClient.validate_organization", return_value="123"
         ):
-            organization = configure_enterprise_company(
-                actor=self.actor,
-                company=company,
-                include_live_chat=True,
-                zendesk_organization_id="00123",
+            configure_enterprise_company(
+                actor=self.actor, company=company, zendesk_organization_id="00123"
             )
         mapping.refresh_from_db()
         self.assertEqual(mapping.zendesk_id, "123")
         self.assertEqual(mapping.external_id, external_id)
-        self.assertEqual(organization.group, company.group)
-        self.assertTrue(organization.include_live_chat)
 
     def test_creation_rechecks_authorization_after_remote_validation(self):
         def validate_organization(_organization_id):
@@ -434,7 +286,6 @@ class EnterpriseCompanyTests(TestCase):
 
     def test_settings_recheck_link_after_remote_validation(self):
         company = self._child()
-        organization = SupportOrganizationFactory(config=self.config, group=company.group)
         mapping = ZendeskOrganization.objects.create(group_profile=company)
 
         def validate_organization(_organization_id):
@@ -447,18 +298,13 @@ class EnterpriseCompanyTests(TestCase):
         ):
             with self.assertRaises(ValidationError) as raised:
                 configure_enterprise_company(
-                    actor=self.actor,
-                    company=company,
-                    include_live_chat=True,
-                    zendesk_organization_id="123",
+                    actor=self.actor, company=company, zendesk_organization_id="123"
                 )
         self.assertEqual(
             raised.exception.error_dict["zendesk_organization_id"][0].code, "company_conflict"
         )
         mapping.refresh_from_db()
-        organization.refresh_from_db()
         self.assertEqual(mapping.zendesk_id, "456")
-        self.assertFalse(organization.include_live_chat)
 
     def test_remote_failures_are_safe_and_leave_no_partial_company(self):
         for error, code in (
@@ -480,28 +326,15 @@ class EnterpriseCompanyTests(TestCase):
 
     def test_failed_remote_validation_preserves_existing_settings(self):
         company = self._child()
-        organization = SupportOrganizationFactory(config=self.config, group=company.group)
         with patch(
             "kitsune.groups.onboarding.ZendeskClient.validate_organization",
             side_effect=requests.Timeout("private-provider-response"),
         ):
             with self.assertRaises(ValidationError):
                 configure_enterprise_company(
-                    actor=self.actor,
-                    company=company,
-                    include_live_chat=True,
-                    zendesk_organization_id="123",
+                    actor=self.actor, company=company, zendesk_organization_id="123"
                 )
-        organization.refresh_from_db()
-        self.assertFalse(organization.include_live_chat)
         self.assertFalse(ZendeskOrganization.objects.filter(group_profile=company).exists())
-
-    def test_unrelated_integrity_errors_are_not_misreported_as_conflicts(self):
-        with patch(
-            "kitsune.groups.onboarding.SupportOrganization.save",
-            side_effect=IntegrityError("unrelated constraint"),
-        ):
-            self._assert_rejected_creation(IntegrityError)
 
 
 @override_settings(
@@ -519,10 +352,6 @@ class EnterpriseCompanyConcurrencyTests(TransactionTestCase):
         )
         self.actor = UserFactory(is_staff=True)
         self.root.leaders.add(self.actor)
-        self.config = ProductSupportConfigFactory(
-            product=ProductFactory(slug=self.root.slug),
-            zendesk_config=ZendeskConfigFactory(),
-        )
 
     def test_remote_validation_does_not_block_hierarchy_or_company_locks(self):
         company = GroupProfile.objects.add_child(
@@ -566,7 +395,6 @@ class EnterpriseCompanyConcurrencyTests(TransactionTestCase):
                             created = create_enterprise_company(
                                 actor=self.actor,
                                 name="Remotely Linked Company",
-                                include_live_chat=False,
                                 zendesk_organization_id=organization_id,
                             )
                             linked_company = created
@@ -574,7 +402,6 @@ class EnterpriseCompanyConcurrencyTests(TransactionTestCase):
                             configure_enterprise_company(
                                 actor=self.actor,
                                 company=company,
-                                include_live_chat=False,
                                 zendesk_organization_id=organization_id,
                             )
                             linked_company = company
@@ -592,9 +419,7 @@ class EnterpriseCompanyConcurrencyTests(TransactionTestCase):
             try:
                 barrier.wait()
                 try:
-                    return create_enterprise_company(
-                        actor=self.actor, name=name, include_live_chat=False
-                    ).pk
+                    return create_enterprise_company(actor=self.actor, name=name).pk
                 except ValidationError as error:
                     return error.error_dict["name"][0].code
             finally:
@@ -608,7 +433,6 @@ class EnterpriseCompanyConcurrencyTests(TransactionTestCase):
         company = GroupProfile.objects.get(group__name__iexact="Concurrent Company")
         self.assertIn(company.pk, results)
         self.assertEqual(GroupProfile.objects.get_parent(company), self.root)
-        self.assertEqual(SupportOrganization.objects.get(config=self.config).group, company.group)
         self.assertEqual(ZendeskOrganization.objects.get().group_profile, company)
 
     def test_simultaneous_canonical_links_cannot_share_remote_organization(self):
@@ -632,7 +456,6 @@ class EnterpriseCompanyConcurrencyTests(TransactionTestCase):
                     configure_enterprise_company(
                         actor=self.actor,
                         company=company,
-                        include_live_chat=False,
                         zendesk_organization_id=organization_id,
                     )
                     return company.pk
@@ -655,7 +478,6 @@ class EnterpriseCompanyConcurrencyTests(TransactionTestCase):
         self.assertIn(mapping.group_profile_id, results)
         loser = next(company for company in companies if company.pk != mapping.group_profile_id)
         self.assertFalse(ZendeskOrganization.objects.filter(group_profile=loser).exists())
-        self.assertFalse(SupportOrganization.objects.filter(group=loser.group).exists())
 
 
 @override_settings(ENTERPRISE_GROUP_SLUG="enterprise-root")
@@ -667,10 +489,6 @@ class EnterpriseCompanyViewTests(TestCase):
         )
         self.actor = UserFactory(is_staff=True)
         self.root.leaders.add(self.actor)
-        self.config = ProductSupportConfigFactory(
-            product=ProductFactory(slug=self.root.slug),
-            zendesk_config=ZendeskConfigFactory(),
-        )
         self.company = GroupProfile.objects.add_child(
             self.root, create_kwargs={"group": GroupFactory(name="Existing Enterprise Company")}
         )
@@ -698,11 +516,6 @@ class EnterpriseCompanyViewTests(TestCase):
         self.assertEqual(company.visibility, GroupProfile.Visibility.PRIVATE)
         self.assertFalse(company.group.user_set.exists())
         self.assertFalse(company.leaders.exists())
-        self.assertFalse(
-            SupportOrganization.objects.get(
-                group=company.group, config=self.config
-            ).include_live_chat
-        )
         self.assertIsNone(company.zendesk_organization.zendesk_id)
 
     def test_creation_requires_name_even_with_forged_edit_mode(self):
@@ -713,7 +526,6 @@ class EnterpriseCompanyViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(pq(response.content)("#enterprise-company-form .form-error")), 1)
         self.assertEqual(GroupProfile.objects.count(), before)
-        self.assertFalse(SupportOrganization.objects.filter(config=self.config).exists())
 
     def test_nonstaff_root_leader_keeps_member_controls_but_cannot_onboard(self):
         self.actor.is_staff = False
@@ -753,7 +565,6 @@ class EnterpriseCompanyViewTests(TestCase):
             self.assertEqual(self.client.get(url).status_code, 404)
             self.assertEqual(self.client.post(url, {"name": "Forged Company"}).status_code, 404)
         self.assertEqual(GroupProfile.objects.count(), before)
-        self.assertFalse(SupportOrganization.objects.filter(config=self.config).exists())
         self.assertFalse(Group.objects.filter(name="Forged Company").exists())
 
     def test_duplicate_company_redisplays_form_without_partial_rows(self):
@@ -764,19 +575,10 @@ class EnterpriseCompanyViewTests(TestCase):
         self.assertEqual(pq(response.content)("#id_name").val(), self.company.group.name.upper())
         self.assertEqual(GroupProfile.objects.count(), before)
 
-    def test_missing_configuration_is_actionable_without_creating_company(self):
-        self.config.is_active = False
-        self.config.save()
-        response = self.client.post(self.create_url, {"name": "Unconfigured Company"})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(pq(response.content)("#enterprise-company-form [role=alert]")), 1)
-        self.assertFalse(Group.objects.filter(name="Unconfigured Company").exists())
-
     def test_existing_company_can_get_support_without_being_recreated(self):
         response = self.client.post(self.settings_url, {"zendesk_organization_id": ""})
         self.assertRedirects(response, self.company.get_absolute_url())
-        support = SupportOrganization.objects.get(group=self.company.group, config=self.config)
-        self.assertFalse(support.include_live_chat)
+        self.assertTrue(ZendeskOrganization.objects.filter(group_profile=self.company).exists())
         self.assertFalse(self.company.group.user_set.exists())
         page = self.client.get(self.company.get_absolute_url())
         self.assertEqual(

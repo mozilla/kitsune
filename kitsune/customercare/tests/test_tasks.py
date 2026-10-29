@@ -1,12 +1,13 @@
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from unittest.mock import Mock, call, patch
 
+from django.conf import settings
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import SupportTicket, accepted_context_for
 from kitsune.customercare.tasks import (
     adopt_chat_tickets,
     create_zendesk_user,
@@ -18,7 +19,7 @@ from kitsune.customercare.tasks import (
     update_zendesk_user,
     zendesk_submission_classifier,
 )
-from kitsune.customercare.tests import SupportTicketFactory
+from kitsune.customercare.tests import EnterpriseTicketFactory, SupportTicketFactory
 from kitsune.customercare.zendesk import CHAT_REVOKED_TAG
 from kitsune.groups.tests import EnterpriseInvitationFactory
 from kitsune.llm.spam.classifier import ModerationAction
@@ -39,7 +40,10 @@ from kitsune.users.tests import UserFactory
 class TagRevokedChatTicketsTests(TestCase):
     def test_tags_every_active_chat(self, mock_client):
         client = mock_client.return_value
-        client.get_active_chat_tickets.return_value = [Mock(id=46), Mock(id=15)]
+        client.get_active_chat_tickets.return_value = [
+            Mock(id=ticket_id, created_at="2020-01-01T00:00:00Z", tags=[])
+            for ticket_id in (46, 15)
+        ]
 
         tag_revoked_chat_tickets("789")
 
@@ -47,6 +51,32 @@ class TagRevokedChatTicketsTests(TestCase):
         self.assertEqual(
             client.add_ticket_tags.call_args_list,
             [call(46, [CHAT_REVOKED_TAG]), call(15, [CHAT_REVOKED_TAG])],
+        )
+
+    def test_scoped_revocation_spares_only_other_products_and_newer_conversations(
+        self, mock_client
+    ):
+        cutoff = timezone.now()
+        prefix = settings.ZENDESK_CHAT_PRODUCT_TAG_PREFIX
+        client = mock_client.return_value
+        client.get_active_chat_tickets.return_value = [
+            Mock(id=ticket_id, created_at=created_at.isoformat(), tags=tags)
+            for ticket_id, created_at, tags in (
+                (1, cutoff, [f"{prefix}thunderbird"]),
+                (2, cutoff, [f"{prefix}vpn"]),
+                (3, cutoff + timedelta(seconds=1), [f"{prefix}thunderbird"]),
+                (4, cutoff, [f"{prefix}thunderbird", CHAT_REVOKED_TAG]),
+                (5, cutoff, []),
+                (6, cutoff, [f"{prefix}thunderbird", f"{prefix}vpn"]),
+                (7, cutoff, [f"{prefix}vpn", f"{prefix}firefox"]),
+            )
+        ]
+
+        tag_revoked_chat_tickets("789", product_slugs=["thunderbird"], before=cutoff.isoformat())
+
+        self.assertEqual(
+            client.add_ticket_tags.call_args_list,
+            [call(ticket_id, [CHAT_REVOKED_TAG]) for ticket_id in (1, 5, 6, 7)],
         )
 
     @override_switch("zendesk-chat", active=False)
@@ -264,6 +294,59 @@ class ZendeskSubmissionClassifierTests(TestCase):
         mock_classify_spam.assert_called_once()
         mock_classify_topic.assert_called_once()
 
+    @patch("kitsune.llm.support.classifiers._handle_product_reassignment", return_value=None)
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    def test_accepted_context_decides_the_spam_check(
+        self, mock_topic, mock_spam, mock_reassignment
+    ):
+        mock_topic.return_value = {"topic_result": {}}
+        mock_spam.return_value = {"spam_result": {"is_spam": False}}
+        self.zendesk_config.skip_spam_moderation = False
+        product_ticket = SupportTicketFactory(
+            product=self.product,
+            accepted_context=accepted_context_for(self.product, self.zendesk_config),
+        )
+        enterprise_ticket = EnterpriseTicketFactory(
+            coverage__product=self.product, coverage__zendesk_config=self.zendesk_config
+        )
+        for ticket, live_skip_spam, spam_checked in (
+            (product_ticket, True, True),
+            (enterprise_ticket, False, False),
+        ):
+            with self.subTest(origin=ticket.origin):
+                self.zendesk_config.skip_spam_moderation = live_skip_spam
+                self.zendesk_config.save()
+                mock_spam.reset_mock()
+                mock_reassignment.reset_mock()
+
+                classify_zendesk_submission(ticket)
+
+                self.assertEqual(mock_spam.called, spam_checked)
+                self.assertEqual(mock_reassignment.called, spam_checked)
+
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    @patch("kitsune.llm.support.classifiers.classify_product")
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    def test_accepted_product_reassignment_survives_removed_live_config(
+        self, mock_spam, mock_product, mock_topic
+    ):
+        self.zendesk_config.skip_spam_moderation = False
+        ticket = SupportTicketFactory(
+            product=self.product,
+            accepted_context=accepted_context_for(self.product, self.zendesk_config),
+        )
+        self.support_config.delete()
+        other_product = ProductFactory(title="Other product")
+        mock_spam.return_value = {"spam_result": {"is_spam": False}}
+        mock_product.return_value = {"product_result": {"product": other_product.title}}
+
+        result = classify_zendesk_submission(ticket)
+
+        self.assertEqual(result["action"], ModerationAction.NOT_SPAM)
+        self.assertEqual(result["product_result"], {"product": other_product.title})
+        mock_topic.assert_not_called()
+
     @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
     @patch("kitsune.llm.support.classifiers.get_taxonomy")
     @patch("kitsune.llm.support.classifiers.classify_spam")
@@ -293,6 +376,31 @@ class ZendeskSubmissionClassifierTests(TestCase):
 
         payload = mock_classify_topic.call_args.args[0]
         self.assertEqual(payload["selected_topic"], "Edit account details")
+
+    @patch("kitsune.llm.support.classifiers._handle_product_reassignment", return_value=None)
+    @patch("kitsune.llm.support.classifiers.get_taxonomy", return_value={})
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    def test_accepted_topic_hint_survives_remapping(
+        self, mock_classify_topic, mock_classify_spam, *mocks
+    ):
+        mock_classify_spam.return_value = {"spam_result": {"is_spam": False}}
+        mock_classify_topic.return_value = {"topic_result": {"topic": "Deployment"}}
+        accepted_topic = TopicFactory(title="Deployment")
+        ZendeskTopicFactory(slug="deploy-help", topic=TopicFactory(title="Billing"))
+        submission = SupportTicketFactory(
+            product=self.product,
+            category="deploy-help",
+            accepted_context={
+                **accepted_context_for(self.product, self.zendesk_config),
+                "selected_topic_id": accepted_topic.pk,
+            },
+        )
+
+        classify_zendesk_submission(submission)
+
+        payload = mock_classify_topic.call_args.args[0]
+        self.assertEqual(payload["selected_topic"], "Deployment")
 
     @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
     @patch("kitsune.llm.support.classifiers.get_taxonomy")

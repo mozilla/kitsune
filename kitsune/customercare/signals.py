@@ -1,11 +1,17 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
+from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
 
-from kitsune.customercare.tasks import revoke_chat_tickets, update_zendesk_user
+from kitsune.customercare.tasks import (
+    chat_product_slugs,
+    had_chat,
+    revoke_chat_tickets,
+    revoke_company_chat_tickets,
+    update_zendesk_user,
+)
 from kitsune.groups.models import GroupProfile
-from kitsune.products.models import ProductSupportConfig, SupportOrganization
+from kitsune.products.models import Product, SupportContract, SupportCoverage
 from kitsune.users.models import Profile
 
 
@@ -37,30 +43,11 @@ def on_save_update_zendesk_user(sender, instance, update_fields=None, **kwargs):
         pass
 
 
-def grants_chat(group_profiles) -> bool:
-    """Whether any of these groups is a support organization's group with live chat."""
-    return group_profiles.filter(group__support_organizations__include_live_chat=True).exists()
-
-
-def tag_chat_tickets_of_org_members(org):
-    """Queue tagging for everyone in the organization's group or its subgroups."""
-    group_profile = GroupProfile.objects.filter(group_id=org.group_id).first()
-    if group_profile is None:
-        return
-    members = (
-        User.objects.filter(groups__profile__in=GroupProfile.objects.get_tree(group_profile))
-        .select_related("profile")
-        .distinct()
-    )
-    for user in members:
-        revoke_chat_tickets(user)
-
-
 @receiver(pre_delete, sender=User, dispatch_uid="customercare.signals.on_user_deletion.User")
 def on_user_deletion(sender, instance, **kwargs):
     # Django sends this inside the delete's transaction, before the profile is gone.
-    if grants_chat(GroupProfile.objects.containing(instance)):
-        revoke_chat_tickets(instance)
+    if had_chat(GroupProfile.objects.containing(instance)):
+        revoke_chat_tickets(instance, using=kwargs.get("using"))
 
 
 @receiver(pre_save, sender=User, dispatch_uid="customercare.signals.check_deactivation.User")
@@ -77,147 +64,70 @@ def check_deactivation(sender, instance, update_fields=None, **kwargs):
 @receiver(post_save, sender=User, dispatch_uid="customercare.signals.on_deactivation.User")
 def on_deactivation(sender, instance, **kwargs):
     # Queued after the save, so the task can't read the user before it's saved.
-    if getattr(instance, "_is_being_deactivated", False) and grants_chat(
+    if getattr(instance, "_is_being_deactivated", False) and had_chat(
         GroupProfile.objects.containing(instance)
     ):
-        revoke_chat_tickets(instance)
-
-
-@receiver(
-    m2m_changed,
-    sender=User.groups.through,
-    dispatch_uid="customercare.signals.on_group_removal.User.groups",
-)
-def on_group_removal(sender, instance, action, reverse, pk_set, **kwargs):
-    # reverse means the change came from the group's side, as in group.user_set.remove().
-    if action == "post_remove":
-        if reverse and grants_chat(GroupProfile.objects.containing_groups([instance.pk])):
-            users = User.objects.filter(pk__in=pk_set).select_related("profile")
-        elif not reverse and grants_chat(GroupProfile.objects.containing_groups(pk_set)):
-            users = [instance]
-        else:
-            return
-    elif action == "pre_clear":
-        # Only now, before the clear, can we still see who or what is being cleared.
-        if reverse and grants_chat(GroupProfile.objects.containing_groups([instance.pk])):
-            users = instance.user_set.select_related("profile")
-        elif not reverse and grants_chat(GroupProfile.objects.containing(instance)):
-            users = [instance]
-        else:
-            return
-    else:
-        return
-
-    for user in users:
-        revoke_chat_tickets(user)
-
-
-@receiver(pre_delete, sender=Group, dispatch_uid="customercare.signals.on_group_deletion.Group")
-def on_group_deletion(sender, instance, **kwargs):
-    # A chat organization's own group takes the organization with it, and
-    # on_organization_deletion covers everyone in that case.
-    if instance.support_organizations.filter(include_live_chat=True).exists():
-        return
-    if grants_chat(GroupProfile.objects.containing_groups([instance.pk])):
-        for user in instance.user_set.select_related("profile"):
-            revoke_chat_tickets(user)
+        revoke_chat_tickets(instance, using=kwargs.get("using"))
 
 
 @receiver(
     pre_save,
-    sender=SupportOrganization,
-    dispatch_uid="customercare.signals.check_organization_change.SupportOrganization",
+    sender=SupportContract,
+    dispatch_uid="customercare.signals.check_chat_change.SupportContract",
 )
-def check_organization_change(sender, instance, **kwargs):
-    # Checked before the save, while the database still has the old organization.
-    instance._old_org_losing_chat = None
+@receiver(
+    pre_save,
+    sender=SupportCoverage,
+    dispatch_uid="customercare.signals.check_chat_change.SupportCoverage",
+)
+def check_chat_change(sender, instance, **kwargs):
+    # Checked before the save, while the database still has the old contract or coverage.
+    instance._chat_before = None
     if instance.pk is None:
         return
-    old = SupportOrganization.objects.filter(pk=instance.pk, include_live_chat=True).first()
-    if old is None:
-        return
-    # Losing chat, or moving to another group or product, both take chat away from
-    # the people it covered.
-    if (
-        not instance.include_live_chat
-        or instance.group_id != old.group_id
-        or instance.config_id != old.config_id
-    ):
-        instance._old_org_losing_chat = old
+    contract_lookup = (
+        "support_contracts" if sender is SupportContract else "support_contracts__coverages"
+    )
+    company = GroupProfile.objects.filter(**{contract_lookup: instance.pk}).first()
+    if company is not None:
+        instance._chat_before = (company, chat_product_slugs(company, include_expired=True))
 
 
 @receiver(
     post_save,
-    sender=SupportOrganization,
-    dispatch_uid="customercare.signals.on_organization_change.SupportOrganization",
+    sender=SupportContract,
+    dispatch_uid="customercare.signals.on_chat_change.SupportContract",
 )
-def on_organization_change(sender, instance, **kwargs):
-    # Queued after the save, so the tasks can't read the organization before it's saved.
-    if old := getattr(instance, "_old_org_losing_chat", None):
-        tag_chat_tickets_of_org_members(old)
-
-
 @receiver(
-    pre_delete,
-    sender=SupportOrganization,
-    dispatch_uid="customercare.signals.on_organization_deletion.SupportOrganization",
+    post_save,
+    sender=SupportCoverage,
+    dispatch_uid="customercare.signals.on_chat_change.SupportCoverage",
 )
-def on_organization_deletion(sender, instance, **kwargs):
-    if instance.include_live_chat:
-        tag_chat_tickets_of_org_members(instance)
+def on_chat_change(sender, instance, **kwargs):
+    # Compared per company, so a product another contract still covers with chat keeps it.
+    if before := getattr(instance, "_chat_before", None):
+        company, products = before
+        if lost_products := products - chat_product_slugs(company):
+            revoke_company_chat_tickets(company, lost_products, using=kwargs.get("using"))
 
 
-@receiver(
-    pre_save,
-    sender=ProductSupportConfig,
-    dispatch_uid="customercare.signals.check_config_change.ProductSupportConfig",
-)
-def check_config_change(sender, instance, **kwargs):
-    # Checked before the save, while the database still has the old config.
-    instance._is_losing_chat = False
-    if instance.pk is None:
-        return
-    old = ProductSupportConfig.objects.filter(
-        pk=instance.pk, is_active=True, zendesk_config__isnull=False
-    ).first()
-    if old is None:
-        return
-    # Switching off, dropping Zendesk, or requiring a subscription can all take chat
-    # away from the people its organizations covered.
-    instance._is_losing_chat = (
-        not instance.is_active
-        or instance.zendesk_config_id is None
-        or (instance.subscription_only and not old.subscription_only)
+@receiver(pre_save, sender=Product, dispatch_uid="customercare.signals.check_archival.Product")
+def check_archival(sender, instance, update_fields=None, **kwargs):
+    instance._is_being_archived = (
+        instance.is_archived
+        and instance.pk is not None
+        and (update_fields is None or "is_archived" in update_fields)
+        and Product.objects.filter(pk=instance.pk, is_archived=False).exists()
     )
 
 
-@receiver(
-    post_save,
-    sender=ProductSupportConfig,
-    dispatch_uid="customercare.signals.on_config_change.ProductSupportConfig",
-)
-def on_config_change(sender, instance, **kwargs):
-    # Queued after the save, so the tasks can't read the config before it's saved.
-    if getattr(instance, "_is_losing_chat", False):
-        for org in instance.support_organizations.filter(include_live_chat=True):
-            tag_chat_tickets_of_org_members(org)
-
-
-@receiver(
-    m2m_changed,
-    sender=Profile.products.through,
-    dispatch_uid="customercare.signals.on_subscription_removal.Profile.products",
-)
-def on_subscription_removal(sender, instance, action, reverse, pk_set, **kwargs):
-    # Both the subscription webhook and the login sync remove products this way.
-    if action != "post_remove" or reverse:
-        return
-    # Only products whose live chat requires a subscription matter.
-    if ProductSupportConfig.objects.filter(
-        product__in=pk_set,
-        is_active=True,
-        zendesk_config__isnull=False,
-        subscription_only=True,
-        support_organizations__include_live_chat=True,
-    ).exists():
-        revoke_chat_tickets(instance.user)
+@receiver(post_save, sender=Product, dispatch_uid="customercare.signals.on_archival.Product")
+def on_archival(sender, instance, **kwargs):
+    if getattr(instance, "_is_being_archived", False):
+        chat_coverages = SupportCoverage.objects.in_effect().filter(
+            product=instance, includes_chat=True
+        )
+        for company in GroupProfile.objects.filter(
+            pk__in=chat_coverages.values("contract__company")
+        ):
+            revoke_company_chat_tickets(company, {instance.slug}, using=kwargs.get("using"))

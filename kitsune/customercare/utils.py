@@ -1,5 +1,4 @@
 import logging
-from dataclasses import dataclass
 from typing import Any
 
 import waffle
@@ -11,19 +10,19 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
-from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import (
+    MissingTicketContext,
+    SupportTicket,
+    TicketHeld,
+    ZendeskOrganization,
+    accepted_context_for,
+)
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
-from kitsune.products.models import (
-    Product,
-    ProductSupportConfig,
-    SupportOrganization,
-    Topic,
-    ZendeskTopic,
-)
+from kitsune.products.models import Product, Topic
+from kitsune.products.routing import resolve_chat, resolve_enterprise_support
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
 
@@ -31,79 +30,6 @@ log = logging.getLogger("k.customercare")
 
 # The channel of comments in which Zendesk records a live chat's messages, in batches.
 CHAT_TRANSCRIPT_CHANNEL = "chat_transcript"
-
-
-@dataclass(frozen=True)
-class ChatEligibility:
-    org: SupportOrganization | None = None
-    reason: str | None = None
-    conflicting_orgs: tuple[SupportOrganization, ...] = ()
-
-    @property
-    def eligible(self) -> bool:
-        return self.org is not None
-
-    @property
-    def disabled_site_wide(self) -> bool:
-        return self.reason == "chat_is_disabled"
-
-
-def resolve_chat_eligibility(user, product: Product) -> ChatEligibility:
-    """Require one chat-enabled organization so ticket ownership is unambiguous."""
-    if not waffle.switch_is_active("zendesk-chat"):
-        return ChatEligibility(reason="chat_is_disabled")
-
-    if not (
-        settings.ZENDESK_CHAT_WIDGET_KEY
-        and settings.ZENDESK_CHAT_SIGNING_SECRET
-        and settings.ZENDESK_CHAT_SIGNING_KEY_ID
-    ):
-        return ChatEligibility(reason="chat_not_configured")
-
-    if not (user and user.is_authenticated):
-        return ChatEligibility(reason="not_authenticated")
-    if not user.is_active:
-        return ChatEligibility(reason="inactive_user")
-    if product.is_archived:
-        return ChatEligibility(reason="product_unavailable")
-
-    config = ProductSupportConfig.objects.active_for(product)
-    if config is None or config.zendesk_config is None:
-        return ChatEligibility(reason="no_ticketing_support")
-    if not config.admits(user):
-        return ChatEligibility(reason="subscription_required")
-
-    organizations = list(config.support_organizations.containing(user))
-    chat_orgs = tuple(org for org in organizations if org.include_live_chat)
-    match chat_orgs:
-        case []:
-            reason = "org_without_chat" if organizations else "no_entitled_org"
-            return ChatEligibility(reason=reason)
-        case [org]:
-            return ChatEligibility(org=org)
-        case _:
-            return ChatEligibility(reason="ambiguous_multi_org", conflicting_orgs=chat_orgs)
-
-
-def resolve_org_group(submitter, product: Product) -> GroupProfile | None:
-    config = ProductSupportConfig.objects.active_for(product)
-    if config is None or config.zendesk_config is None:
-        return None
-    return (
-        GroupProfile.objects.containing(submitter)
-        .filter(group__support_organizations__config=config)
-        .order_by("-depth", "slug")
-        .first()
-    )
-
-
-def resolve_user_org_group(user) -> GroupProfile | None:
-    return (
-        GroupProfile.objects.containing(user)
-        .filter(group__support_organizations__isnull=False)
-        .order_by("-depth", "slug")
-        .first()
-    )
 
 
 def fetch_zendesk_ticket_data(zendesk_ticket_id: str):
@@ -180,31 +106,50 @@ def sync_ticket_from_zendesk(ticket: SupportTicket) -> SupportTicket:
     return ticket
 
 
-def create_support_ticket(user, product: Product, *, zd_ticket=None, **fields) -> SupportTicket:
+def create_support_ticket(
+    user, product: Product, *, zd_ticket=None, coverage=None, accepted_context=None, **fields
+) -> SupportTicket:
     """Create a SupportTicket.
 
     Without zd_ticket, it's created, saved as pending, and classified, after which it's
     sent to Zendesk. With zd_ticket, since Zendesk already has the ticket, we create a
     copy of it. Calling again with the same zd_ticket returns that copy.
     """
+    # tasks imports utils to process and send tickets.
     from kitsune.customercare.tasks import zendesk_submission_classifier
 
     if "email" not in fields:
         fields["email"] = user.email
 
     if zd_ticket is None:
-        org_group = resolve_org_group(user, product)
+        if not accepted_context:
+            raise ValueError("A new support ticket requires its accepted context")
+    elif ticket := SupportTicket.objects.filter(zendesk_ticket_id=str(zd_ticket.id)).first():
+        return ticket
     else:
-        # The organization that let the person chat, if they still can.
-        eligibility = resolve_chat_eligibility(user, product)
-        if eligibility.reason == "chat_not_configured":
+        # Adoption runs without a request, so it looks up the person's companies itself.
+        chat = resolve_chat(
+            lambda: resolve_enterprise_support(
+                user, product, list(GroupProfile.objects.enterprise_companies(user)[:2])
+            )
+        )
+        if chat.reason == "chat_not_configured":
             raise ImproperlyConfigured(
                 "Chat requires a widget key, and a signing key and its secret."
             )
-        org = eligibility.org
-        org_group = GroupProfile.objects.filter(group_id=org.group_id).first() if org else None
+        coverage = chat.coverage
+        accepted_context = (
+            accepted_context_for(product, coverage.zendesk_config, coverage) if coverage else {}
+        )
 
-    fields.update(user=user, product=product, org_group=org_group)
+    fields.update(
+        user=user,
+        product=product,
+        origin=SupportTicket.Origin.ENTERPRISE if coverage else SupportTicket.Origin.PRODUCT,
+        coverage=coverage,
+        org_group=coverage.contract.company if coverage else None,
+        accepted_context=accepted_context,
+    )
 
     if zd_ticket is None:
         ticket = SupportTicket.objects.create(
@@ -282,6 +227,10 @@ def adopt_chat_ticket(zd_ticket) -> SupportTicket | None:
     return create_support_ticket(user, product, zd_ticket=zd_ticket)
 
 
+def system_tags(tags) -> list[str]:
+    return [tag for tag in tags if tag in ("loginless_ticket", "stage") or tag.startswith("seg-")]
+
+
 def generate_classification_tags(submission: SupportTicket, result: dict[str, Any]) -> list[str]:
     """
     Generate Zendesk tags from LLM classification results.
@@ -312,26 +261,17 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
     if not topic_title or topic_title == "Undefined" or not topic:
         return ["undefined", "general", *tags]
 
+    tags.extend(topic.tier_tags)
     try:
-        tags.extend(topic.tier_tags)
+        tags.extend(submission.context["automation_tags"].get(str(topic.pk), []))
+    except MissingTicketContext:
+        pass
 
-        # Automation tags from the ZendeskTopic linked to this Topic for this product.
-        zd_topic = ZendeskTopic.objects.filter(
-            topic=topic,
-            configurations__zendesk_config__support_configs__product=submission.product,
-            configurations__zendesk_config__support_configs__is_active=True,
-        ).first()
-        if zd_topic:
-            tags.extend(zd_topic.automation_tags)
-
-        # Legacy bucket lives on the t1 root Topic; fall back to "general" if unset.
-        root = topic
-        while root.parent_id is not None:
-            root = root.parent
-        tags.append(root.legacy_tag or "general")
-
-    except Exception:
-        return ["undefined", *tags]
+    # Legacy bucket lives on the t1 root Topic; fall back to "general" if unset.
+    root = topic
+    while root.parent_id is not None:
+        root = root.parent
+    tags.append(root.legacy_tag or "general")
 
     return tags
 
@@ -352,36 +292,49 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
         )
         return False
 
-    zendesk_product = (
-        ZENDESK_PRODUCT_SLUGS.get(submission.product.slug, submission.product.slug)
-        if submission.product.slug == "mozilla-vpn"
-        else submission.product.slug
-    )
-
-    support_config = ProductSupportConfig.objects.get(product=submission.product, is_active=True)
-    zendesk_config = support_config.zendesk_config
-    ticket_form_id = zendesk_config.ticket_form_id
-
-    client = ZendeskClient()
-    ticket_fields = {
-        "subject": submission.subject,
-        "description": submission.description,
-        "category": submission.category,
-        "email": submission.email,
-        "os": submission.os,
-        "country": submission.country,
-        "update_channel": submission.update_channel,
-        "policy_distribution": submission.policy_distribution,
-        "urgency": submission.urgency,
-        "product": zendesk_product,
-        "product_title": submission.product.title,
-        "zendesk_tags": submission.zendesk_tags,
-        "ticket_form_id": int(ticket_form_id),
-        "brand_id": zendesk_config.brand_id,
-    }
-
     try:
-        ticket_audit = client.create_ticket(submission.user, ticket_fields)
+        context = submission.context
+        ticket_fields = {
+            "subject": submission.subject,
+            "description": submission.description,
+            "category": submission.category,
+            "email": submission.email,
+            "os": submission.os,
+            "country": submission.country,
+            "update_channel": submission.update_channel,
+            "policy_distribution": submission.policy_distribution,
+            "urgency": submission.urgency,
+            "product": context["product_value"],
+            "product_title": submission.product.title,
+            "zendesk_tags": submission.zendesk_tags,
+            "ticket_form_id": int(context["form_id"]),
+            "brand_id": int(context["brand_id"]) if context["brand_id"] else None,
+            "origin": submission.origin,
+        }
+        if submission.origin == SupportTicket.Origin.ENTERPRISE:
+            organization_id = (
+                ZendeskOrganization.objects.filter(
+                    external_id=context["company"]["external_id"],
+                    group_profile_id=submission.org_group_id,
+                )
+                .values_list("zendesk_id", flat=True)
+                .first()
+            )
+            if not organization_id:
+                raise TicketHeld("The company has no linked Zendesk organization")
+            user = submission.user
+            companies = GroupProfile.objects.enterprise_companies(user).values_list(
+                "pk", flat=True
+            )
+            if not (user and user.is_active) or list(companies[:2]) != [submission.org_group_id]:
+                raise TicketHeld("The requester is no longer a member of the accepted company")
+            # Only membership synchronization may create enterprise requesters in Zendesk.
+            if not user.profile.zendesk_id:
+                raise TicketHeld(
+                    "The requester has not been provisioned in the company's Zendesk organization"
+                )
+            ticket_fields["organization_id"] = organization_id
+        ticket_audit = ZendeskClient().create_ticket(submission.user, ticket_fields)
         submission.zendesk_ticket_id = str(ticket_audit.ticket.id)
         submission.submission_status = SupportTicket.STATUS_SENT
         submission.save(update_fields=["zendesk_ticket_id", "submission_status"])
@@ -389,6 +342,11 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
     except APIException as e:
         error_str = str(e)
         if "UserSuspended" in error_str or "RecordInvalid" in error_str:
+            if submission.origin == SupportTicket.Origin.ENTERPRISE:
+                error_class = "UserSuspended" if "UserSuspended" in error_str else "RecordInvalid"
+                return _handle_zendesk_exception(
+                    TicketHeld(f"Zendesk refused the ticket ({error_class})")
+                )
             submission.submission_status = SupportTicket.STATUS_REJECTED
             submission.save(update_fields=["submission_status"])
             return False
@@ -466,18 +424,11 @@ def process_zendesk_classification_result(
                 if topic:
                     submission.topic = topic
 
-            # Preserve system tags
-            system_tags = [
-                tag
-                for tag in submission.zendesk_tags
-                if tag in ["loginless_ticket", "stage"] or tag.startswith("seg-")
-            ]
-
             # Generate classification tags
             classification_tags = generate_classification_tags(submission, result)
 
             # Replace with system tags + classification tags
-            submission.zendesk_tags = system_tags + classification_tags
+            submission.zendesk_tags = system_tags(submission.zendesk_tags) + classification_tags
             submission.save(update_fields=["zendesk_tags", "topic"])
 
             send_support_ticket_to_zendesk(submission)

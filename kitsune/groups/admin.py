@@ -3,15 +3,20 @@ from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.utils import get_deleted_objects
 from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest
 from django.utils.text import capfirst
+from django.utils.translation import gettext_lazy as _lazy
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
 from kitsune.groups.membership import (
+    company_organization_ids,
+    enterprise_profiles,
     lock_enterprise_hierarchy,
+    queue_chat_revocation,
+    queue_enterprise_zendesk_sync,
     validate_enterprise_group_memberships,
 )
 from kitsune.groups.models import GroupProfile
@@ -32,6 +37,29 @@ class GroupProfileAdminForm(movenodeform_factory(GroupProfile)):  # type: ignore
         return cleaned
 
     def save(self, commit=True):
+        if self.instance.pk and "group" in self.changed_data:
+            using = self.instance._state.db or "default"
+            if enterprise_profiles(using).filter(pk=self.instance.pk).exists():
+                # Treebeard saves the reassigned group before save_model or its move guard.
+                memberships = User.groups.through.objects.using(using)
+                old_group_id = self.initial["group"]
+                member_ids = memberships.filter(group_id=old_group_id).values_list(
+                    "user_id", flat=True
+                )
+                # The remaining-groups check can't see that new-group members stay in the company.
+                staying_ids = memberships.filter(group=self.cleaned_data["group"]).values(
+                    "user_id"
+                )
+                queue_chat_revocation(
+                    member_ids.exclude(user_id__in=staying_ids), (old_group_id,), using=using
+                )
+                queue_enterprise_zendesk_sync(
+                    member_ids,
+                    using=using,
+                    removed_organization_ids=company_organization_ids(
+                        (old_group_id,), using=using
+                    ),
+                )
         reference_node = self.cleaned_data.get("treebeard_ref_node")
         position = self.cleaned_data.get("treebeard_position")
         if (
@@ -142,6 +170,11 @@ class GroupProfileAdmin(TreeAdmin):
 
         super().save_model(request, obj, form, change)
         if "group" in form.changed_data:
+            if change and obj.support_contracts.exists():
+                raise ValidationError(
+                    _lazy("Companies with support contracts cannot change their group."),
+                    code="contracted_company",
+                )
             validate_enterprise_group_memberships(obj)
 
     def save_related(self, request, form, formsets, change):

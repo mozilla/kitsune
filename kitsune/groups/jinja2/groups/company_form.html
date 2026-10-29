@@ -1,5 +1,5 @@
 {% extends "groups/base.html" %}
-{% from "includes/common_macros.html" import field, checkbox with context %}
+{% from "includes/common_macros.html" import field with context %}
 {% set title = _('Create company') if creating else _('Support settings | {group}')|f(group=profile.group.name) %}
 {% set crumbs = group_breadcrumbs(profile) + [(None, _('Create company') if creating else _('Support settings'))] %}
 
@@ -17,7 +17,6 @@
       {% if creating %}
         {{ field(form.name) }}
       {% endif %}
-      {{ checkbox(form.include_live_chat) }}
       {{ field(form.zendesk_organization_id) }}
       <div class="form-actions">
         <button type="submit" class="sumo-button primary-button">

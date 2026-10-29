@@ -1,5 +1,4 @@
 import requests
-import waffle
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -20,10 +19,11 @@ from kitsune.customercare.zendesk import (
 )
 from kitsune.groups.membership import lock_enterprise_hierarchy, validate_enterprise_memberships
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
-from kitsune.products.models import Product, ProductSupportConfig, SupportOrganization
 from kitsune.users.identity import lock_account_email
 from kitsune.users.models import Profile
 from kitsune.users.utils import normalize_username, suggest_username
+
+ZENDESK_PROVIDER_ERRORS = (APIException, ZenpyException, requests.RequestException)
 
 
 def get_enterprise_root(*, for_update=False) -> GroupProfile:
@@ -62,61 +62,6 @@ def get_enterprise_company(root, *, viewer=None, for_update=False, **lookup) -> 
     if for_update:
         profiles = profiles.select_for_update(of=("self",))
     return get_object_or_404(profiles, **lookup)
-
-
-def get_enterprise_support_config(*, include_live_chat=False) -> ProductSupportConfig:
-    try:
-        product = Product.objects.get(slug=settings.ENTERPRISE_GROUP_SLUG, is_archived=False)
-        config = ProductSupportConfig.objects.select_related("zendesk_config").get(
-            product=product, is_active=True, zendesk_config__isnull=False
-        )
-    except (
-        Product.DoesNotExist,
-        Product.MultipleObjectsReturned,
-        ProductSupportConfig.DoesNotExist,
-        ProductSupportConfig.MultipleObjectsReturned,
-    ):
-        raise ValidationError(
-            _(
-                "Ask an administrator to configure one active enterprise product with Zendesk support."
-            ),
-            code="configuration_error",
-        ) from None
-
-    if config.subscription_only:
-        raise ValidationError(
-            _(
-                "Enterprise support must not require a product subscription. Contact an administrator."
-            ),
-            code="configuration_error",
-        )
-    ticket_form_id = config.zendesk_config.ticket_form_id.strip()
-    if not (ticket_form_id.isascii() and ticket_form_id.isdecimal() and int(ticket_form_id) > 0):
-        raise ValidationError(
-            _(
-                "Ask an administrator to set a valid Zendesk ticket form ID for enterprise support."
-            ),
-            code="configuration_error",
-        )
-    try:
-        config.full_clean()
-    except ValidationError:
-        raise ValidationError(
-            _("The enterprise support configuration is invalid. Contact an administrator."),
-            code="configuration_error",
-        ) from None
-
-    if include_live_chat and not (
-        waffle.switch_is_active("zendesk-chat")
-        and settings.ZENDESK_CHAT_WIDGET_KEY
-        and settings.ZENDESK_CHAT_SIGNING_KEY_ID
-        and settings.ZENDESK_CHAT_SIGNING_SECRET
-    ):
-        raise ValidationError(
-            _("Live chat is not configured. Disable live chat or contact an administrator."),
-            code="configuration_error",
-        )
-    return config
 
 
 def require_onboarding_allowed(actor, root):
@@ -170,7 +115,7 @@ def invitation_settings_valid() -> bool:
     )
 
 
-def require_invitation_account(*, user, profile, company, config, invitation=None):
+def require_invitation_account(*, user, profile, company, invitation=None):
     """Check account eligibility and company ownership without changing the account."""
     if (
         profile is None
@@ -200,16 +145,6 @@ def require_invitation_account(*, user, profile, company, config, invitation=Non
             code="account_conflict",
         )
     validate_enterprise_memberships([user.pk], [company.group_id])
-    if (
-        GroupProfile.objects.containing(user)
-        .filter(group__support_organizations__config=config)
-        .exclude(group_id=company.group_id)
-        .exists()
-    ):
-        raise ValidationError(
-            _("This account already belongs to another support organization."),
-            code="company_conflict",
-        )
 
 
 def get_prepared_resources(invitation, *, root, for_update=False):
@@ -220,28 +155,13 @@ def get_prepared_resources(invitation, *, root, for_update=False):
             code="resource_missing",
         )
     company = get_enterprise_company(root, pk=invitation.company_id, for_update=for_update)
-    supports = SupportOrganization.objects.all()
     mappings = ZendeskOrganization.objects.all()
     users = User.all_users.all()
     profiles = Profile.all_profiles.all()
     if for_update:
-        supports = supports.select_for_update()
         mappings = mappings.select_for_update()
         users = users.select_for_update()
         profiles = profiles.select_for_update()
-    support = supports.filter(
-        group_id=company.group_id,
-        config__is_active=True,
-        config__product__slug=settings.ENTERPRISE_GROUP_SLUG,
-    ).first()
-    config = get_enterprise_support_config(
-        include_live_chat=bool(support and support.include_live_chat)
-    )
-    if support is None or support.config_id != config.pk:
-        raise ValidationError(
-            _("This company's support settings are incomplete. Contact an administrator."),
-            code="configuration_error",
-        )
     mapping = mappings.filter(group_profile=company).first()
     if mapping is None:
         raise ValidationError(
@@ -261,13 +181,7 @@ def get_prepared_resources(invitation, *, root, for_update=False):
             _("The account profile prepared for this invitation no longer exists."),
             code="resource_missing",
         )
-    require_invitation_account(
-        user=user,
-        profile=profile,
-        company=company,
-        config=config,
-        invitation=invitation,
-    )
+    require_invitation_account(user=user, profile=profile, company=company, invitation=invitation)
     try:
         if mapping.zendesk_id:
             canonical_zendesk_id(mapping.zendesk_id)
@@ -310,41 +224,6 @@ def require_unique_company_identity(name, slug):
         )
 
 
-def save_support_organization(company, config, include_live_chat):
-    organization = (
-        SupportOrganization.objects.select_for_update()
-        .filter(config=config, group=company.group)
-        .first()
-    )
-    if organization is None:
-        organization = SupportOrganization(config=config, group=company.group)
-    organization.include_live_chat = include_live_chat
-    try:
-        organization.full_clean()
-    except ValidationError:
-        raise ValidationError(
-            _(
-                "These support settings conflict with the existing organization configuration. "
-                "Contact an administrator."
-            ),
-            code="configuration_error",
-        ) from None
-    try:
-        with transaction.atomic():
-            organization.save()
-    except IntegrityError:
-        if (
-            organization.pk is None
-            and SupportOrganization.objects.filter(config=config, group=company.group).exists()
-        ):
-            raise ValidationError(
-                _("This company's support settings changed. Reload the page and try again."),
-                code="company_conflict",
-            ) from None
-        raise
-    return organization
-
-
 def validate_zendesk_organization_id(zendesk_organization_id, *, company=None):
     requested_id = (zendesk_organization_id or "").strip()
     if not requested_id:
@@ -372,7 +251,7 @@ def validate_zendesk_organization_id(zendesk_organization_id, *, company=None):
                 )
             }
         ) from None
-    except APIException, ZenpyException, requests.RequestException:
+    except ZENDESK_PROVIDER_ERRORS:
         raise ValidationError(
             {
                 "zendesk_organization_id": ValidationError(
@@ -424,11 +303,10 @@ def link_zendesk_organization(company, canonical_id):
 
 
 def create_enterprise_company(
-    *, actor, name: str, include_live_chat: bool, zendesk_organization_id: str | None = None
+    *, actor, name: str, zendesk_organization_id: str | None = None
 ) -> GroupProfile:
     root = get_enterprise_root()
     require_onboarding_allowed(actor, root)
-    get_enterprise_support_config(include_live_chat=include_live_chat)
     name = name.strip()
     if not name or len(name) > Group._meta.get_field("name").max_length:
         raise ValidationError(
@@ -457,7 +335,6 @@ def create_enterprise_company(
     with lock_enterprise_hierarchy(exclusive=True):
         root = get_enterprise_root(for_update=True)
         require_onboarding_allowed(actor, root)
-        config = get_enterprise_support_config(include_live_chat=include_live_chat)
         require_unique_company_identity(name, slug)
         try:
             with transaction.atomic():
@@ -468,28 +345,21 @@ def create_enterprise_company(
         except IntegrityError:
             require_unique_company_identity(name, slug)
             raise
-        save_support_organization(company, config, include_live_chat)
         link_zendesk_organization(company, canonical_id)
         return company
 
 
-def configure_enterprise_company(
-    *, actor, company, include_live_chat: bool, zendesk_organization_id: str | None = None
-) -> SupportOrganization:
+def configure_enterprise_company(*, actor, company, zendesk_organization_id: str | None = None):
     root = get_enterprise_root()
     require_onboarding_allowed(actor, root)
     company = get_enterprise_company(root, pk=company.pk)
-    get_enterprise_support_config(include_live_chat=include_live_chat)
     canonical_id = validate_zendesk_organization_id(zendesk_organization_id, company=company)
 
     with lock_enterprise_hierarchy():
         root = get_enterprise_root()
         require_onboarding_allowed(actor, root)
         company = get_enterprise_company(root, pk=company.pk, for_update=True)
-        config = get_enterprise_support_config(include_live_chat=include_live_chat)
-        organization = save_support_organization(company, config, include_live_chat)
         link_zendesk_organization(company, canonical_id)
-        return organization
 
 
 def invite_enterprise_user(
@@ -537,24 +407,12 @@ def invite_enterprise_user(
                     _("This email already has an invitation to another company."),
                     code="company_conflict",
                 )
-            support = (
-                SupportOrganization.objects.select_for_update()
-                .filter(
-                    group=company.group,
-                    config__is_active=True,
-                    config__product__slug=settings.ENTERPRISE_GROUP_SLUG,
-                )
-                .first()
-            )
-            config = get_enterprise_support_config(
-                include_live_chat=bool(support and support.include_live_chat)
-            )
             mapping = (
                 ZendeskOrganization.objects.select_for_update()
                 .filter(group_profile=company)
                 .first()
             )
-            if invitation and (support is None or mapping is None):
+            if invitation and mapping is None:
                 raise ValidationError(
                     _("This company's support settings are incomplete. Contact an administrator."),
                     code="configuration_error",
@@ -579,11 +437,7 @@ def invite_enterprise_user(
             if user is not None:
                 profile = Profile.all_profiles.select_for_update().filter(user=user).first()
                 require_invitation_account(
-                    user=user,
-                    profile=profile,
-                    company=company,
-                    config=config,
-                    invitation=invitation,
+                    user=user, profile=profile, company=company, invitation=invitation
                 )
                 if invitation:
                     return invitation
@@ -598,8 +452,6 @@ def invite_enterprise_user(
                     if accepted:
                         return accepted
 
-            if support is None:
-                save_support_organization(company, config, False)
             if mapping is None:
                 ZendeskOrganization.objects.create(group_profile=company)
 

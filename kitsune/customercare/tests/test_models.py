@@ -1,16 +1,28 @@
-from django.contrib.auth.models import AnonymousUser, Group
+from datetime import timedelta
+
+from django.contrib.auth.models import AnonymousUser
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import (
+    MissingTicketContext,
+    SupportTicket,
+    ZendeskOrganization,
+    accepted_context_for,
+)
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import GroupProfile
+from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
-    SupportOrganizationFactory,
+    SupportContractFactory,
+    SupportCoverageFactory,
+    TopicFactory,
     ZendeskConfigFactory,
+    ZendeskTopicConfigurationFactory,
 )
+from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -68,6 +80,86 @@ class SupportTicketModelTests(TestCase):
         str_repr = str(ticket)
         self.assertIn("Test Subject", str_repr)
         self.assertIn("processing_failed", str_repr)
+
+
+class AcceptedTicketContextTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory(slug="mozilla-vpn")
+        self.config = ZendeskConfigFactory(ticket_form_id="42", brand_id="17")
+        ProductSupportConfigFactory(product=self.product, zendesk_config=self.config)
+        self.topic = TopicFactory(products=[self.product])
+        # Created out of slug order: the first topic by slug supplies the automation tags.
+        for slug, automation_tags in (
+            ("z-last", ["other-automation"]),
+            ("a-first", ["vpn-automation"]),
+        ):
+            ZendeskTopicConfigurationFactory(
+                zendesk_config=self.config,
+                zendesk_topic__topic=self.topic,
+                zendesk_topic__slug=slug,
+                zendesk_topic__automation_tags=automation_tags,
+            )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.config, zendesk_topic__automation_tags=["unlinked"]
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_topic__topic=self.topic, zendesk_topic__automation_tags=["other-config"]
+        )
+
+    def test_product_context_snapshots_config_and_vpn_alias(self):
+        self.assertEqual(
+            accepted_context_for(self.product, self.config),
+            {
+                "form_id": "42",
+                "brand_id": "17",
+                "product_value": "firefox-private-network-vpn",
+                "skip_spam": False,
+                "automation_tags": {str(self.topic.pk): ["vpn-automation"]},
+            },
+        )
+        self.product.slug = "mozilla-account"
+        self.config.brand_id = ""
+        self.config.skip_spam_moderation = True
+        context = accepted_context_for(self.product, self.config)
+        self.assertEqual(context["product_value"], "mozilla-account")
+        self.assertEqual(context["brand_id"], "")
+        self.assertTrue(context["skip_spam"])
+
+    def test_enterprise_context_snapshots_coverage_and_company(self):
+        coverage = SupportCoverageFactory(
+            product=self.product,
+            zendesk_config=self.config,
+            zendesk_product_value="enterprise-vpn",
+        )
+        company = coverage.contract.company
+        context = accepted_context_for(self.product, self.config, coverage)
+        self.assertEqual(context["product_value"], "enterprise-vpn")
+        self.assertTrue(context["skip_spam"])
+        self.assertEqual(context["coverage_id"], coverage.pk)
+        self.assertEqual(
+            context["contract"], {"id": coverage.contract_id, "name": coverage.contract.name}
+        )
+        self.assertEqual(
+            context["company"],
+            {
+                "external_id": str(
+                    ZendeskOrganization.objects.get(group_profile=company).external_id
+                ),
+                "name": company.group.name,
+            },
+        )
+        self.assertEqual(context, accepted_context_for(self.product, self.config, coverage))
+
+    def test_missing_live_zendesk_config_raises_missing_context(self):
+        config = ProductSupportConfigFactory(
+            product=ProductFactory(), forum_config=AAQConfigFactory(), zendesk_config=None
+        )
+        ticket = SupportTicketFactory(product=config.product)
+        with self.assertRaisesMessage(MissingTicketContext, "active Zendesk config"):
+            ticket.context
+        config.delete()
+        with self.assertRaisesMessage(MissingTicketContext, "active Zendesk config"):
+            ticket.context
 
 
 class PublicCommentsTests(TestCase):
@@ -161,165 +253,103 @@ class PublicCommentsTests(TestCase):
 
 
 class AccessibleToTests(TestCase):
-    """
-    Tree layout:
-        firefox-enterprise (root, not org)
-        ├── company1   (org root)
-        │   ├── company1.IT
-        │   └── company1.marketing
-        ├── company2   (org root)
-        └── company3   (no org)
-    """
-
     def setUp(self):
-        self.product = ProductFactory()
-        zd_config = ZendeskConfigFactory(name="prod-zd")
-        self.support_config = ProductSupportConfigFactory(
-            product=self.product, zendesk_config=zd_config
+        self.company = EnterpriseCompanyFactory()
+        self.department = DepartmentFactory(company=self.company)
+        self.other_company = EnterpriseCompanyFactory()
+        self.root = GroupProfile.objects.get_parent(self.company)
+        self.foreign_group = DepartmentFactory(company=GroupProfileFactory())
+        # History never consults coverage: one company's contract expired, the other has none.
+        today = timezone.localdate()
+        SupportContractFactory(
+            company=self.company,
+            starts_on=today - timedelta(days=60),
+            ends_on=today - timedelta(days=1),
         )
 
-        root_group = Group.objects.create(name="firefox-enterprise")
-        self.root = GroupProfile.objects.add_root(
-            create_kwargs={"group": root_group, "slug": "firefox-enterprise"}
+        self.owner = self.member(self.company)
+        self.dept_member = self.member(self.department)
+        self.other_member = self.member(self.other_company)
+        self.company_ticket = SupportTicketFactory(user=self.owner, org_group=self.company)
+        self.department_ticket = SupportTicketFactory(
+            user=self.dept_member, org_group=self.department
+        )
+        self.other_ticket = SupportTicketFactory(
+            user=self.other_member, org_group=self.other_company
+        )
+        self.legacy_owner = UserFactory()
+        self.personal_ticket = SupportTicketFactory(user=self.legacy_owner)
+        self.root_ticket = SupportTicketFactory(user=self.legacy_owner, org_group=self.root)
+        self.foreign_ticket = SupportTicketFactory(
+            user=self.legacy_owner, org_group=self.foreign_group
         )
 
-        c1_group = Group.objects.create(name="company1")
-        self.c1 = GroupProfile.objects.add_child(
-            self.root, create_kwargs={"group": c1_group, "slug": "company1"}
-        )
-        SupportOrganizationFactory(config=self.support_config, group=c1_group)
+    def member(self, *profiles):
+        user = UserFactory()
+        user.groups.add(*(profile.group for profile in profiles))
+        return user
 
-        c2_group = Group.objects.create(name="company2")
-        self.c2 = GroupProfile.objects.add_child(
-            self.root, create_kwargs={"group": c2_group, "slug": "company2"}
-        )
-        SupportOrganizationFactory(config=self.support_config, group=c2_group)
+    def leader(self, profile):
+        user = UserFactory()
+        profile.leaders.add(user)
+        return user
 
-        c3_group = Group.objects.create(name="company3")
-        self.c3 = GroupProfile.objects.add_child(
-            self.root, create_kwargs={"group": c3_group, "slug": "company3"}
-        )
+    def test_audience_is_keyed_on_the_owning_enterprise_group(self):
+        all_tickets = {
+            self.company_ticket,
+            self.department_ticket,
+            self.other_ticket,
+            self.personal_ticket,
+            self.root_ticket,
+            self.foreign_ticket,
+        }
+        for persona, user, expected in (
+            ("anonymous", AnonymousUser(), set()),
+            ("none", None, set()),
+            ("staff", UserFactory(is_staff=True), all_tickets),
+            ("owner", self.owner, {self.company_ticket}),
+            ("company teammate", self.member(self.company), {self.company_ticket}),
+            ("department member", self.dept_member, {self.company_ticket, self.department_ticket}),
+            (
+                "department teammate",
+                self.member(self.department),
+                {self.company_ticket, self.department_ticket},
+            ),
+            ("company leader", self.leader(self.company), {self.company_ticket}),
+            ("department leader", self.leader(self.department), {self.department_ticket}),
+            (
+                "root leader",
+                self.leader(self.root),
+                {self.company_ticket, self.department_ticket, self.other_ticket},
+            ),
+            ("root-only member", self.member(self.root), set()),
+            ("foreign root leader", self.leader(self.foreign_group.get_parent()), set()),
+            ("other company member", self.other_member, {self.other_ticket}),
+            ("foreign group member", self.member(self.foreign_group), set()),
+            (
+                "owner of personal and legacy tickets",
+                self.legacy_owner,
+                {self.personal_ticket, self.root_ticket, self.foreign_ticket},
+            ),
+        ):
+            with self.subTest(persona=persona):
+                self.assertEqual(set(SupportTicket.objects.accessible_to(user)), expected)
 
-        it_group = Group.objects.create(name="company1.IT")
-        self.c1_it = GroupProfile.objects.add_child(
-            self.c1, create_kwargs={"group": it_group, "slug": "company1-it"}
-        )
-        mkt_group = Group.objects.create(name="company1.marketing")
-        self.c1_mkt = GroupProfile.objects.add_child(
-            self.c1, create_kwargs={"group": mkt_group, "slug": "company1-marketing"}
-        )
-
-        self.alice = UserFactory(username="alice")  # in company1.IT
-        self.alice.groups.add(it_group)
-        self.bob = UserFactory(username="bob")  # in company1.marketing
-        self.bob.groups.add(mkt_group)
-        self.carol = UserFactory(username="carol")  # in company2
-        self.carol.groups.add(c2_group)
-        self.dave = UserFactory(username="dave")  # no enterprise group
-        self.mallory = UserFactory(username="mallory")  # root moderator
-        self.root.leaders.add(self.mallory)
-
-        self.alice_ticket = SupportTicketFactory(
-            user=self.alice, product=self.product, org_group=self.c1
-        )
-        self.bob_ticket = SupportTicketFactory(
-            user=self.bob, product=self.product, org_group=self.c1
-        )
-        self.carol_ticket = SupportTicketFactory(
-            user=self.carol, product=self.product, org_group=self.c2
-        )
-        self.dave_ticket = SupportTicketFactory(user=self.dave, product=self.product)
-
-    def test_anonymous_sees_nothing(self):
-        self.assertFalse(SupportTicket.objects.accessible_to(AnonymousUser()).exists())
-
-    def test_none_user_sees_nothing(self):
-        self.assertFalse(SupportTicket.objects.accessible_to(None).exists())
-
-    def test_staff_sees_everything(self):
-        staff = UserFactory(is_staff=True)
-        accessible = set(SupportTicket.objects.accessible_to(staff).values_list("id", flat=True))
-        self.assertEqual(
-            accessible,
-            {self.alice_ticket.id, self.bob_ticket.id, self.carol_ticket.id, self.dave_ticket.id},
-        )
-
-    def test_member_sees_own_and_subtree_tickets(self):
-        """alice (company1.IT) sees her own + bob's (company1.marketing) via company1 org."""
-        accessible = set(
-            SupportTicket.objects.accessible_to(self.alice).values_list("id", flat=True)
-        )
-        self.assertEqual(accessible, {self.alice_ticket.id, self.bob_ticket.id})
-
-    def test_member_does_not_see_other_company(self):
-        """alice (company1) cannot see carol's (company2) ticket."""
-        accessible = set(
-            SupportTicket.objects.accessible_to(self.alice).values_list("id", flat=True)
-        )
-        self.assertNotIn(self.carol_ticket.id, accessible)
-
-    def test_non_org_user_sees_only_own(self):
-        accessible = set(
-            SupportTicket.objects.accessible_to(self.dave).values_list("id", flat=True)
-        )
-        self.assertEqual(accessible, {self.dave_ticket.id})
-
-    def test_org_leader_sees_own_org_but_not_descendant_org(self):
-        self.c1.leaders.add(self.dave)
-        SupportOrganizationFactory(config=self.support_config, group=self.c1_it.group)
-        SupportTicketFactory(user=self.alice, product=self.product, org_group=self.c1_it)
-
-        accessible = set(
-            SupportTicket.objects.accessible_to(self.dave).values_list("id", flat=True)
-        )
-        self.assertEqual(
-            accessible, {self.alice_ticket.id, self.bob_ticket.id, self.dave_ticket.id}
-        )
-
-    def test_root_member_sees_only_own_tickets(self):
-        self.dave.groups.add(self.root.group)
-
-        accessible = set(
-            SupportTicket.objects.accessible_to(self.dave).values_list("id", flat=True)
-        )
-        self.assertEqual(accessible, {self.dave_ticket.id})
-
-    def test_root_moderator_sees_only_orgs_in_own_tree(self):
-        other_group = Group.objects.create(name="other-enterprise")
-        other_root = GroupProfile.objects.add_root(
-            create_kwargs={"group": other_group, "slug": "other-enterprise"}
-        )
-        SupportOrganizationFactory(config=self.support_config, group=other_group)
-        SupportTicketFactory(user=self.dave, product=self.product, org_group=other_root)
-
-        accessible = set(
-            SupportTicket.objects.accessible_to(self.mallory).values_list("id", flat=True)
-        )
-        self.assertEqual(
-            accessible, {self.alice_ticket.id, self.bob_ticket.id, self.carol_ticket.id}
-        )
-
-    def test_subtree_teammate_can_view_but_cannot_reply(self):
-        """bob can view alice's ticket via the company1 org, but only alice may reply."""
-        self.assertIn(
-            self.alice_ticket.id,
-            SupportTicket.objects.accessible_to(self.bob).values_list("id", flat=True),
-        )
-        self.assertTrue(self.alice_ticket.can_reply(self.alice))
-        self.assertFalse(self.alice_ticket.can_reply(self.bob))
-
-    def test_root_moderator_cannot_reply(self):
-        """Moderation grants visibility, not the right to reply as the owner."""
-        self.assertFalse(self.alice_ticket.can_reply(self.mallory))
-
-    def test_anonymous_cannot_reply(self):
-        self.assertFalse(self.alice_ticket.can_reply(AnonymousUser()))
-        self.assertFalse(self.alice_ticket.can_reply(None))
+    def test_only_the_owner_can_reply(self):
+        for user, can_reply in (
+            (self.owner, True),
+            (self.member(self.company), False),
+            (self.leader(self.root), False),
+            (AnonymousUser(), False),
+            (None, False),
+        ):
+            with self.subTest(user=user):
+                self.assertEqual(self.company_ticket.can_reply(user), can_reply)
 
     def test_not_even_the_owner_can_reply_to_a_chat(self):
         """Replies never reach the widget, so a chat takes none at all."""
-        self.alice_ticket.zd_channel = SupportTicket.ZD_CHANNEL_MESSAGING
-        self.assertFalse(self.alice_ticket.can_reply(self.alice))
+        self.company_ticket.zd_channel = SupportTicket.ZD_CHANNEL_MESSAGING
+        self.assertFalse(self.company_ticket.can_reply(self.owner))
 
 
 class IsSyncableTests(TestCase):

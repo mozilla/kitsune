@@ -27,9 +27,12 @@ from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyExce
 from kitsune.customercare.forms import SupportTicketReplyForm
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import create_zendesk_user, process_zendesk_update
-from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
+from kitsune.customercare.utils import (
+    generate_classification_tags,
+    sync_ticket_from_zendesk,
+    system_tags,
+)
 from kitsune.customercare.zendesk import ZendeskClient
-from kitsune.groups.models import GroupProfile
 from kitsune.groups.templatetags.jinja_helpers import group_breadcrumbs
 from kitsune.journal.models import Record
 from kitsune.products.models import Product, Topic
@@ -98,15 +101,6 @@ def chat_jwt(request, product_slug):
                 CHAT_JOURNAL_SRC,
                 f"{user_info} is not eligible for chat for {product_slug}: {eligibility.reason}",
             )
-        if eligibility.conflicting_orgs:
-            # Separate entries keep long org slugs within the journal's message limit.
-            for slug in GroupProfile.objects.filter(
-                group_id__in=[org.group_id for org in eligibility.conflicting_orgs]
-            ).values_list("slug", flat=True):
-                Record.objects.info(
-                    CHAT_JOURNAL_SRC,
-                    f"{eligibility.reason} for user #{user.id}, product {product_slug}: org {slug}",
-                )
         return HttpResponse(status=403)
 
     # Once saved, the zendesk_id lets later account changes, like a new email, reach Zendesk.
@@ -282,7 +276,7 @@ def ticket_detail(request, username, ticket_id):
     # Determine the proper breadcrumbs.
     crumbs = [(None, ticket.subject)]
     is_owner = request.user.id == ticket.user_id
-    has_group = bool(ticket.org_group)
+    has_group = bool(ticket.org_group) and ticket.org_group.is_enterprise()
 
     show_group_crumbs = False
     if has_group:
@@ -338,13 +332,13 @@ def update_topic(request, ticket_id):
     ticket.save(update_fields=["topic"])
 
     # Regenerate tags from new topic
-    system_tags = [
-        tag for tag in ticket.zendesk_tags if tag in ["loginless_ticket", "stage", "other"]
-    ]
+    kept_tags = system_tags(ticket.zendesk_tags)
+    if "other" in ticket.zendesk_tags:
+        kept_tags.append("other")
     classification_tags = generate_classification_tags(
         ticket, {"topic_result": {"topic": new_topic.title}}
     )
-    ticket.zendesk_tags = system_tags + classification_tags
+    ticket.zendesk_tags = kept_tags + classification_tags
     ticket.save(update_fields=["zendesk_tags"])
 
     return JsonResponse({"updated_topic": pgettext("DB: products.Topic.title", new_topic.title)})

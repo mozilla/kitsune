@@ -48,9 +48,9 @@
 
 {% macro support_callout(product=None, aaq_context=None, extra_class=None) %}
 {% set is_ticketed = (aaq_context.current_support_type == 'zendesk') if aaq_context else False %}
-{% set is_enterprise = (product.slug == settings.ENTERPRISE_GROUP_SLUG) if product else False %}
+{% set is_enterprise = (product.slug == settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG) if product else False %}
 {% set enterprise_logged_out_url = "https://www.firefox.com/en-US/browsers/enterprise/contact/?utm_source=sumo-announcement" %}
-{% if product and has_support_config and not settings.READ_ONLY %}
+{% if product and has_support_action and not settings.READ_ONLY %}
   <section class="support-callouts mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
     <div class="card card--ribbon is-inverse heading-is-one-line">
       <div class="card--details">
@@ -105,14 +105,14 @@
 {% if not settings.READ_ONLY %}
   {% if product in professional_support_products %}
     {{ professional_support_section(product=product, extra_class=extra_class) }}
-  {% elif professional_support_products %}
-    {{ professional_support_banner(professional_support_products[0], extra_class=extra_class) }}
+  {% else %}
+    {{ professional_support_banner(extra_class=extra_class) }}
   {% endif %}
 {% endif %}
 {%- endmacro %}
 
-{% macro professional_support_banner(support_product, extra_class=None) %}
-{% if not settings.READ_ONLY %}
+{% macro professional_support_banner(extra_class=None) %}
+{% if support_company and not settings.READ_ONLY %}
   <section class="support-callouts pro-support-banner mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
     <div class="card card--ribbon is-pro-support heading-is-one-line">
       <div class="card--details">
@@ -125,21 +125,23 @@
               </g>
             </g>
           </svg>
-          {# L10n: A header, displayed to users whose organization has professional support. Attention: This is a brand name that should not be translated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
-          {{ _("Firefox Professional Support") }}
+          {# L10n: A header, displayed to members of a company that has dedicated support from Mozilla. #}
+          {{ _("Your company’s support") }}
         </h3>
         <p class="card--desc">
-          {# L10n: Displayed to users whose organization has professional support. The button below leads to their support page. #}
-          {{ _("Visit your organization’s dedicated support page to contact our team and access your support services.") }}
+          {# L10n: Displayed to members of a company that has dedicated support from Mozilla. The button below leads to the support section of their company's page. #}
+          {{ _("Visit your company’s support page to contact our team and access your support services.") }}
         </p>
+        {# An explicit link_url stops analytics.js from sending the href, which names the company. #}
         <a class="sumo-button primary-button button-lg"
-          href="{{ url('products.product', support_product.slug) }}"
+          href="{{ url('groups.profile', support_company.slug) }}#your-support"
           data-event-name="link_click"
           data-event-parameters='{
             "link_name": "pro-support-banner.support-page",
-            "link_detail": "{{ support_product.slug }}"
+            "link_detail": "your-support",
+            "link_url": "#your-support"
           }'>
-          {# L10n: A button that leads to the user's Firefox Professional Support page. #}
+          {# L10n: A button that leads to the support section of the user's company page. #}
           {{ _("Access Support") }}
         </a>
       </div>
@@ -149,6 +151,7 @@
 {%- endmacro %}
 
 {% macro professional_support_section(product, extra_class=None) %}
+{% set is_enterprise_product = product.slug == settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG %}
   <section class="get-support mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
     <h2 class="sumo-page-subheading">{{ _('Get help') }}</h2>
     <div class="get-support--grid">
@@ -163,7 +166,7 @@
             </svg>
           </div>
           <h3 class="get-support--title">
-            <a href="{{ url('questions.aaq_step3', product_slug=product.slug) | urlparams(support_type=SUPPORT_TYPE_ZENDESK) }}"
+            <a href="{{ url('questions.aaq_step3', product_slug=product.slug) }}"
               data-event-name="link_click"
               data-event-parameters='{
                 "link_name": "pro-support-section.contact-support",
@@ -171,8 +174,13 @@
               }'>{{ _('Contact support') }}</a>
           </h3>
         </div>
+        {% if is_enterprise_product %}
         {# L10n: Attention: Firefox Professional Support is a brand name that should not be translated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
         <p class="get-support--desc">{{ _("Get dedicated technical assistance from our Firefox Professional Support team.") }}</p>
+        {% else %}
+        {# L10n: Displayed on product pages to members of a company that has dedicated support from Mozilla for the product. #}
+        <p class="get-support--desc">{{ _("Get dedicated technical assistance from our support team.") }}</p>
+        {% endif %}
       </div>
       {% if getting_started_topic %}
       <div class="get-support--item">
@@ -195,10 +203,16 @@
               }'>{{ _('Get started') }}</a>
           </h3>
         </div>
+        {% if is_enterprise_product %}
         {# L10n: Attention: Firefox Professional Support is a brand name that should not be translated or transliterated. For more details, see https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark #}
         <p class="get-support--desc">{{ _("Learn more about what’s included in Firefox Professional Support.") }}</p>
+        {% else %}
+        {# L10n: Describes a link to the getting started articles of a product. {product} is the product name. #}
+        <p class="get-support--desc">{{ _("Learn how to get started with {product}.")|f(product=pgettext('DB: products.Product.title', product.title)) }}</p>
+        {% endif %}
       </div>
       {% endif %}
+      {% if support_company %}
       <div class="get-support--item">
         <div class="get-support--head">
           <div class="get-support--badge is-account" aria-hidden="true">
@@ -210,16 +224,20 @@
             </svg>
           </div>
           <h3 class="get-support--title">
-            <a href="{{ url('groups.profile', support_org_group.slug) }}"
+            {# An explicit link_url stops analytics.js from sending the href, which names the company. #}
+            <a href="{{ url('groups.profile', support_company.slug) }}"
               data-event-name="link_click"
               data-event-parameters='{
                 "link_name": "pro-support-section.org-group",
-                "link_detail": "{{ product.slug }}"
+                "link_detail": "{{ product.slug }}",
+                "link_url": "company-page"
               }'>{{ _('Manage your account') }}</a>
           </h3>
         </div>
-        <p class="get-support--desc">{{ _("View your organization’s support ticket history and manage users.") }}</p>
+        {# L10n: Describes a link to the page of the user's company, which lists its support tickets and members. #}
+        <p class="get-support--desc">{{ _("View your company’s support tickets and members.") }}</p>
       </div>
+      {% endif %}
     </div>
   </section>
 {%- endmacro %}

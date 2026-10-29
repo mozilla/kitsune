@@ -1,5 +1,15 @@
+import waffle
 from django.conf import settings
-from django.core.checks import Warning, register
+from django.core.checks import Tags, Warning, register
+from django.db import DatabaseError
+
+
+def chat_settings():
+    return (
+        settings.ZENDESK_CHAT_WIDGET_KEY,
+        settings.ZENDESK_CHAT_SIGNING_SECRET,
+        settings.ZENDESK_CHAT_SIGNING_KEY_ID,
+    )
 
 
 @register()
@@ -21,11 +31,7 @@ def check_zendesk_oauth_configuration(app_configs, **kwargs):
 
 @register()
 def check_zendesk_chat_configuration(app_configs, **kwargs):
-    configured = (
-        settings.ZENDESK_CHAT_WIDGET_KEY,
-        settings.ZENDESK_CHAT_SIGNING_SECRET,
-        settings.ZENDESK_CHAT_SIGNING_KEY_ID,
-    )
+    configured = chat_settings()
     if any(configured) and not all(configured):
         return [
             Warning(
@@ -35,6 +41,35 @@ def check_zendesk_chat_configuration(app_configs, **kwargs):
                     "ZENDESK_CHAT_SIGNING_KEY_ID to enable chat, or clear all three."
                 ),
                 id="customercare.W002",
+            )
+        ]
+    return []
+
+
+@register(Tags.database)
+def check_zendesk_chat_switch(app_configs, databases=None, **kwargs):
+    if not databases or any(chat_settings()):
+        return []
+    try:
+        # Read the row, not waffle's cache, so migrate never depends on Redis.
+        switched_on = (
+            waffle.get_waffle_switch_model()
+            .objects.filter(name="zendesk-chat", active=True)
+            .exists()
+        )
+    except DatabaseError:
+        # On a fresh database, migrate runs checks before the switch table exists.
+        return []
+    if switched_on:
+        return [
+            Warning(
+                "The zendesk-chat switch is active but Zendesk chat is not configured; chat "
+                "will be unavailable.",
+                hint=(
+                    "Set ZENDESK_CHAT_WIDGET_KEY, ZENDESK_CHAT_SIGNING_SECRET, and "
+                    "ZENDESK_CHAT_SIGNING_KEY_ID, or turn off the zendesk-chat switch."
+                ),
+                id="customercare.W003",
             )
         ]
     return []

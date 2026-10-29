@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from django.contrib.auth.models import AnonymousUser, Group
+from django.contrib.auth.models import AnonymousUser
 from django.test import override_settings
 from waffle.testutils import override_switch
 
@@ -8,13 +8,7 @@ from kitsune.customercare.templatetags.jinja_helpers import (
     chat_is_available,
     select_zendesk_locale,
 )
-from kitsune.groups.models import GroupProfile
-from kitsune.products.tests import (
-    ProductFactory,
-    ProductSupportConfigFactory,
-    SupportOrganizationFactory,
-    ZendeskConfigFactory,
-)
+from kitsune.products.tests import SupportCoverageFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -29,19 +23,10 @@ class ChatIsAvailableTests(TestCase):
     """Tests the gate deciding which pages get the chat widget."""
 
     def setUp(self):
-        self.product = ProductFactory()
-        config = ProductSupportConfigFactory(
-            product=self.product, zendesk_config=ZendeskConfigFactory()
-        )
-        root = GroupProfile.objects.add_root(
-            create_kwargs={"group": Group.objects.create(name="chat"), "slug": "chat"}
-        )
-        company = GroupProfile.objects.add_child(
-            root, create_kwargs={"group": Group.objects.create(name="company"), "slug": "company"}
-        )
-        SupportOrganizationFactory(config=config, group=company.group, include_live_chat=True)
+        coverage = SupportCoverageFactory(includes_chat=True)
+        self.product = coverage.product
         self.user = UserFactory()
-        self.user.groups.add(company.group)
+        self.user.groups.add(coverage.contract.company.group)
 
     def _request(self, user=None):
         return SimpleNamespace(user=user or self.user)
@@ -62,10 +47,6 @@ class ChatIsAvailableTests(TestCase):
 
     @override_switch("zendesk-chat", active=False)
     def test_switch_off(self):
-        self.assertFalse(chat_is_available(self._request(), self.product))
-
-    @override_settings(ZENDESK_CHAT_WIDGET_KEY="")
-    def test_switched_on_but_not_configured(self):
         self.assertFalse(chat_is_available(self._request(), self.product))
 
 

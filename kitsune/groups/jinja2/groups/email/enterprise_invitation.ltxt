@@ -3,10 +3,12 @@
 {{ _('Hi {name},')|f(name=name) }}
 
 {{ _('You now have Mozilla Support through {company}. You can:')|f(company=company) }}
-
-- {{ _('Open support tickets with Mozilla support agents') }}
+{% if covered_products %}
+{#- L10n: {products} is a comma-separated list of product names, such as "Thunderbird, Mozilla VPN". #}
+- {{ _('Open support tickets for {products} with Mozilla support agents')|f(products=covered_products) }}
+{%- endif %}
 - {{ _('See support tickets opened by others at {company}')|f(company=company) }}
-{%- if include_live_chat %}
+{%- if includes_chat %}
 - {{ _('Chat live with a support agent') }}
 {%- endif %}
 

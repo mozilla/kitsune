@@ -6,9 +6,12 @@
   <p>{{ _('You now have Mozilla Support through {company}. You can:')|f(company=company) }}</p>
 
   <ul>
-    <li>{{ _('Open support tickets with Mozilla support agents') }}</li>
+    {% if covered_products %}
+      {# L10n: {products} is a comma-separated list of product names, such as "Thunderbird, Mozilla VPN". #}
+      <li>{{ _('Open support tickets for {products} with Mozilla support agents')|f(products=covered_products) }}</li>
+    {% endif %}
     <li>{{ _('See support tickets opened by others at {company}')|f(company=company) }}</li>
-    {% if include_live_chat %}
+    {% if includes_chat %}
       <li>{{ _('Chat live with a support agent') }}</li>
     {% endif %}
   </ul>

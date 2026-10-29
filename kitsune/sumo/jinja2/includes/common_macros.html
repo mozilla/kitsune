@@ -580,6 +580,11 @@
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               <li><a rel="nofollow" href="{{ url('users.edit_my_profile') }}">{{ _('Edit Profile') }}</a></li>
               <li><a rel="nofollow" href="{{ url('users.questions', user.username) }}">{{ _('My Questions') }}</a></li>
+              {% set my_support_company = get_support_company(request) %}
+              {% if my_support_company %}
+                {# L10n: A user menu link to the support section of the user's company page. #}
+                <li><a rel="nofollow" href="{{ url('groups.profile', my_support_company.slug) }}#your-support">{{ _('My support') }}</a></li>
+              {% endif %}
             </ul>
           </section>
         </div>

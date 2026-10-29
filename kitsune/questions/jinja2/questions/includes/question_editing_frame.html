@@ -12,7 +12,7 @@ behaviors like editing them can be provided by overriding blocks.
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
 {% set scripts = ('questions',) %}
-{% set is_enterprise = current_product and current_product.slug == 'firefox-enterprise' %}
+{% set is_enterprise = coverage or (current_product and current_product.slug == settings.FIREFOX_ENTERPRISE_PRODUCT_SLUG) %}
 {% if current_product %}
   {% set product_theme = current_product.slug %}
 {% endif %}
@@ -83,6 +83,12 @@ behaviors like editing them can be provided by overriding blocks.
           <div class="highlight-box">
             <form id="question-form" method="post">
               {% csrf_token %}
+              {% if support_action %}
+                <input type="hidden" name="support_action" value="{{ support_action }}">
+                {% if coverage %}
+                  <input type="hidden" name="coverage" value="{{ coverage.pk }}">
+                {% endif %}
+              {% endif %}
 
               <div class="info card shade-bg highlight mb">
               {% if is_loginless and not user.is_authenticated %}
@@ -95,7 +101,7 @@ behaviors like editing them can be provided by overriding blocks.
               {% elif current_support_type == SUPPORT_TYPE_ZENDESK %}
                 {% if is_enterprise %}
                   {% trans %}
-                    Submissions via this form are only visible to Mozilla employees and authorized support agents and are not publicly visible. If your issue involves sensitive information, limit the details submitted, avoiding full logs or traces.
+                    Your submission is not publicly visible. It can be viewed by you, authorized company members and leaders, SUMO staff, and support agents. If your issue involves sensitive information, limit the details submitted, avoiding full logs or traces.
                   {% endtrans %}
                 {% else %}
                   {% trans %}

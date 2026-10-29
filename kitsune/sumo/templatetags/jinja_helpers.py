@@ -32,7 +32,6 @@ from kitsune.sumo.sanitize import RESTRICTED_HTML_ATTRIBUTES, RESTRICTED_HTML_TA
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
     get_aaq_url,
-    has_support_config,
     in_staff_group,
     is_trusted_user,
     webpack_static,
@@ -52,7 +51,6 @@ class DateTimeFormatError(Exception):
 library.global_function(webpack_static)
 library.global_function(is_trusted_user)
 library.global_function(in_staff_group)
-library.global_function(has_support_config)
 library.global_function(get_aaq_url)
 
 

@@ -1,10 +1,12 @@
 import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from datetime import date
-from threading import Barrier
+from threading import Barrier, Event
 from unittest.mock import patch
 
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.db import connections, transaction
 from django.db.models.deletion import ProtectedError
 from django.test import Client, TransactionTestCase, override_settings
@@ -12,6 +14,8 @@ from django.urls import path
 
 from kitsune.customercare.models import ZendeskOrganization
 from kitsune.customercare.zendesk import ZendeskClient
+from kitsune.groups import membership
+from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.products.admin import lock_contract_company
 from kitsune.products.models import Product, SupportContract, SupportCoverage, ZendeskConfig
@@ -126,8 +130,10 @@ class SupportContractAdminTests(ContractAdminFixtures, TestCase):
                 includes_chat="",
             ),
         ]
-        response = self.client.post(self.add_url, self.contract_data(coverages=rows))
+        with patch.object(ZendeskClient, "__init__", side_effect=AssertionError):
+            response = self.client.post(self.add_url, self.contract_data(coverages=rows))
         self.assertEqual(response.status_code, 302)
+        self.assertIsNone(ZendeskOrganization.objects.get(group_profile=self.company).zendesk_id)
         contract = self.company.support_contracts.get()
         self.assertCountEqual(
             contract.coverages.values_list(
@@ -139,44 +145,40 @@ class SupportContractAdminTests(ContractAdminFixtures, TestCase):
             ],
         )
 
-    def test_edit_contract_and_coverage_without_moving_company(self):
+    def test_edit_contract_and_coverage_without_moving_company_or_product(self):
         coverage = self.covered()
         contract = coverage.contract
         data = self.contract_data(
             contract=contract, company=EnterpriseCompanyFactory().pk, name="Renewed agreement"
         )
         data["coverages-0-zendesk_product_value"] = "renewed_browser"
+        response = self.client.post(
+            self.change_url(contract), {**data, "coverages-0-product": ProductFactory().pk}
+        )
+        self.assertContains(response, "The product of a saved coverage cannot be changed.")
         self.assertEqual(self.client.post(self.change_url(contract), data).status_code, 302)
         contract.refresh_from_db()
         coverage.refresh_from_db()
         self.assertEqual(contract.company, self.company)
         self.assertEqual(contract.name, "Renewed agreement")
+        self.assertEqual(coverage.product, self.product)
         self.assertEqual(coverage.zendesk_product_value, "renewed_browser")
 
-    def test_invalid_period_and_company_are_field_errors(self):
+    def test_invalid_period_and_non_company_choices_are_field_errors(self):
+        unrelated = GroupProfileFactory()
         for field, changes in (
             ("ends_on", {"starts_on": "2026-04-01", "ends_on": "2026-03-31"}),
             ("company", {"company": "not-a-company"}),
             ("company", {"company": "9" * 100}),
+            ("company", {"company": self.company.get_root().pk}),
+            ("company", {"company": DepartmentFactory(company=self.company).pk}),
+            ("company", {"company": unrelated.pk}),
+            ("company", {"company": EnterpriseCompanyFactory(root=unrelated).pk}),
         ):
             with self.subTest(changes=changes):
                 response = self.client.post(self.add_url, self.contract_data(**changes))
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(field, response.context["adminform"].form.errors)
-                self.assertFalse(SupportContract.objects.exists())
-
-    def test_company_choices_exclude_root_departments_and_other_trees(self):
-        unrelated = GroupProfileFactory()
-        for company in (
-            self.company.get_root(),
-            DepartmentFactory(company=self.company),
-            unrelated,
-            EnterpriseCompanyFactory(root=unrelated),
-        ):
-            with self.subTest(company=company.slug):
-                response = self.client.post(self.add_url, self.contract_data(company=company.pk))
-                self.assertEqual(response.status_code, 200)
-                self.assertIn("company", response.context["adminform"].form.errors)
                 self.assertFalse(SupportContract.objects.exists())
 
     def test_missing_enterprise_root_is_a_form_error(self):
@@ -218,34 +220,45 @@ class SupportContractAdminTests(ContractAdminFixtures, TestCase):
                     self.assert_overlap_rejected(response)
                     self.assertEqual(company.support_contracts.count(), 1)
 
-    def test_editing_dates_cannot_extend_existing_coverage_into_overlap(self):
-        contract = self.covered().contract
-        self.covered("2026-04-01", "2026-06-30")
-        response = self.client.post(
-            self.change_url(contract), self.contract_data(contract=contract, ends_on="2026-04-01")
-        )
-        self.assert_overlap_rejected(response, contract)
+    def test_cancelled_adjacent_and_unrelated_coverage_do_not_block(self):
+        for existing, changes in (
+            ({"contract__status": Status.CANCELLED}, {"status": Status.ACTIVE}),
+            ({"contract__status": Status.ACTIVE}, {"status": Status.CANCELLED}),
+            ({"contract__status": Status.CANCELLED}, {"status": Status.SUSPENDED}),
+            ({}, {"starts_on": "2026-04-01", "ends_on": "2026-04-01"}),
+            ({"contract__company": EnterpriseCompanyFactory()}, {}),
+            ({"product": ProductFactory()}, {}),
+        ):
+            with self.subTest(existing=existing, changes=changes):
+                company = EnterpriseCompanyFactory()
+                self.covered(**{"contract__company": company, **existing})
+                response = self.client.post(
+                    self.add_url, self.contract_data(company=company.pk, **changes)
+                )
+                self.assertEqual(response.status_code, 302)
+                self.assertTrue(company.support_contracts.filter(name="Annual support").exists())
 
-    def test_omitted_coverage_cannot_bypass_overlap_validation_on_edit(self):
+    def test_editing_dates_cannot_extend_coverage_into_overlap(self):
         contract = self.covered().contract
         self.covered("2026-04-01", "2026-06-30")
         submitted = SupportCoverageFactory(contract=contract)
-        data = self.contract_data(
-            contract=contract, coverages=[self.coverage_row(submitted)], ends_on="2026-04-01"
-        )
-        response = self.client.post(self.change_url(contract), data)
-        self.assert_overlap_rejected(response, contract)
-        self.assertEqual(contract.coverages.count(), 2)
-
-    def test_contract_permission_alone_cannot_bypass_coverage_validation(self):
-        contract = self.covered().contract
-        self.covered("2026-04-01", "2026-06-30")
-        self.actor = UserFactory(is_staff=True)
-        add_permission(self.actor, SupportContract, "change_supportcontract")
-        response = self.admin_client().post(
-            self.change_url(contract), self.contract_data(contract=contract, ends_on="2026-04-01")
-        )
-        self.assert_overlap_rejected(response, contract)
+        contract_editor = UserFactory(is_staff=True)
+        add_permission(contract_editor, SupportContract, "change_supportcontract")
+        for actor, coverages in (
+            (self.actor, None),
+            (contract_editor, None),
+            (self.actor, [self.coverage_row(submitted)]),
+        ):
+            with self.subTest(superuser=actor.is_superuser, omitted=bool(coverages)):
+                self.actor = actor
+                response = self.admin_client().post(
+                    self.change_url(contract),
+                    self.contract_data(
+                        contract=contract, coverages=coverages, ends_on="2026-04-01"
+                    ),
+                )
+                self.assert_overlap_rejected(response, contract)
+                self.assertEqual(contract.coverages.count(), 2)
 
     def test_add_only_staff_can_create_contract_with_coverage(self):
         self.actor = UserFactory(is_staff=True)
@@ -271,52 +284,15 @@ class SupportContractAdminTests(ContractAdminFixtures, TestCase):
         self.assert_overlap_rejected(response, contract)
         self.assertEqual(contract.status, Status.CANCELLED)
 
-    def test_cancelled_contracts_do_not_block_in_either_direction(self):
-        for existing, new in (
-            (Status.CANCELLED, Status.ACTIVE),
-            (Status.ACTIVE, Status.CANCELLED),
-            (Status.CANCELLED, Status.SUSPENDED),
-        ):
-            with self.subTest(existing=existing, new=new):
-                company = EnterpriseCompanyFactory()
-                self.covered(contract__company=company, contract__status=existing)
-                response = self.client.post(
-                    self.add_url, self.contract_data(company=company.pk, status=new)
-                )
-                self.assertEqual(response.status_code, 302)
-                self.assertEqual(company.support_contracts.count(), 2)
-
-    def test_adjacent_period_and_single_day_contracts_are_allowed(self):
-        self.covered()
-        response = self.client.post(
-            self.add_url, self.contract_data(starts_on="2026-04-01", ends_on="2026-04-01")
-        )
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(self.company.support_contracts.count(), 2)
-
-    def test_overlap_is_allowed_for_other_companies_and_products(self):
-        self.covered(contract__company=EnterpriseCompanyFactory())
-        self.covered(product=ProductFactory())
-        self.assertEqual(self.client.post(self.add_url, self.contract_data()).status_code, 302)
-        self.assertEqual(self.company.support_contracts.count(), 2)
-
-    def test_submitted_inline_deletion_preserves_saved_coverage(self):
-        coverage = self.covered()
+    def test_admin_never_deletes_contracts_or_coverages(self):
+        coverage = self.covered(contract__status=Status.CANCELLED)
         data = self.contract_data(contract=coverage.contract)
         data["coverages-0-DELETE"] = "on"
         response = self.client.post(self.change_url(coverage.contract), data)
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(coverage.contract.coverages.filter(pk=coverage.pk).exists())
-
-    def test_contract_delete_view_refuses_and_preserves_history(self):
-        coverage = self.covered("2025-01-01", "2025-12-31", contract__status=Status.CANCELLED)
         url = reverse("admin:products_supportcontract_delete", args=[coverage.contract_id])
         self.assertEqual(self.client.get(url).status_code, 403)
         self.assertEqual(self.client.post(url, {"post": "yes"}).status_code, 403)
-        self.assertTrue(self.company.support_contracts.filter(coverages=coverage).exists())
-
-    def test_bulk_contract_deletion_is_not_offered_and_preserves_history(self):
-        coverage = self.covered()
         url = reverse("admin:products_supportcontract_changelist")
         self.assertNotContains(self.client.get(url), 'value="delete_selected"')
         response = self.client.post(
@@ -330,17 +306,13 @@ class SupportContractAdminTests(ContractAdminFixtures, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self.company.support_contracts.filter(coverages=coverage).exists())
 
-    def test_contract_creates_only_local_zendesk_identity(self):
-        with patch.object(ZendeskClient, "__init__", side_effect=AssertionError):
-            response = self.client.post(self.add_url, self.contract_data())
-        self.assertEqual(response.status_code, 302)
-        self.assertIsNone(ZendeskOrganization.objects.get(group_profile=self.company).zendesk_id)
-
     def test_company_deletion_preserves_contract_history(self):
         coverage = self.covered(contract__status=Status.CANCELLED)
-        with self.assertRaises(ProtectedError), transaction.atomic():
-            self.company.delete()
-        self.assertTrue(self.company.support_contracts.filter(coverages=coverage).exists())
+        for record in (self.company, self.company.group, self.company.get_root()):
+            with self.subTest(record=repr(record)):
+                with self.assertRaises(ProtectedError), transaction.atomic():
+                    record.delete()
+                self.assertTrue(self.company.support_contracts.filter(coverages=coverage).exists())
 
 
 @override_settings(
@@ -396,3 +368,73 @@ class SupportContractConcurrencyTests(ContractAdminFixtures, TransactionTestCase
             ends_on__gte=date(2026, 4, 15),
         )
         self.assertEqual(blocking.count(), 1)
+
+    def test_save_as_new_locks_the_posted_company(self):
+        contract = self.covered().contract
+        company = EnterpriseCompanyFactory()
+        self.race(
+            (
+                self.change_url(contract),
+                self.contract_data(contract=contract, company=company.pk, _saveasnew="Save"),
+            ),
+            (self.add_url, self.contract_data(company=company.pk)),
+        )
+        self.assertEqual(company.support_contracts.count(), 1)
+
+    def test_contract_add_and_company_move_serialize_in_either_order(self):
+        client = self.admin_client()
+        root = self.company.get_root()
+        hierarchy_gate = membership.lock_enterprise_hierarchy
+        for first, expected in (
+            ("contract", {"contract": 302, "move": "contracted_company"}),
+            ("move", {"contract": 200, "move": "moved"}),
+        ):
+            with self.subTest(first=first):
+                company, target = EnterpriseCompanyFactory(), EnterpriseCompanyFactory()
+                first_holds_gate, second_requested_gate = Event(), Event()
+
+                @contextmanager
+                def gate(operation, **kwargs):
+                    if operation != first:
+                        second_requested_gate.set()
+                    with hierarchy_gate(**kwargs):
+                        if operation == first:
+                            first_holds_gate.set()
+                            if not second_requested_gate.wait(timeout=10):
+                                raise AssertionError("The concurrent operation did not start")
+                        yield
+
+                def run(operation):
+                    try:
+                        if operation != first and not first_holds_gate.wait(timeout=10):
+                            raise AssertionError("The first operation did not take the gate")
+                        if operation == "contract":
+                            data = self.contract_data(company=company.pk)
+                            return operation, client.post(self.add_url, data).status_code
+                        GroupProfile.objects.move(company, target, "last-child")
+                        return operation, "moved"
+                    except ValidationError as error:
+                        return operation, error.code
+                    finally:
+                        connections.close_all()
+
+                connections.close_all()
+                with (
+                    patch(
+                        "kitsune.products.admin.lock_enterprise_hierarchy",
+                        lambda **kwargs: gate("contract", **kwargs),
+                    ),
+                    patch(
+                        "kitsune.groups.membership.lock_enterprise_hierarchy",
+                        lambda **kwargs: gate("move", **kwargs),
+                    ),
+                    ThreadPoolExecutor(max_workers=2) as pool,
+                ):
+                    results = dict(pool.map(run, ("contract", "move")))
+                self.assertEqual(results, expected)
+                contracted = first == "contract"
+                self.assertEqual(company.support_contracts.exists(), contracted)
+                self.assertEqual(
+                    GroupProfile.objects.get_parent(GroupProfile.objects.get(pk=company.pk)),
+                    root if contracted else target,
+                )

@@ -7,7 +7,6 @@ from unittest.mock import MagicMock, patch
 
 import jwt
 import requests
-from django.contrib.auth.models import Group
 from django.test import Client, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -17,15 +16,16 @@ from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.models import SupportTicket
-from kitsune.customercare.tests import SupportTicketFactory
-from kitsune.groups.models import GroupProfile
+from kitsune.customercare.tests import EnterpriseTicketFactory, SupportTicketFactory
+from kitsune.customercare.zendesk import ENTERPRISE_SUPPORT_TAG
+from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.journal.models import RECORD_INFO, Record
 from kitsune.products.tests import (
     ProductFactory,
-    ProductSupportConfigFactory,
-    SupportOrganizationFactory,
+    SupportCoverageFactory,
     TopicFactory,
-    ZendeskConfigFactory,
+    ZendeskTopicConfigurationFactory,
+    ZendeskTopicFactory,
 )
 from kitsune.sumo.tests import TestCase, translated_db_strings
 from kitsune.sumo.urlresolvers import reverse as reverse_locale
@@ -44,24 +44,14 @@ def _sign_payload(body, timestamp="1234567890", secret=WEBHOOK_SIGNING_SECRET):
 
 
 def _make_viewable_by_teammate(owner, ticket):
-    """Wire up a support organization so a teammate in the same company subtree can VIEW
-    `ticket`. Per issue #3069 such a teammate still must not be able to reply."""
-    config = ProductSupportConfigFactory(
-        product=ticket.product, zendesk_config=ZendeskConfigFactory(name="zd")
-    )
-    company_group = Group.objects.create(name="company1")
-    root = GroupProfile.objects.add_root(
-        create_kwargs={"group": Group.objects.create(name="enterprise"), "slug": "enterprise"}
-    )
-    company = GroupProfile.objects.add_child(
-        root, create_kwargs={"group": company_group, "slug": "company1"}
-    )
-    SupportOrganizationFactory(config=config, group=company_group)
-    owner.groups.add(company_group)
+    """Give `ticket` to the owner's company so a teammate can VIEW it. Per issue #3069
+    such a teammate still must not be able to reply."""
+    company = EnterpriseCompanyFactory()
+    owner.groups.add(company.group)
     ticket.org_group = company
     ticket.save(update_fields=["org_group"])
     teammate = UserFactory()
-    teammate.groups.add(company_group)
+    teammate.groups.add(company.group)
     return teammate
 
 
@@ -219,33 +209,6 @@ class TicketDetailViewTests(TestCase):
     def test_staff_can_view_any_ticket(self):
         staff = UserFactory(is_staff=True)
         self.client.force_login(staff)
-        response = self.client.get(
-            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
-        )
-        self.assertEqual(200, response.status_code)
-
-    def test_subtree_member_can_view_org_ticket(self):
-        """A teammate in the same org subtree can view tickets they didn't submit."""
-        config = ProductSupportConfigFactory(
-            product=self.ticket.product, zendesk_config=ZendeskConfigFactory(name="zd")
-        )
-        c1_group = Group.objects.create(name="company1")
-        root_group = Group.objects.create(name="enterprise")
-        root = GroupProfile.objects.add_root(
-            create_kwargs={"group": root_group, "slug": "enterprise"}
-        )
-        c1 = GroupProfile.objects.add_child(
-            root, create_kwargs={"group": c1_group, "slug": "company1"}
-        )
-        SupportOrganizationFactory(config=config, group=c1_group)
-
-        self.owner.groups.add(c1_group)
-        self.ticket.org_group = c1
-        self.ticket.save(update_fields=["org_group"])
-
-        teammate = UserFactory()
-        teammate.groups.add(c1_group)
-        self.client.force_login(teammate)
         response = self.client.get(
             reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
         )
@@ -895,6 +858,13 @@ class TicketDetailBreadcrumbsTests(TestCase):
         staff = UserFactory(is_staff=True)
         self.assertSubjectOnlyTrail(self._get(staff))
 
+    def test_group_outside_the_enterprise_tree_gets_no_group_trail(self):
+        """A legacy owner outside the enterprise tree has no ticket list to link to."""
+        self.ticket.org_group = DepartmentFactory(company=GroupProfileFactory())
+        self.ticket.save(update_fields=["org_group"])
+        self.assertMyQuestionsTrail(self._get(self.owner, referer=self._group_pool_url()))
+        self.assertSubjectOnlyTrail(self._get(UserFactory(is_staff=True)))
+
 
 CHAT_WIDGET_KEY = "test-chat-widget-key"
 CHAT_SIGNING_SECRET = "test-chat-signing-secret"
@@ -917,23 +887,9 @@ class ChatJWTViewTests(TestCase):
         self.user = UserFactory()
         self.user.profile.fxa_uid = "fxa-uid-123"
         self.user.profile.save(update_fields=["fxa_uid"])
-        self.config = ProductSupportConfigFactory(
-            product=self.product, zendesk_config=ZendeskConfigFactory()
-        )
-        self.root = GroupProfile.objects.add_root(
-            create_kwargs={"group": Group.objects.create(name="chat"), "slug": "chat"}
-        )
-        company = GroupProfile.objects.add_child(
-            self.root,
-            create_kwargs={
-                "group": Group.objects.create(name="chat-company"),
-                "slug": "chat-company",
-            },
-        )
-        self.organization = SupportOrganizationFactory(
-            config=self.config, group=company.group, include_live_chat=True
-        )
-        self.user.groups.add(company.group)
+        self.coverage = SupportCoverageFactory(product=self.product, includes_chat=True)
+        self.company = self.coverage.contract.company
+        self.user.groups.add(self.company.group)
         self.create_zendesk_user = self.enterContext(
             patch("kitsune.customercare.views.create_zendesk_user.delay")
         )
@@ -1012,7 +968,7 @@ class ChatJWTViewTests(TestCase):
     def test_membership_revocation_denies_and_journals(self):
         self.client.force_login(self.user)
         self.assertEqual(200, self.client.post(self._url()).status_code)
-        self.user.groups.remove(self.organization.group)
+        self.user.groups.remove(self.company.group)
         with patch("kitsune.customercare.views.jwt.encode") as sign:
             response = self.client.post(self._url())
 
@@ -1022,52 +978,21 @@ class ChatJWTViewTests(TestCase):
         sign.assert_not_called()
         record = Record.objects.get()
         self.assertEqual("customercare.chat", record.src)
-        self.assertIn("no_entitled_org", record.msg)
+        self.assertIn("no_company", record.msg)
 
     def test_disabling_chat_revokes_token_issuance(self):
         self.client.force_login(self.user)
         self.assertEqual(200, self.client.post(self._url()).status_code)
-        self.organization.include_live_chat = False
-        self.organization.save(update_fields=["include_live_chat"])
+        self.coverage.includes_chat = False
+        self.coverage.save(update_fields=["includes_chat"])
 
         response = self.client.post(self._url())
 
         self.assertEqual(403, response.status_code)
-        self.assertIn("org_without_chat", Record.objects.get().msg)
-
-    def test_ambiguous_organizations_cannot_mint_token(self):
-        conflicts = ["chat-company"]
-        for name, include_live_chat in (
-            ("second-company", True),
-            ("third-company", True),
-            ("fourth-company", True),
-            ("without-chat", False),
-        ):
-            slug = name.ljust(80, "x")
-            company = GroupProfile.objects.add_child(
-                self.root, create_kwargs={"group": Group.objects.create(name=name), "slug": slug}
-            )
-            SupportOrganizationFactory(
-                config=self.config, group=company.group, include_live_chat=include_live_chat
-            )
-            # Legacy conflicts must deny chat even though new memberships are guarded.
-            self.user.groups.through.objects.create(user=self.user, group=company.group)
-            if include_live_chat:
-                conflicts.append(slug)
-        self.client.force_login(self.user)
-
-        response = self.client.post(self._url())
-
-        self.assertEqual(403, response.status_code)
-        self.assertEqual(b"", response.content)
-        messages = "\n".join(Record.objects.values_list("msg", flat=True))
-        self.assertIn("ambiguous_multi_org", messages)
-        for slug in conflicts:
-            self.assertIn(slug, messages)
-        self.assertNotIn("without-chat", messages)
+        self.assertIn("chat_not_included", Record.objects.get().msg)
 
     def test_rate_limiting_precedes_eligibility(self):
-        self.user.groups.remove(self.organization.group)
+        self.user.groups.remove(self.company.group)
         self.client.force_login(self.user)
         with patch("kitsune.customercare.views.is_ratelimited", return_value=True):
             response = self.client.post(self._url())
@@ -1102,3 +1027,48 @@ class ChatJWTViewTests(TestCase):
             response = self.client.post(self._url())
 
         self.assertEqual(429, response.status_code)
+
+
+class UpdateTopicTests(TestCase):
+    def update_topic(self, ticket, topic):
+        self.client.force_login(UserFactory(is_superuser=True))
+        response = self.client.post(
+            reverse_locale("customercare.update_topic", args=[ticket.pk]),
+            data=json.dumps({"topic": topic.pk}),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.topic, topic)
+
+    def test_preserves_system_tags_and_accepted_automation_tags(self):
+        coverage = SupportCoverageFactory()
+        topic = TopicFactory(
+            products=[coverage.product], title="Deployment", legacy_tag="technical"
+        )
+        zd_topic = ZendeskTopicFactory(topic=topic, automation_tags=["accepted-automation"])
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=coverage.zendesk_config, zendesk_topic=zd_topic
+        )
+        kept_tags = ["loginless_ticket", "stage", "other", ENTERPRISE_SUPPORT_TAG, "seg-rel-esr"]
+        ticket = EnterpriseTicketFactory(
+            coverage=coverage, zendesk_tags=[*kept_tags, "old-topic", "old-automation"]
+        )
+        zd_topic.automation_tags = ["changed-automation"]
+        zd_topic.save()
+
+        self.update_topic(ticket, topic)
+
+        self.assertCountEqual(
+            ticket.zendesk_tags,
+            [*kept_tags, *topic.tier_tags, "accepted-automation", "technical"],
+        )
+
+    def test_legacy_ticket_without_config_can_change_topic(self):
+        ticket = SupportTicketFactory(accepted_context={}, zendesk_tags=["seg-rel-esr"])
+        topic = TopicFactory(products=[ticket.product], title="Deployment")
+
+        self.update_topic(ticket, topic)
+
+        self.assertCountEqual(ticket.zendesk_tags, ["seg-rel-esr", *topic.tier_tags, "general"])

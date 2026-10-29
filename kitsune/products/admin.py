@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import GroupProfile
-from kitsune.groups.onboarding import get_enterprise_root, link_zendesk_organization
+from kitsune.groups.onboarding import link_zendesk_organization
 from kitsune.products.models import (
     CuratedBlock,
     CuratedBlockItem,
@@ -20,7 +20,6 @@ from kitsune.products.models import (
     ProductTopic,
     SupportContract,
     SupportCoverage,
-    SupportOrganization,
     Topic,
     TopicSlugHistory,
     Version,
@@ -250,45 +249,7 @@ class ZendeskConfigAdmin(admin.ModelAdmin):
         return obj.topic_configurations.count()
 
 
-class SupportOrganizationInlineFormSet(BaseInlineFormSet):
-    """Reject nested groups submitted together for one configuration.
-
-    The model's ``clean()`` checks each row against saved rows; this catches the same
-    conflict between rows in the same submission.
-    """
-
-    def clean(self):
-        super().clean()
-        seen = []
-        for form in self.forms:
-            if not hasattr(form, "cleaned_data") or form.cleaned_data.get("DELETE"):
-                continue
-            group = form.cleaned_data.get("group")
-            if group is None:
-                continue
-            profile = GroupProfile.objects.filter(group=group).first()
-            if profile is None:
-                continue
-            for other_group, other_profile in seen:
-                if profile.path.startswith(other_profile.path) or other_profile.path.startswith(
-                    profile.path
-                ):
-                    raise forms.ValidationError(
-                        f"'{group.name}' and '{other_group.name}' are nested. Configure one "
-                        f"of them, not both."
-                    )
-            seen.append((group, profile))
-
-
-class SupportOrganizationInline(admin.TabularInline):
-    model = SupportOrganization
-    formset = SupportOrganizationInlineFormSet
-    extra = 0
-    autocomplete_fields = ("group",)
-
-
 class ProductSupportConfigAdmin(admin.ModelAdmin):
-    inlines = (SupportOrganizationInline,)
     list_display = (
         "product",
         "is_active",
@@ -342,8 +303,8 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
         (
             "Routing Configuration",
             {
-                "fields": ("default_support_type", "group_default_support_type"),
-                "description": "Set default support type for all users and optionally for organization members.",
+                "fields": ("default_support_type",),
+                "description": "Set the default support type for hybrid configurations.",
             },
         ),
         (
@@ -510,10 +471,9 @@ class SupportContractForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if "company" in self.fields:
             company = self.fields["company"]
-            try:
-                company.queryset = get_enterprise_root().get_children()
-            except forms.ValidationError:
-                company.queryset = GroupProfile.objects.none()
+            company.queryset = (
+                GroupProfile.objects.enterprise().filter(depth=2).select_related("group")
+            )
             company.widget.can_add_related = False
             company.widget.can_change_related = False
             company.widget.can_delete_related = False
@@ -536,11 +496,16 @@ class SupportCoverageInlineFormSet(BaseInlineFormSet):
         product_ids = set()
         submitted_ids = {form.instance.pk for form in self.forms if form.instance.pk is not None}
         for form in self.forms:
-            if not form.cleaned_data or form.cleaned_data.get("DELETE"):
+            if not form.cleaned_data:
                 continue
-            product = form.cleaned_data.get("product")
-            if product is not None:
-                product_ids.add(getattr(product, "pk", product))
+            if form.instance.pk and "product" in form.changed_data:
+                raise forms.ValidationError(
+                    _lazy(
+                        "The product of a saved coverage cannot be changed. To fix a mistake, "
+                        "cancel the contract and enter a new one."
+                    )
+                )
+            product_ids.add(form.cleaned_data["product"].pk)
         if self.instance.pk:
             product_ids.update(
                 self.instance.coverages.exclude(pk__in=submitted_ids).values_list(
@@ -583,13 +548,11 @@ class SupportCoverageInline(admin.TabularInline):
     formset = SupportCoverageInlineFormSet
     extra = 1
     min_num = 1
-    validate_min = True
     can_delete = False
     autocomplete_fields = ("product", "zendesk_config")
 
     def get_formset(self, request, obj=None, **kwargs):
-        kwargs["validate_min"] = self.validate_min
-        return super().get_formset(request, obj, **kwargs)
+        return super().get_formset(request, obj, validate_min=True, **kwargs)
 
     def has_view_permission(self, request, obj=None):
         parent_admin = self.admin_site.get_model_admin(self.parent_model)

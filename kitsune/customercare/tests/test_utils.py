@@ -1,7 +1,7 @@
+from datetime import timedelta
 from unittest.mock import MagicMock, Mock, patch
 
 import requests
-from django.contrib.auth.models import AnonymousUser, Group
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
 from django.utils import timezone
@@ -9,31 +9,29 @@ from django.utils.dateparse import parse_datetime
 from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RecordNotFoundException
 
-from kitsune.customercare.models import SupportTicket
-from kitsune.customercare.tests import SupportTicketFactory
+from kitsune.customercare.models import SupportTicket, ZendeskOrganization, accepted_context_for
+from kitsune.customercare.tests import EnterpriseTicketFactory, SupportTicketFactory
 from kitsune.customercare.utils import (
     adopt_chat_ticket,
+    create_support_ticket,
     generate_classification_tags,
     process_zendesk_classification_result,
-    resolve_chat_eligibility,
-    resolve_org_group,
-    resolve_user_org_group,
     send_support_ticket_to_zendesk,
     sync_ticket_from_zendesk,
 )
-from kitsune.groups.models import GroupProfile
+from kitsune.customercare.zendesk import ENTERPRISE_SUPPORT_TAG
+from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
-    SupportOrganizationFactory,
+    SupportCoverageFactory,
     TopicFactory,
     ZendeskConfigFactory,
     ZendeskTopicConfigurationFactory,
     ZendeskTopicFactory,
 )
-from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
@@ -45,10 +43,12 @@ class GenerateClassificationTagsTests(TestCase):
     def setUp(self):
         """Set up test data."""
         self.product = ProductFactory(slug="firefox", title="Firefox")
+        self.zendesk_config = ZendeskConfigFactory()
+        ProductSupportConfigFactory(product=self.product, zendesk_config=self.zendesk_config)
 
     def test_no_topic_result_returns_undefined(self):
         """Test that missing topic_result returns ['undefined', 'general']."""
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {}
 
         tags = generate_classification_tags(submission, result)
@@ -57,7 +57,7 @@ class GenerateClassificationTagsTests(TestCase):
 
     def test_undefined_topic_returns_empty_list(self):
         """Test that 'Undefined' topic returns ['undefined', 'general']."""
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Undefined"}}
 
         tags = generate_classification_tags(submission, result)
@@ -66,7 +66,7 @@ class GenerateClassificationTagsTests(TestCase):
 
     def test_topic_not_found_in_db_returns_undefined(self):
         """Test that topic not found in database returns ['undefined', 'general']."""
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Nonexistent Topic"}}
 
         tags = generate_classification_tags(submission, result)
@@ -80,12 +80,25 @@ class GenerateClassificationTagsTests(TestCase):
         )
         topic.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Settings"}}
 
         tags = generate_classification_tags(submission, result)
 
         self.assertEqual(tags, ["t1-settings", "technical"])
+
+    def test_missing_context_preserves_topic_and_legacy_tags(self):
+        ProductSupportConfig.objects.filter(product=self.product).delete()
+        topic = TopicFactory(title="Settings", legacy_tag="technical", products=[self.product])
+        for origin in SupportTicket.Origin.values:
+            with self.subTest(origin=origin):
+                submission = SupportTicket(product=self.product, origin=origin)
+                self.assertEqual(
+                    generate_classification_tags(
+                        submission, {"topic_result": {"topic": topic.title}}
+                    ),
+                    ["t1-settings", "technical"],
+                )
 
     def test_two_tier_topic(self):
         """Test generating tags for a tier 2 topic."""
@@ -96,7 +109,7 @@ class GenerateClassificationTagsTests(TestCase):
         tier2 = TopicFactory(title="Notifications", parent=tier1, is_archived=False)
         tier2.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Notifications"}}
 
         tags = generate_classification_tags(submission, result)
@@ -116,7 +129,7 @@ class GenerateClassificationTagsTests(TestCase):
         tier3 = TopicFactory(title="Extensions", parent=tier2, is_archived=False)
         tier3.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Extensions"}}
 
         tags = generate_classification_tags(submission, result)
@@ -134,14 +147,14 @@ class GenerateClassificationTagsTests(TestCase):
         tier2 = TopicFactory(title="Sign in", parent=tier1, is_archived=False)
         tier2.products.add(self.product)
 
-        zendesk_config = ZendeskConfigFactory()
-        ProductSupportConfigFactory(product=self.product, zendesk_config=zendesk_config)
         zd_topic = ZendeskTopicFactory(
             topic=tier2, automation_tags=["ssa-sign-in-failure-automation"]
         )
-        ZendeskTopicConfigurationFactory(zendesk_config=zendesk_config, zendesk_topic=zd_topic)
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.zendesk_config, zendesk_topic=zd_topic
+        )
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Sign in"}}
 
         tags = generate_classification_tags(submission, result)
@@ -166,7 +179,7 @@ class GenerateClassificationTagsTests(TestCase):
         )
         tier1.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Billing and subscriptions"}}
 
         tags = generate_classification_tags(submission, result)
@@ -180,7 +193,7 @@ class GenerateClassificationTagsTests(TestCase):
         )
         tier1.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {
             "product_result": {"product": "Mozilla VPN"},
             "topic_result": {"topic": "Settings"},
@@ -197,7 +210,7 @@ class GenerateClassificationTagsTests(TestCase):
         topic = TopicFactory(title="Settings", parent=None, is_archived=True)
         topic.products.add(self.product)
 
-        submission = Mock(product=self.product)
+        submission = SupportTicket(product=self.product)
         result = {"topic_result": {"topic": "Settings"}}
 
         tags = generate_classification_tags(submission, result)
@@ -228,6 +241,8 @@ class SendSupportTicketToZendeskTests(TestCase):
         self.submission.policy_distribution = ""
         self.submission.urgency = ""
         self.submission.zendesk_tags = []
+        self.submission.context = accepted_context_for(self.product, self.zendesk_config)
+        self.submission.origin = SupportTicket.Origin.PRODUCT
 
     @patch("kitsune.customercare.utils.ZendeskClient")
     def test_suspended_user_error_auto_rejects(self, mock_zendesk_client):
@@ -329,6 +344,188 @@ class SendSupportTicketToZendeskTests(TestCase):
         mock_flag_object.assert_called_once()
 
 
+class TicketContextCreationAndDeliveryTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory(slug="mozilla-vpn")
+        self.zendesk_config = ZendeskConfigFactory(ticket_form_id="12345", brand_id="42")
+        self.support_config = ProductSupportConfigFactory(
+            product=self.product, zendesk_config=self.zendesk_config
+        )
+        self.coverage = SupportCoverageFactory(
+            product=self.product,
+            zendesk_config=self.zendesk_config,
+            zendesk_product_value="enterprise-vpn",
+        )
+        self.organization = ZendeskOrganization.objects.create(
+            group_profile=self.coverage.contract.company, zendesk_id="321"
+        )
+        self.user = UserFactory(profile__zendesk_id="456")
+        self.user.groups.add(self.coverage.contract.company.group)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_new_ticket_requires_accepted_context(self, mock_classify):
+        for accepted_context in (None, {}):
+            with self.subTest(accepted_context=accepted_context):
+                with self.assertRaisesMessage(ValueError, "requires its accepted context"):
+                    create_support_ticket(
+                        self.user,
+                        self.product,
+                        accepted_context=accepted_context,
+                        subject="Deployment help",
+                    )
+        self.assertFalse(SupportTicket.objects.exists())
+        mock_classify.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_creation_takes_origin_and_company_from_the_accepted_coverage(self, mock_classify):
+        for coverage, origin, company in (
+            (self.coverage, SupportTicket.Origin.ENTERPRISE, self.coverage.contract.company),
+            (None, SupportTicket.Origin.PRODUCT, None),
+        ):
+            with self.subTest(origin=origin):
+                context = accepted_context_for(self.product, self.zendesk_config, coverage)
+                ticket = create_support_ticket(
+                    self.user,
+                    self.product,
+                    coverage=coverage,
+                    accepted_context=context,
+                    subject="Deployment help",
+                )
+
+                ticket.refresh_from_db()
+                self.assertEqual(
+                    (ticket.origin, ticket.coverage, ticket.org_group), (origin, coverage, company)
+                )
+                self.assertEqual(ticket.accepted_context, context)
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_send_uses_accepted_context_after_configuration_changes(self, mock_client):
+        tickets = [
+            SupportTicketFactory(
+                user=self.user,
+                product=self.product,
+                accepted_context=accepted_context_for(self.product, self.zendesk_config),
+            ),
+            EnterpriseTicketFactory(user=self.user, coverage=self.coverage),
+        ]
+        replacement = ZendeskConfigFactory(ticket_form_id="67890", brand_id="99")
+        self.support_config.zendesk_config = replacement
+        self.support_config.save()
+        self.coverage.zendesk_config = replacement
+        self.coverage.zendesk_product_value = "changed-enterprise-vpn"
+        self.coverage.save()
+        self.zendesk_config.ticket_form_id = "54321"
+        self.zendesk_config.brand_id = "84"
+        self.zendesk_config.save()
+        contract = self.coverage.contract
+        contract.ends_on = timezone.localdate() - timedelta(days=1)
+        contract.starts_on = contract.ends_on - timedelta(days=365)
+        contract.save()
+
+        for ticket in tickets:
+            with self.subTest(origin=ticket.origin):
+                ticket.refresh_from_db()
+                mock_client.return_value.create_ticket.return_value = Mock(
+                    ticket=Mock(id=ticket.pk)
+                )
+                self.assertTrue(send_support_ticket_to_zendesk(ticket))
+                fields = mock_client.return_value.create_ticket.call_args.args[1]
+                self.assertEqual(fields["ticket_form_id"], 12345)
+                self.assertEqual(fields["brand_id"], 42)
+                self.assertEqual(fields["product"], ticket.accepted_context["product_value"])
+                self.assertEqual(fields["origin"], ticket.origin)
+                if ticket.origin == SupportTicket.Origin.ENTERPRISE:
+                    self.assertEqual(fields["organization_id"], self.organization.zendesk_id)
+                else:
+                    self.assertNotIn("organization_id", fields)
+
+    def test_automation_tags_use_snapshot_but_taxonomy_tags_stay_live(self):
+        topic = TopicFactory(products=[self.product], title="Deployment", legacy_tag="technical")
+        zd_topic = ZendeskTopicFactory(topic=topic, automation_tags=["accepted-automation"])
+        mapping = ZendeskTopicConfigurationFactory(
+            zendesk_config=self.zendesk_config, zendesk_topic=zd_topic
+        )
+        tickets = [
+            SupportTicket(
+                product=self.product,
+                origin=origin,
+                coverage=coverage,
+                accepted_context=accepted_context_for(self.product, self.zendesk_config, coverage),
+            )
+            for origin, coverage in (
+                (SupportTicket.Origin.PRODUCT, None),
+                (SupportTicket.Origin.ENTERPRISE, self.coverage),
+            )
+        ]
+        mapping.zendesk_topic = ZendeskTopicFactory(
+            topic=topic, automation_tags=["replacement-automation"]
+        )
+        mapping.save()
+        zd_topic.automation_tags = ["changed-automation"]
+        zd_topic.save()
+        topic.title = "Updated deployment"
+        topic.legacy_tag = "accounts"
+        topic.save()
+        result = {"topic_result": {"topic": topic.title}}
+
+        for ticket in tickets:
+            with self.subTest(origin=ticket.origin):
+                self.assertEqual(
+                    generate_classification_tags(ticket, result),
+                    [*topic.tier_tags, "accepted-automation", "accounts"],
+                )
+        self.assertEqual(
+            generate_classification_tags(SupportTicket(product=self.product), result),
+            [*topic.tier_tags, "replacement-automation", "accounts"],
+        )
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_legacy_product_ticket_uses_live_config(self, mock_client):
+        ticket = SupportTicketFactory(product=self.product, accepted_context={})
+        self.zendesk_config.ticket_form_id = "67890"
+        self.zendesk_config.brand_id = "99"
+        self.zendesk_config.save()
+        mock_client.return_value.create_ticket.return_value = Mock(ticket=Mock(id=123))
+
+        self.assertTrue(send_support_ticket_to_zendesk(ticket))
+
+        fields = mock_client.return_value.create_ticket.call_args.args[1]
+        self.assertEqual(fields["ticket_form_id"], 67890)
+        self.assertEqual(fields["brand_id"], 99)
+        self.assertEqual(fields["product"], "firefox-private-network-vpn")
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_unusable_context_flags_instead_of_sending(self, mock_client):
+        self.support_config.delete()
+        invalid_id = "invalid literal for int()"
+        for origin, config_fields, note in (
+            (SupportTicket.Origin.PRODUCT, {"ticket_form_id": ""}, invalid_id),
+            (SupportTicket.Origin.PRODUCT, {"ticket_form_id": "invalid"}, invalid_id),
+            (SupportTicket.Origin.PRODUCT, {"brand_id": "invalid"}, invalid_id),
+            (SupportTicket.Origin.PRODUCT, None, "no accepted context or active Zendesk config"),
+            (SupportTicket.Origin.ENTERPRISE, None, "has no accepted context"),
+        ):
+            with self.subTest(origin=origin, config_fields=config_fields):
+                context = (
+                    accepted_context_for(self.product, ZendeskConfigFactory(**config_fields))
+                    if config_fields
+                    else {}
+                )
+                ticket = SupportTicketFactory(
+                    product=self.product, origin=origin, accepted_context=context
+                )
+
+                self.assertFalse(send_support_ticket_to_zendesk(ticket))
+
+                ticket.refresh_from_db()
+                self.assertEqual(ticket.submission_status, SupportTicket.STATUS_FLAGGED)
+                self.assertFalse(ticket.zendesk_ticket_id)
+                flag = FlaggedObject.objects.get(object_id=ticket.pk)
+                self.assertEqual(flag.reason, FlaggedObject.REASON_OTHER)
+                self.assertIn(note, flag.notes)
+        mock_client.assert_not_called()
+
+
 class ProcessZendeskClassificationResultTests(TestCase):
     """Tests for process_zendesk_classification_result."""
 
@@ -351,6 +548,9 @@ class ProcessZendeskClassificationResultTests(TestCase):
             "loginless_ticket",
             "seg-rel-esr",
             "seg-policy-windows-gpo",
+            ENTERPRISE_SUPPORT_TAG,
+            "stage",
+            "obsolete-topic-tag",
         ]
         result = {
             "action": ModerationAction.NOT_SPAM,
@@ -363,6 +563,9 @@ class ProcessZendeskClassificationResultTests(TestCase):
         self.assertIn("seg-rel-esr", self.submission.zendesk_tags)
         self.assertIn("seg-policy-windows-gpo", self.submission.zendesk_tags)
         self.assertIn("loginless_ticket", self.submission.zendesk_tags)
+        self.assertIn(ENTERPRISE_SUPPORT_TAG, self.submission.zendesk_tags)
+        self.assertIn("stage", self.submission.zendesk_tags)
+        self.assertNotIn("obsolete-topic-tag", self.submission.zendesk_tags)
 
 
 class SyncTicketFromZendeskTests(TestCase):
@@ -542,335 +745,10 @@ class SyncTicketFromZendeskTests(TestCase):
         self.assertIsNotNone(self.ticket.zd_deleted_at)
 
 
-class ResolveOrgGroupTests(TestCase):
-    def setUp(self):
-        self.product = ProductFactory()
-        zd = ZendeskConfigFactory(name="zd")
-        self.config = ProductSupportConfigFactory(product=self.product, zendesk_config=zd)
-
-        root_group = Group.objects.create(name="firefox-enterprise")
-        self.root = GroupProfile.objects.add_root(
-            create_kwargs={"group": root_group, "slug": "firefox-enterprise"}
-        )
-
-        self.c1_group = Group.objects.create(name="company1")
-        self.c1 = GroupProfile.objects.add_child(
-            self.root, create_kwargs={"group": self.c1_group, "slug": "company1"}
-        )
-        SupportOrganizationFactory(config=self.config, group=self.c1_group)
-
-        it_group = Group.objects.create(name="company1.IT")
-        self.c1_it = GroupProfile.objects.add_child(
-            self.c1, create_kwargs={"group": it_group, "slug": "company1-it"}
-        )
-
-        self.it_user = UserFactory()
-        self.it_user.groups.add(it_group)
-        self.stranger = UserFactory()
-
-    def test_descendant_member_resolves_to_org_root(self):
-        self.assertEqual(resolve_org_group(self.it_user, self.product), self.c1)
-
-    def test_nested_support_organizations_resolves_to_deepest(self):
-        """When multiple ancestors are support organizations, pick the nearest (deepest)."""
-        SupportOrganizationFactory(config=self.config, group=self.c1_it.group)
-        self.assertEqual(resolve_org_group(self.it_user, self.product), self.c1_it)
-        self.assertEqual(resolve_user_org_group(self.it_user), self.c1_it)
-
-    def test_non_member_resolves_to_none(self):
-        self.assertIsNone(resolve_org_group(self.stranger, self.product))
-
-    def test_ancestor_sibling_and_unrelated_members_do_not_resolve_to_company(self):
-        sibling = GroupProfile.objects.add_child(
-            self.root,
-            create_kwargs={"group": Group.objects.create(name="company2"), "slug": "company2"},
-        )
-        unrelated = GroupProfile.objects.add_root(
-            create_kwargs={"group": Group.objects.create(name="unrelated"), "slug": "unrelated"}
-        )
-        for profile in (self.root, sibling, unrelated):
-            with self.subTest(group=profile.slug):
-                self.stranger.groups.set([profile.group])
-                self.assertIsNone(resolve_org_group(self.stranger, self.product))
-                self.assertIsNone(resolve_user_org_group(self.stranger))
-
-    def test_equal_depth_organizations_resolve_by_slug(self):
-        company = GroupProfile.objects.add_child(
-            self.root,
-            create_kwargs={"group": Group.objects.create(name="company0"), "slug": "company0"},
-        )
-        SupportOrganizationFactory(config=self.config, group=company.group)
-        # Legacy conflicting memberships must still resolve predictably.
-        self.it_user.groups.through.objects.create(user=self.it_user, group=company.group)
-
-        self.assertEqual(resolve_org_group(self.it_user, self.product), company)
-        self.assertEqual(resolve_user_org_group(self.it_user), company)
-
-    def test_unauthenticated_users_do_not_resolve_to_organization(self):
-        for user in (None, AnonymousUser()):
-            with self.subTest(user=user):
-                self.assertIsNone(resolve_org_group(user, self.product))
-                self.assertIsNone(resolve_user_org_group(user))
-
-    def test_inactive_config_only_prevents_product_resolution(self):
-        self.config.is_active = False
-        self.config.save()
-
-        self.assertIsNone(resolve_org_group(self.it_user, self.product))
-        self.assertEqual(resolve_user_org_group(self.it_user), self.c1)
-
-    def test_no_zendesk_config_returns_none(self):
-        product2 = ProductFactory()
-        ProductSupportConfigFactory(
-            product=product2, zendesk_config=None, forum_config=AAQConfigFactory()
-        )
-        self.assertIsNone(resolve_org_group(self.it_user, product2))
-
-    def test_no_support_organizations_returns_none(self):
-        product2 = ProductFactory()
-        zd2 = ZendeskConfigFactory(name="zd2")
-        ProductSupportConfigFactory(product=product2, zendesk_config=zd2)
-        self.assertIsNone(resolve_org_group(self.it_user, product2))
-
-    def test_no_config_returns_none(self):
-        product2 = ProductFactory()
-        self.assertIsNone(resolve_org_group(self.it_user, product2))
-
-
-@override_switch("zendesk-chat", active=True)
-@override_settings(
-    ZENDESK_CHAT_WIDGET_KEY="test-widget-key",
-    ZENDESK_CHAT_SIGNING_SECRET="test-signing-secret",
-    ZENDESK_CHAT_SIGNING_KEY_ID="test-key-id",
-)
-class ResolveChatEligibilityTests(TestCase):
-    def setUp(self):
-        self.product = ProductFactory()
-        self.config = ProductSupportConfigFactory(
-            product=self.product,
-            zendesk_config=ZendeskConfigFactory(),
-        )
-        self.root = GroupProfile.objects.add_root(
-            create_kwargs={"group": Group.objects.create(name="enterprise"), "slug": "enterprise"}
-        )
-        self.company = GroupProfile.objects.add_child(
-            self.root,
-            create_kwargs={"group": Group.objects.create(name="company"), "slug": "company"},
-        )
-        self.org = SupportOrganizationFactory(
-            config=self.config, group=self.company.group, include_live_chat=True
-        )
-        department = GroupProfile.objects.add_child(
-            self.company,
-            create_kwargs={"group": Group.objects.create(name="department"), "slug": "department"},
-        )
-        self.team = GroupProfile.objects.add_child(
-            department, create_kwargs={"group": Group.objects.create(name="team"), "slug": "team"}
-        )
-        self.user = UserFactory()
-        self.user.groups.add(self.company.group)
-
-    def _assert_eligible(self, result):
-        self.assertTrue(result.eligible)
-        self.assertEqual(result.org, self.org)
-        self.assertIsNone(result.reason)
-
-    def _assert_ineligible(self, result, reason):
-        self.assertFalse(result.eligible)
-        self.assertIsNone(result.org)
-        self.assertEqual(result.reason, reason)
-
-    @override_switch("zendesk-chat", active=False)
-    def test_switch_off(self):
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, self.product), "chat_is_disabled"
-        )
-
-    def test_switched_on_but_not_configured(self):
-        for setting in (
-            "ZENDESK_CHAT_WIDGET_KEY",
-            "ZENDESK_CHAT_SIGNING_SECRET",
-            "ZENDESK_CHAT_SIGNING_KEY_ID",
-        ):
-            with self.subTest(setting=setting), self.settings(**{setting: ""}):
-                self._assert_ineligible(
-                    resolve_chat_eligibility(self.user, self.product), "chat_not_configured"
-                )
-
-    def test_membership_resolves_one_org_per_product(self):
-        self.config.forum_config = AAQConfigFactory()
-        self.config.default_support_type = ProductSupportConfig.SUPPORT_TYPE_FORUM
-        self.config.group_default_support_type = ProductSupportConfig.SUPPORT_TYPE_FORUM
-        self.config.save()
-        SupportOrganizationFactory(
-            config=ProductSupportConfigFactory(zendesk_config=ZendeskConfigFactory()),
-            group=self.company.group,
-            include_live_chat=True,
-        )
-        for profile in (self.company, self.team):
-            with self.subTest(group=profile.slug):
-                self.user.groups.set([profile.group])
-                self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
-        self.user.groups.add(self.company.group)
-        self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
-
-    def test_ancestor_and_sibling_members_do_not_receive_chat(self):
-        sibling = GroupProfile.objects.add_child(
-            self.root,
-            create_kwargs={"group": Group.objects.create(name="sibling"), "slug": "sibling"},
-        )
-        for profile in (self.root, sibling):
-            with self.subTest(group=profile.slug):
-                self.user.groups.set([profile.group])
-                self._assert_ineligible(
-                    resolve_chat_eligibility(self.user, self.product), "no_entitled_org"
-                )
-
-    def test_leadership_does_not_grant_chat(self):
-        self.user.groups.clear()
-        self.company.leaders.add(self.user)
-        self.root.leaders.add(self.user)
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, self.product), "no_entitled_org"
-        )
-
-    def test_moderated_visibility_does_not_grant_chat(self):
-        self.root.update_visibility(GroupProfile.Visibility.MODERATED)
-        auditors = Group.objects.create(name="auditors")
-        self.root.visible_to_groups.add(auditors)
-        self.company.visible_to_groups.add(auditors)
-        self.user.groups.set([auditors])
-        self.assertTrue(self.company.can_view(self.user))
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, self.product), "no_entitled_org"
-        )
-
-    def test_staff_and_superuser_privileges_do_not_grant_chat(self):
-        self.user.groups.clear()
-        self.user.is_staff = True
-        self.user.is_superuser = True
-        self.user.save()
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, self.product), "no_entitled_org"
-        )
-
-    def test_authentication_and_archived_product_guards(self):
-        for user in (None, AnonymousUser()):
-            with self.subTest(user=user):
-                self._assert_ineligible(
-                    resolve_chat_eligibility(user, self.product), "not_authenticated"
-                )
-        self.user.is_active = False
-        self.user.save()
-        self._assert_ineligible(resolve_chat_eligibility(self.user, self.product), "inactive_user")
-        self.user.is_active = True
-        self.user.save()
-        self.product.is_archived = True
-        self.product.save()
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, self.product), "product_unavailable"
-        )
-
-    def test_missing_or_forum_only_config_has_no_ticketing_support(self):
-        product = ProductFactory()
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, product), "no_ticketing_support"
-        )
-        ProductSupportConfigFactory(
-            product=product, zendesk_config=None, forum_config=AAQConfigFactory()
-        )
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, product), "no_ticketing_support"
-        )
-
-    def test_membership_for_another_product_does_not_grant_chat(self):
-        requested = ProductFactory()
-        ProductSupportConfigFactory(product=requested, zendesk_config=ZendeskConfigFactory())
-        self._assert_ineligible(resolve_chat_eligibility(self.user, requested), "no_entitled_org")
-
-    def test_nested_legacy_orgs_are_ambiguous_only_with_chat(self):
-        nested_org = SupportOrganizationFactory(
-            config=self.config, group=self.team.group, include_live_chat=False
-        )
-        self.user.groups.set([self.team.group])
-        self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
-
-        nested_org.include_live_chat = True
-        nested_org.save()
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, self.product), "ambiguous_multi_org"
-        )
-
-    def test_subscription_is_required_but_does_not_replace_org_membership(self):
-        self.config.subscription_only = True
-        self.config.save()
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, self.product), "subscription_required"
-        )
-        self.user.profile.products.add(self.product)
-        self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
-        self.user.groups.clear()
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, self.product), "no_entitled_org"
-        )
-
-    def test_config_changes_are_not_cached(self):
-        self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
-        self.config.is_active = False
-        self.config.save()
-        self._assert_ineligible(
-            resolve_chat_eligibility(self.user, self.product), "no_ticketing_support"
-        )
-        self.config.is_active = True
-        self.config.save()
-        self._assert_eligible(resolve_chat_eligibility(self.user, self.product))
-
-
-class ResolveUserOrgGroupTests(TestCase):
-    def setUp(self):
-        self.product = ProductFactory()
-        zd = ZendeskConfigFactory(name="zd")
-        config = ProductSupportConfigFactory(product=self.product, zendesk_config=zd)
-
-        root_group = Group.objects.create(name="firefox-enterprise")
-        self.root = GroupProfile.objects.add_root(
-            create_kwargs={"group": root_group, "slug": "firefox-enterprise"}
-        )
-        c1_group = Group.objects.create(name="company1")
-        self.c1 = GroupProfile.objects.add_child(
-            self.root, create_kwargs={"group": c1_group, "slug": "company1"}
-        )
-        SupportOrganizationFactory(config=config, group=c1_group)
-
-        it_group = Group.objects.create(name="company1.IT")
-        self.c1_it = GroupProfile.objects.add_child(
-            self.c1, create_kwargs={"group": it_group, "slug": "company1-it"}
-        )
-
-        self.it_user = UserFactory()
-        self.it_user.groups.add(it_group)
-        self.stranger = UserFactory()
-
-    def test_member_resolves_to_org_root(self):
-        self.assertEqual(resolve_user_org_group(self.it_user), self.c1)
-
-    def test_non_member_returns_none(self):
-        self.assertIsNone(resolve_user_org_group(self.stranger))
-
-
-def set_up_live_chat(product):
-    """Offer live chat on the product through an org, and return the org's group."""
-    config = ProductSupportConfigFactory(product=product, zendesk_config=ZendeskConfigFactory())
-    root = GroupProfile.add_root(group=Group.objects.create(name="chat"), slug="chat")
-    company = root.add_child(group=Group.objects.create(name="company"), slug="company")
-    SupportOrganizationFactory(config=config, group=company.group, include_live_chat=True)
-    return company
-
-
-def chatter(org, fxa_uid="fxa-123"):
-    """A member of the org whose Zendesk user carries the given fxa_uid."""
+def chatter(company, fxa_uid="fxa-123"):
+    """A member of the company whose Zendesk user carries the given fxa_uid."""
     user = UserFactory()
-    user.groups.add(org.group)
+    user.groups.add(company.group)
     # Saved without signals, so nothing reaches out to Zendesk.
     Profile.objects.filter(user=user).update(fxa_uid=fxa_uid)
     return user
@@ -886,8 +764,9 @@ def chatter(org, fxa_uid="fxa-123"):
 class AdoptChatTicketTests(TestCase):
     def setUp(self):
         self.product = ProductFactory(slug="firefox-enterprise")
-        self.org = set_up_live_chat(self.product)
-        self.user = chatter(self.org)
+        self.coverage = SupportCoverageFactory(product=self.product, includes_chat=True)
+        self.company = self.coverage.contract.company
+        self.user = chatter(self.company)
 
     def _zd_ticket(self, **overrides):
         attrs = {
@@ -930,7 +809,13 @@ class AdoptChatTicketTests(TestCase):
         self.assertEqual(self.user, ticket.user)
         self.assertEqual(self.user.email, ticket.email)
         self.assertEqual(self.product, ticket.product)
-        self.assertEqual(self.org, ticket.org_group)
+        self.assertEqual(SupportTicket.Origin.ENTERPRISE, ticket.origin)
+        self.assertEqual(self.coverage, ticket.coverage)
+        self.assertEqual(self.company, ticket.org_group)
+        self.assertEqual(
+            accepted_context_for(self.product, self.coverage.zendesk_config, self.coverage),
+            ticket.accepted_context,
+        )
         self.assertTrue(ticket.is_chat)
         self.assertEqual(SupportTicket.STATUS_SENT, ticket.submission_status)
         self.assertEqual(parse_datetime("2026-09-20T10:00:00Z"), ticket.created)
@@ -947,24 +832,46 @@ class AdoptChatTicketTests(TestCase):
             adopt_chat_ticket(self._zd_ticket())
         self.assertFalse(SupportTicket.objects.exists())
 
-    def test_a_chat_from_someone_who_can_no_longer_chat_gets_no_organization(self, mock_client):
-        """The chat is still recorded, but no organization sees it."""
+    def test_a_chat_from_someone_who_can_no_longer_chat_gets_no_company(self, mock_client):
+        """The chat is still recorded, as a personal product ticket."""
         self._mock_zendesk(mock_client)
-        self.user.groups.remove(self.org.group)
+        self.user.groups.remove(self.company.group)
 
         ticket = adopt_chat_ticket(self._zd_ticket())
 
         self.assertEqual(self.user, ticket.user)
+        self.assertEqual(SupportTicket.Origin.PRODUCT, ticket.origin)
+        self.assertIsNone(ticket.coverage)
         self.assertIsNone(ticket.org_group)
+        self.assertEqual({}, ticket.accepted_context)
 
     def test_adopting_the_same_chat_again_returns_the_same_ticket(self, mock_client):
-        self._mock_zendesk(mock_client)
+        client = self._mock_zendesk(mock_client)
+        comments = client.get_ticket_comments.return_value
 
-        first = adopt_chat_ticket(self._zd_ticket())
-        second = adopt_chat_ticket(self._zd_ticket())
+        with self.subTest("replay"):
+            first = adopt_chat_ticket(self._zd_ticket())
+            second = adopt_chat_ticket(self._zd_ticket())
 
-        self.assertEqual(first.id, second.id)
-        self.assertEqual(1, SupportTicket.objects.count())
+            self.assertEqual(first.id, second.id)
+            self.assertEqual(1, SupportTicket.objects.filter(zendesk_ticket_id="555").count())
+            client.get_ticket_comments.assert_called_once()
+
+        with self.subTest("concurrent adoption"):
+
+            def adopt_concurrently(ticket_id):
+                # Another adoption commits between the replay check and get_or_create.
+                SupportTicketFactory(zendesk_ticket_id=str(ticket_id), subject="Winner")
+                return comments
+
+            client.get_ticket_comments.side_effect = adopt_concurrently
+
+            ticket = adopt_chat_ticket(self._zd_ticket(id=556))
+
+            ticket.refresh_from_db()
+            self.assertEqual(SupportTicket.objects.get(zendesk_ticket_id="556"), ticket)
+            self.assertEqual("Winner", ticket.subject)
+            self.assertEqual([], ticket.comments)
 
     def test_a_ticket_that_is_not_a_chat_is_left_alone(self, mock_client):
         self._mock_zendesk(mock_client)

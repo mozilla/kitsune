@@ -1,18 +1,25 @@
+from datetime import timedelta
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
+from uuid import uuid4
 
-from django.contrib.auth.models import Group, User
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db import transaction
+from django.utils import timezone
 from kombu.exceptions import OperationalError
+from waffle.testutils import override_switch
 
-from kitsune.customercare.tasks import revoke_chat_tickets
-from kitsune.groups.models import GroupProfile
-from kitsune.products.models import ProductSupportConfig, SupportOrganization
-from kitsune.products.tests import (
-    ProductFactory,
-    ProductSupportConfigFactory,
-    SupportOrganizationFactory,
-    ZendeskConfigFactory,
+from kitsune.customercare.tasks import (
+    revoke_chat_tickets,
+    revoke_expired_chat,
+    tag_revoked_chat_tickets,
 )
-from kitsune.questions.tests import AAQConfigFactory
+from kitsune.customercare.zendesk import CHAT_REVOKED_TAG
+from kitsune.groups.models import GroupProfile
+from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
+from kitsune.products.models import Product, SupportContract
+from kitsune.products.tests import SupportCoverageFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.monkeypatch import _deactivate_users
 from kitsune.users.tests import UserFactory
@@ -35,17 +42,22 @@ class TagChatTicketsIfRevokedTests(TestCase):
     def setUp(self):
         # Saving a user with a zendesk_id would otherwise call Zendesk.
         self.enterContext(patch("kitsune.customercare.signals.update_zendesk_user"))
+        self.enterContext(patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay"))
 
     def test_queues_the_task_after_the_commit_with_the_zendesk_id_read_now(self, delay):
         user = UserFactory(profile__zendesk_id="789")
+        now = timezone.now()
 
-        with self.captureOnCommitCallbacks(execute=True):
+        with (
+            patch("kitsune.customercare.tasks.timezone.now", return_value=now),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
             revoke_chat_tickets(user)
             # Deleting the user erases their zendesk_id before the commit.
             user.delete()
             delay.assert_not_called()
 
-        delay.assert_called_once_with("789")
+        delay.assert_called_once_with("789", product_slugs=None, before=now.isoformat())
 
     def test_a_user_without_a_zendesk_id_is_skipped(self, delay):
         user = UserFactory(profile__zendesk_id="")
@@ -67,205 +79,234 @@ class TagChatTicketsIfRevokedTests(TestCase):
         self.assertFalse(User.all_users.filter(pk=user_id).exists())
 
 
-@patch("kitsune.customercare.signals.revoke_chat_tickets")
-class RevokedChatSignalTests(TestCase):
+def save(instance, **changes):
+    for field, value in changes.items():
+        setattr(instance, field, value)
+    instance.save()
+
+
+@patch("kitsune.customercare.tasks.tag_revoked_chat_tickets.delay")
+class ChatRevocationTests(TestCase):
     def setUp(self):
         # Saving a user with a zendesk_id would otherwise call Zendesk.
         self.enterContext(patch("kitsune.customercare.signals.update_zendesk_user"))
-        self.product = ProductFactory()
-        self.config = ProductSupportConfigFactory(
-            product=self.product, zendesk_config=ZendeskConfigFactory()
+        self.enterContext(patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay"))
+        self.enterContext(patch("kitsune.groups.tasks.remove_stale_zendesk_memberships.delay"))
+        self.today = timezone.localdate()
+        self.yesterday = self.today - timedelta(days=1)
+
+    def member(self, includes_chat=True, ends_on=None):
+        """A department member of a company whose contract runs until `ends_on`."""
+        coverage = SupportCoverageFactory(
+            includes_chat=includes_chat,
+            contract__ends_on=ends_on or self.today + timedelta(days=30),
         )
-        root = GroupProfile.objects.add_root(
-            create_kwargs={"group": Group.objects.create(name="chat"), "slug": "chat"}
-        )
-        company = GroupProfile.objects.add_child(
-            root, create_kwargs={"group": Group.objects.create(name="company"), "slug": "company"}
-        )
-        self.org = SupportOrganizationFactory(
-            config=self.config, group=company.group, include_live_chat=True
-        )
-        # Membership of a subgroup counts for the organization above it.
-        self.team = GroupProfile.objects.add_child(
-            company, create_kwargs={"group": Group.objects.create(name="team"), "slug": "team"}
-        ).group
-        self.unrelated = Group.objects.create(name="unrelated")
-
-        self.user = UserFactory(profile__zendesk_id="789")
-        self.user.groups.add(self.team, self.unrelated)
-        self.bystander = UserFactory()
-        self.bystander.groups.add(self.unrelated)
-
-    def notified(self, notify):
-        return {c.args[0] for c in notify.call_args_list}
-
-    def is_active_in_db(self, notify):
-        """Record whether the database has the user as active each time we notify.
-
-        A test runs inside one transaction, so the database already shows a change
-        made earlier in the test, even though it isn't committed. Seeing the old value
-        means we notified before the change was saved, so the task would read stale data.
-        """
-        seen = []
-        notify.side_effect = lambda user: seen.append(User.objects.get(pk=user.pk).is_active)
-        return seen
-
-    def test_deleting_a_user_tags_before_their_zendesk_id_is_gone(self, notify):
-        seen = []
-        notify.side_effect = lambda user: seen.append(user.profile.zendesk_id)
-
-        delete_user_pipeline(self.user)
-
-        self.assertEqual(seen[0], "789")
-
-    def test_anonymizing_a_user_tags_after_deactivating_with_the_zendesk_id_intact(self, notify):
-        seen = []
-        notify.side_effect = lambda user: seen.append(
-            (user.profile.zendesk_id, User.objects.get(pk=user.pk).is_active)
+        department = DepartmentFactory(company=coverage.contract.company)
+        user = UserFactory(profile__zendesk_id=str(uuid4()))
+        user.groups.add(department.group)
+        return SimpleNamespace(
+            user=user,
+            zendesk_id=user.profile.zendesk_id,
+            department=department,
+            coverage=coverage,
+            contract=coverage.contract,
         )
 
-        anonymize_user(self.user)
+    def tagged(self, delay, change, member):
+        delay.reset_mock()
+        with self.captureOnCommitCallbacks(execute=True):
+            change(member)
+            delay.assert_not_called()
+        return {call.args[0] for call in delay.call_args_list}
 
-        self.assertEqual(seen[0], ("789", False))
-
-    def test_deleting_or_deactivating_a_user_outside_any_chat_org_does_not(self, notify):
-        self.bystander.is_active = False
-        self.bystander.save()
-        delete_user_pipeline(self.bystander)
-
-        notify.assert_not_called()
-
-    def test_deactivating_a_user_tags_after_the_save(self, notify):
-        active = self.is_active_in_db(notify)
-
-        self.user.is_active = False
-        self.user.save()
-
-        self.assertEqual(self.notified(notify), {self.user})
-        self.assertEqual(active, [False])
-
-    def test_saving_an_already_inactive_user_does_not(self, notify):
-        User.objects.filter(pk=self.user.pk).update(is_active=False)
-        self.user.refresh_from_db()
-
-        self.user.save()
-
-        notify.assert_not_called()
-
-    def test_the_admins_bulk_deactivation_tags_after_the_save(self, notify):
-        active = self.is_active_in_db(notify)
-
-        _deactivate_users(Mock(), Mock(), User.objects.filter(pk=self.user.pk))
-
-        self.assertEqual(self.notified(notify), {self.user})
-        self.assertEqual(active, [False])
-
-    def test_removal_from_a_chat_group_tags_from_either_side(self, notify):
-        self.user.groups.remove(self.team)
-        self.assertEqual(self.notified(notify), {self.user})
-
-        notify.reset_mock()
-        self.user.groups.add(self.team)
-        self.team.user_set.remove(self.user)
-        self.assertEqual(self.notified(notify), {self.user})
-
-    def test_clearing_groups_tags_from_either_side(self, notify):
-        self.user.groups.clear()
-        self.assertEqual(self.notified(notify), {self.user})
-
-        notify.reset_mock()
-        self.user.groups.add(self.team)
-        self.team.user_set.clear()
-        self.assertEqual(self.notified(notify), {self.user})
-
-    def test_removal_from_an_unrelated_group_does_not(self, notify):
-        self.user.groups.remove(self.unrelated)
-        self.unrelated.user_set.clear()
-
-        notify.assert_not_called()
-
-    def test_deleting_a_chat_subgroup_tags_its_members(self, notify):
-        self.team.delete()
-
-        self.assertEqual(self.notified(notify), {self.user})
-
-    def test_deleting_a_chat_subgroup_tags_members_of_its_subgroups(self, notify):
-        subteam = GroupProfile.objects.add_child(
-            GroupProfile.objects.get(group=self.team),
-            create_kwargs={"group": Group.objects.create(name="subteam"), "slug": "subteam"},
-        ).group
-        subteam_user = UserFactory()
-        subteam_user.groups.add(subteam)
-
-        self.team.delete()
-
-        self.assertEqual(self.notified(notify), {self.user, subteam_user})
-
-    def test_deleting_an_unrelated_group_does_not(self, notify):
-        self.unrelated.delete()
-
-        notify.assert_not_called()
-
-    def test_switching_chat_off_for_an_organization_tags_its_members_after_the_save(self, notify):
-        has_chat = []
-        notify.side_effect = lambda user: has_chat.append(
-            SupportOrganization.objects.get(pk=self.org.pk).include_live_chat
+    def expire(self, member, renewed=False, days_ago=1):
+        SupportContract.objects.filter(pk=member.contract.pk).update(
+            ends_on=self.today - timedelta(days=days_ago)
         )
+        if renewed:
+            SupportCoverageFactory(
+                product=member.coverage.product,
+                includes_chat=True,
+                contract__company=member.contract.company,
+                contract__starts_on=self.today,
+                contract__ends_on=self.today + timedelta(days=30),
+            )
+        revoke_expired_chat()
 
-        self.org.include_live_chat = False
-        self.org.save()
+    def test_losing_chat_tags_the_members_chats_after_commit(self, delay):
+        other_company = EnterpriseCompanyFactory()
+        for name, change in (
+            ("leaving the company", lambda m: m.user.groups.remove(m.department.group)),
+            ("removal by the group", lambda m: m.department.group.user_set.remove(m.user)),
+            ("clearing the user's groups", lambda m: m.user.groups.clear()),
+            ("clearing the group's members", lambda m: m.department.group.user_set.clear()),
+            ("deleting the department", lambda m: m.department.group.delete()),
+            (
+                "moving the department to another company",
+                lambda m: GroupProfile.objects.move(m.department, other_company, "last-child"),
+            ),
+            ("deactivation", lambda m: save(m.user, is_active=False)),
+            (
+                "the admin's bulk deactivation",
+                lambda m: _deactivate_users(Mock(), Mock(), User.objects.filter(pk=m.user.pk)),
+            ),
+            ("anonymization", lambda m: anonymize_user(m.user)),
+            ("deletion", lambda m: delete_user_pipeline(m.user)),
+            (
+                "suspending the contract",
+                lambda m: save(m.contract, status=SupportContract.Status.SUSPENDED),
+            ),
+            (
+                "cancelling the contract",
+                lambda m: save(m.contract, status=SupportContract.Status.CANCELLED),
+            ),
+            ("ending the contract early", lambda m: save(m.contract, ends_on=self.yesterday)),
+            ("turning chat off", lambda m: save(m.coverage, includes_chat=False)),
+            ("archiving the product", lambda m: save(m.coverage.product, is_archived=True)),
+            ("the contract running out", self.expire),
+            ("the contract running out during skipped runs", lambda m: self.expire(m, days_ago=7)),
+        ):
+            with self.subTest(name), transaction.atomic():
+                member = self.member()
+                self.assertEqual(self.tagged(delay, change, member), {member.zendesk_id})
+                transaction.set_rollback(True)
 
-        self.assertEqual(self.notified(notify), {self.user})
-        self.assertEqual(has_chat, [False])
+    def test_users_who_keep_or_never_had_chat_are_not_tagged(self, delay):
+        unrelated = GroupProfileFactory()
 
-    def test_saving_an_organization_that_keeps_chat_does_not(self, notify):
-        self.org.save()
+        def leave(member):
+            member.user.groups.remove(member.department.group)
 
-        notify.assert_not_called()
+        def leave_unrelated_group(member):
+            member.user.groups.add(unrelated.group)
+            member.user.groups.remove(unrelated.group)
 
-    def test_deleting_an_organization_tags_its_members(self, notify):
-        self.org.delete()
+        def resave_inactive_user(member):
+            User.objects.filter(pk=member.user.pk).update(is_active=False)
+            member.user.refresh_from_db()
+            member.user.save()
 
-        self.assertEqual(self.notified(notify), {self.user})
+        def leave_department_but_stay_in_company(member):
+            member.user.groups.add(member.contract.company.group)
+            leave(member)
 
-    def test_switching_off_a_config_tags_its_organizations_members(self, notify):
-        self.config.is_active = False
-        self.config.save()
+        def delete_one_of_two_departments(member):
+            member.user.groups.add(DepartmentFactory(company=member.contract.company).group)
+            member.department.group.delete()
 
-        self.assertEqual(self.notified(notify), {self.user})
+        def deactivate_quietly(member):
+            User.objects.filter(pk=member.user.pk).update(is_active=False)
 
-    def test_dropping_zendesk_from_a_config_tags_its_organizations_members(self, notify):
-        self.config.forum_config = AAQConfigFactory()
-        self.config.zendesk_config = None
-        self.config.save()
+        def remove_inactive_member(member):
+            deactivate_quietly(member)
+            leave(member)
 
-        self.assertEqual(self.notified(notify), {self.user})
+        def suspend_inactive_members_contract(member):
+            deactivate_quietly(member)
+            save(member.contract, status=SupportContract.Status.SUSPENDED)
 
-    def test_a_config_requiring_a_subscription_tags_its_organizations_members(self, notify):
-        self.config.subscription_only = True
-        self.config.save()
+        def resave_archived_product(member):
+            Product.objects.filter(pk=member.coverage.product_id).update(is_archived=True)
+            save(member.coverage.product, is_archived=True)
 
-        self.assertEqual(self.notified(notify), {self.user})
+        for name, member_kwargs, change in (
+            ("leaving a company without chat", {"includes_chat": False}, leave),
+            (
+                "leaving over a week after the contract ended",
+                {"ends_on": self.today - timedelta(days=8)},
+                leave,
+            ),
+            ("leaving a group outside the company", {}, leave_unrelated_group),
+            (
+                "leaving a department while still in the company",
+                {},
+                leave_department_but_stay_in_company,
+            ),
+            ("deleting one of two departments", {}, delete_one_of_two_departments),
+            ("removing an inactive member", {}, remove_inactive_member),
+            ("suspending an inactive member's contract", {}, suspend_inactive_members_contract),
+            (
+                "deactivating a user without chat",
+                {"includes_chat": False},
+                lambda m: save(m.user, is_active=False),
+            ),
+            ("saving an already inactive user", {}, resave_inactive_user),
+            (
+                "deleting a user without chat",
+                {"includes_chat": False},
+                lambda m: delete_user_pipeline(m.user),
+            ),
+            ("saving a contract that keeps chat", {}, lambda m: save(m.contract)),
+            ("re-saving an archived product", {}, resave_archived_product),
+            (
+                "archiving a product without chat",
+                {"includes_chat": False},
+                lambda m: save(m.coverage.product, is_archived=True),
+            ),
+            (
+                "the contract running out with a renewal",
+                {},
+                lambda m: self.expire(m, renewed=True),
+            ),
+            (
+                "the daily run on the contract's last day",
+                {"ends_on": self.today},
+                lambda m: revoke_expired_chat(),
+            ),
+            (
+                "the contract running out over a week ago",
+                {},
+                lambda m: self.expire(m, days_ago=8),
+            ),
+        ):
+            with self.subTest(name), transaction.atomic():
+                member = self.member(**member_kwargs)
+                self.assertEqual(self.tagged(delay, change, member), set())
+                transaction.set_rollback(True)
 
-    def test_saving_a_config_that_keeps_chat_does_not(self, notify):
-        self.config.save()
+    def test_changes_after_expiry_do_not_escape_the_daily_cleanup(self, delay):
+        for name, change in (
+            ("departure", lambda m: m.user.groups.remove(m.department.group)),
+            ("deactivation", lambda m: save(m.user, is_active=False)),
+            ("deletion", lambda m: delete_user_pipeline(m.user)),
+            ("cancellation", lambda m: save(m.contract, status=SupportContract.Status.CANCELLED)),
+            ("chat disabled", lambda m: save(m.coverage, includes_chat=False)),
+        ):
+            with self.subTest(name), transaction.atomic():
+                member = self.member(ends_on=self.yesterday)
+                self.assertEqual(self.tagged(delay, change, member), {member.zendesk_id})
+                transaction.set_rollback(True)
 
-        notify.assert_not_called()
+    @override_switch("zendesk-chat", active=True)
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_losing_one_products_coverage_keeps_other_product_chats(self, client_class, delay):
+        member = self.member()
+        other = SupportCoverageFactory(contract=member.contract, includes_chat=True)
+        prefix = settings.ZENDESK_CHAT_PRODUCT_TAG_PREFIX
+        client = client_class.return_value
+        client.get_active_chat_tickets.return_value = [
+            Mock(
+                id=ticket_id,
+                created_at="2020-01-01T00:00:00Z",
+                tags=[f"{prefix}{coverage.product.slug}"],
+            )
+            for ticket_id, coverage in ((1, member.coverage), (2, other))
+        ]
 
-    def test_losing_a_subscription_that_chat_does_not_require_does_not(self, notify):
-        self.user.profile.products.add(self.product)
+        with self.captureOnCommitCallbacks(execute=True):
+            save(member.coverage, includes_chat=False)
+            delay.assert_not_called()
+        tag_revoked_chat_tickets(*delay.call_args.args, **delay.call_args.kwargs)
 
-        self.user.profile.products.remove(self.product)
+        client.add_ticket_tags.assert_called_once_with(1, [CHAT_REVOKED_TAG])
 
-        notify.assert_not_called()
+    def test_a_rolled_back_change_tags_nothing(self, delay):
+        member = self.member()
 
-    def test_a_login_sync_tags_only_when_the_subscription_is_gone(self, notify):
-        ProductSupportConfig.objects.filter(pk=self.config.pk).update(subscription_only=True)
-        self.user.profile.products.add(self.product)
+        with self.captureOnCommitCallbacks(execute=True):
+            with self.assertRaises(RuntimeError), transaction.atomic():
+                member.user.groups.remove(member.department.group)
+                save(member.contract, status=SupportContract.Status.SUSPENDED)
+                raise RuntimeError
 
-        # The login sync sets the products from the Mozilla account's subscriptions.
-        self.user.profile.products.set([self.product])
-        notify.assert_not_called()
-
-        self.user.profile.products.set([])
-        self.assertEqual(self.notified(notify), {self.user})
+        delay.assert_not_called()

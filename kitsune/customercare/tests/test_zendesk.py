@@ -4,24 +4,49 @@ from unittest.mock import Mock, patch
 from urllib.parse import parse_qs, urlsplit
 
 import requests
-from django.contrib.auth.models import AnonymousUser
+from django.conf import settings
+from django.contrib.auth.models import AnonymousUser, Group, User
 from django.core.cache import cache
 from django.core.checks import Warning
+from django.db import ProgrammingError, transaction
 from django.test import SimpleTestCase, override_settings
+from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 from zenpy.lib.exception import APIException, RatelimitBudgetExceeded, ZenpyException
 
 from kitsune.customercare.checks import (
     check_zendesk_chat_configuration,
+    check_zendesk_chat_switch,
     check_zendesk_oauth_configuration,
 )
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import SupportTicket, ZendeskOrganization, accepted_context_for
+from kitsune.customercare.tests import EnterpriseTicketFactory, SupportTicketFactory
+from kitsune.customercare.utils import send_support_ticket_to_zendesk
 from kitsune.customercare.zendesk import (
+    ENTERPRISE_SUPPORT_TAG,
     LOGINLESS_TAG,
     ZendeskClient,
     ZendeskProvisioningConflict,
 )
+from kitsune.flagit.models import FlaggedObject
+from kitsune.groups.provisioning import (
+    ZendeskProvisioningProgress,
+    provision_zendesk_membership,
+)
+from kitsune.groups.tests import EnterpriseCompanyFactory
+from kitsune.products.tests import (
+    ProductSupportConfigFactory,
+    SupportCoverageFactory,
+    ZendeskConfigFactory,
+)
 from kitsune.sumo.tests import TestCase
+from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
+
+MEMBERSHIPS_PAGE_2 = (
+    "https://provisioning-test.zendesk.com/api/v2/users/123/organization_memberships.json?page=2"
+)
 
 
 def chat_ticket(id, status="open", channel=SupportTicket.ZD_CHANNEL_MESSAGING):
@@ -91,6 +116,220 @@ class ZendeskClientTests(TestCase):
             "ssa-sign-in-failure-automation",
         ]
         self.assertEqual(call_args.tags, expected_tags)
+
+    def enterprise_ticket(self, **fields):
+        """An enterprise ticket from a provisioned member of a company linked in Zendesk."""
+        coverage = SupportCoverageFactory()
+        company = coverage.contract.company
+        ZendeskOrganization.objects.create(group_profile=company, zendesk_id="321")
+        user = UserFactory(profile__zendesk_id="456", groups=[company.group])
+        return EnterpriseTicketFactory(user=user, coverage=coverage, **fields)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_enterprise_payload_sets_organization_and_tag(self, mock_zenpy):
+        zenpy = mock_zenpy.return_value
+        zenpy.users.update.return_value = Mock(id=456)
+        zenpy.users.organization_memberships.return_value = [
+            Mock(user_id=456, organization_id=654),
+            Mock(user_id="00456", organization_id="00321"),
+        ]
+        zenpy.tickets.create.return_value = Mock(ticket=Mock(id=789))
+        ticket = self.enterprise_ticket(zendesk_tags=["seg-rel-esr"])
+
+        self.assertTrue(send_support_ticket_to_zendesk(ticket))
+
+        payload = zenpy.tickets.create.call_args.args[0]
+        self.assertEqual(payload.organization_id, 321)
+        self.assertEqual(payload.tags, ["seg-rel-esr", ENTERPRISE_SUPPORT_TAG])
+        zenpy.users.organization_memberships.assert_called_once_with(user=456)
+        self.assertEqual(zenpy.organization_memberships.mock_calls, [])
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.zendesk_tags, ["seg-rel-esr"])
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_enterprise_ticket_is_held_before_any_zendesk_call(self, mock_zenpy):
+        def move_to_another_company(ticket):
+            other_company = EnterpriseCompanyFactory()
+            ticket.user.groups.set([other_company.group])
+            ticket.coverage.contract.company = other_company
+            ticket.coverage.contract.save(update_fields=["company"])
+
+        def join_a_second_company(ticket):
+            # Inserted directly, as the membership guard refuses a second company.
+            User.groups.through.objects.create(
+                user=ticket.user, group=EnterpriseCompanyFactory().group
+            )
+
+        def set_organization_id(zendesk_id):
+            return lambda ticket: ZendeskOrganization.objects.filter(
+                group_profile=ticket.org_group
+            ).update(zendesk_id=zendesk_id)
+
+        not_a_member = "The requester is no longer a member of the accepted company"
+        unlinked = "The company has no linked Zendesk organization"
+        for name, change, note in (
+            ("requester moved to another company", move_to_another_company, not_a_member),
+            ("requester in a second company", join_a_second_company, not_a_member),
+            (
+                "requester deactivated",
+                lambda ticket: User.objects.filter(pk=ticket.user.pk).update(is_active=False),
+                not_a_member,
+            ),
+            ("requester deleted", lambda ticket: ticket.user.delete(), not_a_member),
+            (
+                "organization deleted",
+                lambda ticket: ticket.org_group.zendesk_organization.delete(),
+                unlinked,
+            ),
+            ("organization id cleared", set_organization_id(None), unlinked),
+            ("organization id blank", set_organization_id(""), unlinked),
+            (
+                "requester not provisioned",
+                lambda ticket: Profile.objects.filter(user=ticket.user).update(zendesk_id=""),
+                "The requester has not been provisioned in the company's Zendesk organization",
+            ),
+        ):
+            with self.subTest(name), transaction.atomic():
+                ticket = self.enterprise_ticket()
+                accepted = (ticket.org_group, ticket.accepted_context)
+                change(ticket)
+                ticket.refresh_from_db()
+
+                self.assertFalse(send_support_ticket_to_zendesk(ticket))
+
+                ticket.refresh_from_db()
+                self.assertEqual(ticket.submission_status, SupportTicket.STATUS_FLAGGED)
+                self.assertFalse(ticket.zendesk_ticket_id)
+                self.assertEqual((ticket.org_group, ticket.accepted_context), accepted)
+                flag = FlaggedObject.objects.get(object_id=ticket.pk)
+                self.assertEqual(flag.reason, FlaggedObject.REASON_OTHER)
+                self.assertIn(note, flag.notes)
+                transaction.set_rollback(True)
+        mock_zenpy.assert_not_called()
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_enterprise_ticket_without_remote_membership_is_held_until_released(self, mock_zenpy):
+        zenpy = mock_zenpy.return_value
+        zenpy.users.update.return_value = Mock(id=456)
+        zenpy.users.organization_memberships.return_value = []
+        ticket = self.enterprise_ticket()
+        accepted = (ticket.org_group, ticket.accepted_context)
+
+        self.assertFalse(send_support_ticket_to_zendesk(ticket))
+
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_FLAGGED)
+        flag = FlaggedObject.objects.get(object_id=ticket.pk)
+        self.assertIn(
+            "The requester is not a member of the company's Zendesk organization", flag.notes
+        )
+        zenpy.tickets.create.assert_not_called()
+
+        moderator = UserFactory(
+            is_superuser=True, groups=[Group.objects.get_or_create(name=settings.STAFF_GROUP)[0]]
+        )
+        self.client.force_login(moderator)
+        spam_ticket = SupportTicketFactory(subject="Spam review")
+        moderation_ticket = SupportTicketFactory(subject="Content classification review")
+        for other_ticket, reason in (
+            (spam_ticket, FlaggedObject.REASON_SPAM),
+            (moderation_ticket, FlaggedObject.REASON_CONTENT_MODERATION),
+        ):
+            FlaggedObject.objects.create(
+                content_object=other_ticket, creator=moderator, reason=reason
+            )
+
+        response = self.client.get(reverse("flagit.zendesk_spam_queue"))
+
+        self.assertContains(response, ticket.subject)
+        self.assertIn(flag.notes, pq(response.content)(".notes").text())
+        self.assertContains(response, spam_ticket.subject)
+        self.assertNotContains(response, moderation_ticket.subject)
+
+        release_url = reverse("flagit.update", args=[flag.pk])
+        response = self.client.post(
+            release_url, {"status": FlaggedObject.FLAG_REJECTED}, follow=True
+        )
+
+        flag.refresh_from_db()
+        ticket.refresh_from_db()
+        self.assertEqual(flag.status, FlaggedObject.FLAG_PENDING)
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_FLAGGED)
+        self.assertContains(response, ticket.subject)
+        zenpy.tickets.create.assert_not_called()
+
+        zenpy.users.organization_memberships.return_value = [
+            Mock(user_id=456, organization_id=321)
+        ]
+        zenpy.tickets.create.return_value = Mock(ticket=Mock(id=789))
+
+        response = self.client.post(
+            release_url, {"status": FlaggedObject.FLAG_REJECTED}, follow=True
+        )
+
+        ticket.refresh_from_db()
+        flag.refresh_from_db()
+        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_SENT)
+        self.assertEqual(ticket.zendesk_ticket_id, "789")
+        self.assertEqual((ticket.org_group, ticket.accepted_context), accepted)
+        self.assertEqual(flag.status, FlaggedObject.FLAG_REJECTED)
+        self.assertNotContains(response, ticket.subject)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_enterprise_ticket_refused_by_zendesk_is_held_instead_of_rejected(self, mock_zenpy):
+        zenpy = mock_zenpy.return_value
+        zenpy.users.update.return_value = Mock(id=456)
+        zenpy.users.organization_memberships.return_value = [
+            Mock(user_id=456, organization_id=321)
+        ]
+        for error_class in ("RecordInvalid", "UserSuspended"):
+            with self.subTest(error_class=error_class), transaction.atomic():
+                ticket = self.enterprise_ticket()
+                zenpy.tickets.create.side_effect = APIException(
+                    json.dumps(
+                        {
+                            "error": "RecordInvalid",
+                            "details": {"requester": [{"error": error_class}]},
+                        }
+                    )
+                )
+
+                self.assertFalse(send_support_ticket_to_zendesk(ticket))
+
+                ticket.refresh_from_db()
+                self.assertEqual(ticket.submission_status, SupportTicket.STATUS_FLAGGED)
+                flag = FlaggedObject.objects.get(object_id=ticket.pk)
+                self.assertEqual(flag.reason, FlaggedObject.REASON_OTHER)
+                self.assertEqual(flag.status, FlaggedObject.FLAG_PENDING)
+                self.assertEqual(
+                    flag.notes,
+                    f"Failed to send to Zendesk: Zendesk refused the ticket ({error_class})",
+                )
+                transaction.set_rollback(True)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_product_ticket_does_not_set_or_read_organization(self, mock_zenpy):
+        self.user.profile.zendesk_id = "456"
+        mock_zenpy.return_value.users.update.return_value = Mock(id=456, organization_id=654)
+        mock_zenpy.return_value.tickets.create.return_value = Mock(ticket=Mock(id=789))
+        support_config = ProductSupportConfigFactory(zendesk_config=ZendeskConfigFactory())
+        ticket = SupportTicketFactory(
+            user=self.user,
+            product=support_config.product,
+            origin=SupportTicket.Origin.PRODUCT,
+            zendesk_tags=["seg-rel-esr", ENTERPRISE_SUPPORT_TAG],
+            accepted_context=accepted_context_for(
+                support_config.product, support_config.zendesk_config
+            ),
+        )
+
+        self.assertTrue(send_support_ticket_to_zendesk(ticket))
+
+        payload = mock_zenpy.return_value.tickets.create.call_args.args[0]
+        self.assertIsNone(payload.organization_id)
+        self.assertEqual(payload.tags, ["seg-rel-esr"])
+        mock_zenpy.return_value.users.organization_memberships.assert_not_called()
+        self.assertEqual(mock_zenpy.return_value.organization_memberships.mock_calls, [])
 
     @patch("kitsune.customercare.zendesk.Zenpy")
     @patch("django.conf.settings.ZENDESK_PRODUCT_FIELD_ID", 123)
@@ -885,17 +1124,11 @@ class ZendeskOAuthTests(SimpleTestCase):
         self.assertEqual(len(self.api_requests), 1)
 
 
-@override_settings(
-    ZENDESK_SUBDOMAIN="provisioning-test",
-    ZENDESK_USER_EMAIL="provisioner@example.com",
-    ZENDESK_API_TOKEN="test-api-token",
-    ZENDESK_OAUTH_CLIENT_ID="",
-    ZENDESK_OAUTH_CLIENT_SECRET="",
-)
-class ZendeskProvisioningTests(SimpleTestCase):
+class ZendeskProvisioningTransportMixin:
     """Exercise real Zenpy provisioning requests with no network access."""
 
     def setUp(self):
+        super().setUp()
         self.responses = []
         self.requests = []
         transport = patch("requests.sessions.Session.send", side_effect=self.send)
@@ -925,7 +1158,7 @@ class ZendeskProvisioningTests(SimpleTestCase):
         response.request = request
         response.url = request.url
         response.status_code = status
-        response._content = json.dumps(data).encode()
+        response._content = b"" if status == 204 else json.dumps(data).encode()
         return response
 
     def remote_user(self, **fields):
@@ -966,6 +1199,15 @@ class ZendeskProvisioningTests(SimpleTestCase):
             },
         )
 
+
+@override_settings(
+    ZENDESK_SUBDOMAIN="provisioning-test",
+    ZENDESK_USER_EMAIL="provisioner@example.com",
+    ZENDESK_API_TOKEN="test-api-token",
+    ZENDESK_OAUTH_CLIENT_ID="",
+    ZENDESK_OAUTH_CLIENT_SECRET="",
+)
+class ZendeskProvisioningTests(ZendeskProvisioningTransportMixin, SimpleTestCase):
     def test_conflict_exposes_only_safe_codes(self):
         for code, expected in (
             ("account_conflict", "account_conflict"),
@@ -1004,7 +1246,9 @@ class ZendeskProvisioningTests(SimpleTestCase):
             {"organization": {"id": 456, **self.organization_args}},
         )
 
-        self.assertEqual(self.client.ensure_organization(**self.organization_args), "456")
+        self.assertEqual(
+            self.client.ensure_organization(**self.organization_args, zendesk_id=""), "456"
+        )
         for request in self.requests:
             organization = json.loads(request.body)["organization"]
             self.assertEqual(organization["external_id"], self.organization_args["external_id"])
@@ -1013,16 +1257,93 @@ class ZendeskProvisioningTests(SimpleTestCase):
             self.assertNotIn("shared_tickets", organization)
 
     def test_organization_name_collision_is_not_adopted(self):
-        self.expect(
-            "POST",
-            "organizations/create_or_update",
-            {"error": "RecordInvalid", "description": "Name already exists"},
-            status=422,
-        )
-        with self.assertRaises(ZendeskProvisioningConflict) as error:
-            self.client.ensure_organization(**self.organization_args)
-        self.assertEqual(error.exception.code, "zendesk_conflict")
-        self.assertNotIn("Name already exists", str(error.exception))
+        for status, organizations in (
+            (400, None),
+            (409, None),
+            (422, []),
+            (422, [{"id": 789, "name": self.organization_args["name"], "external_id": "other"}]),
+            (422, [{"id": 456, "external_id": None}]),
+        ):
+            with self.subTest(status=status, organizations=organizations):
+                self.expect(
+                    "POST",
+                    "organizations/create_or_update",
+                    {"error": "RecordInvalid", "description": "Name already exists"},
+                    status=status,
+                )
+                # Only a 422 looks the organization up by its external id.
+                if organizations is not None:
+                    self.expect(
+                        "GET",
+                        "organizations/show_many",
+                        {"organizations": organizations, "next_page": None},
+                    )
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.client.ensure_organization(**self.organization_args)
+                self.assertEqual(error.exception.code, "zendesk_conflict")
+                self.assertNotIn("Name already exists", str(error.exception))
+
+    def test_organization_422_recovers_only_by_matching_external_id(self):
+        for external_id in (
+            self.organization_args["external_id"],
+            self.organization_args["external_id"].upper(),
+        ):
+            with self.subTest(external_id=external_id):
+                self.expect(
+                    "POST",
+                    "organizations/create_or_update",
+                    {"error": "RecordInvalid"},
+                    status=422,
+                )
+                self.expect(
+                    "GET",
+                    "organizations/show_many",
+                    {
+                        "organizations": [
+                            {"id": 789, "external_id": "another-company"},
+                            {"id": "00456", "external_id": external_id},
+                        ],
+                        "next_page": None,
+                    },
+                )
+
+                self.assertEqual(self.client.ensure_organization(**self.organization_args), "456")
+
+                self.assertEqual(
+                    json.loads(self.requests[-2].body),
+                    {"organization": self.organization_args},
+                )
+                self.assertEqual(
+                    parse_qs(urlsplit(self.requests[-1].url).query),
+                    {"external_ids": [self.organization_args["external_id"]]},
+                )
+                self.assertIsNone(self.requests[-1].body)
+
+    def test_organization_422_lookup_preserves_error_translation(self):
+        for status, code in ((404, "resource_missing"), (503, None)):
+            with self.subTest(status=status):
+                self.expect(
+                    "POST",
+                    "organizations/create_or_update",
+                    {"error": "RecordInvalid"},
+                    status=422,
+                )
+                self.expect(
+                    "GET",
+                    "organizations/show_many",
+                    {"error": "ProviderFailure", "description": "Private provider details"},
+                    status=status,
+                )
+                exception = ZendeskProvisioningConflict if code else APIException
+
+                with self.assertRaises(exception) as error:
+                    self.client.ensure_organization(**self.organization_args)
+
+                if code:
+                    self.assertEqual(error.exception.code, code)
+                    self.assertNotIn("Private provider details", str(error.exception))
+                else:
+                    self.assertEqual(error.exception.response.status_code, status)
 
     def test_missing_saved_organization_does_not_fall_back_to_creation(self):
         self.expect("GET", "organizations/456", {"error": "RecordNotFound"}, status=404)
@@ -1186,6 +1507,64 @@ class ZendeskProvisioningTests(SimpleTestCase):
             self.client.ensure_user(**self.user_args, zendesk_id="123")
         self.assertEqual(error.exception.code, "resource_missing")
 
+    def test_removal_user_allows_activity_and_identity_drift_without_mutation(self):
+        for user in (
+            self.remote_user(),
+            self.remote_user(
+                active=False,
+                suspended=True,
+                email="changed@example.com",
+                external_id="another-fxa-uid",
+                user_fields={"user_id": "different-fxa-uid"},
+            ),
+            {"id": "00123", "role": "end-user"},
+        ):
+            with self.subTest(user=user):
+                self.expect("GET", "users/123", {"user": user})
+
+                self.assertEqual(self.client.validate_removal_user("00123"), "123")
+
+                self.assertEqual(urlsplit(self.requests[-1].url).query, "")
+                self.assertIsNone(self.requests[-1].body)
+        self.assertTrue(all(request.method == "GET" for request in self.requests))
+
+    def test_removal_user_rejects_mismatched_shared_or_privileged_accounts(self):
+        for fields in (
+            {"id": 789},
+            {"role": "agent"},
+            {"shared": True},
+            {"shared_agent": True},
+            {"chat_only": True},
+            {"custom_role_id": 321},
+        ):
+            with self.subTest(fields=fields):
+                self.expect("GET", "users/123", {"user": self.remote_user(**fields)})
+
+                with self.assertRaises(ZendeskProvisioningConflict) as error:
+                    self.client.validate_removal_user("123")
+
+                self.assertEqual(error.exception.code, "account_conflict")
+
+    def test_removal_user_preserves_provider_error_translation(self):
+        for status, code in ((404, "resource_missing"), (503, None)):
+            with self.subTest(status=status):
+                self.expect(
+                    "GET",
+                    "users/123",
+                    {"error": "ProviderFailure", "description": "Private provider details"},
+                    status=status,
+                )
+                exception = ZendeskProvisioningConflict if code else APIException
+
+                with self.assertRaises(exception) as error:
+                    self.client.validate_removal_user("123")
+
+                if code:
+                    self.assertEqual(error.exception.code, code)
+                    self.assertNotIn("Private provider details", str(error.exception))
+                else:
+                    self.assertEqual(error.exception.response.status_code, status)
+
     def test_user_lost_response_manual_retry_preserves_created_user(self):
         self.expect_users()
         self.expect("POST", "users", requests.Timeout("Lost response"))
@@ -1208,6 +1587,7 @@ class ZendeskProvisioningTests(SimpleTestCase):
                 self.assertEqual(self.client.ensure_user(**self.user_args), "123")
 
     def test_membership_creation_uses_only_dedicated_endpoint(self):
+        self.expect_memberships(789, default_organization_id=789)
         self.expect(
             "POST",
             "organization_memberships",
@@ -1221,6 +1601,150 @@ class ZendeskProvisioningTests(SimpleTestCase):
         self.assertEqual(membership["organization_id"], 456)
         self.assertNotIn("default", membership)
 
+    def test_membership_snapshot_is_fully_read_once_before_removal_and_creation(self):
+        self.expect_memberships(789, default_organization_id=789, next_page=MEMBERSHIPS_PAGE_2)
+        self.expect(
+            "GET",
+            "users/123/organization_memberships",
+            {
+                "organization_memberships": [{"id": 2, "user_id": 123, "organization_id": 890}],
+                "next_page": None,
+            },
+        )
+        self.expect("DELETE", "organization_memberships/1", None, status=204)
+        self.expect(
+            "POST",
+            "organization_memberships",
+            {"organization_membership": {"id": 3, "user_id": 123, "organization_id": 456}},
+            status=201,
+        )
+
+        memberships = self.client.get_organization_memberships(user_id="00123")
+
+        self.assertIsInstance(memberships, list)
+        self.assertEqual([membership.organization_id for membership in memberships], [789, 890])
+        self.assertEqual([request.method for request in self.requests], ["GET", "GET"])
+        self.assertEqual(parse_qs(urlsplit(self.requests[1].url).query), {"page": ["2"]})
+        self.client.remove_organization_memberships(
+            user_id="00123", organization_ids={"00789"}, memberships=memberships
+        )
+        self.client.ensure_organization_membership(
+            user_id="00123", organization_id="00456", memberships=memberships
+        )
+
+        self.assertEqual(
+            [request.method for request in self.requests], ["GET", "GET", "DELETE", "POST"]
+        )
+
+    def test_membership_snapshot_is_reused_without_another_read(self):
+        created = {"organization_membership": {"id": 1, "user_id": 123, "organization_id": 456}}
+        for organizations, methods in (((456, 890), ["GET"]), ((), ["GET", "POST"])):
+            with self.subTest(organizations=organizations):
+                start = len(self.requests)
+                self.expect_memberships(*organizations)
+                if not organizations:
+                    self.expect("POST", "organization_memberships", created, status=201)
+
+                memberships = self.client.get_organization_memberships(user_id="00123")
+                self.client.remove_organization_memberships(
+                    user_id="00123", organization_ids={"00789"}, memberships=memberships
+                )
+                self.client.ensure_organization_membership(
+                    user_id="00123", organization_id="00456", memberships=memberships
+                )
+
+                self.assertEqual([request.method for request in self.requests[start:]], methods)
+
+    def test_existing_membership_on_later_page_does_not_create(self):
+        self.expect_memberships(789, default_organization_id=789, next_page=MEMBERSHIPS_PAGE_2)
+        self.expect_memberships(456)
+
+        self.client.ensure_organization_membership(user_id="123", organization_id="456")
+
+        self.assertEqual(parse_qs(urlsplit(self.requests[-1].url).query), {"page": ["2"]})
+        self.assertEqual([request.method for request in self.requests], ["GET", "GET"])
+
+    def test_membership_removal_reads_every_page_then_deletes_selected_organizations(self):
+        self.expect_memberships(
+            789, 456, default_organization_id=789, next_page=MEMBERSHIPS_PAGE_2
+        )
+        self.expect(
+            "GET",
+            "users/123/organization_memberships",
+            {
+                "organization_memberships": [
+                    {"id": 3, "user_id": 123, "organization_id": 890},
+                    {"id": 4, "user_id": 123, "organization_id": 999},
+                ],
+                "next_page": None,
+            },
+        )
+        for membership_id in (2, 3):
+            self.expect("DELETE", f"organization_memberships/{membership_id}", None, status=204)
+
+        self.client.remove_organization_memberships(
+            user_id="00123", organization_ids=iter(("00456", "00890"))
+        )
+
+        self.assertEqual(parse_qs(urlsplit(self.requests[1].url).query), {"page": ["2"]})
+        for request, membership_id in zip(self.requests[2:], (2, 3), strict=True):
+            self.assertEqual(
+                json.loads(request.body), {"organization_membership": {"id": membership_id}}
+            )
+            self.assertEqual(urlsplit(request.url).query, "")
+
+    def test_membership_removal_with_nothing_selected_only_reads(self):
+        for organizations, organization_ids in (
+            ((), []),
+            ((456,), []),
+            ((456,), ["789"]),
+        ):
+            with self.subTest(organizations=organizations, organization_ids=organization_ids):
+                self.expect_memberships(*organizations)
+                self.client.remove_organization_memberships(
+                    user_id="123", organization_ids=organization_ids
+                )
+        self.assertTrue(all(request.method == "GET" for request in self.requests))
+
+    def test_membership_removal_continues_after_concurrent_deletion(self):
+        response = requests.Response()
+        response.status_code = 404
+        for error in (
+            {"error": "RecordNotFound"},
+            {"error": "Membership already removed"},
+            requests.HTTPError(response=response),
+        ):
+            with self.subTest(error=error):
+                self.expect_memberships(789, 456, 890)
+                self.expect("DELETE", "organization_memberships/1", error, status=404)
+                self.expect("DELETE", "organization_memberships/3", None, status=204)
+
+                self.client.remove_organization_memberships(
+                    user_id="123", organization_ids={"789", "890"}
+                )
+
+    def test_membership_removal_translates_provider_errors_without_hiding_transient_errors(self):
+        for method, path, status, code in (
+            ("GET", "users/123/organization_memberships", 404, "resource_missing"),
+            ("GET", "users/123/organization_memberships", 503, None),
+            ("DELETE", "organization_memberships/1", 422, "zendesk_conflict"),
+            ("DELETE", "organization_memberships/1", 503, None),
+        ):
+            with self.subTest(method=method, status=status):
+                if method == "DELETE":
+                    self.expect_memberships(456)
+                self.expect(method, path, {"error": "Private provider details"}, status=status)
+                exception = ZendeskProvisioningConflict if code else APIException
+                with self.assertRaises(exception) as error:
+                    self.client.remove_organization_memberships(
+                        user_id="123", organization_ids=["456"]
+                    )
+                if code:
+                    self.assertEqual(error.exception.code, code)
+                    self.assertNotIn("Private provider details", str(error.exception))
+                else:
+                    self.assertEqual(error.exception.response.status_code, status)
+
     def test_membership_response_must_match_requested_pair(self):
         for pair in (
             {"user_id": 789, "organization_id": 456},
@@ -1228,6 +1752,7 @@ class ZendeskProvisioningTests(SimpleTestCase):
             {"user_id": None, "organization_id": 456},
         ):
             with self.subTest(pair=pair):
+                self.expect_memberships()
                 self.expect(
                     "POST",
                     "organization_memberships",
@@ -1241,22 +1766,25 @@ class ZendeskProvisioningTests(SimpleTestCase):
                 self.assertEqual(error.exception.code, "zendesk_conflict")
 
     def test_membership_422_finds_target_after_unrelated_default_on_earlier_page(self):
+        self.expect_memberships(789, default_organization_id=789)
+        memberships = self.client.get_organization_memberships(user_id="123")
         self.expect("POST", "organization_memberships", {"error": "RecordInvalid"}, status=422)
-        self.expect_memberships(
-            789,
-            default_organization_id=789,
-            next_page=(
-                "https://provisioning-test.zendesk.com/api/v2/"
-                "users/123/organization_memberships.json?page=2"
-            ),
-        )
+        self.expect_memberships(789, default_organization_id=789, next_page=MEMBERSHIPS_PAGE_2)
         self.expect_memberships(456)
 
-        self.client.ensure_organization_membership(user_id="123", organization_id="456")
+        # The snapshot is stale once creation conflicts, so the target is read afresh.
+        self.client.ensure_organization_membership(
+            user_id="123", organization_id="456", memberships=memberships
+        )
+
+        self.assertEqual(
+            [request.method for request in self.requests], ["GET", "POST", "GET", "GET"]
+        )
 
     def test_membership_422_is_success_when_a_fresh_read_finds_the_target(self):
         for organizations in ((456,), (789, 456), (456, 789)):
             with self.subTest(organizations=organizations):
+                self.expect_memberships()
                 self.expect(
                     "POST", "organization_memberships", {"error": "RecordInvalid"}, status=422
                 )
@@ -1271,6 +1799,7 @@ class ZendeskProvisioningTests(SimpleTestCase):
             [{"id": 1, "user_id": 789, "organization_id": 456}],
         ):
             with self.subTest(memberships=memberships):
+                self.expect_memberships()
                 self.expect(
                     "POST", "organization_memberships", {"error": "RecordInvalid"}, status=422
                 )
@@ -1287,23 +1816,48 @@ class ZendeskProvisioningTests(SimpleTestCase):
 
     def test_missing_membership_resource_is_a_safe_conflict(self):
         for api_error in ("NotFound", "RecordNotFound"):
-            with self.subTest(api_error=api_error):
-                self.expect("POST", "organization_memberships", {"error": api_error}, status=404)
-                with self.assertRaises(ZendeskProvisioningConflict) as error:
-                    self.client.ensure_organization_membership(
-                        user_id="123", organization_id="456"
-                    )
-                self.assertEqual(error.exception.code, "resource_missing")
+            for method, path in (
+                ("GET", "users/123/organization_memberships"),
+                ("POST", "organization_memberships"),
+            ):
+                with self.subTest(api_error=api_error, method=method):
+                    if method == "POST":
+                        self.expect_memberships()
+                    self.expect(method, path, {"error": api_error}, status=404)
+                    with self.assertRaises(ZendeskProvisioningConflict) as error:
+                        self.client.ensure_organization_membership(
+                            user_id="123", organization_id="456"
+                        )
+                    self.assertEqual(error.exception.code, "resource_missing")
 
     def test_invalid_saved_ids_fail_before_any_provider_request(self):
         for invalid_id in ("", "0", "-1", "１２３", "123/456", "1" * 256):
             with self.subTest(invalid_id=invalid_id):
+                if invalid_id:
+                    with self.assertRaises(ZendeskProvisioningConflict):
+                        self.client.ensure_organization(
+                            **self.organization_args, zendesk_id=invalid_id
+                        )
                 with self.assertRaises(ZendeskProvisioningConflict):
                     self.client.ensure_user(**self.user_args, zendesk_id=invalid_id)
+                with self.assertRaises(ZendeskProvisioningConflict):
+                    self.client.validate_removal_user(invalid_id)
+                with self.assertRaises(ZendeskProvisioningConflict):
+                    self.client.get_organization_memberships(user_id=invalid_id)
                 with self.assertRaises(ZendeskProvisioningConflict):
                     self.client.ensure_organization_membership(
                         user_id="123", organization_id=invalid_id
                     )
+                with self.assertRaises(ZendeskProvisioningConflict):
+                    self.client.ensure_organization_membership(
+                        user_id=invalid_id, organization_id="456"
+                    )
+                for kwargs in (
+                    {"user_id": invalid_id, "organization_ids": ["456"]},
+                    {"user_id": "123", "organization_ids": ["456", invalid_id]},
+                ):
+                    with self.assertRaises(ZendeskProvisioningConflict):
+                        self.client.remove_organization_memberships(**kwargs)
 
     def test_provider_authentication_and_server_errors_remain_classifiable(self):
         for status in (401, 403, 503):
@@ -1312,6 +1866,7 @@ class ZendeskProvisioningTests(SimpleTestCase):
                 with self.assertRaises(APIException) as error:
                     self.client.ensure_user(**self.user_args)
                 self.assertEqual(error.exception.response.status_code, status)
+                self.expect_memberships()
                 self.expect(
                     "POST",
                     "organization_memberships",
@@ -1323,6 +1878,7 @@ class ZendeskProvisioningTests(SimpleTestCase):
                         user_id="123", organization_id="456"
                     )
                 self.assertEqual(error.exception.response.status_code, status)
+                self.expect_memberships()
                 self.expect(
                     "POST", "organization_memberships", {"error": "RecordInvalid"}, status=422
                 )
@@ -1450,7 +2006,83 @@ class ZendeskProvisioningTests(SimpleTestCase):
                 self.assertEqual(error.exception.response.status_code, status)
 
 
-class ZendeskConfigurationChecksTests(SimpleTestCase):
+@override_settings(
+    ZENDESK_SUBDOMAIN="provisioning-test",
+    ZENDESK_USER_EMAIL="provisioner@example.com",
+    ZENDESK_API_TOKEN="test-api-token",
+    ZENDESK_OAUTH_CLIENT_ID="",
+    ZENDESK_OAUTH_CLIENT_SECRET="",
+)
+class ZendeskMembershipProvisioningTests(ZendeskProvisioningTransportMixin, TestCase):
+    def test_join_and_rerun_preserve_unmapped_agent_organization(self):
+        company = EnterpriseCompanyFactory()
+        mapping = ZendeskOrganization.objects.create(group_profile=company, zendesk_id="456")
+        ZendeskOrganization.objects.create(
+            group_profile=EnterpriseCompanyFactory(), zendesk_id="789"
+        )
+        ZendeskOrganization.objects.create(group_profile=EnterpriseCompanyFactory())
+        user = UserFactory(email=self.user_args["email"], profile__zendesk_id="123")
+
+        for target_exists in (False, True):
+            with self.subTest(target_exists=target_exists):
+                start = len(self.requests)
+                self.expect("GET", "organizations/456", {"organization": {"id": 456}})
+                self.expect("GET", "users/123", {"user": self.remote_user()})
+                self.expect_memberships(
+                    890, default_organization_id=890, next_page=MEMBERSHIPS_PAGE_2
+                )
+                self.expect(
+                    "GET",
+                    "users/123/organization_memberships",
+                    {
+                        "organization_memberships": [
+                            {
+                                "id": 3 if target_exists else 2,
+                                "user_id": 123,
+                                "organization_id": 456 if target_exists else 789,
+                            }
+                        ],
+                        "next_page": None,
+                    },
+                )
+                if not target_exists:
+                    self.expect("DELETE", "organization_memberships/2", None, status=204)
+                    self.expect(
+                        "POST",
+                        "organization_memberships",
+                        {
+                            "organization_membership": {
+                                "id": 3,
+                                "user_id": 123,
+                                "organization_id": 456,
+                            }
+                        },
+                        status=201,
+                    )
+
+                progress = ZendeskProvisioningProgress()
+                provision_zendesk_membership(
+                    client=self.client,
+                    company=company,
+                    mapping=mapping,
+                    profile=user.profile,
+                    email=user.email,
+                    name=user.profile.display_name,
+                    progress=progress,
+                )
+
+                self.assertEqual(progress.organization_id, "456")
+                self.assertEqual(progress.user_id, "123")
+                self.assertEqual(
+                    [request.method for request in self.requests[start:]],
+                    ["GET"] * 4 if target_exists else ["GET"] * 4 + ["DELETE", "POST"],
+                )
+                self.assertEqual(
+                    parse_qs(urlsplit(self.requests[start + 3].url).query), {"page": ["2"]}
+                )
+
+
+class ZendeskConfigurationChecksTests(TestCase):
     def test_partial_oauth_configuration_warns(self):
         for client_id, client_secret in (("sumo", ""), ("", "secret")):
             with self.subTest(client_id=client_id, client_secret=client_secret):
@@ -1471,18 +2103,37 @@ class ZendeskConfigurationChecksTests(SimpleTestCase):
                 ):
                     self.assertEqual(check_zendesk_oauth_configuration(None), [])
 
-    def test_chat_configuration_warns_only_when_partial(self):
-        for widget, secret, key_id, expected in (
-            ("", "", "", []),
-            ("widget", "", "", ["customercare.W002"]),
-            ("", "secret", "key-id", ["customercare.W002"]),
-            ("widget", "secret", "key-id", []),
+    def test_chat_configuration_warns_when_partial_or_missing_while_switched_on(self):
+        for widget, secret, key_id, switch, expected in (
+            ("", "", "", False, []),
+            ("", "", "", True, ["customercare.W003"]),
+            ("widget", "", "", True, ["customercare.W002"]),
+            ("", "secret", "key-id", False, ["customercare.W002"]),
+            ("widget", "secret", "key-id", True, []),
         ):
-            with self.subTest(widget=widget, secret=secret, key_id=key_id):
-                with self.settings(
-                    ZENDESK_CHAT_WIDGET_KEY=widget,
-                    ZENDESK_CHAT_SIGNING_SECRET=secret,
-                    ZENDESK_CHAT_SIGNING_KEY_ID=key_id,
+            with self.subTest(widget=widget, secret=secret, key_id=key_id, switch=switch):
+                with (
+                    self.settings(
+                        ZENDESK_CHAT_WIDGET_KEY=widget,
+                        ZENDESK_CHAT_SIGNING_SECRET=secret,
+                        ZENDESK_CHAT_SIGNING_KEY_ID=key_id,
+                    ),
+                    override_switch("zendesk-chat", active=switch),
                 ):
-                    warnings = check_zendesk_chat_configuration(None)
+                    warnings = check_zendesk_chat_configuration(None) + check_zendesk_chat_switch(
+                        None, databases=["default"]
+                    )
                 self.assertEqual([warning.id for warning in warnings], expected)
+
+        with (
+            self.settings(
+                ZENDESK_CHAT_WIDGET_KEY="",
+                ZENDESK_CHAT_SIGNING_SECRET="",
+                ZENDESK_CHAT_SIGNING_KEY_ID="",
+            ),
+            override_switch("zendesk-chat", active=True),
+        ):
+            with self.assertNumQueries(0):
+                self.assertEqual(check_zendesk_chat_switch(None), [])
+            with patch("waffle.get_waffle_switch_model", side_effect=ProgrammingError):
+                self.assertEqual(check_zendesk_chat_switch(None, databases=["default"]), [])

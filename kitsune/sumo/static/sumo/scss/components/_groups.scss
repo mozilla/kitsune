@@ -487,6 +487,47 @@ body:has(#group-profile) {
 
 }
 
+#group-profile {
+  .group-company-support {
+    margin: 0 0 p.$spacing-lg;
+    font-weight: 600;
+  }
+
+  .your-support--products {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .your-support--product {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: p.$spacing-md;
+    padding: p.$spacing-md 0;
+
+    & + .your-support--product {
+      border-top: 1px solid var(--group-divider);
+    }
+  }
+
+  .your-support--title {
+    @include c.text-body-lg;
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .your-support--scope {
+    margin: p.$spacing-xs 0 0;
+    color: var(--color-text-light);
+  }
+
+  .your-support--history {
+    margin: p.$spacing-md 0 0;
+  }
+}
+
 // Sidebar-specific styles
 .sumo-l-two-col--sidebar {
   .group-actions-card {

@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import connections, transaction
+from django.db.models import Subquery
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import SupportContract
@@ -14,6 +15,78 @@ from kitsune.products.models import SupportContract
 _HIERARCHY_LOCK_KEY = int.from_bytes(
     sha256(b"sumo-enterprise-group-hierarchy").digest()[:8], signed=True
 )
+
+
+def company_organization_ids(group_ids, *, using="default"):
+    profiles = apps.get_model("groups", "GroupProfile").objects.db_manager(using)
+    return (
+        apps.get_model("customercare", "ZendeskOrganization")
+        .objects.using(using)
+        .filter(group_profile__in=profiles.containing_groups(group_ids))
+        .linked_ids()
+    )
+
+
+def queue_enterprise_zendesk_sync(user_ids, *, using="default", removed_organization_ids=()):
+    """Reconcile each affected user after commit, including deleted organization links."""
+    # Break the GroupProfile -> managers -> membership -> tasks -> GroupProfile import cycle.
+    from kitsune.groups.tasks import (
+        remove_stale_zendesk_memberships,
+        sync_enterprise_zendesk_membership,
+    )
+
+    removed_organization_ids = tuple(sorted(set(removed_organization_ids)))
+    user_ids = set(user_ids)
+    if removed_organization_ids:
+        profiles = apps.get_model("users", "Profile").all_profiles.using(using)
+        for user_id, zendesk_user_id in (
+            profiles.filter(user_id__in=user_ids)
+            .exclude(zendesk_id="")
+            .values_list("user_id", "zendesk_id")
+        ):
+            transaction.on_commit(
+                lambda member_id=user_id, remote_id=zendesk_user_id: (
+                    remove_stale_zendesk_memberships.delay(
+                        member_id, remote_id, removed_organization_ids
+                    )
+                ),
+                using=using,
+                robust=True,
+            )
+    kwargs = (
+        {"removed_organization_ids": removed_organization_ids} if removed_organization_ids else {}
+    )
+    for user_id in user_ids:
+        transaction.on_commit(
+            lambda member_id=user_id: sync_enterprise_zendesk_membership.delay(
+                member_id, **kwargs
+            ),
+            using=using,
+            robust=True,
+        )
+
+
+def queue_chat_revocation(user_ids, group_ids, *, left_companies=None, using="default"):
+    """Tag chats after commit for active users whom leaving these groups leaves without chat.
+
+    `left_companies` defaults to the groups' profiles and ancestors; moves pass the old companies.
+    """
+    # Break the GroupProfile -> managers -> membership -> customercare.tasks import cycle.
+    from kitsune.customercare.tasks import had_chat, revoke_chat_tickets
+
+    profiles = apps.get_model("groups", "GroupProfile").objects.db_manager(using)
+    if left_companies is None:
+        left_companies = profiles.containing_groups(group_ids)
+    if not had_chat(left_companies):
+        return
+    memberships = User.groups.through.objects.using(using)
+    users = User.objects.using(using).filter(pk__in=user_ids, is_active=True)
+    for user in users.select_related("profile"):
+        remaining = (
+            memberships.filter(user_id=user.pk).exclude(group_id__in=group_ids).values("group_id")
+        )
+        if not had_chat(profiles.containing_groups(remaining)):
+            revoke_chat_tickets(user, using=using)
 
 
 @contextmanager
@@ -33,21 +106,17 @@ def lock_enterprise_hierarchy(*, using="default", exclusive=False):
         yield
 
 
-def _enterprise_profiles(using):
+def enterprise_profiles(using="default"):
+    """Return profiles below the configured enterprise root, excluding the root."""
     # The manager calls the move guard, so importing GroupProfile here would cycle.
     profiles = apps.get_model("groups", "GroupProfile").objects.using(using)
-    root_path = (
-        profiles.filter(slug=settings.ENTERPRISE_GROUP_SLUG, depth=1)
-        .values_list("path", flat=True)
-        .first()
-    )
-    if root_path is None:
-        return profiles.none()
-    return profiles.filter(path__startswith=root_path, depth__gte=2)
+    root_path = profiles.filter(slug=settings.ENTERPRISE_GROUP_SLUG, depth=1).values("path")
+    # Without a root the subquery is NULL, which matches no path.
+    return profiles.filter(path__startswith=Subquery(root_path), depth__gte=2)
 
 
 def _company_paths(group_ids, using):
-    profiles = _enterprise_profiles(using)
+    profiles = enterprise_profiles(using)
     company_path_length = profiles.model.steplen * 2
     companies = defaultdict(set)
     for group_id, path in profiles.filter(group_id__in=group_ids).values_list("group_id", "path"):
@@ -121,7 +190,7 @@ def guard_enterprise_memberships(user_ids, group_ids, *, replace=False, using="d
 
 
 def _profile_companies(profile_ids, using):
-    profiles = _enterprise_profiles(using)
+    profiles = enterprise_profiles(using)
     company_path_length = profiles.model.steplen * 2
     companies = dict(profiles.filter(depth=2).values_list("path", "pk"))
     return {
@@ -134,7 +203,7 @@ def _profile_companies(profile_ids, using):
 
 def validate_enterprise_group_memberships(profile, *, using="default"):
     """Validate an inserted/reassigned profile while its exclusive gate is held."""
-    if not _enterprise_profiles(using).filter(pk=profile.pk).exists():
+    if not enterprise_profiles(using).filter(pk=profile.pk).exists():
         return
     user_ids = tuple(
         User.groups.through.objects.using(using)
@@ -143,6 +212,7 @@ def validate_enterprise_group_memberships(profile, *, using="default"):
     )
     _lock_users(user_ids, using)
     _validate_memberships(user_ids, (), replace=False, using=using, check_existing=True)
+    queue_enterprise_zendesk_sync(user_ids, using=using)
 
 
 @contextmanager
@@ -163,6 +233,12 @@ def guard_enterprise_group_move(node, target, *, using="default"):
                 .values_list("pk", flat=True)
             )
             before = _profile_companies(profile_ids, using)
+            organization_ids = tuple(
+                apps.get_model("customercare", "ZendeskOrganization")
+                .objects.using(using)
+                .filter(group_profile_id__in={company_id for _, company_id in before.values()})
+                .linked_ids()
+            )
             yield
             after = _profile_companies(profile_ids, using)
             company_ids = {company_id for _, company_id in after.values()}
@@ -198,6 +274,16 @@ def guard_enterprise_group_move(node, target, *, using="default"):
                 _lock_users(user_ids, using)
                 _validate_memberships(
                     user_ids, (), replace=False, using=using, check_existing=True
+                )
+                # The moved groups now sit under their new company, so pass the old ones.
+                queue_chat_revocation(
+                    user_ids,
+                    changed_groups,
+                    left_companies={company_id for _, company_id in before.values()},
+                    using=using,
+                )
+                queue_enterprise_zendesk_sync(
+                    user_ids, using=using, removed_organization_ids=organization_ids
                 )
     finally:
         # treebeard refreshes these objects before validation; restore them on rollback too.

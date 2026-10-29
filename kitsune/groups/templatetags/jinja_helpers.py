@@ -4,8 +4,11 @@ from django_jinja import library
 from markupsafe import Markup, escape
 
 from kitsune.groups.models import GroupProfile
+from kitsune.products.utils import get_support_company
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
+
+library.global_function(get_support_company)
 
 
 @library.global_function

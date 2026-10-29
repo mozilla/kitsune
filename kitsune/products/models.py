@@ -1,10 +1,11 @@
 from typing import override
 
 from django.conf import settings
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.managers import (
@@ -495,8 +496,8 @@ class Platform(ModelBase):
 class ProductSupportConfig(ModelBase):
     """Configuration for product support routing (forums and/or Zendesk).
 
-    This model acts as a routing layer that determines which support channel(s)
-    are available for a product and handles group-based access control for hybrid support.
+    Determines which support channels a product offers. Enterprise tickets and live chat
+    come from company support coverage.
     """
 
     SUPPORT_TYPE_FORUM = "forum"
@@ -532,29 +533,7 @@ class ProductSupportConfig(ModelBase):
         max_length=20,
         choices=SUPPORT_TYPE_CHOICES,
         default=SUPPORT_TYPE_FORUM,
-        help_text="Default support channel for users (used when only one channel or no group access)",
-    )
-    # Retained until the next release for compatibility with older application instances.
-    hybrid_support_groups = models.ManyToManyField(
-        Group,
-        blank=True,
-        related_name="hybrid_support_configs",
-        help_text=(
-            "Groups that can choose between forums and Zendesk when both are enabled. "
-            "Note: when Zendesk is enabled, each group listed here also becomes an "
-            "'organization root' — Zendesk tickets submitted by any of its members "
-            "(or members of its subgroups) are visible to everyone in that subtree. "
-            "Group must not be a tree root, and cannot overlap (as ancestor or "
-            "descendant) with any group already listed in another product's "
-            "hybrid_support_groups."
-        ),
-    )
-    group_default_support_type = models.CharField(
-        max_length=20,
-        choices=SUPPORT_TYPE_CHOICES,
-        null=True,
-        blank=True,
-        help_text="Default support type for organization members (if not set, uses default_support_type)",
+        help_text="Default support channel when both channels are enabled.",
     )
     subscription_only = models.BooleanField(
         default=False,
@@ -653,135 +632,6 @@ class ProductSupportConfig(ModelBase):
         return bool(self.zendesk_config)
 
 
-class SupportOrganizationQuerySet(models.QuerySet):
-    def containing(self, user):
-        # Local import: products.models -> groups.models -> wiki.parser -> wiki.models
-        # -> products.models.
-        from kitsune.groups.models import GroupProfile
-
-        return self.filter(group_id__in=GroupProfile.objects.containing(user).values("group_id"))
-
-
-class SupportOrganization(ModelBase):
-    """Support options for a group under a product's support configuration.
-
-    The group and all of its subgroups form one organization; the options apply to every
-    member. Each option here is an addition to the support the configuration already
-    provides.
-    """
-
-    config = models.ForeignKey(
-        ProductSupportConfig, on_delete=models.CASCADE, related_name="support_organizations"
-    )
-    group = models.ForeignKey(
-        Group,
-        on_delete=models.CASCADE,
-        related_name="support_organizations",
-        help_text=(
-            "Includes all subgroups. Cannot be a top-level group or nested with another "
-            "configured group."
-        ),
-    )
-    include_live_chat = models.BooleanField(
-        default=False,
-        help_text="Members can start live chats with support agents. Requires Zendesk support.",
-    )
-
-    objects = SupportOrganizationQuerySet.as_manager()
-
-    class Meta:
-        verbose_name = "Support organization"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["config", "group"], name="unique_support_organization_per_config"
-            ),
-        ]
-
-    def __str__(self):
-        return f"{self.group.name} ({self.config.product})"
-
-    def clean(self):
-        super().clean()
-        # Local import: products.models -> groups.models -> wiki.parser -> wiki.models
-        # -> products.models.
-        from kitsune.groups.models import GroupProfile
-
-        # Inline admin rows validate against a parent config that may not be saved yet,
-        # so work from the related object rather than from config_id.
-        try:
-            config = self.config
-        except ProductSupportConfig.DoesNotExist:
-            return
-        if self.group_id is None:
-            return
-
-        if self.include_live_chat and config.zendesk_config_id is None:
-            raise ValidationError(
-                {
-                    "include_live_chat": (
-                        "Live chat requires Zendesk support on the product configuration."
-                    )
-                }
-            )
-
-        try:
-            profile = GroupProfile.objects.get(group_id=self.group_id)
-        except GroupProfile.DoesNotExist:
-            raise ValidationError({"group": f"'{self.group.name}' has no group profile."})
-
-        if profile.is_root():
-            raise ValidationError(
-                {
-                    "group": (
-                        f"'{self.group.name}' is a top-level group. Configure one of its "
-                        f"subgroups instead."
-                    )
-                }
-            )
-
-        chain_group_ids = (
-            GroupProfile.objects.get_ancestors(profile)
-            | GroupProfile.objects.get_descendants(profile)
-        ).values_list("group_id", flat=True)
-
-        same_config = SupportOrganization.objects.filter(
-            config_id=config.pk, group_id__in=chain_group_ids
-        ).exclude(pk=self.pk)
-        if same_config.exists():
-            names = ", ".join(sorted(org.group.name for org in same_config))
-            raise ValidationError(
-                {
-                    "group": (
-                        f"'{self.group.name}' is nested with {names}, which is already "
-                        f"configured. Configure one of them, not both."
-                    )
-                }
-            )
-
-        # Until the hybrid_support_groups M2M is removed, other products' groups are
-        # recorded in both places; check both.
-        other_configs = ProductSupportConfig.objects.exclude(pk=config.pk)
-        external_names = sorted(
-            set(
-                Group.objects.filter(pk__in=chain_group_ids)
-                .filter(
-                    models.Q(hybrid_support_configs__in=other_configs)
-                    | models.Q(support_organizations__config__in=other_configs)
-                )
-                .values_list("name", flat=True)
-            )
-        )
-        if external_names:
-            raise ValidationError(
-                {
-                    "group": (
-                        f"'{self.group.name}' is nested with {', '.join(external_names)}, "
-                        f"which is already configured for another product."
-                    )
-                }
-            )
-
-
 class ZendeskConfig(ModelBase):
     """Configuration for Zendesk support integration.
 
@@ -859,6 +709,26 @@ class SupportContract(ModelBase):
         return self.name
 
 
+class SupportCoverageQuerySet(models.QuerySet):
+    def in_effect(self, day=None):
+        """Coverages whose contract is in effect on `day` (today by default)."""
+        day = day or timezone.localdate()
+        return self.filter(
+            contract__status=SupportContract.Status.ACTIVE,
+            contract__starts_on__lte=day,
+            contract__ends_on__gte=day,
+        )
+
+    def effective(self, company, day=None):
+        """The company's coverages whose contract is in effect on `day` (today by default)."""
+        return (
+            self.in_effect(day)
+            .filter(contract__company=company)
+            .select_related("product")
+            .order_by()
+        )
+
+
 class SupportCoverage(ModelBase):
     contract = models.ForeignKey(
         SupportContract, on_delete=models.CASCADE, related_name="coverages"
@@ -871,6 +741,8 @@ class SupportCoverage(ModelBase):
     )
     zendesk_product_value = models.CharField(max_length=255)
     includes_chat = models.BooleanField(default=False)
+
+    objects = SupportCoverageQuerySet.as_manager()
 
     class Meta:
         verbose_name = _lazy("Support coverage")

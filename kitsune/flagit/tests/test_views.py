@@ -1,7 +1,11 @@
+from django.conf import settings
+from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.utils import translation
 from jinja2 import Environment
 
+from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.tests import TestCaseBase
 from kitsune.flagit.views import get_hierarchical_topics
@@ -240,6 +244,36 @@ class SpamFlagReconciliationTestCase(TestCaseBase):
         self.assertFalse(answer.is_spam)
         self.assertIsNone(answer.marked_as_spam)
         self.assertIsNone(answer.marked_as_spam_by)
+
+
+class SupportTicketFlagUpdateTestCase(TestCaseBase):
+    def test_only_staff_moderators_decide_support_ticket_flags(self):
+        moderator = UserFactory()
+        add_permission(moderator, FlaggedObject, "can_moderate")
+        self.client.force_login(moderator)
+        ticket = SupportTicketFactory(submission_status=SupportTicket.STATUS_FLAGGED)
+        flag = FlaggedObject.objects.create(
+            content_object=ticket, reason=FlaggedObject.REASON_OTHER, creator=UserFactory()
+        )
+
+        def reject_ticket():
+            response = post(
+                self.client,
+                "flagit.update",
+                {"status": FlaggedObject.FLAG_ACCEPTED},
+                args=[flag.id],
+            )
+            flag.refresh_from_db()
+            ticket.refresh_from_db()
+            return response.status_code, flag.status, ticket.submission_status
+
+        self.assertEqual(
+            reject_ticket(), (403, FlaggedObject.FLAG_PENDING, SupportTicket.STATUS_FLAGGED)
+        )
+        moderator.groups.add(Group.objects.get_or_create(name=settings.STAFF_GROUP)[0])
+        self.assertEqual(
+            reject_ticket(), (200, FlaggedObject.FLAG_ACCEPTED, SupportTicket.STATUS_REJECTED)
+        )
 
 
 class ModerationFlagSupersedeTestCase(TestCaseBase):

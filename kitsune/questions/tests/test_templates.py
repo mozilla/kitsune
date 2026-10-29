@@ -1687,6 +1687,7 @@ class AAQTemplateTestCase(TestCase):
     """Test the AAQ template."""
 
     data = {
+        "support_action": ProductSupportConfig.SUPPORT_TYPE_FORUM,
         "title": "A test question",
         "content": "I have this question that I hope...",
         "category": "troubleshooting",

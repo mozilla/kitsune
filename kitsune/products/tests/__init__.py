@@ -1,9 +1,10 @@
-from datetime import date
+from datetime import timedelta
 
 import factory
 import factory.django
 import factory.fuzzy
 from django.template.defaultfilters import slugify
+from django.utils import timezone
 
 from kitsune.groups.tests import EnterpriseCompanyFactory
 from kitsune.products.models import (
@@ -14,7 +15,6 @@ from kitsune.products.models import (
     ProductSupportConfig,
     SupportContract,
     SupportCoverage,
-    SupportOrganization,
     Topic,
     Version,
     ZendeskConfig,
@@ -125,15 +125,6 @@ class ProductSupportConfigFactory(factory.django.DjangoModelFactory):
     product = factory.SubFactory(ProductFactory)
     is_active = True
     default_support_type = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
-    group_default_support_type = None
-
-
-class SupportOrganizationFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = SupportOrganization
-
-    config = factory.SubFactory(ProductSupportConfigFactory)
-    include_live_chat = False
 
 
 class CuratedBlockFactory(factory.django.DjangoModelFactory):
@@ -177,8 +168,8 @@ class SupportContractFactory(factory.django.DjangoModelFactory):
     company = factory.SubFactory(EnterpriseCompanyFactory)
     name = factory.Sequence(lambda n: f"Support agreement {n}")
     status = SupportContract.Status.ACTIVE
-    starts_on = date(2026, 1, 1)
-    ends_on = date(2026, 12, 31)
+    starts_on = factory.LazyFunction(lambda: timezone.localdate() - timedelta(days=30))
+    ends_on = factory.LazyFunction(lambda: timezone.localdate() + timedelta(days=30))
 
 
 class SupportCoverageFactory(factory.django.DjangoModelFactory):

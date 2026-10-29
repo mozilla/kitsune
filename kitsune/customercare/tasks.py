@@ -1,9 +1,11 @@
 import logging
+from collections import defaultdict
 from datetime import timedelta
 
 import requests
 import waffle
 from celery import group, shared_task
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
@@ -19,7 +21,9 @@ from kitsune.customercare.utils import (
 )
 from kitsune.customercare.zendesk import CHAT_REVOKED_TAG, ZendeskClient
 from kitsune.flagit.models import FlaggedObject
+from kitsune.groups.models import GroupProfile
 from kitsune.llm.support.classifiers import classify_zendesk_submission
+from kitsune.products.models import SupportContract, SupportCoverage
 from kitsune.sumo.decorators import skip_if_read_only_mode
 from kitsune.users.models import Profile
 
@@ -28,6 +32,9 @@ log = logging.getLogger("k.task")
 shared_task_with_retry = shared_task(
     acks_late=True, autoretry_for=(Exception,), retry_backoff=2, retry_kwargs={"max_retries": 3}
 )
+
+# Days the daily expiry cleanup looks back, so skipped runs still catch up.
+CHAT_EXPIRY_WINDOW_DAYS = 7
 
 # Zendesk webhook events that trigger a re-sync of the ticket from the Zendesk REST API.
 RESYNC_EVENT_TYPES = {
@@ -107,7 +114,7 @@ def update_zendesk_identity(user_id: int, email: str) -> None:
 
 
 @shared_task
-def tag_revoked_chat_tickets(zendesk_id: str) -> None:
+def tag_revoked_chat_tickets(zendesk_id: str, *, product_slugs=None, before=None) -> None:
     """Tag a user's active live-chat tickets once the user has lost chat access.
 
     Takes the Zendesk user id rather than the user, because once a user is deleted
@@ -117,12 +124,21 @@ def tag_revoked_chat_tickets(zendesk_id: str) -> None:
     if not waffle.switch_is_active("zendesk-chat"):
         return
 
+    cutoff = parse_datetime(before) if before else timezone.now()
+    prefix = settings.ZENDESK_CHAT_PRODUCT_TAG_PREFIX
     client = ZendeskClient()
     for ticket in client.get_active_chat_tickets(zendesk_id):
+        if parse_datetime(ticket.created_at) > cutoff or CHAT_REVOKED_TAG in ticket.tags:
+            continue
+        if product_slugs is not None:
+            products = {tag.removeprefix(prefix) for tag in ticket.tags if tag.startswith(prefix)}
+            # Product tags come from the browser, so only a single other product is spared.
+            if len(products) == 1 and not products.intersection(product_slugs):
+                continue
         client.add_ticket_tags(ticket.id, [CHAT_REVOKED_TAG])
 
 
-def revoke_chat_tickets(user) -> None:
+def revoke_chat_tickets(user, *, product_slugs=None, using=None) -> None:
     """Queue tag_revoked_chat_tickets for once the current change is saved.
 
     The Zendesk user id is read now, because deleting the user erases it before
@@ -134,10 +150,80 @@ def revoke_chat_tickets(user) -> None:
         return
 
     if zendesk_id:
+        before = timezone.now().isoformat()
+        products = sorted(product_slugs) if product_slugs is not None else None
         # Using robust prevents a queueing failure from ruining the commit.
         transaction.on_commit(
-            lambda remote_id=zendesk_id: tag_revoked_chat_tickets.delay(remote_id), robust=True
+            lambda remote_id=zendesk_id: tag_revoked_chat_tickets.delay(
+                remote_id, product_slugs=products, before=before
+            ),
+            using=using,
+            robust=True,
         )
+
+
+def chat_coverages(*, include_expired=False):
+    """Active chat coverages in effect today, plus those within the expiry cleanup window."""
+    today = timezone.localdate()
+    since = today - timedelta(days=CHAT_EXPIRY_WINDOW_DAYS) if include_expired else today
+    return SupportCoverage.objects.filter(
+        contract__status=SupportContract.Status.ACTIVE,
+        contract__starts_on__lte=today,
+        contract__ends_on__gte=since,
+        includes_chat=True,
+    )
+
+
+def had_chat(group_profiles) -> bool:
+    """Include recently expired grants so departures cannot escape the daily expiry cleanup."""
+    return (
+        chat_coverages(include_expired=True).filter(contract__company__in=group_profiles).exists()
+    )
+
+
+def chat_product_slugs(company, *, include_expired=False) -> set[str]:
+    return set(
+        chat_coverages(include_expired=include_expired)
+        .filter(contract__company=company)
+        .values_list("product__slug", flat=True)
+    )
+
+
+def revoke_company_chat_tickets(company, product_slugs, using=None) -> None:
+    """Queue tagging for the active members of the company or its departments."""
+    members = (
+        User.objects.db_manager(using)
+        .filter(groups__profile__in=GroupProfile.objects.get_tree(company), is_active=True)
+        .select_related("profile")
+        .distinct()
+    )
+    for user in members:
+        revoke_chat_tickets(user, product_slugs=product_slugs, using=using)
+
+
+@shared_task
+@skip_if_read_only_mode
+def revoke_expired_chat() -> None:
+    """Tag the chats of companies whose chat coverage ran out in the past week.
+
+    Saving a contract can't observe its end date passing, so this runs daily. The week
+    covers skipped runs; tagging again is harmless.
+    """
+    today = timezone.localdate()
+    expired = defaultdict(set)
+    for company_id, product_slug in SupportCoverage.objects.filter(
+        includes_chat=True,
+        contract__status=SupportContract.Status.ACTIVE,
+        contract__ends_on__range=(
+            today - timedelta(days=CHAT_EXPIRY_WINDOW_DAYS),
+            today - timedelta(days=1),
+        ),
+    ).values_list("contract__company_id", "product__slug"):
+        expired[company_id].add(product_slug)
+    for company in GroupProfile.objects.filter(pk__in=expired.keys()):
+        # A renewal in effect today keeps chat for the products it covers.
+        if products := expired[company.pk] - chat_product_slugs(company):
+            revoke_company_chat_tickets(company, products)
 
 
 @shared_task

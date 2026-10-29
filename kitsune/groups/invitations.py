@@ -1,7 +1,6 @@
 from datetime import timedelta
 from email.utils import make_msgid
 
-import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -12,24 +11,27 @@ from django.http import Http404
 from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import pgettext
 from post_office.models import PRIORITY, STATUS, Email
 from post_office.settings import get_message_id_enabled, get_message_id_fqdn
 from post_office.tasks import send_queued_mail
-from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.zendesk import ZendeskClient, ZendeskProvisioningConflict
 from kitsune.groups.membership import lock_enterprise_hierarchy
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.groups.onboarding import (
+    ZENDESK_PROVIDER_ERRORS,
     get_enterprise_root,
-    get_enterprise_support_config,
     get_prepared_resources,
     invitation_settings_valid,
     require_isolated_root,
     require_onboarding_allowed,
 )
-from kitsune.products.models import SupportOrganization
+from kitsune.products.models import SupportCoverage
+from kitsune.products.routing import chat_unavailable_reason
+from kitsune.products.utils import get_covered_products
 from kitsune.sumo.email_utils import make_mail, safe_translation
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.identity import lock_account_email
 from kitsune.users.models import Profile
@@ -64,7 +66,7 @@ def invitation_error(code) -> ValidationError:
 
 
 def invitation_landing_path(invitation) -> str:
-    """Return the configured destination, or the enterprise product page in the account's locale."""
+    """Return the configured destination, or the company page in the account's locale."""
     if not invitation_settings_valid():
         raise invitation_error("configuration_error")
     if path := settings.ENTERPRISE_ONBOARDING_LANDING_PATH:
@@ -72,12 +74,8 @@ def invitation_landing_path(invitation) -> str:
     profile = Profile.all_profiles.filter(user_id=invitation.user_id).first()
     if profile is None:
         raise invitation_error("resource_missing")
-    try:
-        product = get_enterprise_support_config().product
-    except ValidationError as error:
-        raise invitation_error(error.code) from None
     with translation.override(profile.locale):
-        return product.get_absolute_url()
+        return invitation.company.get_absolute_url()
 
 
 def require_open_invitation(invitation):
@@ -123,7 +121,7 @@ def queue_welcome_email(invitation, *, company, user):
     """Queue the welcome for delivery after commit and record it on the invitation.
 
     New accounts get the secure first-login link with a fresh expiry. Existing accounts are
-    already accepted, so they get a plain link to enterprise support.
+    already accepted, so they get a Mozilla sign-in link that continues to the landing page.
     """
     if not invitation_settings_valid():
         raise invitation_error("configuration_error")
@@ -131,23 +129,26 @@ def queue_welcome_email(invitation, *, company, user):
         invitation.expires_at = timezone.now() + timedelta(
             seconds=settings.ENTERPRISE_INVITATION_MAX_AGE
         )
-        landing_path = None
+        start_path = None
     else:
-        landing_path = invitation_landing_path(invitation)
-    include_live_chat = SupportOrganization.objects.filter(
-        group_id=company.group_id,
-        config__is_active=True,
-        config__product__slug=settings.ENTERPRISE_GROUP_SLUG,
-        include_live_chat=True,
-    ).exists()
+        # Company pages are private, so a signed-out invitee must sign in first.
+        start_path = urlparams(
+            reverse("users.fxa_authentication_init"), next=invitation_landing_path(invitation)
+        )
+    covered_products = get_covered_products(company)
+    # Promise chat only while the site can deliver it; membership never depends on chat.
+    includes_chat = (
+        chat_unavailable_reason() is None
+        and SupportCoverage.objects.effective(company)
+        .filter(product__in=covered_products, includes_chat=True)
+        .exists()
+    )
     host = Site.objects.get_current().domain
 
     @safe_translation
     def make_welcome(locale):
         # Reversed inside the locale override so the link carries the recipient's locale.
-        path = landing_path or reverse(
-            "groups.invitation_link", args=[invitation_token(invitation)]
-        )
+        path = start_path or reverse("groups.invitation_link", args=[invitation_token(invitation)])
         company_name = company.group.name
         return make_mail(
             subject=_("Your Mozilla Support access through {company} is ready").format(
@@ -160,7 +161,11 @@ def queue_welcome_email(invitation, *, company, user):
                 "company": company_name,
                 "email": invitation.email,
                 "new_account": invitation.created_user,
-                "include_live_chat": include_live_chat,
+                "covered_products": ", ".join(
+                    pgettext("DB: products.Product.title", product.title)
+                    for product in covered_products
+                ),
+                "includes_chat": includes_chat,
                 "start_url": f"https://{host}{path}",
             },
             from_email=settings.DEFAULT_FROM_EMAIL,
@@ -267,7 +272,7 @@ def claim_enterprise_invitation(token, claims) -> User:
             raise invitation_error(
                 error.code if error.code in INVITATION_ERRORS else "account_conflict"
             ) from None
-        except APIException, ZenpyException, requests.RequestException:
+        except ZENDESK_PROVIDER_ERRORS:
             raise invitation_error("zendesk_unavailable") from None
 
         # Zendesk was bound without row locks, so recheck everything once they are held.

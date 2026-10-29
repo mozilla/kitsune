@@ -1,0 +1,11 @@
+{% extends "questions/base.html" %}
+{% set title = _('Enterprise support unavailable') %}
+{% set hide_aaq_link = True %}
+
+{% block content %}
+  <article class="mzp-l-content sumo-page-section">
+    <h1 class="sumo-page-heading">{{ title }}</h1>
+    <p>{{ _("Your company's support agreement doesn't cover this product right now.") }}</p>
+    <p><a href="{{ product_url }}">{{ _('See other support options') }}</a></p>
+  </article>
+{% endblock %}

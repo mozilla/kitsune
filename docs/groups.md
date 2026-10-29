@@ -1,25 +1,20 @@
 # Groups System
 
-Kitsune's groups system provides hierarchical organization for users with configurable visibility, isolation, and leadership delegation.
+Hierarchical groups of users with configurable visibility, sibling isolation, and delegated
+leadership. Groups:
 
-## Overview
+- **restrict content** (wiki articles, questions, and more) to their members;
+- **delegate moderation** to leaders who manage members and content;
+- **nest** in parent-child hierarchies;
+- **isolate** sibling groups from discovering each other.
 
-Groups enable organizing users into hierarchical structures for:
-- **Content Access Control**: Restrict wiki articles, questions, and other content to specific groups
-- **Moderation Delegation**: Assign leaders who manage group members and content
-- **Hierarchical Organization**: Support nested group structures with parent-child relationships
-- **Isolated Workspaces**: Prevent sibling groups from discovering each other
+Enterprise companies are built on groups; see [Enterprise support](enterprise-support.md).
 
 ## Architecture
 
-### Hierarchy Structure
+Groups use django-treebeard's materialized paths (`MP_Node`): any depth (3–4 levels
+recommended), exactly one parent per group, and path-based ancestor and descendant queries.
 
-Groups use django-treebeard's Materialized Path (MP_Node) implementation:
-- **Unlimited depth**: Support for deeply nested structures (recommended max: 3-4 levels)
-- **Single parent**: Each group belongs to exactly one parent (no multiple inheritance)
-- **Efficient queries**: Path-based lookups for ancestors and descendants
-
-**Example Hierarchy:**
 ```
 Organization (root)
 ├── GroupA
@@ -29,414 +24,117 @@ Organization (root)
     └── SubgroupZ
 ```
 
-### Key Models
+- `TreeModelBase` (`kitsune.groups.models`): abstract base combining `MP_Node` and Kitsune's
+  `ModelBase`, with `get_parent()`, `get_children()`, `add_child()`, `get_ancestors()`,
+  `get_descendants()`, and `get_root()`.
+- `GroupProfile` (`kitsune.groups.models`): extends Django's `Group` with the hierarchy.
+  Fields: `slug`, `group` (ForeignKey), `leaders`, `information`, `avatar`, `visibility`,
+  `isolation_enabled`, `visible_to_groups`. Methods: `can_moderate_group()`, `can_edit()`,
+  `can_delete_subgroup()`, `can_view()`, `get_visible_children()`.
 
-**TreeModelBase** (`kitsune.groups.models.TreeModelBase`)
-- Abstract base combining `MP_Node` (tree operations) + `ModelBase` (Kitsune methods)
-- Provides: `get_parent()`, `get_children()`, `add_child()`, `get_ancestors()`, `get_descendants()`, `get_root()`
+## Visibility levels
 
-**GroupProfile** (`kitsune.groups.models.GroupProfile`)
-- Profile extending Django's `Group` with hierarchy support
-- Fields: `slug`, `group` (ForeignKey), `leaders` (M2M), `information`, `avatar`, `visibility`, `isolation_enabled`, `visible_to_groups`
-- Methods: `can_moderate_group()`, `can_edit()`, `can_delete_subgroup()`, `can_view()`, `get_visible_children()`
+| Level | Who sees it |
+| --- | --- |
+| PUBLIC | Everyone, including anonymous users. No isolation. |
+| PRIVATE | Members and moderators within the hierarchy. With isolation (the default) they see only their own branch; without it, members see the whole tree. |
+| MODERATED | Same as PRIVATE, plus view-only access for the groups in `visible_to_groups`. |
 
-## Visibility Levels
-
-Groups have three visibility levels that control discovery and access.
-
-### PUBLIC
-- **Who can see**: Everyone (anonymous and authenticated users)
-- **Isolation**: None - all PUBLIC groups are globally visible
-- **Behavior**: No restrictions on visibility
-
-### PRIVATE
-- **Who can see**: Depends on `isolation_enabled` setting (default: True)
-- **With isolation enabled**: Members/moderators see only their hierarchy (sibling isolation)
-- **With isolation disabled**: Members see entire tree
-- **Behavior**: Restricts visibility to members and moderators within the hierarchy
-
-### MODERATED
-- **Functionality**: Identical to PRIVATE
-- **Additional feature**: `visible_to_groups` for cross-hierarchy view access
-- **Behavior**: Same as PRIVATE, plus allows specific external groups to view (but not edit)
+Children always match their parent's visibility (`save()` enforces it), and changing the
+root's visibility propagates to all descendants, so a tree never mixes levels.
 
 ## Isolation
 
-### Isolation Setting
+PRIVATE and MODERATED groups have `isolation_enabled` (default `True`). PUBLIC groups have
+no isolation, since they are visible to everyone.
 
-Both PRIVATE and MODERATED groups have an `isolation_enabled` field (default: `True`). PUBLIC groups do not have isolation as it doesn't make sense for publicly visible content.
-
-**With Isolation Enabled (default):**
 ```
-Root (member: Alice, Bob; moderator: Mike)
-├── SubA (member: Alice, Charlie)
+Root (members: Alice, Bob; moderator: Mike)
+├── SubA (members: Alice, Charlie)
 └── SubB (member: Bob)
 
-Mike (root moderator):     Sees Root, SubA, SubB (entire tree)
-Alice (root member):       Sees Root, SubA, SubB (entire tree, view-only)
-Bob (root member):         Sees Root, SubA, SubB (entire tree, view-only)
-Charlie (node member):     Sees Root, SubA ONLY (sibling isolation - no SubB)
+Mike (root moderator):  Root, SubA, SubB (whole tree, can edit)
+Alice (root member):    Root, SubA, SubB (whole tree, view only)
+Bob (root member):      Root, SubA, SubB (whole tree, view only)
+Charlie (SubA member):  Root, SubA only (sibling isolation hides SubB)
 ```
 
-**Key Rules:**
-- **Root moderators**: View + edit entire tree
-- **Root members**: View entire tree (read-only)
-- **Node members** (not root members): View ancestors + own subtree (sibling isolation)
-- **Ancestors always visible**: Everyone in a hierarchy can see ancestor groups
+- Root moderators view and edit the whole tree; root members view it read-only.
+- Members of a subgroup who aren't root members see their ancestors and their own subtree,
+  never sibling groups.
+- Everyone in a hierarchy can see its ancestor groups.
 
-### Why Isolation Matters
+Isolation prevents leaking that sibling groups exist:
 
-Sibling isolation prevents cross-group information leakage:
 ```
-Organization (PRIVATE, isolation=True)
+Organization (PRIVATE, isolation on)
 ├── GroupA (members: Alice, Bob)
 └── GroupB (members: Charlie, Dana)
 
-- Alice and Bob cannot discover GroupB exists
-- Charlie and Dana cannot discover GroupA exists
-- Prevents users from discovering sibling groups they are not members of
+Alice and Bob can't discover GroupB; Charlie and Dana can't discover GroupA.
 ```
 
-## Leadership and Moderation
+## Leadership and moderation
 
-### Moderation Hierarchy
+A group's leaders (`leaders`) are its moderators.
 
-**Root Moderators (full tree access):**
-- Leaders of root group can moderate entire tree
-- Can add/remove members anywhere
-- Can edit all group settings
-- **Only ones who can delete subgroups**
-
-**Non-Root Moderators (limited to their group):**
-- Can moderate ONLY their specific group (not descendants)
-- Can add/remove members to their group
-- Can edit their group's settings
-- **Cannot delete subgroups**
-
-**Example:**
-```
-Root (moderator: Mike)
-├── SubA (moderator: Alice)
-│   └── SubSubA (no moderator)
-└── SubB (no moderator)
-
-Mike can:
-- Moderate Root, SubA, SubSubA, SubB
-- Edit all groups
-- Delete any subgroup
-
-Alice can:
-- Moderate SubA ONLY
-- Edit SubA ONLY
-- NOT manage SubSubA (her descendant)
-- NOT delete subgroups
-```
-
-### Moderation Inheritance
-
-If a group has no assigned moderators, moderation **inherits from ROOT only** (not parent):
+- **Root leaders** moderate the whole tree: they add or remove members anywhere, edit any
+  group, and are the only ones who can delete subgroups.
+- **Other leaders** moderate only their own group (members and settings), not its
+  descendants, and can't delete subgroups.
+- A group without leaders is moderated by the **root's** leaders, not its parent's, so
+  only root leaders or a group's own leaders ever manage it.
+- A root must have at least one leader.
 
 ```
-Root (moderator: Mike)
-└── SubA (moderator: Alice)
-    └── SubSubA (no moderator)
-        └── SubSubSubA (no moderator)
+Root (leader: Mike)
+├── SubA (leader: Alice)
+│   └── SubSubA (no leader)
+│       └── SubSubSubA (no leader)
+└── SubB (no leader)
 
-SubSubA: Moderated by Mike (root), NOT Alice (parent)
-SubSubSubA: Moderated by Mike (root), NOT Alice (grandparent)
+Mike:   moderates and edits every group; can delete any subgroup.
+Alice:  moderates and edits SubA only; not SubSubA; can't delete subgroups.
+SubSubA and SubSubSubA: moderated by Mike (root), not Alice.
 ```
-
-**Why skip parent?** This ensures clear chain of command - only root moderators or explicitly assigned group moderators can manage groups.
-
-### Root Must Have Moderators
-
-**Validation**: Root groups must have at least one moderator assigned. This ensures there's always someone who can manage the entire tree.
-
-## Visibility Inheritance
-
-**Strict Inheritance Rule**: Children automatically inherit parent's visibility.
-
-- Cannot mix visibility levels in a tree (e.g., PUBLIC parent with PRIVATE child)
-- Enforced by `save()` method - children automatically match parent's visibility
-- Changing root visibility propagates to all descendants
-
-## Enterprise company setup
-
-The enterprise root's group page has an **Enterprise onboarding** card.
-**Create company** creates a direct child of that root and configures its support.
-Each company's **Support settings** can update its support configuration, but
-cannot rename the company. These actions are available only for the configured
-enterprise root and its direct company children, not departments or other
-hierarchies. Existing username-based member and leader controls remain available,
-subject to the company-membership boundary below.
-
-Operators must be active Django staff who either lead the enterprise root or are
-superusers. Company leadership alone does not grant onboarding access. Creating
-a company does not make the operator a member or leader of it.
-
-Deployment prerequisites:
-
-- `ENTERPRISE_GROUP_SLUG` (default `firefox-enterprise`) identifies both the product
-  and its depth-1 root group; their slugs must match. The root must have PRIVATE or
-  MODERATED visibility and sibling isolation enabled. The product must be
-  nonarchived, with an active support configuration that enables Zendesk, has a
-  positive numeric ticket form ID, and does not require a product subscription.
-- Optional live chat requires the `zendesk-chat` switch,
-  `ZENDESK_CHAT_WIDGET_KEY`, `ZENDESK_CHAT_SIGNING_KEY_ID`, and
-  `ZENDESK_CHAT_SIGNING_SECRET`. The form does not change these deployment settings.
-
-Company names and generated URL slugs must be available; collisions are rejected
-without adding a suffix. New companies inherit the root's visibility. Updating
-support settings preserves the company's identity and support configurations for
-other products. Neither action changes membership or leadership.
-
-An optional existing Zendesk organization ID is verified remotely before linking.
-A Zendesk organization can belong to only one company, and a saved link cannot be
-reassigned. Equivalent spellings of the same numeric ID retain the existing link.
-Names are never used to adopt a remote organization. Leaving the ID blank records
-only local support settings; it does not create a remote organization or user.
-
-For company creation and support settings, remote verification completes before
-acquiring hierarchy or company-row locks. The locked mutation rechecks operator
-permissions, company scope, support configuration, and link ownership before
-saving. An unchanged canonical organization link does not require a provider call.
-
-Missing prerequisites and conflicts leave the operation unchanged and display a
-form error. Read-only mode refuses both mutations. Department groups and companies
-outside the configured root cannot be targeted.
-
-## Enterprise support contracts
-
-Staff record company agreements in Django admin under **Products > Support
-contracts**. A contract has a name, a status (active, suspended, or cancelled), and
-start and end dates, both inclusive in the site time zone. Each coverage names a product,
-its Zendesk form configuration, the Zendesk product value, and whether chat is included.
-A bundle is several coverages on one contract.
-
-- The company must be a direct child of the enterprise root and cannot change later.
-- A contract needs at least one coverage and lists each product once.
-- Active and suspended contracts of one company cannot cover the same product in
-  overlapping periods. Cancelled contracts never block.
-- Contracts and coverages cannot be deleted. Cancel a contract to retire it; to fix a
-  mistake, cancel it and enter a new one.
-- A company with contracts cannot be deleted or moved from directly under the root.
-
-Saving a contract creates the company's local Zendesk organization identity without
-contacting Zendesk. Contracts do not yet affect routing or what members see.
-
-## Enterprise account preparation
-
-Staff add people with **Add person** on a company's page. It prepares the SUMO
-account, records the invitation, and provisions it in the same request (see below).
-It requires the same operator permissions and company/support prerequisites as
-company setup and is unavailable in read-only mode.
-
-The preparation step itself (`kitsune.groups.onboarding.invite_enterprise_user`)
-only creates or reuses the account and records the invitation. Prepared accounts are
-not ready for ordinary sign-in; they are claimed through the invitation link.
-
-Below the member list, the company page lists invitations that are not accepted
-yet, with their status, the reason for a failure, and a **Resend** button. Accepted
-people appear in the member list instead. Only onboarding staff see the form and
-invitations.
-
-### Required information and account eligibility
-
-- Each request accepts one valid email address and requires both first and last
-  names. Email matching ignores case and surrounding whitespace. Names are trimmed
-  but retain Unicode, case, and internal spacing.
-- New accounts are inactive, have unusable passwords, keep their email private,
-  and are not linked to a Mozilla account. Supplied names are saved only on new
-  accounts and are not copied into the public profile display name.
-- Existing active, regular accounts linked to a Mozilla account can be reused,
-  provided they are neither staff nor superusers. Their names, identity,
-  subscriptions, and support history are preserved.
-- Hidden system accounts, legacy accounts not linked to a Mozilla account,
-  inactive accounts not prepared by this invitation, and case-insensitive duplicate
-  email addresses require administrator resolution. Accounts already belonging to
-  another company or conflicting support organization are refused. Intake does not
-  merge accounts, move memberships, or resolve conflicts automatically.
-
-### Repeating intake and configuration requirements
-
-Only one unfinished invitation is allowed per email address, ignoring case.
-Repeating intake for the same company preserves the prepared account and invitation
-state; an unfinished invitation to another company is refused. If an accepted
-invitation's user still belongs to that company, the accepted record is reused.
-An eligible former member can receive a new invitation record without deleting
-accepted history.
-
-Adding a person who is already invited and `ready` leaves their invitation and
-link unchanged and points staff to **Resend**; pending or failed invitations are
-provisioned again. Provisioning checks this against the invitation's current state
-under the account-email lock, so a double-submitted Add person or Resend does not
-redo setup.
-
-Repeated intake refuses an unlinked, invitation-created account if it has been
-activated, given a usable password, migrated to Mozilla accounts, or used to sign
-in.
-
-Intake and provisioning use the current active enterprise support configuration;
-invitations do not store a configuration snapshot. Replacing that configuration
-requires a matching company support organization. Missing prepared accounts,
-support organizations, or mappings are not recreated for an existing invitation.
-Failed intake leaves no partial account preparation.
-
-Intake also validates these deployment settings:
-
-- `ENTERPRISE_INVITATION_MAX_AGE` is a duration in seconds, defaulting to seven days
-  (`604800`). It must be a positive integer.
-- `ENTERPRISE_ONBOARDING_LANDING_PATH` may be empty. When set, it must be a local
-  path starting with a single slash, not a full URL, and contain neither backslashes
-  nor control characters.
-
-Intake does not send mail or activate accounts. Successful remote provisioning adds
-company membership and queues the welcome email described below.
-
-## Enterprise Zendesk provisioning
-
-**Add person** calls
-`kitsune.groups.provisioning.provision_enterprise_invitation(actor=..., invitation=...)`
-in the request to create or link the Zendesk organization, user, and organization
-membership. The organization is created once per company; later people only get a
-user and membership.
-
-Provisioning rechecks operator permissions, the prepared account, the current
-enterprise support configuration, and company membership rules. It refuses
-read-only mode, never recreates missing local resources, and leaves accepted
-invitations unchanged.
-
-Zendesk requests run while only the account-email lock is held; afterwards
-provisioning locks and revalidates the records before saving. Results are discarded
-if the company, account, or mapping changed in flight, except for links matching
-what this run resolved. Conflicting identities, or Zendesk IDs owned by another
-SUMO profile, need administrator resolution.
-
-### Status and recovery
-
-- Success saves the Zendesk IDs and adds both the Zendesk membership and membership
-  in the company's SUMO group, then queues the welcome email in the same transaction.
-  Invitations for accounts created by intake become `ready`; invitations for
-  existing accounts become `accepted`. It does not add root membership or
-  leadership, or activate accounts.
-- Expected provider failures return `failed` with the failed step and a safe error
-  code. Unexpected failures raise and roll back local changes.
-- Staff retry with the **Resend** button, which reruns the full sequence using saved
-  IDs, the organization UUID, and the invited email, so earlier partial remote work
-  is reconciled. A rerun never sends a second welcome, but queues one for a `ready`
-  invitation that has none. There is no automatic retry.
-
-See [Zendesk provisioning](zendesk.md#enterprise-provisioning) for provider
-permissions and identity rules.
-
-## Enterprise welcome email and first login
-
-The welcome email names the company and lists ticket support, the company's shared
-tickets, and live chat when the company has it. It is built as a post-office
-`Email` row, linked from the invitation, and sent after commit; if publishing
-fails, the scheduled queue run delivers it.
-
-- Accounts created by intake get a personal link to start first login. Queuing it
-  starts a fresh `ENTERPRISE_INVITATION_MAX_AGE` window, and the email itself
-  expires with the link.
-- Existing accounts are already accepted, so their email links straight to the
-  enterprise support destination and carries no token.
-
-The link is a credential; it only appears in the email, so keep it out of logs and
-analytics. For a `ready` invitation, **Resend** calls
-`kitsune.groups.invitations.resend_enterprise_invitation(actor=..., invitation=...)`
-to replace an unused or expired link. It revalidates the account
-and company like first login, and invalidates every earlier link. An unsent earlier
-email is expired so it is never delivered; one already in flight may still arrive,
-but its link no longer works.
-
-Opening the link moves the token into the session and redirects to the
-`groups.invitation` page, which shows the company and invited email. Continuing
-starts Mozilla sign-in. Signing in with the invited email activates the prepared
-account, links its Mozilla and Zendesk identities, consumes the link, and lands on
-`ENTERPRISE_ONBOARDING_LANDING_PATH` or, when blank, the enterprise product page in
-the account's locale.
-
-Acceptance requires the saved account, current support configuration, Zendesk
-mappings, and company membership, and never recreates them. See
-[Users](users.md#invited-first-login) for sign-in rules and failure handling.
-
-## Enterprise company membership
-
-A user may belong to only one direct company child of `ENTERPRISE_GROUP_SLUG`.
-Membership in any descendant counts toward that company. Multiple departments
-within the same company are allowed; company/root membership is not added
-implicitly. Root operator membership and unrelated hierarchies are unchanged.
-Staff and superusers have no exception to the company-membership boundary.
-
-Member and leader controls and Django admin membership changes enforce this
-boundary, including membership granted when assigning a group leader. A conflicting
-batch of changes is rejected as a whole. Moving groups or changing their associated
-Django groups is also refused if it would leave a user in more than one company.
-Errors do not disclose the name of another private company.
-
-Existing conflicts are not repaired automatically. Membership removals remain
-available so an administrator can resolve them before retrying an addition.
-Use the normal group-management paths for membership changes; direct writes to
-membership tables bypass these safeguards.
 
 ## Security
 
-### Critical: Always Use `.visible()`
+Always query with `GroupProfile.objects.visible(request.user)` or check `can_view()`.
+`GroupProfile.objects.all()` bypasses visibility and isolation and exposes PRIVATE groups to
+anyone; every view must use one of the safe paths.
 
-**⚠️ SECURITY WARNING**: Always use `GroupProfile.objects.visible(user)` instead of `.all()` when querying groups. Using `.all()` bypasses visibility and isolation rules, potentially exposing PRIVATE groups to unauthorized users.
+## Cross-hierarchy view access
 
-- ✅ **SECURE**: `GroupProfile.objects.visible(request.user)` - Respects visibility and isolation
-- ❌ **INSECURE**: `GroupProfile.objects.all()` - Bypasses all security, exposes all groups
-
-All views must filter by `.visible()` or explicitly check `can_view()` permissions.
-
-## Cross-Hierarchy View Access
-
-The `visible_to_groups` M2M field allows external groups to have **view-only** access to MODERATED groups. This enables oversight or auditing scenarios where certain groups need to see (but not edit) other groups outside their hierarchy.
-
-**Behavior:**
-- External groups can view MODERATED groups without being members
-- View-only access (cannot edit or moderate)
-- Useful for oversight, auditing, or cross-team visibility
+`visible_to_groups` (M2M) gives external groups view-only access to a MODERATED group without
+membership, for oversight, auditing, or cross-team visibility. They can't edit or moderate it.
 
 ## Testing
 
-Test coverage includes 58 tests in `kitsune/groups/tests/test_models.py`:
-- **ModerationHierarchyTests**: Root vs non-root moderator permissions (6 tests)
-- **VisibilityWithIsolationTests**: Visibility rules with isolation enabled (4 tests)
-- **PublicGroupsNoIsolationTests**: PUBLIC group behavior (2 tests)
-- **ModeratedGroupsTests**: MODERATED group behavior and cross-hierarchy access (2 tests)
-- **IsolationDisabledTests**: Behavior when isolation is disabled (1 test)
-- **SiblingIsolationTests**: Sibling isolation functionality (7 tests)
-- **VisibilityEdgeCaseTests**: Edge cases in group visibility (9 tests)
-- **GetVisibleChildrenTests**: Visible children filtering (5 tests)
-- **LeadershipVisibilityTests**: Leader visibility permissions (6 tests)
-- **VisibilityInheritanceTests**: Visibility inheritance rules (2 tests)
-- **ModeratedVisibilityTests**: MODERATED group visibility (5 tests)
+`kitsune/groups/tests/test_models.py` covers moderation scope, visibility with and without
+isolation, sibling isolation, MODERATED cross-hierarchy access, visible children, leader
+visibility, and visibility inheritance. Enterprise tests are listed in
+[Enterprise support](enterprise-support.md#testing).
 
-Run tests:
 ```bash
-# All groups tests
-python manage.py test kitsune.groups.tests
-
-# Specific test file
-python manage.py test kitsune.groups.tests.test_models
+docker compose run --rm web python manage.py test kitsune.groups.tests
+docker compose run --rm web python manage.py test kitsune.groups.tests.test_models
 ```
 
-## Key Behaviors
+## Key behaviors
 
-- **Visibility Inheritance**: Children automatically match parent's visibility level
-- **Moderation Scope**: Root moderators manage entire tree; non-root moderators manage only their specific group
-- **Moderation Inheritance**: Groups without assigned moderators inherit from root (not parent)
-- **Member Visibility**: Root members see entire tree; node members see only their subtree (with sibling isolation)
-- **Deletion Rights**: Only root moderators can delete subgroups
+- **Visibility inheritance**: children match their parent's visibility.
+- **Moderation scope**: root leaders manage the whole tree; other leaders only their own
+  group.
+- **Moderation inheritance**: groups without leaders fall back to the root's, not the
+  parent's.
+- **Member visibility**: root members see the whole tree; subgroup members see only their
+  branch (with isolation).
+- **Deletion rights**: only root leaders can delete subgroups.
 
 ## References
 
-- **GitHub Issue**: [#2692 - Nested Groups](https://github.com/mozilla/sumo/issues/2692)
-- **django-treebeard**: https://django-treebeard.readthedocs.io/
-- **Model**: `kitsune/groups/models.py`
-- **Manager**: `kitsune/groups/managers.py`
-- **Views**: `kitsune/groups/views.py`
-- **Tests**: `kitsune/groups/tests/test_models.py`
+- [#2692 - Nested Groups](https://github.com/mozilla/sumo/issues/2692)
+- [django-treebeard](https://django-treebeard.readthedocs.io/)
+- Code: `kitsune/groups/models.py`, `managers.py`, `views.py`; tests in
+  `kitsune/groups/tests/test_models.py`

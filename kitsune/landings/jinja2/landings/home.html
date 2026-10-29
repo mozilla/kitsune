@@ -30,9 +30,7 @@
 
 {% block contentwrap %}
 <div id="main-content">
-  {% if professional_support_products %}
-    {{ professional_support_banner(professional_support_products[0]) }}
-  {% endif %}
+  {{ professional_support_banner() }}
   <section class="mzp-l-content sumo-page-section--inner">
     <div class="text-center-to-left-on-large">
       <h2 class="sumo-page-subheading">{{ _('Get Help') }}</h2>
