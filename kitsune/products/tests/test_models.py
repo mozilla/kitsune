@@ -15,7 +15,7 @@ from kitsune.products.tests import (
 )
 from kitsune.questions.tests import AAQConfigFactory, QuestionFactory, QuestionLocaleFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.wiki.tests import RedirectRevisionFactory
+from kitsune.wiki.tests import AudienceFactory, RedirectRevisionFactory
 
 
 class TopicModelTests(TestCase):
@@ -216,7 +216,7 @@ INELIGIBLE_ARTICLES = [
     (
         "restricted",
         lambda product: make_article(
-            product, restrict_to_groups=[Group.objects.create(name="restricted")]
+            product, audiences=[AudienceFactory(groups=[Group.objects.create(name="restricted")])]
         ),
     ),
     ("redirect", lambda product: RedirectRevisionFactory(document__products=[product]).document),

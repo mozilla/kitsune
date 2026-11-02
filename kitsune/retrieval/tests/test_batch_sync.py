@@ -46,7 +46,7 @@ from kitsune.retrieval.tasks import enqueue_document_batch, sync_documents
 from kitsune.retrieval.tests import ChunkIndexTestCase, read_indexed_document
 from kitsune.sumo.redis_utils import redis_client
 from kitsune.users.tests import GroupFactory
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 
 def _max_diff(first, second):
@@ -215,7 +215,7 @@ class BatchExecutorTests(BatchTestCase):
 
     def test_an_ineligible_document_is_evicted_and_costs_no_input(self):
         sync_document_batch(self.ids)
-        self.documents[0].restrict_to_groups.add(GroupFactory())
+        self.documents[0].audiences.set([AudienceFactory(groups=[GroupFactory()])])
         ApprovedRevisionFactory(document=self.documents[1], content="Fresh content to embed.")
         self.documents[1].refresh_from_db()
 
@@ -319,7 +319,7 @@ class BatchExecutorTests(BatchTestCase):
             document.refresh_from_db()
 
         def restrict_then_embed(*args, **kwargs):
-            self.documents[2].restrict_to_groups.add(GroupFactory())
+            self.documents[2].audiences.set([AudienceFactory(groups=[GroupFactory()])])
             return get_embeddings(*args, **kwargs)
 
         with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=restrict_then_embed):
@@ -358,7 +358,7 @@ class BatchExecutorTests(BatchTestCase):
 
     def test_invalid_target_metadata_does_not_block_eviction_of_an_ineligible_document(self):
         sync_document_batch(self.ids)
-        self.documents[0].restrict_to_groups.add(GroupFactory())
+        self.documents[0].audiences.set([AudienceFactory(groups=[GroupFactory()])])
 
         with (
             mock.patch(

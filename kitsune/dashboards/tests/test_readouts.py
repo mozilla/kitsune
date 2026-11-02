@@ -36,6 +36,7 @@ from kitsune.wiki.config import (
 from kitsune.wiki.models import Revision
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     RedirectRevisionFactory,
     RevisionFactory,
@@ -78,7 +79,7 @@ class KBOverviewTests(TestCase):
         ApprovedRevisionFactory()
         self.assertEqual(1, len(kb_overview_rows()))
         group1 = GroupFactory(name="group1")
-        ApprovedRevisionFactory(document__restrict_to_groups=[group1])
+        ApprovedRevisionFactory(document__audiences=[AudienceFactory(groups=[group1])])
         self.assertEqual(1, len(kb_overview_rows()))
         user1 = UserFactory(groups=[group1])
         self.assertEqual(2, len(kb_overview_rows(user=user1)))
@@ -244,7 +245,7 @@ class KBOverviewTests(TestCase):
         ApprovedRevisionFactory()
         ApprovedRevisionFactory()
         d3 = ApprovedRevisionFactory(
-            document__restrict_to_groups=[GroupFactory(name="group1")]
+            document__audiences=[AudienceFactory(groups=[GroupFactory(name="group1")])]
         ).document
 
         WikiDocumentVisits.objects.create(document=d1, visits=5, period=LAST_30_DAYS)
@@ -531,7 +532,7 @@ class UnreviewedChangesTests(ReadoutTestCase):
         rev6 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 3, 1, tzinfo=UTC))
 
         group1 = GroupFactory(name="group1")
-        doc_en = DocumentFactory(restrict_to_groups=[group1])
+        doc_en = DocumentFactory(audiences=[AudienceFactory(groups=[group1])])
         doc_de = DocumentFactory(parent=doc_en, locale="de")
         TranslatedRevisionFactory(
             document=doc_de, reviewed=None, is_approved=False, created=datetime(2023, 4, 1, tzinfo=UTC)
@@ -669,7 +670,7 @@ class TemplateTests(ReadoutTestCase):
         ApprovedRevisionFactory(document=d)
         ApprovedRevisionFactory(document=TemplateDocumentFactory())
         rt = TemplateDocumentFactory(
-            restrict_to_groups=[GroupFactory(name="group1")], products=[p]
+            audiences=[AudienceFactory(groups=[GroupFactory(name="group1")])], products=[p]
         )
         ApprovedRevisionFactory(document=rt)
 

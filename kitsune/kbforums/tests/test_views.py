@@ -3,7 +3,7 @@ from kitsune.kbforums.models import Thread
 from kitsune.kbforums.tests import PostFactory, ThreadFactory
 from kitsune.sumo.tests import TestCase, get, post
 from kitsune.users.tests import GroupFactory, UserFactory, add_permission
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 
 class ThreadTests(TestCase):
@@ -107,7 +107,8 @@ class ThreadTests(TestCase):
 
         doc1 = ApprovedRevisionFactory(document__allow_discussion=False).document
         doc2 = ApprovedRevisionFactory(
-            document__allow_discussion=True, document__restrict_to_groups=[group1, group2]
+            document__allow_discussion=True,
+            document__audiences=[AudienceFactory(groups=[group1, group2])],
         ).document
         doc3 = ApprovedRevisionFactory(document__allow_discussion=True).document
         doc4 = ApprovedRevisionFactory(

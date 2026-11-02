@@ -6,6 +6,48 @@ from kitsune.wiki.config import PUBLIC_AUDIENCE_SLUG
 from kitsune.wiki.permissions import can_delete_documents_or_review_revisions
 
 
+def effective_group_ids(user, using=None):
+    """
+    The IDs of the groups that grant the given user access to KB audiences: the user's
+    direct groups, plus the company group of each enterprise company the user belongs to
+    directly or through a department. Cached on the user; "using" selects the database
+    of the first read. The companies come from the per-user cache the support routing shares.
+    """
+    if not (user and user.is_authenticated):
+        return frozenset()
+
+    if not hasattr(user, "_kb_effective_group_ids"):
+        # Imported here to break the cycle groups.models -> wiki.parser -> wiki.models -> here.
+        from kitsune.groups.models import GroupProfile
+
+        companies = GroupProfile.objects.db_manager(using).cached_enterprise_companies(user)
+        user._kb_effective_group_ids = frozenset(
+            user.groups.using(using).values_list("id", flat=True)
+        ).union(company.group_id for company in companies)
+    return user._kb_effective_group_ids
+
+
+def audience_access(group_ids, prefix=""):
+    """
+    A condition that is true when the document's original (the document itself when it has
+    no parent, otherwise its parent) is assigned the Public audience, or an audience with a
+    group in "group_ids". The prefix is the ORM path to the document from a related model.
+    """
+    # Imported here to break the cycle wiki.models -> wiki.managers.
+    from kitsune.wiki.models import DocumentAudience
+
+    granted = Q(audience__slug=PUBLIC_AUDIENCE_SLUG)
+    if group_ids:
+        granted |= Q(audience__groups__in=group_ids)
+
+    def assigned(document):
+        return Exists(DocumentAudience.objects.filter(granted, document=OuterRef(document)))
+
+    return (Q(**{f"{prefix}parent__isnull": True}) & assigned(f"{prefix}pk")) | (
+        Q(**{f"{prefix}parent__isnull": False}) & assigned(f"{prefix}parent")
+    )
+
+
 class VisibilityManager(models.Manager):
     """Abstract base class for the Document and Revision Managers."""
 
@@ -28,50 +70,17 @@ class VisibilityManager(models.Manager):
 
     def unrestricted(self, user=None, **kwargs):
         """
-        A document is unrestricted for a given user if that user is staff or a
-        superuser, or the document is not restricted to one or more groups, or
-        when the user is a member of at least one of the groups to which it's
-        restricted. A translation (i.e., a document with a parent), follows its
-        parent's restrictions.
+        A document is unrestricted for a given user if that user is staff or a superuser,
+        or the document's original is assigned an audience that grants the user access
+        (see "audience_access"). A translation follows its original's audiences.
         """
         if user and (user.is_superuser or in_staff_group(user)):
             # Staff and superusers are never restricted.
             return self.filter(**kwargs)
 
-        prefix = self.document_relation_prefix
-
-        # Authenticated users might have one or more groups to match against.
-        check_for_group_match = user and user.is_authenticated
-
-        def unrestricted_condition(parent_prefix=""):
-            """
-            Create the unrestricted condition for either the document or
-            the document's parent.
-            """
-            restrict_to_groups = f"{prefix}{parent_prefix}restrict_to_groups"
-
-            parent_condition = Q(**{f"{prefix}parent__isnull": not bool(parent_prefix)})
-            not_restricted = Q(**{f"{restrict_to_groups}__isnull": True})
-
-            if not check_for_group_match:
-                return parent_condition & not_restricted
-
-            group_condition_fulfilled = Q(**{f"{restrict_to_groups}__in": user.groups.all()})  # noqa: group-leak
-
-            return parent_condition & (not_restricted | group_condition_fulfilled)
-
-        qs = self.filter(
-            unrestricted_condition() | unrestricted_condition("parent__"),
-            **kwargs,
+        return self.filter(
+            audience_access(effective_group_ids(user), self.document_relation_prefix), **kwargs
         )
-
-        if check_for_group_match:
-            # If we're looking for a group match, we might get duplicate rows,
-            # because a single document might have multiple group matches if
-            # the user is a member of multiple groups.
-            qs = qs.distinct()
-
-        return qs
 
     def visible(self, user=None, permission_locale=None, **kwargs):
         """

@@ -10,7 +10,6 @@ ineligible and the sync core evicts it; widening access makes it eligible and it
 """
 
 from django.conf import settings
-from django.contrib.auth.models import Group
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.signals import m2m_changed, post_save, pre_delete
@@ -97,20 +96,13 @@ def taxonomy_deleted(sender, instance, **kwargs):
 
 @receiver(
     m2m_changed,
-    sender=Document.restrict_to_groups.through,
-    dispatch_uid="retrieval.document_restrictions_changed",
+    sender=Document.audiences.through,
+    dispatch_uid="retrieval.document_audiences_changed",
 )
-def restrictions_changed(sender, instance, action, reverse, pk_set, **kwargs):
+def audiences_changed(sender, instance, action, reverse, pk_set, **kwargs):
     _refresh_families(
-        _affected_documents(
-            instance, action, reverse, pk_set, reverse_accessor="restricted_documents"
-        )
+        _affected_documents(instance, action, reverse, pk_set, reverse_accessor="documents")
     )
-
-
-@receiver(pre_delete, sender=Group, dispatch_uid="retrieval.group_deleted")
-def group_deleted(sender, instance, **kwargs):
-    _refresh_families(instance.restricted_documents.values_list("id", flat=True))
 
 
 @receiver(pre_delete, sender=Document, dispatch_uid="retrieval.document_deleted")

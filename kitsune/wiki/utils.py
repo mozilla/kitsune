@@ -17,7 +17,7 @@ from django.shortcuts import get_object_or_404
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.config import PINNED_ARTICLE_LIMIT_Q, REDIRECT_HTML
+from kitsune.wiki.config import PINNED_ARTICLE_LIMIT_Q, PUBLIC_AUDIENCE_SLUG, REDIRECT_HTML
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document, PinnedArticleConfig, Revision
 
@@ -168,7 +168,7 @@ def get_featured_articles(
         return random.sample(pinned_articles, limit)
 
     filter_kwargs = {
-        "restrict_to_groups__isnull": True,
+        "audiences__slug": PUBLIC_AUDIENCE_SLUG,
         "category__in": settings.IA_DEFAULT_CATEGORIES,
     }
 

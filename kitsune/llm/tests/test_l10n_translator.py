@@ -7,10 +7,10 @@ from kitsune.llm.l10n.translator import (
     translate,
 )
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import GroupFactory
 from kitsune.wiki.models import RevisionAnchorRecord
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     RevisionAnchorRecordFactory,
 )
@@ -139,10 +139,10 @@ class ResolveInternalAnchorsTestCase(TestCase):
         result = resolve_internal_anchors(None, "content", "fr", "contenu")
         self.assertEqual(result, "contenu")
 
-    def test_passes_restrict_to_groups_to_wiki_to_html(self):
-        """Test that the source doc's restrict_to_groups is passed to wiki_to_html."""
-        group = GroupFactory()
-        source_doc = DocumentFactory(locale="en-US", restrict_to_groups=[group])
+    def test_passes_audience_ids_to_wiki_to_html(self):
+        """Test that the source doc's private audience IDs are passed to wiki_to_html."""
+        audience = AudienceFactory()
+        source_doc = DocumentFactory(locale="en-US", audiences=[audience])
         ApprovedRevisionFactory(document=source_doc)
 
         with (
@@ -156,10 +156,10 @@ class ResolveInternalAnchorsTestCase(TestCase):
                 source_doc, "See [[#w_intro|intro]].", "fr", "Voir [[#w_intro|intro]]."
             )
 
-        # Both calls (source and target) should pass the source doc's restrict_to_groups.
+        # Both calls (source and target) should pass the source doc's audience IDs.
         self.assertEqual(wiki_to_html_mock.call_count, 2)
         for call in wiki_to_html_mock.call_args_list:
-            self.assertEqual(call.kwargs["restrict_to_groups"], source_doc.restrict_to_groups)
+            self.assertEqual(call.kwargs["audience_ids"], frozenset([audience.pk]))
 
 
 class ResolveExternalAnchorsTestCase(TestCase):

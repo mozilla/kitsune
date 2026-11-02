@@ -196,17 +196,17 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (document.getElementById("id_restrict_to_groups")) {
-    new TomSelect("select[id='id_restrict_to_groups']", {
+  if (document.getElementById("id_audiences")) {
+    new TomSelect("select[id='id_audiences']", {
       closeAfterSelect: true,
       plugins: {
         remove_button: {
-          title: "Remove Item"
+          title: gettext("Remove Item")
         },
       },
-      placeholder: "Restrict visibility to selected group(s)",
+      placeholder: gettext("Select audiences"),
       persist: false,
-      create: true,
+      create: false,
     });
   }
 });

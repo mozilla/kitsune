@@ -5,6 +5,7 @@ from unittest import mock
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 
+from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory
 from kitsune.products.tests import ProductFactory
 from kitsune.retrieval.access import (
     AuthorizedPassage,
@@ -21,7 +22,7 @@ from kitsune.retrieval.query import (
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.models import Document
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 
 def _approved(**kwargs):
@@ -127,15 +128,19 @@ class ViewerAccessTests(TestCase):
             self.assertEqual(viewer_access_for(AnonymousUser()), ViewerAccess())
             self.assertEqual(viewer_access_for(superuser), ViewerAccess(privileged=True))
 
-    def test_one_membership_query_resolves_groups_or_staff_bypass(self):
+    def test_membership_queries_resolve_effective_groups_or_staff_bypass(self):
         first = GroupFactory()
         second = GroupFactory()
-        user = UserFactory(groups=[second, first])
+        company = EnterpriseCompanyFactory()
+        department = DepartmentFactory(company=company)
+        user = UserFactory(groups=[second, first, department.group])
         staff = UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)])
 
-        with self.assertNumQueries(1):
+        # The Staff check, the direct groups, then the enterprise companies routing shares.
+        with self.assertNumQueries(3):
             access = viewer_access_for(user)
-        self.assertEqual(access, ViewerAccess(tuple(sorted((first.id, second.id)))))
+        expected = (first.id, second.id, department.group_id, company.group_id)
+        self.assertEqual(access, ViewerAccess(tuple(sorted(expected))))
 
         with self.assertNumQueries(1):
             self.assertEqual(viewer_access_for(staff), ViewerAccess(privileged=True))
@@ -236,7 +241,7 @@ class CandidateAuthorizationTests(TestCase):
 
     def test_group_access_and_privileged_bypass_use_the_same_policy_query(self):
         allowed_group = GroupFactory()
-        restricted = _approved(restrict_to_groups=[allowed_group])
+        restricted = _approved(audiences=[AudienceFactory(groups=[allowed_group])])
         indexed = _result(_passage(restricted))
 
         denied, _ = _retrieve(indexed)

@@ -21,7 +21,7 @@ def is_retrieval_content_eligible(document) -> bool:
 
 
 def is_publicly_accessible(document) -> bool:
-    """Whether the document is unrestricted (translations inherit from their original)."""
+    """Whether the original is assigned the Public audience (translations inherit it)."""
     return not document.is_restricted
 
 
@@ -46,8 +46,8 @@ def content_eligible_documents(
 def eligible_documents() -> QuerySet[Document]:
     """The queryset equivalent of ``is_retrieval_indexable``, proven equal in tests.
 
-    ``visible()`` (no viewer) enforces ``current_revision`` and unrestricted access,
-    including a translation's inherited restriction via its parent. The excludes mirror
+    ``visible()`` (no viewer) enforces ``current_revision`` and the Public audience,
+    including a translation's inherited audiences via its parent. The excludes mirror
     ``is_indexable_content`` on the document's own (parent-synced) fields.
     """
     return (
@@ -56,10 +56,10 @@ def eligible_documents() -> QuerySet[Document]:
         .prefetch_related(
             "topics",
             "products",
-            "restrict_to_groups",
+            "audiences",
             "parent__topics",
             "parent__products",
-            "parent__restrict_to_groups",
+            "parent__audiences",
         )
     )
 
@@ -70,9 +70,17 @@ def family_id_for(document) -> int:
 
 
 def access_group_ids_for(document) -> list[int]:
-    """Sorted restriction group ids from the original (translations inherit)."""
-    return sorted(group.id for group in document.original.restrict_to_groups.all())
+    """Sorted, unique group ids of the original's audiences; none for a public document."""
+    if not document.is_restricted:
+        return []
+    return sorted(
+        set(
+            document.original.audiences.filter(groups__isnull=False).values_list(
+                "groups", flat=True
+            )
+        )
+    )
 
 
 def visibility_for(document) -> str:
-    return RESTRICTED_VISIBILITY if access_group_ids_for(document) else PUBLIC_VISIBILITY
+    return RESTRICTED_VISIBILITY if document.is_restricted else PUBLIC_VISIBILITY

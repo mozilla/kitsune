@@ -125,6 +125,6 @@ PINNED_ARTICLE_LIMIT_Q = Q(
     is_template=False,
     is_archived=False,
     current_revision__isnull=False,
-    restrict_to_groups__isnull=True,
+    audiences__slug=PUBLIC_AUDIENCE_SLUG,
     category__in=settings.IA_DEFAULT_CATEGORIES,
 ) & ~Q(html__startswith=REDIRECT_HTML)

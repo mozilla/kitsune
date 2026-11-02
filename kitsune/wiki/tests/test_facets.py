@@ -9,6 +9,7 @@ from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.facets import _documents_for, documents_for, topics_for
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     RevisionFactory,
     TemplateDocumentFactory,
@@ -90,7 +91,7 @@ class TestFacetHelpers(TestCase):
         # An article restricted to members of "group1".
         self.doc6 = DocumentFactory(
             display_order=3,
-            restrict_to_groups=[self.group1],
+            audiences=[AudienceFactory(groups=[self.group1])],
             products=[self.desktop, self.mobile],
             topics=[
                 self.general_d,
@@ -106,7 +107,7 @@ class TestFacetHelpers(TestCase):
         # An article restricted to members of "group2" and "group4".
         self.doc7 = DocumentFactory(
             display_order=4,
-            restrict_to_groups=[self.group2, self.group4],
+            audiences=[AudienceFactory(groups=[self.group2, self.group4])],
             products=[self.desktop, self.mobile],
             topics=[
                 self.general_d,
@@ -122,7 +123,7 @@ class TestFacetHelpers(TestCase):
         # An article restricted to members of "group2" and "group3".
         self.doc8 = DocumentFactory(
             display_order=5,
-            restrict_to_groups=[self.group2, self.group3],
+            audiences=[AudienceFactory(groups=[self.group2, self.group3])],
             products=[self.desktop, self.mobile],
             topics=[
                 self.general_d,

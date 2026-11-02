@@ -209,10 +209,10 @@ def _load_many(document_ids) -> dict[int, Document]:
         .prefetch_related(
             "products",
             "topics",
-            "restrict_to_groups",
+            "audiences",
             "parent__products",
             "parent__topics",
-            "parent__restrict_to_groups",
+            "parent__audiences",
         )
     )
     return {document.id: document for document in documents}

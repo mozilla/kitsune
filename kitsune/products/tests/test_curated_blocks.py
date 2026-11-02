@@ -19,7 +19,12 @@ from kitsune.products.tests import (
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.models import Document
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RedirectRevisionFactory
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    AudienceFactory,
+    DocumentFactory,
+    RedirectRevisionFactory,
+)
 
 Kind = CuratedBlock.Kind
 Variant = CuratedBlock.Variant
@@ -47,7 +52,7 @@ def drop_from_product(article):
 
 
 def restrict(article):
-    article.restrict_to_groups.add(Group.objects.create(name="restricted"))
+    article.audiences.set([AudienceFactory(groups=[Group.objects.create(name="restricted")])])
 
 
 def edit_block(block):

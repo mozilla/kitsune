@@ -1,6 +1,4 @@
-from django.contrib.auth.models import Group
 from django.db import transaction
-from django.db.models import Q
 from django.db.models.signals import m2m_changed, post_save, pre_delete
 from django.dispatch import receiver
 
@@ -23,17 +21,18 @@ def _rerender_after_commit(document_ids):
 
 @receiver(
     m2m_changed,
-    sender=Document.restrict_to_groups.through,
-    dispatch_uid="wiki.render_on_restrict_to_groups_change",
+    sender=Document.audiences.through,
+    dispatch_uid="wiki.render_on_audiences_change",
 )
-def render_on_restrict_to_groups_change(sender, instance, action, reverse, pk_set, **kwargs):
+def render_on_audiences_change(sender, instance, action, reverse, pk_set, **kwargs):
     """
-    Trigger a cascade re-render when a document's "restrict_to_groups" changes,
-    since the parser uses "restrict_to_groups" to enforce inclusion permission checks.
-    Translations inherit their parent's restrict_to_groups, so they must be
-    re-rendered as well.
+    Trigger a cascade re-render when a document's audiences change, since the parser
+    uses the audiences to enforce inclusion permission checks. Translations inherit
+    their parent's audiences, so they must be re-rendered as well. The family's cached
+    anonymous pages are cleared on commit, once other requests can see the new audiences.
+    The redirect stubs that point to the family follow the change at once.
 
-    On the reverse side "instance" is a Group rather than a Document, so the affected
+    On the reverse side "instance" is an Audience rather than a Document, so the affected
     documents come from "pk_set" instead.
     """
     if reverse:
@@ -41,7 +40,10 @@ def render_on_restrict_to_groups_change(sender, instance, action, reverse, pk_se
             document_ids = set(pk_set or ())
         elif action == "pre_clear":
             # Read them now: post_clear can no longer say which documents were unlinked.
-            document_ids = set(instance.restricted_documents.values_list("id", flat=True))
+            instance._cleared_document_ids = set(instance.documents.values_list("id", flat=True))
+            return
+        elif action == "post_clear":
+            document_ids = instance.__dict__.pop("_cleared_document_ids", set())
         else:
             return
     elif action in ("post_add", "post_remove", "post_clear"):
@@ -49,10 +51,23 @@ def render_on_restrict_to_groups_change(sender, instance, action, reverse, pk_se
     else:
         return
 
+    originals = {
+        document.original
+        for document in Document.objects.filter(id__in=document_ids).select_related("parent")
+    }
+    for original in originals:
+        original.sync_redirect_audiences()
+
     translation_ids = Document.objects.filter(parent_id__in=document_ids).values_list(
         "id", flat=True
     )
     _rerender_after_commit(document_ids | set(translation_ids))
+
+    def clear_family_page_caches():
+        for original in originals:
+            original.clear_family_page_cache()
+
+    transaction.on_commit(clear_family_page_caches)
 
 
 @receiver(
@@ -93,23 +108,3 @@ def rerender_includers_on_delete(sender, instance, **kwargs):
         .values_list("linked_from_id", flat=True)
     )
     _rerender_after_commit(includer_ids)
-
-
-@receiver(
-    pre_delete,
-    sender=Group,
-    dispatch_uid="wiki.rerender_restricted_documents_on_group_delete",
-)
-def rerender_restricted_documents_on_group_delete(sender, instance, **kwargs):
-    """Capture restricted families before deleting the group widens their access."""
-    restricted_ids = instance.restricted_documents.values_list("id", flat=True)
-    originals = {
-        parent_id or document_id
-        for parent_id, document_id in Document.objects.filter(pk__in=restricted_ids).values_list(
-            "parent_id", "id"
-        )
-    }
-    affected_ids = Document.objects.filter(
-        Q(pk__in=originals) | Q(parent_id__in=originals)
-    ).values_list("id", flat=True)
-    _rerender_after_commit(affected_ids)

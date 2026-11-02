@@ -194,7 +194,7 @@ def gate_index(
         batch = unexpected[start : start + page]
         rows = (
             Document.objects.select_related("parent")
-            .prefetch_related("restrict_to_groups", "parent__restrict_to_groups")
+            .prefetch_related("audiences", "parent__audiences")
             .in_bulk([int(item.object_id) for item in batch])
         )
         for identity in batch:

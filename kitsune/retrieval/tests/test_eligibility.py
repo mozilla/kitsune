@@ -5,7 +5,11 @@ selects exactly the documents for which the object predicate ``is_retrieval_inde
 is true, so incremental, backfill, and reconciliation paths cannot diverge.
 """
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+
 from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.retrieval.chunking import chunk
 from kitsune.retrieval.eligibility import (
     access_group_ids_for,
     eligible_documents,
@@ -15,6 +19,7 @@ from kitsune.retrieval.eligibility import (
     is_retrieval_indexable,
     visibility_for,
 )
+from kitsune.retrieval.sync import build_source, expected_state_for
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.config import (
@@ -24,9 +29,10 @@ from kitsune.wiki.config import (
     TROUBLESHOOTING_CATEGORY,
 )
 from kitsune.wiki.indexing import is_indexable_content, is_public_indexing_allowed
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Audience, Document
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     TemplateDocumentFactory,
 )
@@ -83,7 +89,7 @@ class SharedContentExclusionsTests(TestCase):
         self.assertTrue(is_indexable_content(DocumentFactory()))
 
     def test_is_indexable_content_is_access_agnostic(self):
-        restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
         self.assertTrue(is_indexable_content(_reload(restricted)))
 
     def test_content_exclusions_are_not_indexable(self):
@@ -117,7 +123,7 @@ class SharedContentExclusionsTests(TestCase):
 
     def test_public_indexing_combines_content_and_access_rules(self):
         public = _approved()
-        restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
         ApprovedRevisionFactory(document=restricted)
         cases = (
             (public, True),
@@ -137,7 +143,7 @@ class RetrievalPredicateTests(TestCase):
         self.assertTrue(is_retrieval_content_eligible(_approved()))
 
     def test_content_eligible_is_access_agnostic(self):
-        restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
         ApprovedRevisionFactory(document=restricted)
         self.assertTrue(is_retrieval_content_eligible(_reload(restricted)))
 
@@ -148,12 +154,12 @@ class RetrievalPredicateTests(TestCase):
 
     def test_public_accessibility_reflects_restrictions(self):
         public = _approved()
-        restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
         self.assertTrue(is_publicly_accessible(public))
         self.assertFalse(is_publicly_accessible(_reload(restricted)))
 
     def test_translation_inherits_parent_restriction(self):
-        parent = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        parent = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
         ApprovedRevisionFactory(document=parent)
         translation = _translation(_reload(parent))
         self.assertFalse(is_publicly_accessible(translation))
@@ -164,7 +170,7 @@ class RetrievalPredicateTests(TestCase):
 
     def test_retrieval_indexable_combines_content_revision_and_access_rules(self):
         public = _approved()
-        restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
         ApprovedRevisionFactory(document=restricted)
         cases = (
             (public, True),
@@ -183,7 +189,7 @@ class EligibleDocumentsQuerysetTests(TestCase):
         eligible = _approved()
         eligible_translation = _translation(eligible)
 
-        restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
         ApprovedRevisionFactory(document=restricted)
         restricted_translation = _translation(_reload(restricted))
 
@@ -238,6 +244,29 @@ class EligibleDocumentsQuerysetTests(TestCase):
                 self.assertEqual([topic], list(original.topics.all()))
                 self.assertEqual([], access_group_ids_for(document))
 
+    def test_iteration_queries_do_not_grow_with_the_corpus(self):
+        mixed_audience = AudienceFactory(groups=[GroupFactory()])
+
+        def add_families():
+            mixed = _approved(audiences=[Audience.objects.public(), mixed_audience])
+            _translation(mixed)
+            _translation(_approved(), locale="fr")
+
+        def iteration_queries():
+            with CaptureQueriesContext(connection) as queries:
+                for document in eligible_documents():
+                    build_source(document)
+                    is_publicly_accessible(document)
+            return len(queries)
+
+        add_families()
+        baseline = iteration_queries()
+        add_families()
+        add_families()
+
+        self.assertEqual(eligible_documents().count(), 12)
+        self.assertEqual(iteration_queries(), baseline)
+
 
 class FamilyHelperTests(TestCase):
     def test_family_id_is_parent_or_self(self):
@@ -251,19 +280,48 @@ class AccessMetadataTests(TestCase):
     def test_public_and_restricted_access_metadata(self):
         g1 = GroupFactory()
         g2 = GroupFactory()
-        # Add out of id order to prove the helper sorts.
+        # Add out of id order to prove the helper sorts; the shared group proves it dedupes.
         higher, lower = sorted((g1, g2), key=lambda g: g.id, reverse=True)
-        restricted = _reload(DocumentFactory(restrict_to_groups=[higher, lower]))
+        restricted = _reload(
+            DocumentFactory(
+                audiences=[AudienceFactory(groups=[higher, lower]), AudienceFactory(groups=[g1])]
+            )
+        )
+        no_groups = _reload(DocumentFactory(audiences=[AudienceFactory()]))
         public = _approved()
+        mixed = _approved(audiences=[Audience.objects.public(), AudienceFactory(groups=[g1])])
         self.assertEqual(access_group_ids_for(restricted), sorted([g1.id, g2.id]))
         self.assertEqual(visibility_for(restricted), "group_restricted")
-        self.assertEqual(access_group_ids_for(public), [])
-        self.assertEqual(visibility_for(public), "public")
+        # A private audience without groups is still not public.
+        self.assertEqual(access_group_ids_for(no_groups), [])
+        self.assertEqual(visibility_for(no_groups), "group_restricted")
+        for document in (public, mixed):
+            with self.subTest(document=document):
+                self.assertEqual(access_group_ids_for(document), [])
+                self.assertEqual(visibility_for(document), "public")
+
+    def test_a_private_audience_beside_public_leaves_chunk_metadata_unchanged(self):
+        document = _approved()
+        chunks = chunk("kb", document.html, title=document.title)
+        public_source = build_source(document)
+        public_state = expected_state_for(chunks, public_source, document)
+
+        document.audiences.add(AudienceFactory(groups=[GroupFactory()]))
+        mixed = _reload(document)
+        mixed_source = build_source(mixed)
+
+        self.assertEqual(public_source.visibility, "public")
+        self.assertEqual(public_source.access_group_ids, ())
+        self.assertEqual(mixed_source, public_source)
+        self.assertEqual(
+            expected_state_for(chunks, mixed_source, mixed).index_state_hash,
+            public_state.index_state_hash,
+        )
 
     def test_translation_inherits_access_metadata_from_original(self):
         g1 = GroupFactory()
         g2 = GroupFactory()
-        parent = DocumentFactory(restrict_to_groups=[g1, g2])
+        parent = DocumentFactory(audiences=[AudienceFactory(groups=[g1, g2])])
         ApprovedRevisionFactory(document=parent)
         translation = _translation(_reload(parent))
         self.assertEqual(access_group_ids_for(translation), sorted([g1.id, g2.id]))

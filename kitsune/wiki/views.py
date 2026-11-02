@@ -22,7 +22,6 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext
 from django.utils.translation.trans_real import parse_accept_lang_header
-from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
@@ -36,6 +35,7 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
     get_next_url,
+    in_staff_group,
     paginate,
     set_aaq_context,
     smart_int,
@@ -404,9 +404,12 @@ def list_documents(request, category=None):
 def new_document(request):
     """Create a new wiki document."""
     products = Product.active.filter(visible=True)
+    can_assign_audiences = request.user.is_superuser or in_staff_group(request.user)
     if request.method == "GET":
         doc_form = DocumentForm(
-            initial_title=request.GET.get("title"), locale=request.LANGUAGE_CODE
+            initial_title=request.GET.get("title"),
+            locale=request.LANGUAGE_CODE,
+            can_assign_audiences=can_assign_audiences,
         )
         rev_form = RevisionForm()
         return render(
@@ -421,7 +424,9 @@ def new_document(request):
 
     post_data = request.POST.copy()
     post_data.update({"locale": request.LANGUAGE_CODE})
-    doc_form = DocumentForm(post_data, locale=request.LANGUAGE_CODE)
+    doc_form = DocumentForm(
+        post_data, locale=request.LANGUAGE_CODE, can_assign_audiences=can_assign_audiences
+    )
     rev_form = RevisionForm(post_data)
 
     if doc_form.is_valid() and rev_form.is_valid():
@@ -657,11 +662,13 @@ def edit_document_metadata(request, document_slug, revision_id=None):
 
     can_edit_needs_change = doc.allows(user, "edit_needs_change")
     can_archive = doc.allows(user, "archive")
+    can_assign_audiences = doc.parent is None and (user.is_superuser or in_staff_group(user))
 
     doc_form = DocumentForm(
         initial=_document_form_initial(doc, request.user),
         can_archive=can_archive,
         can_edit_needs_change=can_edit_needs_change,
+        can_assign_audiences=can_assign_audiences,
         locale=request.LANGUAGE_CODE,
     )
 
@@ -676,6 +683,7 @@ def edit_document_metadata(request, document_slug, revision_id=None):
             instance=doc,
             can_archive=can_archive,
             can_edit_needs_change=can_edit_needs_change,
+            can_assign_audiences=can_assign_audiences,
             locale=request.LANGUAGE_CODE,
         )
         if doc_form.is_valid():
@@ -745,7 +753,7 @@ def preview_revision(request):
             wiki_content,
             request.LANGUAGE_CODE,
             doc_id=doc.id if doc else None,
-            restrict_to_groups=doc.original.restrict_to_groups if doc else None,
+            audience_ids=doc.original.private_audience_ids if doc else None,
         ),
         "products": products,
     }
@@ -1494,7 +1502,6 @@ HELPFUL_VOTES_WINDOW_DAYS = 730
 
 
 @require_GET
-@cache_page(60 * 5)
 def get_helpful_votes_async(request, document_slug):
     document = get_visible_document_or_404(
         request.user, locale=request.LANGUAGE_CODE, slug=document_slug
@@ -1763,7 +1770,7 @@ def _document_form_initial(document, user=None):
         "allow_discussion": document.allow_discussion,
         "needs_change": document.needs_change,
         "needs_change_comment": document.needs_change_comment,
-        "restrict_to_groups": document.restrict_to_groups.all(),
+        "audiences": document.audiences.values_list("id", flat=True),
     }
 
 

@@ -134,6 +134,17 @@ class GroupProfileManager(MP_NodeManager):
     def enterprise_companies(self, user):
         return self.containing(user).filter(depth=2, pk__in=self.enterprise())
 
+    def cached_enterprise_companies(self, user):
+        """
+        The user's enterprise companies as a list, cached on the user so the support routing
+        and the KB audience rule share one lookup; this manager's database serves the first read.
+        """
+        if not (user and user.is_authenticated):
+            return []
+        if not hasattr(user, "_enterprise_companies"):
+            user._enterprise_companies = list(self.enterprise_companies(user))
+        return user._enterprise_companies
+
     def visible(self, user: User | None = None):
         """
         Returns a queryset of all group profiles visible to the given user.

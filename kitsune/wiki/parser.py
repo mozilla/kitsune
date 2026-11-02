@@ -4,7 +4,6 @@ from xml.sax.saxutils import quoteattr
 
 from django.conf import settings
 from django.utils import translation
-from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from html5lib import HTMLParser
@@ -56,14 +55,14 @@ def wiki_to_html(
     locale=settings.WIKI_DEFAULT_LANGUAGE,
     doc_id=None,
     parser_cls=None,
-    restrict_to_groups=None,
+    audience_ids=None,
 ):
     """Wiki Markup -> HTML with the wiki app's enhanced parser"""
     if parser_cls is None:
         parser_cls = WikiParser
 
     with translation.override(locale):
-        content = parser_cls(doc_id=doc_id, restrict_to_groups=restrict_to_groups).parse(
+        content = parser_cls(doc_id=doc_id, audience_ids=audience_ids).parse(
             wiki_markup,
             show_toc=False,
             locale=locale,
@@ -388,14 +387,15 @@ class WikiParser(sumo_parser.WikiParser):
 
     image_template = "wikiparser/hook_image_lazy.html"
 
-    def __init__(self, base_url=None, doc_id=None, restrict_to_groups=None):
+    def __init__(self, base_url=None, doc_id=None, audience_ids=None):
         """
         Pass the ID of the document being rendered to detect recursion immediately,
-        and pass "restrict_to_groups" to enforce restrictions on the parsed content.
+        and pass "audience_ids", the audience IDs of a restricted document being rendered
+        (None when it is public), to enforce restrictions on the parsed content.
         """
         super().__init__(base_url)
 
-        self.restrict_to_groups = restrict_to_groups
+        self.audience_ids = audience_ids
 
         # Stack of document IDs to prevent include/template recursion.
         self.inclusions = [doc_id] if doc_id else []
@@ -434,33 +434,22 @@ class WikiParser(sumo_parser.WikiParser):
 
         return html
 
-    @cached_property
-    def restrict_to_group_ids(self):
-        """The set of group IDs that restrict what content can be included."""
-        if self.restrict_to_groups is None:
-            return set()
-        return set(self.restrict_to_groups.values_list("pk", flat=True))
-
     def _is_include_allowed(self, include_doc):
         """
-        Check if the document can be included. Returns True only if the restrictions
-        specified for the parsed content are a subset of (or equal to) the included
-        document's restrictions, meaning every user who can view this parsed content
-        can also view the included content.
+        Check if the document can be included. Returns True only if every user who can
+        view this parsed content can also view the included content: the included
+        document is public, or the parsed content has audiences and they are a subset of
+        (or equal to) the included document's audiences.
         """
         if not include_doc.is_restricted:
             # Unrestricted documents can always be included.
             return True
 
-        if not self.restrict_to_group_ids:
-            # Restricted documents cannot be included in unrestricted documents.
+        if not self.audience_ids:
+            # Public documents and those without audiences can't include restricted ones.
             return False
 
-        # Only documents restricted to a superset of the restricted groups of the
-        # containing document can be included.
-        return self.restrict_to_group_ids.issubset(
-            set(include_doc.original.restrict_to_groups.values_list("pk", flat=True))
-        )
+        return self.audience_ids <= include_doc.audience_ids
 
     def _hook_include(self, parser, space, title):
         """Returns the document's parsed content."""

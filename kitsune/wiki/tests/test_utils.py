@@ -20,6 +20,7 @@ from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.models import PinnedArticleConfig
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     RedirectRevisionFactory,
     RevisionFactory,
@@ -870,7 +871,7 @@ class GetVisibleDocumentTests(TestCase):
         en_doc = ApprovedRevisionFactory(
             document__locale="en-US",
             document__slug="restricted-test-document",
-            document__restrict_to_groups=[g1],
+            document__audiences=[AudienceFactory(groups=[g1])],
             document__allow_discussion=False,
             is_ready_for_localization=True,
         ).document
@@ -1049,7 +1050,7 @@ class GetPinnedArticlesTests(TestCase):
         self.en_restricted_doc = ApprovedRevisionFactory(
             document__locale="en-US",
             document__slug="test-restricted-document",
-            document__restrict_to_groups=[group1],
+            document__audiences=[AudienceFactory(groups=[group1])],
         ).document
 
         self.de_restricted_doc = TranslatedRevisionFactory(
@@ -1069,7 +1070,7 @@ class GetPinnedArticlesTests(TestCase):
             document__locale="fr",
             document__parent=None,
             document__slug="test-parent-restricted-document-fr",
-            document__restrict_to_groups=[group1],
+            document__audiences=[AudienceFactory(groups=[group1])],
         ).document
 
         # Create some pinned-article configs.

@@ -9,12 +9,13 @@ from kitsune.gallery.tests import ImageFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Audience, Document
 from kitsune.wiki.parser import PATTERNS, RECURSION_MESSAGE, ForParser, WikiParser, _key_split
 from kitsune.wiki.parser import _build_template_params as _btp
 from kitsune.wiki.parser import _format_template_content as _ftc
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     RevisionFactory,
     TemplateDocumentFactory,
@@ -444,73 +445,80 @@ class TestWikiInclude(TestCase):
         """Helper to create a WikiParser with the restriction context of a source document."""
         return WikiParser(
             doc_id=source_doc.id,
-            restrict_to_groups=source_doc.original.restrict_to_groups,
+            audience_ids=source_doc.original.private_audience_ids,
         )
 
     def test_include_unrestricted_document_from_restricted(self):
         """A restricted doc including an unrestricted doc should work."""
-        group = GroupFactory()
         unrestricted = DocumentFactory(title="Public Doc")
         ApprovedRevisionFactory(document=unrestricted, content="Public content")
 
-        including = DocumentFactory(title="Restricted Source", restrict_to_groups=[group])
+        including = DocumentFactory(title="Restricted Source", audiences=[AudienceFactory()])
         ApprovedRevisionFactory(document=including)
         p = self._make_parser(including)
         doc = pq(p.parse("[[Include:Public Doc]]"))
         self.assertEqual("Public content", doc.text())
 
     def test_include_restricted_document_from_unrestricted(self):
-        """An unrestricted doc including a restricted doc should not reveal its content."""
-        group = GroupFactory()
-        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        """
+        A public doc, even one with private audiences too, rejects a restricted include,
+        and so does a doc with no audiences (Staff only).
+        """
+        audience = AudienceFactory()
+        restricted = DocumentFactory(title="Restricted Doc", audiences=[audience])
         ApprovedRevisionFactory(document=restricted, content="Secret content")
 
-        # Parse from an unrestricted document context.
-        unrestricted = DocumentFactory(title="Public Doc")
-        ApprovedRevisionFactory(document=unrestricted)
-        p = self._make_parser(unrestricted)
-        doc = pq(p.parse("[[Include:Restricted Doc]]"))
-        self.assertNotIn("Secret content", doc.text())
+        for source_audiences in (
+            [Audience.objects.public()],
+            [Audience.objects.public(), audience],
+            [],
+        ):
+            with self.subTest(source_audiences=source_audiences):
+                unrestricted = DocumentFactory(audiences=source_audiences)
+                ApprovedRevisionFactory(document=unrestricted)
+                p = self._make_parser(unrestricted)
+                doc = pq(p.parse("[[Include:Restricted Doc]]"))
+                self.assertNotIn("Secret content", doc.text())
 
-    def test_include_restricted_document_from_same_group(self):
-        """A restricted doc including another doc restricted to the same group should work."""
-        group = GroupFactory()
-        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+    def test_include_restricted_document_from_same_audience(self):
+        """A restricted doc including another doc with the same audience should work."""
+        audience = AudienceFactory()
+        restricted = DocumentFactory(title="Restricted Doc", audiences=[audience])
         ApprovedRevisionFactory(document=restricted, content="Secret content")
 
-        # Parse from a document restricted to the same group.
-        including = DocumentFactory(title="Also Restricted", restrict_to_groups=[group])
+        including = DocumentFactory(title="Also Restricted", audiences=[audience])
         ApprovedRevisionFactory(document=including)
         p = self._make_parser(including)
         doc = pq(p.parse("[[Include:Restricted Doc]]"))
         self.assertEqual("Secret content", doc.text())
 
-    def test_include_restricted_document_from_subset_group(self):
-        """A doc restricted to a subset of an included doc's groups should work."""
-        group_a = GroupFactory()
-        group_b = GroupFactory()
-        # Included doc is accessible to members of group_a OR group_b.
-        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group_a, group_b])
+    def test_include_restricted_document_from_subset_audiences(self):
+        """A doc whose audiences are a subset of an included doc's audiences should work."""
+        audience_a = AudienceFactory()
+        audience_b = AudienceFactory()
+        restricted = DocumentFactory(title="Restricted Doc", audiences=[audience_a, audience_b])
         ApprovedRevisionFactory(document=restricted, content="Secret content")
 
-        # Including doc is restricted to only group_a (a subset), so all its
-        # viewers are guaranteed to also have access to the included doc.
-        including = DocumentFactory(title="Narrower Doc", restrict_to_groups=[group_a])
+        # Every reader of the including doc can also read the included doc.
+        including = DocumentFactory(title="Narrower Doc", audiences=[audience_a])
         ApprovedRevisionFactory(document=including)
         p = self._make_parser(including)
         doc = pq(p.parse("[[Include:Restricted Doc]]"))
         self.assertEqual("Secret content", doc.text())
 
-    def test_include_restricted_document_from_non_subset_group(self):
-        """A doc whose groups aren't a subset of the included doc's groups should not work."""
-        group_a = GroupFactory()
-        group_b = GroupFactory()
-        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group_a])
+    def test_include_restricted_document_from_non_subset_audiences(self):
+        """A doc whose audiences aren't a subset of the included doc's should not work."""
+        group = GroupFactory()
+        restricted = DocumentFactory(
+            title="Restricted Doc", audiences=[AudienceFactory(groups=[group])]
+        )
         ApprovedRevisionFactory(document=restricted, content="Secret content")
 
-        # Including doc is restricted to group_b, which is NOT a subset of {group_a}.
-        # A group_b member could see the including doc but not the included doc.
-        including = DocumentFactory(title="Other Group Doc", restrict_to_groups=[group_b])
+        # Audience IDs are compared, not their groups: an audience with the same group
+        # is still a different audience.
+        including = DocumentFactory(
+            title="Other Audience Doc", audiences=[AudienceFactory(groups=[group])]
+        )
         ApprovedRevisionFactory(document=including)
         p = self._make_parser(including)
         doc = pq(p.parse("[[Include:Restricted Doc]]"))
@@ -518,8 +526,7 @@ class TestWikiInclude(TestCase):
 
     def test_include_restricted_document_without_source_context(self):
         """Restricted includes should be blocked when there is no source document context."""
-        group = GroupFactory()
-        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        restricted = DocumentFactory(title="Restricted Doc", audiences=[AudienceFactory()])
         ApprovedRevisionFactory(document=restricted, content="Secret content")
 
         # No source doc — e.g., parsing from questions, forums, or a brand-new doc preview.
@@ -529,8 +536,7 @@ class TestWikiInclude(TestCase):
 
     def test_include_restricted_translation_from_unrestricted(self):
         """Including a translation of a restricted doc should be blocked for unrestricted sources."""
-        group = GroupFactory()
-        parent = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        parent = DocumentFactory(title="Restricted Doc", audiences=[AudienceFactory()])
         ApprovedRevisionFactory(document=parent, content="Secret content")
 
         translation = DocumentFactory(title="Restricted Doc", locale="fr", parent=parent)
@@ -542,16 +548,16 @@ class TestWikiInclude(TestCase):
         doc = pq(p.parse("[[Include:Restricted Doc]]", locale="fr"))
         self.assertNotIn("Contenu secret", doc.text())
 
-    def test_include_restricted_translation_from_same_group(self):
-        """Including a translation of a restricted doc should work when groups match."""
-        group = GroupFactory()
-        parent = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+    def test_include_restricted_translation_from_same_audience(self):
+        """Including a translation of a restricted doc should work when audiences match."""
+        audience = AudienceFactory()
+        parent = DocumentFactory(title="Restricted Doc", audiences=[audience])
         ApprovedRevisionFactory(document=parent, content="Secret content")
 
         translation = DocumentFactory(title="Restricted Doc", locale="fr", parent=parent)
         ApprovedRevisionFactory(document=translation, content="Contenu secret")
 
-        including = DocumentFactory(title="Also Restricted", restrict_to_groups=[group])
+        including = DocumentFactory(title="Also Restricted", audiences=[audience])
         ApprovedRevisionFactory(document=including)
         p = self._make_parser(including)
         doc = pq(p.parse("[[Include:Restricted Doc]]", locale="fr"))
@@ -563,13 +569,12 @@ class TestWikiTemplateRestricted(TestCase):
         """Helper to create a WikiParser with the restriction context of a source document."""
         return WikiParser(
             doc_id=source_doc.id,
-            restrict_to_groups=source_doc.original.restrict_to_groups,
+            audience_ids=source_doc.original.private_audience_ids,
         )
 
     def test_template_restricted_from_unrestricted(self):
         """An unrestricted doc using a restricted template should not reveal its content."""
-        group = GroupFactory()
-        restricted = TemplateDocumentFactory(restrict_to_groups=[group])
+        restricted = TemplateDocumentFactory(audiences=[AudienceFactory()])
         template_name = restricted.title.removeprefix(TEMPLATE_TITLE_PREFIX)
         ApprovedRevisionFactory(document=restricted, content="Secret template content")
 
@@ -579,14 +584,14 @@ class TestWikiTemplateRestricted(TestCase):
         doc = pq(p.parse(f"[[Template:{template_name}]]"))
         self.assertNotIn("Secret template content", doc.text())
 
-    def test_template_restricted_from_same_group(self):
-        """A restricted doc using a template restricted to the same group should work."""
-        group = GroupFactory()
-        restricted = TemplateDocumentFactory(restrict_to_groups=[group])
+    def test_template_restricted_from_same_audience(self):
+        """A restricted doc using a template with the same audience should work."""
+        audience = AudienceFactory()
+        restricted = TemplateDocumentFactory(audiences=[audience])
         template_name = restricted.title.removeprefix(TEMPLATE_TITLE_PREFIX)
         ApprovedRevisionFactory(document=restricted, content="Secret template content")
 
-        including = DocumentFactory(title="Also Restricted", restrict_to_groups=[group])
+        including = DocumentFactory(title="Also Restricted", audiences=[audience])
         ApprovedRevisionFactory(document=including)
         p = self._make_parser(including)
         doc = pq(p.parse(f"[[Template:{template_name}]]"))

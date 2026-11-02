@@ -24,10 +24,11 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
     TYPO_SIGNIFICANCE,
 )
-from kitsune.wiki.models import Document, Revision, doc_html_cache_key
+from kitsune.wiki.models import Audience, Document, Revision, doc_html_cache_key
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     LocaleFactory,
     RedirectRevisionFactory,
@@ -487,7 +488,7 @@ class VisibilityTests(TestCase):
         self.rev5 = RevisionFactory(creator=self.user2, document=self.doc5, is_approved=False)
 
         # Articles restricted to members of "group1".
-        self.doc6 = DocumentFactory(restrict_to_groups=[self.group1])
+        self.doc6 = DocumentFactory(audiences=[AudienceFactory(groups=[self.group1])])
         self.rev6 = ApprovedRevisionFactory(document=self.doc6)
 
         self.doc6_de = DocumentFactory(locale="de", parent=self.doc6)
@@ -502,11 +503,13 @@ class VisibilityTests(TestCase):
         self.rev6_fr = ApprovedRevisionFactory(document=self.doc6_fr, based_on=self.rev6)
 
         # Articles restricted to members of "group1", "group2", and "group4".
-        self.doc7 = DocumentFactory(restrict_to_groups=[self.group1, self.group2, self.group4])
+        self.doc7 = DocumentFactory(
+            audiences=[AudienceFactory(groups=[self.group1, self.group2, self.group4])]
+        )
         self.rev7 = ApprovedRevisionFactory(document=self.doc7)
 
         # Articles restricted to members of "group2" and "group3".
-        self.doc8 = DocumentFactory(restrict_to_groups=[self.group2, self.group3])
+        self.doc8 = DocumentFactory(audiences=[AudienceFactory(groups=[self.group2, self.group3])])
         self.rev8 = ApprovedRevisionFactory(document=self.doc8, is_ready_for_localization=True)
 
         self.doc8_de = DocumentFactory(locale="de", parent=self.doc8)
@@ -1410,6 +1413,75 @@ class RedirectCreationTests(TestCase):
         self.d.save()
         redirect = Document.objects.get(slug=self.old_slug)
         self.assertEqual(False, redirect.is_localizable)
+
+
+class RedirectAudiencesTests(TestCase):
+    """Redirect stubs follow the audiences of the article they point to."""
+
+    def setUp(self):
+        self.group = GroupFactory()
+        self.audience = AudienceFactory(groups=[self.group])
+        self.public = Audience.objects.public()
+
+    def test_rename_stub_copies_audiences(self):
+        doc = ApprovedRevisionFactory(document__audiences=[self.audience]).document
+        old_slug = doc.slug
+        doc.slug = "new-slug"
+        doc.save()
+
+        stub = Document.objects.get(slug=old_slug)
+        self.assertQuerySetEqual(stub.audiences.all(), [self.audience])
+        self.assertFalse(Document.objects.visible(UserFactory(), slug=old_slug).exists())
+        member = UserFactory(groups=[self.group])
+        self.assertTrue(Document.objects.visible(member, slug=old_slug).exists())
+
+        for change, unassign in (
+            ("remove", lambda: self.audience.documents.remove(doc)),
+            ("clear", self.audience.documents.clear),
+        ):
+            with self.subTest(reverse_side=change):
+                unassign()
+                self.assertFalse(stub.audiences.exists())
+                self.audience.documents.add(doc)
+                self.assertQuerySetEqual(stub.audiences.all(), [self.audience])
+
+    def test_renamed_translation_stub_follows_original(self):
+        translation = TranslatedRevisionFactory(
+            document__parent__audiences=[self.audience]
+        ).document
+        old_title = translation.title
+        translation.title = "Neuer Titel"
+        translation.save()
+
+        stub = Document.objects.get(locale=translation.locale, title=old_title)
+        self.assertQuerySetEqual(stub.audiences.all(), [self.audience])
+
+        translation.parent.audiences.set([self.public])
+        self.assertQuerySetEqual(stub.audiences.all(), [self.public])
+
+    def test_audience_change_propagates_through_redirect_chain(self):
+        doc = ApprovedRevisionFactory(document__audiences=[self.audience]).document
+        first_title = doc.title
+        doc.title = "Second title"
+        doc.save()
+        doc.title = "Third title"
+        doc.save()
+        stub1 = Document.objects.get(title=first_title)
+        stub2 = Document.objects.get(title="Second title")
+        # A KB rebuild re-parses stub1, whose link now resolves to stub2.
+        stub1.parse_and_calculate_links()
+        self.assertQuerySetEqual(
+            stub1.links_from().values_list("linked_to", flat=True), [stub2.pk]
+        )
+
+        doc.audiences.set([self.public])
+        for stub in (stub1, stub2):
+            self.assertQuerySetEqual(stub.audiences.all(), [self.public])
+
+        stub2.add_link_to(stub1, "link")
+        doc.audiences.set([self.audience])
+        for stub in (stub1, stub2):
+            self.assertQuerySetEqual(stub.audiences.all(), [self.audience])
 
 
 class RevisionTests(TestCase):

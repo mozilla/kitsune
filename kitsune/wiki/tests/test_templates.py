@@ -37,6 +37,7 @@ from kitsune.wiki.models import Document, HelpfulVote, HelpfulVoteMetadata, Loca
 from kitsune.wiki.tasks import send_reviewed_notification
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     DraftRevisionFactory,
     HelpfulVoteFactory,
@@ -2339,7 +2340,7 @@ class TranslateTests(TestCase):
         group = GroupFactory()
         other_parent = DocumentFactory(
             locale=settings.WIKI_DEFAULT_LANGUAGE,
-            restrict_to_groups=[group],
+            audiences=[AudienceFactory(groups=[group])],
         )
         other_rev = ApprovedRevisionFactory(
             document=other_parent,
@@ -2844,7 +2845,7 @@ class HelpfulVoteTests(TestCase):
         group = GroupFactory()
         other_doc = _create_document(
             title="Restricted Document",
-            doc_kwargs={"restrict_to_groups": [group]},
+            doc_kwargs={"audiences": [AudienceFactory(groups=[group])]},
         )
         other_rev = other_doc.current_revision
 

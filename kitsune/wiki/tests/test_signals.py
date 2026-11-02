@@ -1,62 +1,53 @@
 from unittest.mock import call, patch
 
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 
-from kitsune.users.tests import GroupFactory
-from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.models import Audience, doc_html_cache_key
+from kitsune.wiki.tests import AudienceFactory, DocumentFactory
 
 
-class RenderOnRestrictToGroupsChangeTests(TestCase):
+class RenderOnAudiencesChangeTests(TestCase):
     @patch("kitsune.wiki.tasks.render_document_cascade")
-    def test_adding_group_triggers_render_cascade(self, mock_task):
-        doc = DocumentFactory()
-        group = GroupFactory()
+    def test_adding_audience_triggers_render_cascade(self, mock_task):
+        doc = DocumentFactory(audiences=[])
+        audience = AudienceFactory()
         with self.captureOnCommitCallbacks(execute=True):
-            doc.restrict_to_groups.add(group)
+            doc.audiences.add(audience)
         mock_task.delay.assert_called_once_with(doc.id)
 
     @patch("kitsune.wiki.tasks.render_document_cascade")
-    def test_removing_group_triggers_render_cascade(self, mock_task):
-        doc = DocumentFactory()
-        group = GroupFactory()
-        with self.captureOnCommitCallbacks(execute=True):
-            doc.restrict_to_groups.add(group)
-        mock_task.delay.reset_mock()
+    def test_removing_audience_triggers_render_cascade(self, mock_task):
+        audience = AudienceFactory()
+        doc = DocumentFactory(audiences=[audience])
 
         with self.captureOnCommitCallbacks(execute=True):
-            doc.restrict_to_groups.remove(group)
+            doc.audiences.remove(audience)
         mock_task.delay.assert_called_once_with(doc.id)
 
     @patch("kitsune.wiki.tasks.render_document_cascade")
-    def test_clearing_groups_triggers_render_cascade(self, mock_task):
-        doc = DocumentFactory()
-        group = GroupFactory()
-        with self.captureOnCommitCallbacks(execute=True):
-            doc.restrict_to_groups.add(group)
-        mock_task.delay.reset_mock()
+    def test_clearing_audiences_triggers_render_cascade(self, mock_task):
+        doc = DocumentFactory(audiences=[AudienceFactory()])
 
         with self.captureOnCommitCallbacks(execute=True):
-            doc.restrict_to_groups.clear()
+            doc.audiences.clear()
         mock_task.delay.assert_called_once_with(doc.id)
 
     @patch("kitsune.wiki.tasks.render_document_cascade")
-    def test_setting_groups_triggers_render_cascade(self, mock_task):
-        doc = DocumentFactory()
-        group1 = GroupFactory()
-        group2 = GroupFactory()
+    def test_setting_audiences_triggers_render_cascade(self, mock_task):
+        doc = DocumentFactory(audiences=[])
         with self.captureOnCommitCallbacks(execute=True):
-            doc.restrict_to_groups.set([group1, group2])
+            doc.audiences.set([AudienceFactory(), AudienceFactory()])
         mock_task.delay.assert_called_once_with(doc.id)
 
     @patch("kitsune.wiki.tasks.render_document_cascade")
     def test_translations_are_re_rendered(self, mock_task):
-        parent = DocumentFactory()
+        parent = DocumentFactory(audiences=[])
         translation = DocumentFactory(parent=parent, locale="de")
-        group = GroupFactory()
-        mock_task.delay.reset_mock()
+        audience = AudienceFactory()
 
         with self.captureOnCommitCallbacks(execute=True):
-            parent.restrict_to_groups.add(group)
+            parent.audiences.add(audience)
         mock_task.delay.assert_has_calls(
             [call(parent.id), call(translation.id)],
             any_order=True,
@@ -64,71 +55,94 @@ class RenderOnRestrictToGroupsChangeTests(TestCase):
         assert mock_task.delay.call_count == 2
 
 
-class ReverseRestrictToGroupsChangeTests(TestCase):
-    """Changes made from the Group side must cascade the documents, not the group.
+class ReverseAudiencesChangeTests(TestCase):
+    """Changes made from the Audience side must cascade the documents, not the audience.
 
-    On the reverse side the signal's "instance" is a Group, so dispatching on "instance.id"
-    would re-render whichever document happened to share that id.
+    On the reverse side the signal's "instance" is an Audience, so dispatching on
+    "instance.id" would re-render whichever document happened to share that id.
     """
 
     @patch("kitsune.wiki.tasks.render_document_cascade")
-    def test_adding_documents_from_the_group_side_cascades_those_documents(self, mock_task):
-        doc = DocumentFactory()
-        group = GroupFactory()
+    def test_adding_documents_from_the_audience_side_cascades_those_documents(self, mock_task):
+        doc = DocumentFactory(audiences=[])
+        audience = AudienceFactory()
 
         with self.captureOnCommitCallbacks(execute=True):
-            group.restricted_documents.add(doc)
+            audience.documents.add(doc)
 
         mock_task.delay.assert_called_once_with(doc.id)
 
     @patch("kitsune.wiki.tasks.render_document_cascade")
-    def test_removing_documents_from_the_group_side_cascades_those_documents(self, mock_task):
-        doc = DocumentFactory()
-        group = GroupFactory()
-        with self.captureOnCommitCallbacks(execute=True):
-            group.restricted_documents.add(doc)
-        mock_task.delay.reset_mock()
+    def test_removing_documents_from_the_audience_side_cascades_those_documents(self, mock_task):
+        audience = AudienceFactory()
+        doc = DocumentFactory(audiences=[audience])
 
         with self.captureOnCommitCallbacks(execute=True):
-            group.restricted_documents.remove(doc)
+            audience.documents.remove(doc)
 
         mock_task.delay.assert_called_once_with(doc.id)
 
     @patch("kitsune.wiki.tasks.render_document_cascade")
-    def test_clearing_from_the_group_side_still_finds_the_documents(self, mock_task):
-        doc = DocumentFactory()
-        group = GroupFactory()
-        with self.captureOnCommitCallbacks(execute=True):
-            group.restricted_documents.add(doc)
-        mock_task.delay.reset_mock()
+    def test_clearing_from_the_audience_side_still_finds_the_documents(self, mock_task):
+        audience = AudienceFactory()
+        doc = DocumentFactory(audiences=[audience])
 
         with self.captureOnCommitCallbacks(execute=True):
-            group.restricted_documents.clear()
+            audience.documents.clear()
 
         # post_clear cannot report the unlinked documents, so they are read in pre_clear.
         mock_task.delay.assert_called_once_with(doc.id)
 
     @patch("kitsune.wiki.tasks.render_document_cascade")
-    def test_translations_are_cascaded_from_the_group_side_too(self, mock_task):
-        parent = DocumentFactory()
+    def test_translations_are_cascaded_from_the_audience_side_too(self, mock_task):
+        parent = DocumentFactory(audiences=[])
         translation = DocumentFactory(parent=parent, locale="de")
-        group = GroupFactory()
+        audience = AudienceFactory()
 
         with self.captureOnCommitCallbacks(execute=True):
-            group.restricted_documents.add(parent)
+            audience.documents.add(parent)
 
         mock_task.delay.assert_has_calls([call(parent.id), call(translation.id)], any_order=True)
         assert mock_task.delay.call_count == 2
 
     @patch("kitsune.wiki.tasks.render_document_cascade")
     def test_nothing_is_dispatched_before_commit(self, mock_task):
-        doc = DocumentFactory()
-        group = GroupFactory()
+        doc = DocumentFactory(audiences=[])
+        audience = AudienceFactory()
 
         with self.captureOnCommitCallbacks(execute=False):
-            group.restricted_documents.add(doc)
+            audience.documents.add(doc)
 
         mock_task.delay.assert_not_called()
+
+
+class PageCacheOnAudiencesChangeTests(TestCase):
+    @patch("kitsune.wiki.tasks.render_document_cascade")
+    def test_audience_change_clears_family_page_cache(self, mock_task):
+        public = Audience.objects.public()
+        doc = DocumentFactory(audiences=[public, AudienceFactory()])
+        translation = DocumentFactory(parent=doc, locale="de")
+        keys = [
+            doc_html_cache_key("en-US", doc.slug),
+            # Fallback pages are cached under the request locale.
+            doc_html_cache_key("de", doc.slug),
+            doc_html_cache_key("de", translation.slug),
+        ]
+
+        for side, unpublish in (
+            ("forward", lambda: doc.audiences.remove(public)),
+            ("reverse", lambda: public.documents.remove(doc)),
+        ):
+            for committed in (False, True):
+                with self.subTest(side, committed=committed):
+                    doc.audiences.add(public)
+                    cache.set_many(dict.fromkeys(keys, ("<html>", {})))
+                    self.assertCountEqual(cache.get_many(keys), keys)
+
+                    with self.captureOnCommitCallbacks(execute=committed):
+                        unpublish()
+
+                    self.assertCountEqual(cache.get_many(keys), [] if committed else keys)
 
 
 class RenderIncludersOnDeleteTests(TestCase):
@@ -150,19 +164,3 @@ class RenderIncludersOnDeleteTests(TestCase):
                 self.included.delete()
 
         self.assertIn(self.includer.id, {task.args[0] for task in delay.call_args_list})
-
-
-class RenderOnGroupDeleteTests(TestCase):
-    def test_deletion_rerenders_restricted_translation_families(self):
-        parent = DocumentFactory()
-        translation = DocumentFactory(parent=parent, locale="de")
-        group = GroupFactory()
-        with patch("kitsune.wiki.tasks.render_document_cascade.delay"):
-            parent.restrict_to_groups.add(group)
-
-        with patch("kitsune.wiki.tasks.render_document_cascade.delay") as delay:
-            with self.captureOnCommitCallbacks(execute=True):
-                group.delete()
-
-        delay.assert_has_calls([call(parent.id), call(translation.id)], any_order=True)
-        assert delay.call_count == 2

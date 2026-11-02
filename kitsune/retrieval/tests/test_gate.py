@@ -26,7 +26,7 @@ from kitsune.retrieval.tests.test_sync import _chunks
 from kitsune.search.es_utils import es_client
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.models import Document
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 
 def _indexed(chunks, source, state, *, manifest=..., positions=None):
@@ -187,7 +187,7 @@ class GateEnumerationTests(GateIndexTestCase):
 
     def test_a_restricted_document_left_in_the_index_is_access_drift_not_generic_staleness(self):
         sync_document_chunks(self.document.id)
-        self.document.restrict_to_groups.add(GroupFactory())
+        self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
 
         report = gate_index(self.index)
 
@@ -295,7 +295,7 @@ class GateEnumerationTests(GateIndexTestCase):
 
     def test_the_gate_event_reports_counts_without_sensitive_payloads(self):
         sync_document_chunks(self.document.id)
-        self.document.restrict_to_groups.add(GroupFactory())
+        self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             gate_index(self.index)

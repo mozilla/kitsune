@@ -47,7 +47,12 @@ from kitsune.wiki.config import (
     TEMPLATE_TITLE_PREFIX,
     TEMPLATES_CATEGORY,
 )
-from kitsune.wiki.managers import AudienceManager, DocumentManager, RevisionManager
+from kitsune.wiki.managers import (
+    AudienceManager,
+    DocumentManager,
+    RevisionManager,
+    effective_group_ids,
+)
 from kitsune.wiki.permissions import (
     DocumentPermissionMixin,
     can_delete_documents_or_review_revisions,
@@ -387,6 +392,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
                     category=self.category,
                     is_localizable=False,
                 )
+                doc.audiences.set(self.original.audiences.values_list("id", flat=True))
                 Revision.objects.create(
                     document=doc,
                     content=REDIRECT_CONTENT % self.title,
@@ -715,7 +721,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
             locale=self.locale,
             doc_id=self.id,
             parser_cls=WhatLinksHereParser,
-            restrict_to_groups=self.original.restrict_to_groups,
+            audience_ids=self.original.private_audience_ids,
         )
 
     def links_from(self):
@@ -745,6 +751,42 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
     def clear_cached_html(self):
         # Clear out both mobile and desktop templates.
         cache.delete(doc_html_cache_key(self.locale, self.slug))
+
+    def clear_family_page_cache(self):
+        """
+        Clear the cached anonymous pages of this original and its translations. Fallback
+        pages are cached under the request locale, so the original's slug is cleared in
+        every locale.
+        """
+        keys = {doc_html_cache_key(locale, self.slug) for locale in settings.SUMO_LANGUAGES}
+        keys.update(
+            doc_html_cache_key(locale, slug)
+            for locale, slug in self.translations.values_list("locale", "slug")
+        )
+        cache.delete_many(keys)
+
+    def sync_redirect_audiences(self):
+        """
+        Give this original's audiences to the redirect stubs that link to it or to any of
+        its translations, then to the stubs that link to those stubs, and so on. Each stub
+        is visited once, so cycles of stubs end the walk.
+        """
+        audience_ids = list(self.audiences.values_list("id", flat=True))
+        visited = {self.pk}
+        targets = {self.pk, *self.translations.values_list("id", flat=True)}
+        while targets:
+            links = DocumentLink.objects.filter(kind="link", linked_to__in=targets)
+            stubs = list(
+                Document.objects.filter(
+                    parent__isnull=True,
+                    html__startswith=REDIRECT_HTML,
+                    pk__in=links.values("linked_from"),
+                ).exclude(pk__in=visited)
+            )
+            for stub in stubs:
+                stub.audiences.set(audience_ids)
+            targets = {stub.pk for stub in stubs}
+            visited |= targets
 
     def is_visible_for(self, user, use_cache=True):
         """
@@ -778,25 +820,37 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
             self.parent.slug if self.parent else self.slug
         ) in settings.MOZILLA_ACCOUNT_ARTICLES
 
+    @cached_property
+    def audience_ids(self):
+        """The IDs of the original's audiences (translations inherit them)."""
+        original = self.original
+        if original.pk is None:
+            return frozenset()
+        return frozenset(audience.pk for audience in original.audiences.all())
+
     def get_is_restricted(self):
-        """Is this document restricted in terms of visibility?"""
-        if self.parent:
-            # Translations follow their parent's restrictions.
-            return self.parent.is_restricted
-        return self.restrict_to_groups.exists()
+        """
+        Is this document restricted in terms of visibility? It is, unless its original
+        is assigned the Public audience (translations inherit it).
+        """
+        original = self.original
+        if original.pk is None:
+            return False
+        return not any(audience.is_public for audience in original.audiences.all())
 
     @cached_property
     def is_restricted(self):
         return self.get_is_restricted()
 
+    @property
+    def private_audience_ids(self):
+        """The original's audience IDs when this document is restricted, otherwise None."""
+        return self.audience_ids if self.is_restricted else None
+
     def is_unrestricted_for(self, user, use_cache=True):
         """
         Is the given user unrestricted in their visibility of this document?
         """
-        if self.parent:
-            # Translations follow their parent's restrictions.
-            return self.parent.is_unrestricted_for(user, use_cache=use_cache)
-
         if user.is_superuser or in_staff_group(user):
             return True
 
@@ -805,14 +859,14 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
         if not is_restricted:
             return True
 
-        if not use_cache or not hasattr(self, "unrestricted_for_user_ids"):
-            # Cache a set of user ids comprising all current members
-            # of the groups specified in "restrict_to_groups".
-            self.unrestricted_for_user_ids = set(
-                self.restrict_to_groups.filter(user__isnull=False).values_list("user", flat=True)
+        if not use_cache or not hasattr(self, "_audience_group_ids"):
+            self._audience_group_ids = frozenset(
+                self.original.audiences.filter(groups__isnull=False).values_list(
+                    "groups", flat=True
+                )
             )
 
-        return user.id in self.unrestricted_for_user_ids
+        return not self._audience_group_ids.isdisjoint(effective_group_ids(user))
 
     @cached_property
     def is_linked_in_product(self):
@@ -1070,7 +1124,7 @@ class Revision(ModelBase, AbstractRevision):
             self.content,
             locale=self.document.locale,
             doc_id=self.document.id,
-            restrict_to_groups=self.document.original.restrict_to_groups,
+            audience_ids=self.document.original.private_audience_ids,
         )
 
     def can_be_translated(self):

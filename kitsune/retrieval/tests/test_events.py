@@ -43,8 +43,8 @@ class PrivacyTests(SimpleTestCase):
             "token",
             "credentials",
             "access_group_ids",
+            "audiences",
             "group_ids",
-            "restrict_to_groups",
         ):
             with self.subTest(field=name), self.assertRaises(UnsafeEventField):
                 emit("retrieval.sync.completed", **{name: "anything"})

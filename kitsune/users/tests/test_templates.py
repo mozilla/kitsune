@@ -10,7 +10,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.tidings.models import Watch
 from kitsune.users.models import Profile
 from kitsune.users.tests import GroupFactory, UserFactory, add_permission
-from kitsune.wiki.tests import ApprovedRevisionFactory, RevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, RevisionFactory
 
 
 class EditProfileTests(TestCase):
@@ -168,7 +168,9 @@ class ViewProfileTests(TestCase):
         RevisionFactory()
         RevisionFactory(creator=user)
         ApprovedRevisionFactory(creator=user)
-        ApprovedRevisionFactory(creator=user, document__restrict_to_groups=[group1, group2])
+        ApprovedRevisionFactory(
+            creator=user, document__audiences=[AudienceFactory(groups=[group1, group2])]
+        )
 
         response = self.client.get(reverse("users.profile", args=[user.username]))
         self.assertEqual(200, response.status_code)

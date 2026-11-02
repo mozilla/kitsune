@@ -78,16 +78,6 @@ class DocumentFactory(factory.django.DjangoModelFactory):
                 self.tags.add(t)
 
     @factory.post_generation
-    def restrict_to_groups(self, create, extracted, **kwargs):
-        if not create:
-            # Simple build, do nothing
-            return
-
-        if extracted is not None:
-            for p in extracted:
-                self.restrict_to_groups.add(p)
-
-    @factory.post_generation
     def audiences(self, create, extracted, **kwargs):
         if not create or self.parent_id:
             return

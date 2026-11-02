@@ -230,9 +230,9 @@ def run_rebuild_kb() -> None:
 @shared_task
 @skip_if_read_only_mode
 def add_short_links(doc_ids):
-    """Create short_url's for a list of docs."""
+    """Create short_url's for a list of docs, skipping the restricted ones."""
     base_url = "https://{}%s".format(Site.objects.get_current().domain)
-    docs = Document.objects.filter(id__in=doc_ids)
+    docs = Document.objects.unrestricted(id__in=doc_ids)
     try:
         for doc in docs:
             # Use Django's reverse so the locale isn't included.
@@ -438,6 +438,8 @@ def render_document_cascade(base_doc_id):
             continue
         d.html = d.parse_and_calculate_links()
         d.save()
+        # save() clears only this page; fallback pages are cached under the original's slug.
+        d.original.clear_family_page_cache()
         done.add(d)
         todo.update(
             link_to.linked_from

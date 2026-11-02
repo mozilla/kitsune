@@ -3,7 +3,7 @@ from django.conf import settings
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 
 class TestDocumentViews(TestCase):
@@ -16,9 +16,11 @@ class TestDocumentViews(TestCase):
         self.staff = UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)])
         self.doc1 = DocumentFactory()
         self.doc2 = ApprovedRevisionFactory().document
-        self.doc3 = ApprovedRevisionFactory(document__restrict_to_groups=[self.group3]).document
+        self.doc3 = ApprovedRevisionFactory(
+            document__audiences=[AudienceFactory(groups=[self.group3])]
+        ).document
         self.doc4 = ApprovedRevisionFactory(
-            document__restrict_to_groups=[self.group1, self.group2]
+            document__audiences=[AudienceFactory(groups=[self.group1, self.group2])]
         ).document
 
     def test_anonymous_detail(self):
