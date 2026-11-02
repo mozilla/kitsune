@@ -1,14 +1,20 @@
 import itertools
 
 import markdown
+from django import forms
 from django.contrib import admin
+from django.db.models import Count, Exists, OuterRef
 from django.urls import reverse
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.sumo.sanitize import RESTRICTED_HTML_ATTRIBUTES, RESTRICTED_HTML_TAGS, clean
+from kitsune.wiki.config import PUBLIC_AUDIENCE_SLUG
 from kitsune.wiki.models import (
+    Audience,
     Document,
+    DocumentAudience,
     ImportantDate,
     Locale,
     PinnedArticleConfig,
@@ -16,8 +22,24 @@ from kitsune.wiki.models import (
 )
 
 
+class NoAudienceFilter(admin.SimpleListFilter):
+    title = _lazy("audience")
+    parameter_name = "audience"
+
+    def lookups(self, request, model_admin):
+        return (("none", _lazy("No audience")),)
+
+    def queryset(self, request, queryset):
+        if self.value() == "none":
+            return queryset.filter(
+                ~Exists(DocumentAudience.objects.filter(document=OuterRef("pk"))),
+                parent__isnull=True,
+            )
+        return queryset
+
+
 class DocumentAdmin(admin.ModelAdmin):
-    exclude = ("tags",)
+    exclude = ("tags", "restrict_to_groups")
     list_display = (
         "locale",
         "title",
@@ -37,6 +59,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "is_archived",
         "allow_discussion",
         "topics",
+        NoAudienceFilter,
     )
     raw_id_fields = ("parent", "contributors")
     readonly_fields = ("id", "current_revision", "latest_localizable_revision")
@@ -92,6 +115,46 @@ class DocumentAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Document, DocumentAdmin)
+
+
+class AudienceAdminForm(forms.ModelForm):
+    class Meta:
+        model = Audience
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        slug = cleaned_data.get("slug", self.instance.slug)
+        if slug == PUBLIC_AUDIENCE_SLUG and cleaned_data.get("groups"):
+            self.add_error("groups", _lazy("The Public audience cannot have groups."))
+        return cleaned_data
+
+
+class AudienceAdmin(admin.ModelAdmin):
+    form = AudienceAdminForm
+    fields = ("name", "slug", "groups")
+    list_display = ("name", "slug", "document_count")
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(document_count=Count("documents"))
+
+    @admin.display(description=_lazy("Documents"), ordering="document_count")
+    def document_count(self, obj):
+        return obj.document_count
+
+    def get_readonly_fields(self, request, obj=None):
+        return ("slug",) if obj else ()
+
+    def has_delete_permission(self, request, obj=None):
+        if obj is not None and obj.is_public:
+            return False
+        return super().has_delete_permission(request, obj)
+
+    def delete_queryset(self, request, queryset):
+        super().delete_queryset(request, queryset.exclude(slug=PUBLIC_AUDIENCE_SLUG))
+
+
+admin.site.register(Audience, AudienceAdmin)
 
 
 class ImportantDateAdmin(admin.ModelAdmin):

@@ -113,6 +113,8 @@ DOC_HTML_CACHE_KEY = "doc_html:{locale}:{slug}"
 
 SIMPLE_WIKI_LANDING_PAGE_SLUG = "frequently-asked-questions"
 
+PUBLIC_AUDIENCE_SLUG = "public"
+
 # Q object for filtering valid pinned articles.
 # This is used in both the admin UI (via limit_choices_to) and in runtime
 # filtering (via get_pinned_articles()) to ensure consistency.

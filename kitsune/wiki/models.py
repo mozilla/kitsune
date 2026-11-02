@@ -38,6 +38,7 @@ from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE,
     MEDIUM_SIGNIFICANCE,
     PINNED_ARTICLE_LIMIT_Q,
+    PUBLIC_AUDIENCE_SLUG,
     REDIRECT_CONTENT,
     REDIRECT_HTML,
     REDIRECT_SLUG,
@@ -46,7 +47,7 @@ from kitsune.wiki.config import (
     TEMPLATE_TITLE_PREFIX,
     TEMPLATES_CATEGORY,
 )
-from kitsune.wiki.managers import DocumentManager, RevisionManager
+from kitsune.wiki.managers import AudienceManager, DocumentManager, RevisionManager
 from kitsune.wiki.permissions import (
     DocumentPermissionMixin,
     can_delete_documents_or_review_revisions,
@@ -64,6 +65,26 @@ class SlugCollision(Exception):
     """An attempt to create two pages of the same slug in one locale"""
 
 
+class Audience(ModelBase):
+    """
+    Group-backed audiences grant direct members; enterprise company groups also grant
+    their departments.
+    """
+
+    name = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(max_length=80, unique=True)
+    groups = models.ManyToManyField(Group, blank=True, related_name="kb_audiences")
+
+    objects = AudienceManager()
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def is_public(self):
+        return self.slug == PUBLIC_AUDIENCE_SLUG
+
+
 class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
     """A localized knowledgebase document, not revision-specific."""
 
@@ -77,6 +98,9 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
 
     restrict_to_groups = models.ManyToManyField(
         Group, blank=True, related_name="restricted_documents"
+    )
+    audiences = models.ManyToManyField(
+        Audience, through="DocumentAudience", related_name="documents", blank=True
     )
 
     # TODO: validate (against settings.SUMO_LANGUAGES?)
@@ -804,6 +828,21 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
     @property
     def allows_related_documents(self):
         return self.category not in [TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY]
+
+
+class DocumentAudience(ModelBase):
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    audience = models.ForeignKey(Audience, on_delete=models.PROTECT)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["document", "audience"], name="unique_document_audience"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.document.title}: {self.audience.name}"
 
 
 class AbstractRevision(models.Model):

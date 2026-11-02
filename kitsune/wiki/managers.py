@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Exists, OuterRef, Q
 
 from kitsune.sumo.utils import in_staff_group
+from kitsune.wiki.config import PUBLIC_AUDIENCE_SLUG
 from kitsune.wiki.permissions import can_delete_documents_or_review_revisions
 
 
@@ -135,3 +136,17 @@ class RevisionManager(VisibilityManager):
 
     def get_creator_condition(self, user):
         return Q(creator=user)
+
+
+class AudienceManager(models.Manager):
+    """The manager for the Audience model."""
+
+    def public(self):
+        """
+        Return the Public audience, creating it if missing.
+        For write paths only; read paths match on the slug.
+        """
+        audience, _created = self.get_or_create(
+            slug=PUBLIC_AUDIENCE_SLUG, defaults={"name": "Public"}
+        )
+        return audience
