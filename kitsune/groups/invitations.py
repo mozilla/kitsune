@@ -27,7 +27,7 @@ from kitsune.groups.onboarding import (
     require_isolated_root,
     require_onboarding_allowed,
 )
-from kitsune.products.models import SupportCoverage
+from kitsune.products.models import Product, SupportCoverage, Topic
 from kitsune.products.routing import chat_unavailable_reason
 from kitsune.products.utils import get_covered_products
 from kitsune.sumo.email_utils import make_mail, safe_translation
@@ -143,17 +143,31 @@ def queue_welcome_email(invitation, *, company, user):
         .filter(product__in=covered_products, includes_chat=True)
         .exists()
     )
+    # The same getting-started topic the product page shows to covered users.
+    guide_products = list(
+        Product.objects.filter(
+            pk__in=[product.pk for product in covered_products],
+            m2m_topics__in=Topic.active.filter(slug="getting-started", parent__isnull=True),
+        ).distinct()
+    )
     host = Site.objects.get_current().domain
 
     @safe_translation
     def make_welcome(locale):
-        # Reversed inside the locale override so the link carries the recipient's locale.
+        # Reversed inside the locale override so the links carry the recipient's locale.
         path = start_path or reverse("groups.invitation_link", args=[invitation_token(invitation)])
+        guides = []
+        for product in guide_products:
+            guide_path = reverse("products.documents", args=[product.slug, "getting-started"])
+            guides.append(
+                (
+                    pgettext("DB: products.Product.title", product.title),
+                    f"https://{host}{guide_path}",
+                )
+            )
         company_name = company.group.name
         return make_mail(
-            subject=_("Your Mozilla Support access through {company} is ready").format(
-                company=company_name
-            ),
+            subject=_("Welcome to Firefox Professional Support!"),
             text_template="groups/email/enterprise_invitation.ltxt",
             html_template="groups/email/enterprise_invitation.html",
             context_vars={
@@ -167,6 +181,7 @@ def queue_welcome_email(invitation, *, company, user):
                 ),
                 "includes_chat": includes_chat,
                 "start_url": f"https://{host}{path}",
+                "guides": guides,
             },
             from_email=settings.DEFAULT_FROM_EMAIL,
             to_email=invitation.email,

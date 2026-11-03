@@ -226,6 +226,7 @@
   </style>
 </head>
 <body>
+{% block preheader %}{% endblock %}
 {% if original_recipient %}
 <p><span class="bold">Original recipient:</span> {{ original_recipient }}</p>
 {% endif %}

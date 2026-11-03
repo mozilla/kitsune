@@ -39,6 +39,7 @@ from kitsune.products.tests import (
     ProductFactory,
     SupportContractFactory,
     SupportCoverageFactory,
+    TopicFactory,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -178,33 +179,44 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         ZENDESK_CHAT_SIGNING_KEY_ID="key",
         ZENDESK_CHAT_SIGNING_SECRET="secret",
     )
-    def test_welcome_lists_covered_products_shared_history_and_chat(self):
+    def test_welcome_lists_coverage_guides_shared_history_and_chat(self):
         tickets = "Open support tickets for Thunderbird, VPN with Mozilla support agents"
+        guide = "Thunderbird getting started guide"
         history = f"See support tickets opened by others at {self.company.group.name}"
         chat = "Chat live with a support agent"
+        lines = (tickets, guide, "VPN getting started guide", history, chat)
         for name, covered, includes_chat, chat_switch, expected in (
             ("no coverage", False, False, True, {history}),
-            ("bundle", True, False, True, {tickets, history}),
-            ("bundle with chat", True, True, True, {tickets, history, chat}),
-            ("chat switched off", True, True, False, {tickets, history}),
+            ("bundle", True, False, True, {tickets, guide, history}),
+            ("bundle with chat", True, True, True, {tickets, guide, history, chat}),
+            ("chat switched off", True, True, False, {tickets, guide, history}),
         ):
             with (
                 self.subTest(name),
                 override_switch("zendesk-chat", active=chat_switch),
                 transaction.atomic(),
             ):
+                products = [
+                    ProductFactory(title=title, display_order=order)
+                    for order, title in enumerate(("Thunderbird", "VPN"))
+                ]
+                # Only Thunderbird has a guide, and only a covered product's guide is linked.
+                TopicFactory(slug="getting-started", products=[products[0]])
                 if covered:
                     contract = SupportContractFactory(company=self.company)
-                    for order, title in enumerate(("Thunderbird", "VPN")):
+                    for order, product in enumerate(products):
                         SupportCoverageFactory(
                             contract=contract,
-                            product=ProductFactory(title=title, display_order=order),
+                            product=product,
                             includes_chat=includes_chat and order == 0,
                         )
                 email, _link = self.welcome(self.provision(self.invite()))
                 for message in (email.message, email.html_message):
-                    self.assertEqual(
-                        {line for line in (tickets, history, chat) if line in message}, expected
+                    self.assertEqual({line for line in lines if line in message}, expected)
+                if covered:
+                    self.assertIn(
+                        reverse("products.documents", args=[products[0].slug, "getting-started"]),
+                        email.html_message,
                     )
                 transaction.set_rollback(True)
 
