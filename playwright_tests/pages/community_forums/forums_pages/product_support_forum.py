@@ -23,9 +23,11 @@ class ProductSupportForum(BasePage):
             "//div[@id='questions-list']//h2[@class='forum--question-item-heading']/a")
         self.question_tag_list = lambda question_id: page.locator(
             f"article#{question_id} li.tag")
-        self.is_spam_locator = page.locator("//div[@id='questions-list']//span[text()='Spam']")
+        self.is_spam_locator = page.locator(
+            "//div[@id='questions-list']//span[normalize-space()='Spam']")
         self.is_spam_locator_for_question = lambda question_id: page.locator(
-            f"//div[@id='questions-list']//article[@id='{question_id}']//span[text()='Spam']")
+            f"//div[@id='questions-list']//article[@id='{question_id}']"
+            f"//span[normalize-space()='Spam']")
         self.question_solved_indicator = lambda question_id: page.locator(
             f"//article[@id='{question_id}']//span[normalize-space()='Solved']")
         self.question_archived_indicator = lambda question_id: page.locator(

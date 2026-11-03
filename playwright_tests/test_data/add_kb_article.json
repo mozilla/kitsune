@@ -32,9 +32,10 @@
   "old_expiry_date": "05.02.2002",
   "updated_expiry_date": "07.05.2051",
   "changes_description": "Automation description test",
-  "restricted_visibility_groups": [
-    "Accessibility",
-    "Contributors"
+  "default_knowledge_base": "Default",
+  "restricted_knowledge_bases": [
+    {"name": "Accessibility", "group": "Accessibility"},
+    {"name": "Contributors", "group": "Contributors"}
   ],
   "translated_parent_topic": "Conturi",
   "translated_title": "Articol Tradus",
