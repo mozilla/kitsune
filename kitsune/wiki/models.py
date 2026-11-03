@@ -34,11 +34,11 @@ from kitsune.wiki.config import (
     ADMINISTRATION_CATEGORY,
     CANNED_RESPONSES_CATEGORY,
     CATEGORIES,
+    DEFAULT_AUDIENCE_SLUG,
     DOC_HTML_CACHE_KEY,
     MAJOR_SIGNIFICANCE,
     MEDIUM_SIGNIFICANCE,
     PINNED_ARTICLE_LIMIT_Q,
-    PUBLIC_AUDIENCE_SLUG,
     REDIRECT_CONTENT,
     REDIRECT_HTML,
     REDIRECT_SLUG,
@@ -72,22 +72,42 @@ class SlugCollision(Exception):
 
 class Audience(ModelBase):
     """
-    Group-backed audiences grant direct members; enterprise company groups also grant
-    their departments.
+    A knowledge base. Public ones are readable by everyone. Private ones grant the direct
+    members of their groups; enterprise company groups also grant their departments.
     """
 
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=80, unique=True)
+    is_public = models.BooleanField(
+        default=False,
+        verbose_name=_lazy("public"),
+        help_text=_lazy("Readable by everyone, including signed-out visitors."),
+    )
     groups = models.ManyToManyField(Group, blank=True, related_name="kb_audiences")
 
     objects = AudienceManager()
 
+    class Meta:
+        verbose_name = _lazy("knowledge base")
+        constraints = [
+            models.CheckConstraint(
+                condition=~Q(slug=DEFAULT_AUDIENCE_SLUG) | Q(is_public=True),
+                name="default_audience_is_public",
+            )
+        ]
+
     def __str__(self):
         return self.name
 
-    @property
-    def is_public(self):
-        return self.slug == PUBLIC_AUDIENCE_SLUG
+    def save(self, *args, **kwargs):
+        was_public = (
+            Audience.objects.filter(pk=self.pk).values_list("is_public", flat=True).first()
+            if self.pk
+            else None
+        )
+        # Read by the post_save receivers that follow up on the articles' changed access.
+        self.visibility_changed = was_public is not None and was_public != self.is_public
+        super().save(*args, **kwargs)
 
 
 class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
@@ -831,7 +851,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
     def get_is_restricted(self):
         """
         Is this document restricted in terms of visibility? It is, unless its original
-        is assigned the Public audience (translations inherit it).
+        is assigned a public knowledge base (translations inherit it).
         """
         original = self.original
         if original.pk is None:

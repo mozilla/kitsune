@@ -2006,7 +2006,7 @@ class DocumentAudienceEditingTests(TestCase):
         super().setUp()
         group = GroupFactory()
         self.private = AudienceFactory(groups=[group])
-        self.public = Audience.objects.public()
+        self.public = Audience.objects.default()
         self.contributor = UserFactory(groups=[group])
         self.staff = UserFactory(groups=[group, GroupFactory(name=settings.STAFF_GROUP)])
         for user in (self.contributor, self.staff):

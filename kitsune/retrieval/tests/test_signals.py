@@ -132,7 +132,7 @@ class AudienceChangeTests(SignalTestCase):
         self.document.audiences.set([self.audience])
         self.assertIn(
             self.document.id,
-            self._queued_syncs(lambda: self.document.audiences.add(Audience.objects.public())),
+            self._queued_syncs(lambda: self.document.audiences.add(Audience.objects.default())),
         )
 
     def test_clearing_audiences_refreshes_the_document(self):
@@ -144,6 +144,13 @@ class AudienceChangeTests(SignalTestCase):
         self.assertIn(self.document.id, self._queued_syncs(lambda: relation.remove(self.document)))
         relation.add(self.document)
         self.assertIn(self.document.id, self._queued_syncs(relation.clear))
+
+    def test_flipping_visibility_refreshes_the_kb_documents(self):
+        self.document.audiences.set([self.audience])
+        self.audience.name = "Renamed"
+        self.assertEqual(self._queued_syncs(self.audience.save), set())
+        self.audience.is_public = True
+        self.assertIn(self.document.id, self._queued_syncs(self.audience.save))
 
 
 @override_settings(RETRIEVAL_LIVE_INDEXING=True)

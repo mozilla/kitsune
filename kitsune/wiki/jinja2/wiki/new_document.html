@@ -24,7 +24,7 @@
             {% if "audiences" in document_form.fields %}
             <li class="mzp-c-emphasis-box field full-width">
               <fieldset>
-                  <legend>{{ _("Audiences") }}</legend>
+                  <legend>{{ _("Knowledge bases") }}</legend>
                   <span class="{% if document_form.audiences.errors %}has-error{% endif %}">
                     {{ document_form.audiences|label_with_help }}
                     {{ document_form.audiences.as_widget(attrs={"class": "tom-select-audiences"}) }}

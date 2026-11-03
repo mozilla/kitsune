@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Exists, OuterRef, Q
 
 from kitsune.sumo.utils import in_staff_group
-from kitsune.wiki.config import PUBLIC_AUDIENCE_SLUG
+from kitsune.wiki.config import DEFAULT_AUDIENCE_SLUG
 from kitsune.wiki.permissions import can_delete_documents_or_review_revisions
 
 
@@ -30,13 +30,13 @@ def effective_group_ids(user, using=None):
 def audience_access(group_ids, prefix=""):
     """
     A condition that is true when the document's original (the document itself when it has
-    no parent, otherwise its parent) is assigned the Public audience, or an audience with a
+    no parent, otherwise its parent) is assigned a public audience, or an audience with a
     group in "group_ids". The prefix is the ORM path to the document from a related model.
     """
     # Imported here to break the cycle wiki.models -> wiki.managers.
     from kitsune.wiki.models import DocumentAudience
 
-    granted = Q(audience__slug=PUBLIC_AUDIENCE_SLUG)
+    granted = Q(audience__is_public=True)
     if group_ids:
         granted |= Q(audience__groups__in=group_ids)
 
@@ -150,12 +150,12 @@ class RevisionManager(VisibilityManager):
 class AudienceManager(models.Manager):
     """The manager for the Audience model."""
 
-    def public(self):
+    def default(self):
         """
-        Return the Public audience, creating it if missing.
-        For write paths only; read paths match on the slug.
+        Return the default knowledge base, where new articles start, creating it if missing.
+        For write paths only; read paths check "is_public".
         """
         audience, _created = self.get_or_create(
-            slug=PUBLIC_AUDIENCE_SLUG, defaults={"name": "Public"}
+            slug=DEFAULT_AUDIENCE_SLUG, defaults={"name": "Default", "is_public": True}
         )
         return audience

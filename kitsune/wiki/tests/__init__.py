@@ -83,7 +83,7 @@ class DocumentFactory(factory.django.DjangoModelFactory):
             return
 
         if extracted is None:
-            extracted = [Audience.objects.public()]
+            extracted = [Audience.objects.default()]
         self.audiences.add(*extracted)
 
 

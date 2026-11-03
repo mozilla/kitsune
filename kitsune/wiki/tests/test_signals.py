@@ -119,7 +119,7 @@ class ReverseAudiencesChangeTests(TestCase):
 class PageCacheOnAudiencesChangeTests(TestCase):
     @patch("kitsune.wiki.tasks.render_document_cascade")
     def test_audience_change_clears_family_page_cache(self, mock_task):
-        public = Audience.objects.public()
+        public = Audience.objects.default()
         doc = DocumentFactory(audiences=[public, AudienceFactory()])
         translation = DocumentFactory(parent=doc, locale="de")
         keys = [
@@ -143,6 +143,28 @@ class PageCacheOnAudiencesChangeTests(TestCase):
                         unpublish()
 
                     self.assertCountEqual(cache.get_many(keys), [] if committed else keys)
+
+    @patch("kitsune.wiki.tasks.render_document_cascade")
+    def test_visibility_flip_rerenders_and_clears_page_caches(self, mock_task):
+        kb = AudienceFactory(is_public=True)
+        doc = DocumentFactory(audiences=[kb])
+        translation = DocumentFactory(parent=doc, locale="de")
+        keys = [doc_html_cache_key("en-US", doc.slug), doc_html_cache_key("de", translation.slug)]
+
+        for field, value, flipped in (("name", "Renamed", False), ("is_public", False, True)):
+            with self.subTest(field):
+                mock_task.reset_mock()
+                cache.set_many(dict.fromkeys(keys, ("<html>", {})))
+                setattr(kb, field, value)
+
+                with self.captureOnCommitCallbacks(execute=True):
+                    kb.save()
+
+                self.assertCountEqual(cache.get_many(keys), [] if flipped else keys)
+                self.assertEqual(
+                    {c.args[0] for c in mock_task.delay.call_args_list},
+                    {doc.id, translation.id} if flipped else set(),
+                )
 
 
 class RenderIncludersOnDeleteTests(TestCase):

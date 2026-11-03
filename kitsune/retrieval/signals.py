@@ -18,7 +18,7 @@ from django.dispatch import receiver
 from kitsune.products.models import Product, Topic
 from kitsune.retrieval.index import ChunkIdentity
 from kitsune.retrieval.tasks import enqueue_document_delete, enqueue_document_sync
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Audience, Document
 
 CONTENT_TYPE = "kb"
 
@@ -103,6 +103,12 @@ def audiences_changed(sender, instance, action, reverse, pk_set, **kwargs):
     _refresh_families(
         _affected_documents(instance, action, reverse, pk_set, reverse_accessor="documents")
     )
+
+
+@receiver(post_save, sender=Audience, dispatch_uid="retrieval.audience_visibility_changed")
+def audience_visibility_changed(sender, instance, **kwargs):
+    if getattr(instance, "visibility_changed", False):
+        _refresh_families(instance.documents.values_list("id", flat=True))
 
 
 @receiver(pre_delete, sender=Document, dispatch_uid="retrieval.document_deleted")

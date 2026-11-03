@@ -45,46 +45,70 @@ class AudienceAdminTests(TestCase):
         self.request = RequestFactory().get("/")
         self.request.user = self.superuser
         self.admin = AudienceAdmin(Audience, AdminSite())
-        self.public = Audience.objects.public()
+        self.default = Audience.objects.default()
 
-    def test_public_cannot_be_deleted(self):
+    def change(self, audience, **data):
+        return self.client.post(
+            reverse("admin:wiki_audience_change", args=[audience.pk]),
+            {"name": audience.name, **data},
+        )
+
+    def test_default_cannot_be_deleted(self):
         other = AudienceFactory()
-        self.assertFalse(self.admin.has_delete_permission(self.request, self.public))
+        self.assertFalse(self.admin.has_delete_permission(self.request, self.default))
         self.assertTrue(self.admin.has_delete_permission(self.request, other))
 
         self.client.post(
             reverse("admin:wiki_audience_changelist"),
             {
                 "action": "delete_selected",
-                "_selected_action": [self.public.pk, other.pk],
+                "_selected_action": [self.default.pk, other.pk],
                 "post": "yes",
             },
         )
-        self.assertTrue(Audience.objects.filter(pk=self.public.pk).exists())
+        self.assertTrue(Audience.objects.filter(pk=self.default.pk).exists())
 
         self.admin.delete_queryset(self.request, Audience.objects.all())
-        self.assertQuerySetEqual(Audience.objects.all(), [self.public])
+        self.assertQuerySetEqual(Audience.objects.all(), [self.default])
 
-    def test_public_rejects_groups_and_slugs_are_read_only(self):
+    def test_public_kbs_reject_groups_and_the_default_stays_public(self):
         group = GroupFactory()
-        other = AudienceFactory()
+        public_kb = AudienceFactory(is_public=True)
+        private_kb = AudienceFactory()
 
-        response = self.client.post(
-            reverse("admin:wiki_audience_change", args=[self.public.pk]),
-            {"name": self.public.name, "groups": [group.pk]},
-        )
-        self.client.post(
-            reverse("admin:wiki_audience_change", args=[other.pk]),
-            {"name": other.name, "groups": [group.pk]},
-        )
+        rejected = {
+            "default": self.change(self.default, groups=[group.pk]),
+            "public kb": self.change(public_kb, is_public="on", groups=[group.pk]),
+            "made public with groups": self.change(private_kb, is_public="on", groups=[group.pk]),
+        }
+        self.change(private_kb, groups=[group.pk])
+        self.change(self.default)
 
-        self.assertIn("groups", response.context["adminform"].form.errors)
-        self.assertFalse(self.public.groups.exists())
-        self.assertTrue(other.groups.filter(pk=group.pk).exists())
-        self.assertNotIn("slug", self.admin.get_readonly_fields(self.request))
-        for audience in (self.public, other):
-            with self.subTest(audience=audience.slug):
-                self.assertIn("slug", self.admin.get_readonly_fields(self.request, audience))
+        for label, response in rejected.items():
+            with self.subTest(label):
+                self.assertIn("groups", response.context["adminform"].form.errors)
+        self.assertFalse(Audience.objects.filter(groups=group).exclude(pk=private_kb.pk).exists())
+        self.assertTrue(private_kb.groups.filter(pk=group.pk).exists())
+        self.assertTrue(Audience.objects.get(pk=self.default.pk).is_public)
+        self.assertEqual(self.admin.get_readonly_fields(self.request), ())
+        self.assertEqual(
+            self.admin.get_readonly_fields(self.request, self.default), ("slug", "is_public")
+        )
+        self.assertEqual(self.admin.get_readonly_fields(self.request, private_kb), ("slug",))
+
+    def test_publishing_a_kb_with_articles_needs_confirmation(self):
+        empty = AudienceFactory()
+        used = AudienceFactory()
+        DocumentFactory(audiences=[used])
+
+        unconfirmed = self.change(used, is_public="on")
+        self.change(empty, is_public="on")
+        self.assertIn("confirm_publish", unconfirmed.context["adminform"].form.errors)
+        self.assertFalse(Audience.objects.get(pk=used.pk).is_public)
+        self.assertTrue(Audience.objects.get(pk=empty.pk).is_public)
+
+        self.change(used, is_public="on", confirm_publish="on")
+        self.assertTrue(Audience.objects.get(pk=used.pk).is_public)
 
     def test_assigned_audience_cannot_be_deleted(self):
         audience = AudienceFactory()

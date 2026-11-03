@@ -2,7 +2,7 @@ from django.db import transaction
 from django.db.models.signals import m2m_changed, post_save, pre_delete
 from django.dispatch import receiver
 
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Audience, Document
 
 
 def _rerender_after_commit(document_ids):
@@ -19,6 +19,34 @@ def _rerender_after_commit(document_ids):
     transaction.on_commit(rerender)
 
 
+def _follow_access_change(document_ids, *, sync_redirects):
+    """
+    Trigger a cascade re-render of the documents whose access changed, since the parser
+    uses access to enforce inclusion permission checks. Translations inherit their parent's
+    audiences, so they must be re-rendered as well. The families' cached anonymous pages are
+    cleared on commit, once other requests can see the change. Redirect stubs copy their
+    target's audiences, so they follow assignment changes at once when "sync_redirects" is set.
+    """
+    originals = {
+        document.original
+        for document in Document.objects.filter(id__in=document_ids).select_related("parent")
+    }
+    if sync_redirects:
+        for original in originals:
+            original.sync_redirect_audiences()
+
+    translation_ids = Document.objects.filter(parent_id__in=document_ids).values_list(
+        "id", flat=True
+    )
+    _rerender_after_commit(set(document_ids) | set(translation_ids))
+
+    def clear_family_page_caches():
+        for original in originals:
+            original.clear_family_page_cache()
+
+    transaction.on_commit(clear_family_page_caches)
+
+
 @receiver(
     m2m_changed,
     sender=Document.audiences.through,
@@ -26,11 +54,7 @@ def _rerender_after_commit(document_ids):
 )
 def render_on_audiences_change(sender, instance, action, reverse, pk_set, **kwargs):
     """
-    Trigger a cascade re-render when a document's audiences change, since the parser
-    uses the audiences to enforce inclusion permission checks. Translations inherit
-    their parent's audiences, so they must be re-rendered as well. The family's cached
-    anonymous pages are cleared on commit, once other requests can see the new audiences.
-    The redirect stubs that point to the family follow the change at once.
+    Follow up on a change to a document's audiences.
 
     On the reverse side "instance" is an Audience rather than a Document, so the affected
     documents come from "pk_set" instead.
@@ -51,23 +75,20 @@ def render_on_audiences_change(sender, instance, action, reverse, pk_set, **kwar
     else:
         return
 
-    originals = {
-        document.original
-        for document in Document.objects.filter(id__in=document_ids).select_related("parent")
-    }
-    for original in originals:
-        original.sync_redirect_audiences()
+    _follow_access_change(document_ids, sync_redirects=True)
 
-    translation_ids = Document.objects.filter(parent_id__in=document_ids).values_list(
-        "id", flat=True
-    )
-    _rerender_after_commit(document_ids | set(translation_ids))
 
-    def clear_family_page_caches():
-        for original in originals:
-            original.clear_family_page_cache()
-
-    transaction.on_commit(clear_family_page_caches)
+@receiver(
+    post_save,
+    sender=Audience,
+    dispatch_uid="wiki.render_on_audience_visibility_change",
+)
+def render_on_audience_visibility_change(sender, instance, **kwargs):
+    """A knowledge base turning public or private changes access to every article in it."""
+    if getattr(instance, "visibility_changed", False):
+        _follow_access_change(
+            set(instance.documents.values_list("id", flat=True)), sync_redirects=False
+        )
 
 
 @receiver(

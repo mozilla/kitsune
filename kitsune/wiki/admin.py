@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.sumo.sanitize import RESTRICTED_HTML_ATTRIBUTES, RESTRICTED_HTML_TAGS, clean
-from kitsune.wiki.config import PUBLIC_AUDIENCE_SLUG
+from kitsune.wiki.config import DEFAULT_AUDIENCE_SLUG
 from kitsune.wiki.models import (
     Audience,
     Document,
@@ -23,11 +23,11 @@ from kitsune.wiki.models import (
 
 
 class NoAudienceFilter(admin.SimpleListFilter):
-    title = _lazy("audience")
+    title = _lazy("knowledge base")
     parameter_name = "audience"
 
     def lookups(self, request, model_admin):
-        return (("none", _lazy("No audience")),)
+        return (("none", _lazy("No knowledge base")),)
 
     def queryset(self, request, queryset):
         if self.value() == "none":
@@ -118,22 +118,48 @@ admin.site.register(Document, DocumentAdmin)
 
 
 class AudienceAdminForm(forms.ModelForm):
+    confirm_publish = forms.BooleanField(
+        required=False,
+        label=_lazy("Publish its articles"),
+        help_text=_lazy(
+            "Making this knowledge base public makes every article in it readable by everyone."
+        ),
+    )
+
     class Meta:
         model = Audience
         fields = "__all__"
 
     def clean(self):
         cleaned_data = super().clean()
-        slug = cleaned_data.get("slug", self.instance.slug)
-        if slug == PUBLIC_AUDIENCE_SLUG and cleaned_data.get("groups"):
-            self.add_error("groups", _lazy("The Public audience cannot have groups."))
+        # Read-only fields are missing from cleaned_data; the instance still holds old values.
+        is_public = cleaned_data.get("is_public", self.instance.is_public)
+        if is_public and cleaned_data.get("groups"):
+            self.add_error("groups", _lazy("A public knowledge base cannot have groups."))
+        if cleaned_data.get("slug") == DEFAULT_AUDIENCE_SLUG and not is_public:
+            self.add_error("is_public", _lazy("The default knowledge base is always public."))
+        if (
+            is_public
+            and self.instance.pk
+            and not self.instance.is_public
+            and self.instance.documents.exists()
+            and not cleaned_data.get("confirm_publish")
+        ):
+            self.add_error(
+                "confirm_publish", _lazy("Confirm that its articles become readable by everyone.")
+            )
         return cleaned_data
 
 
 class AudienceAdmin(admin.ModelAdmin):
     form = AudienceAdminForm
-    fields = ("name", "slug", "groups")
-    list_display = ("name", "slug", "document_count")
+    list_display = ("name", "slug", "is_public", "document_count")
+
+    def get_fields(self, request, obj=None):
+        fields = ["name", "slug", "is_public", "groups"]
+        if obj is not None and not obj.is_public:
+            fields.append("confirm_publish")
+        return fields
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(document_count=Count("documents"))
@@ -143,15 +169,17 @@ class AudienceAdmin(admin.ModelAdmin):
         return obj.document_count
 
     def get_readonly_fields(self, request, obj=None):
-        return ("slug",) if obj else ()
+        if obj is None:
+            return ()
+        return ("slug", "is_public") if obj.slug == DEFAULT_AUDIENCE_SLUG else ("slug",)
 
     def has_delete_permission(self, request, obj=None):
-        if obj is not None and obj.is_public:
+        if obj is not None and obj.slug == DEFAULT_AUDIENCE_SLUG:
             return False
         return super().has_delete_permission(request, obj)
 
     def delete_queryset(self, request, queryset):
-        super().delete_queryset(request, queryset.exclude(slug=PUBLIC_AUDIENCE_SLUG))
+        super().delete_queryset(request, queryset.exclude(slug=DEFAULT_AUDIENCE_SLUG))
 
 
 admin.site.register(Audience, AudienceAdmin)

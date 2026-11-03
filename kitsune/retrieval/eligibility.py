@@ -21,7 +21,7 @@ def is_retrieval_content_eligible(document) -> bool:
 
 
 def is_publicly_accessible(document) -> bool:
-    """Whether the original is assigned the Public audience (translations inherit it)."""
+    """Whether the original is assigned a public audience (translations inherit it)."""
     return not document.is_restricted
 
 
@@ -46,7 +46,7 @@ def content_eligible_documents(
 def eligible_documents() -> QuerySet[Document]:
     """The queryset equivalent of ``is_retrieval_indexable``, proven equal in tests.
 
-    ``visible()`` (no viewer) enforces ``current_revision`` and the Public audience,
+    ``visible()`` (no viewer) enforces ``current_revision`` and a public audience,
     including a translation's inherited audiences via its parent. The excludes mirror
     ``is_indexable_content`` on the document's own (parent-synced) fields.
     """

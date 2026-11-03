@@ -13,7 +13,7 @@ from kitsune.sumo.form_fields import MultiUsernameField, MultiUsernameFilterFiel
 from kitsune.wiki.config import (
     CANNED_RESPONSES_CATEGORY,
     CATEGORIES,
-    PUBLIC_AUDIENCE_SLUG,
+    DEFAULT_AUDIENCE_SLUG,
     SIGNIFICANCES,
     TEMPLATES_CATEGORY,
 )
@@ -122,9 +122,10 @@ class DocumentForm(forms.ModelForm):
     audiences = forms.ModelMultipleChoiceField(
         queryset=Audience.objects.order_by("name"),
         required=True,
-        label=_lazy("Audiences"),
+        label=_lazy("Knowledge bases"),
         help_text=_lazy(
-            "Only members of the selected audiences can read this article. Public means everyone."
+            "Readers of any selected knowledge base can read this article. "
+            "A public knowledge base makes it readable by everyone."
         ),
     )
 
@@ -308,7 +309,7 @@ class DocumentForm(forms.ModelForm):
         if not can_assign_audiences:
             del self.fields["audiences"]
         elif self.instance.pk is None:
-            self.fields["audiences"].initial = Audience.objects.filter(slug=PUBLIC_AUDIENCE_SLUG)
+            self.fields["audiences"].initial = Audience.objects.filter(slug=DEFAULT_AUDIENCE_SLUG)
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
@@ -324,7 +325,7 @@ class DocumentForm(forms.ModelForm):
         self.save_m2m()
 
         if is_new and not parent_doc and "audiences" not in self.fields:
-            doc.audiences.add(Audience.objects.public())
+            doc.audiences.add(Audience.objects.default())
 
         if parent_doc:
             # Products are not set on translations.

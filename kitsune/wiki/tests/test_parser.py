@@ -469,8 +469,8 @@ class TestWikiInclude(TestCase):
         ApprovedRevisionFactory(document=restricted, content="Secret content")
 
         for source_audiences in (
-            [Audience.objects.public()],
-            [Audience.objects.public(), audience],
+            [Audience.objects.default()],
+            [Audience.objects.default(), audience],
             [],
         ):
             with self.subTest(source_audiences=source_audiences):

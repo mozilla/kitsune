@@ -268,6 +268,14 @@ class FeaturedArticlesTestCase(TestCase):
             self.assertEqual(len(featured), 1)
             self.assertEqual(featured[0].id, self.de1.id)
 
+        with self.subTest("in two public knowledge bases"):
+            self.d1.audiences.add(AudienceFactory(is_public=True))
+            featured = get_featured_articles(limit=10)
+            self.assertCountEqual(
+                [d.id for d in featured],
+                [self.d1.id, self.d2.id, self.de1.parent.id, self.de2.parent.id],
+            )
+
 
 class RemoveExpiredFromKBVisitedTests(TestCase):
     def setUp(self):

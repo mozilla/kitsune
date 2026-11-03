@@ -2,7 +2,7 @@ from django.db import migrations
 from django.db.models import Exists, OuterRef
 from django.utils.text import slugify
 
-from kitsune.wiki.config import PUBLIC_AUDIENCE_SLUG, REDIRECT_HTML
+from kitsune.wiki.config import REDIRECT_HTML
 
 
 def make_unique(value, taken, max_length, separator):
@@ -23,9 +23,7 @@ def forward(apps, schema_editor):
     DocumentLink = apps.get_model("wiki", "DocumentLink")
     Group = apps.get_model("auth", "Group")
 
-    public, _created = Audience.objects.get_or_create(
-        slug=PUBLIC_AUDIENCE_SLUG, defaults={"name": "Public"}
-    )
+    public, _created = Audience.objects.get_or_create(slug="public", defaults={"name": "Public"})
 
     restrictions = {}
     for document_id, group_id in Document.restrict_to_groups.through.objects.filter(

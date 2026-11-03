@@ -113,7 +113,7 @@ DOC_HTML_CACHE_KEY = "doc_html:{locale}:{slug}"
 
 SIMPLE_WIKI_LANDING_PAGE_SLUG = "frequently-asked-questions"
 
-PUBLIC_AUDIENCE_SLUG = "public"
+DEFAULT_AUDIENCE_SLUG = "default"
 
 # Q object for filtering valid pinned articles.
 # This is used in both the admin UI (via limit_choices_to) and in runtime
@@ -125,6 +125,6 @@ PINNED_ARTICLE_LIMIT_Q = Q(
     is_template=False,
     is_archived=False,
     current_revision__isnull=False,
-    audiences__slug=PUBLIC_AUDIENCE_SLUG,
+    audiences__is_public=True,
     category__in=settings.IA_DEFAULT_CATEGORIES,
 ) & ~Q(html__startswith=REDIRECT_HTML)

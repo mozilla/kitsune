@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         ("products", "0055_remove_supportorganization"),
-        ("wiki", "0028_alter_pinnedarticleconfig_pinned_articles"),
+        ("wiki", "0029_knowledge_base_visibility"),
     ]
 
     operations = [
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 blank=True,
                 limit_choices_to=models.Q(
-                    ("audiences__slug", "public"),
+                    ("audiences__is_public", True),
                     ("category__in", (10, 20, 30)),
                     ("current_revision__isnull", False),
                     ("is_archived", False),

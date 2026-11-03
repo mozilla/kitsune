@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.db import IntegrityError, transaction
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
-from kitsune.wiki.config import PUBLIC_AUDIENCE_SLUG
+from kitsune.wiki.config import DEFAULT_AUDIENCE_SLUG
 from kitsune.wiki.models import Audience, Document, DocumentAudience, Revision
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
@@ -30,12 +31,15 @@ class AudienceAccessTests(TestCase):
         )
         deleted_group = GroupFactory()
 
-        public = Audience.objects.public()
+        public = Audience.objects.default()
+        contributors = AudienceFactory(is_public=True)
         agents = AudienceFactory(groups=[agents_group])
         company_audience = AudienceFactory(groups=[company.group])
 
         documents = {
             "pub": _approved(document__audiences=[public]),
+            "public_kb": _approved(document__audiences=[contributors]),
+            "public_kb_and_agents": _approved(document__audiences=[contributors, agents]),
             "agents": _approved(document__audiences=[agents]),
             "company": _approved(document__audiences=[company_audience]),
             "both": _approved(document__audiences=[agents, company_audience]),
@@ -66,6 +70,8 @@ class AudienceAccessTests(TestCase):
         privileged = {"staff", "superuser"}
         expected = {
             "pub": set(viewers),
+            "public_kb": set(viewers),
+            "public_kb_and_agents": set(viewers),
             "mixed": set(viewers),
             "agents": {"agent"} | privileged,
             "agents_translation": {"agent"} | privileged,
@@ -100,17 +106,17 @@ class AudienceAccessTests(TestCase):
                         Document.objects.get(pk=document.pk).is_visible_for(viewer), allowed
                     )
 
-    def test_missing_public_fails_closed(self):
+    def test_missing_default_fails_closed(self):
         agents_group = GroupFactory()
-        formerly_public = _approved()
+        formerly_default = _approved()
         agents = _approved(document__audiences=[AudienceFactory(groups=[agents_group])])
-        old_public_id = Audience.objects.get(slug=PUBLIC_AUDIENCE_SLUG).pk
-        DocumentAudience.objects.filter(audience_id=old_public_id).delete()
-        Audience.objects.filter(pk=old_public_id).delete()
+        old_default_id = Audience.objects.get(slug=DEFAULT_AUDIENCE_SLUG).pk
+        DocumentAudience.objects.filter(audience_id=old_default_id).delete()
+        Audience.objects.filter(pk=old_default_id).delete()
 
         agent = UserFactory(groups=[agents_group])
-        self.assertTrue(Document.objects.get(pk=formerly_public.pk).is_restricted)
-        self.assertFalse(Document.objects.get(pk=formerly_public.pk).is_visible_for(agent))
+        self.assertTrue(Document.objects.get(pk=formerly_default.pk).is_restricted)
+        self.assertFalse(Document.objects.get(pk=formerly_default.pk).is_visible_for(agent))
         self.assertFalse(Document.objects.visible(AnonymousUser()).exists())
         self.assertQuerySetEqual(Document.objects.visible(agent), [agents])
 
@@ -120,6 +126,24 @@ class AudienceAccessTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         new_document = Document.objects.get(slug="a-test-article")
-        recreated = Audience.objects.get(slug=PUBLIC_AUDIENCE_SLUG)
-        self.assertNotEqual(recreated.pk, old_public_id)
+        recreated = Audience.objects.get(slug=DEFAULT_AUDIENCE_SLUG)
+        self.assertNotEqual(recreated.pk, old_default_id)
+        self.assertTrue(recreated.is_public)
         self.assertQuerySetEqual(new_document.audiences.all(), [recreated])
+
+    def test_default_must_stay_public(self):
+        Audience.objects.default()
+        with transaction.atomic(), self.assertRaises(IntegrityError):
+            Audience.objects.filter(slug=DEFAULT_AUDIENCE_SLUG).update(is_public=False)
+
+    def test_flipping_visibility_changes_access(self):
+        kb = AudienceFactory()
+        document = _approved(document__audiences=[kb])
+        anonymous = AnonymousUser()
+
+        for is_public in (True, False):
+            with self.subTest(is_public=is_public):
+                kb.is_public = is_public
+                kb.save()
+                self.assertEqual(Document.objects.visible(anonymous).exists(), is_public)
+                self.assertEqual(Document.objects.get(pk=document.pk).is_restricted, not is_public)

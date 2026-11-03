@@ -1421,7 +1421,7 @@ class RedirectAudiencesTests(TestCase):
     def setUp(self):
         self.group = GroupFactory()
         self.audience = AudienceFactory(groups=[self.group])
-        self.public = Audience.objects.public()
+        self.public = Audience.objects.default()
 
     def test_rename_stub_copies_audiences(self):
         doc = ApprovedRevisionFactory(document__audiences=[self.audience]).document

@@ -248,7 +248,7 @@ class EligibleDocumentsQuerysetTests(TestCase):
         mixed_audience = AudienceFactory(groups=[GroupFactory()])
 
         def add_families():
-            mixed = _approved(audiences=[Audience.objects.public(), mixed_audience])
+            mixed = _approved(audiences=[Audience.objects.default(), mixed_audience])
             _translation(mixed)
             _translation(_approved(), locale="fr")
 
@@ -289,7 +289,7 @@ class AccessMetadataTests(TestCase):
         )
         no_groups = _reload(DocumentFactory(audiences=[AudienceFactory()]))
         public = _approved()
-        mixed = _approved(audiences=[Audience.objects.public(), AudienceFactory(groups=[g1])])
+        mixed = _approved(audiences=[Audience.objects.default(), AudienceFactory(groups=[g1])])
         self.assertEqual(access_group_ids_for(restricted), sorted([g1.id, g2.id]))
         self.assertEqual(visibility_for(restricted), "group_restricted")
         # A private audience without groups is still not public.
