@@ -71,10 +71,8 @@ Different content managers handle the publishing workflow:
 - Provides methods to find stale and missing translations
 - Implements document-aware routing logic for AI vs HYBRID flows
 - Key methods:
-  - `get_stale_docs_hybrid()`: Finds non-archived stale translations in HYBRID locales
-  - `get_stale_docs_ai()`: Finds all stale translations for AI flow (all AI docs + archived HYBRID docs)
-  - `get_missing_docs_hybrid()`: Finds non-archived documents without translations in HYBRID locales
-  - `get_missing_docs_ai()`: Finds documents without translations for AI flow
+  - `get_stale_docs(method)`: Finds stale translations for the AI or HYBRID flow, within that flow's budget
+  - `get_missing_docs(method)`: Finds documents without translations for the AI or HYBRID flow, within that flow's budget
   - `get_pending_revisions()`: Finds unreviewed revisions that make a new machine translation unnecessary
   - `get_pending_translations()`: Finds unreviewed translations exceeding grace period
   - `get_obsolete_translations()`: Finds translations that are no longer useful
@@ -87,8 +85,8 @@ Different content managers handle the publishing workflow:
 **StaleTranslationService**
 - Identifies outdated translations that need updates
 - Processes batch updates using appropriate strategies
-- Configurable via `STALE_TRANSLATION_THRESHOLD_DAYS` and `STALE_TRANSLATION_BATCH_SIZE`
-- Method: `process_stale(limit, strategy)` - optionally filters by AI or HYBRID strategy
+- Configurable via `STALE_TRANSLATION_THRESHOLD_DAYS`, `AI_TRANSLATION_BATCH_SIZE` and `HYBRID_TRANSLATION_BATCH_SIZE`
+- Method: `process_stale()` - processes AI and HYBRID candidates, each flow within its own budget
 - Skips a document when a revision covering the latest localizable English revision (or newer) is
   already awaiting review - either a machine translation of ours, or anyone else's revision created
   within `REVIEW_GRACE_PERIOD`
@@ -96,7 +94,7 @@ Different content managers handle the publishing workflow:
 **MissingTranslationService**
 - Creates initial translations for documents without existing translations
 - Uses document archive status for smart routing
-- Method: `process_missing(limit, strategy)` - creates translations for missing docs
+- Method: `process_missing()` - creates translations for missing docs, each flow within its own budget
 
 **HybridTranslationService**
 - Manages hybrid workflow automation
@@ -130,6 +128,27 @@ else:
     return get_method_for_locale(locale)  # Standard locale-based routing
 ```
 
+### Per-Run Budgets
+
+Each run of `process_stale_translations` and `create_missing_translations` queues at most
+`AI_TRANSLATION_BATCH_SIZE` AI-flow and `HYBRID_TRANSLATION_BATCH_SIZE` HYBRID-flow translations. The two
+budgets are independent, and both tasks run every 4 hours (`kitsune/celery_beat.py`), so each task's daily
+ceiling is 6 × the budget.
+
+- A budget is handed out round-robin, one article per round to each locale that still has work; locales
+  that run out drop out, and the others take the rest.
+- Locale order is shuffled on every run, so when the budget is smaller than the number of locales, the
+  locales left out change from run to run. Example: a HYBRID budget of 30 across 50 locales gives 30 random
+  locales one article each per run.
+- In the AI flow, non-archived articles in AI locales are picked first; archived articles in AI and HYBRID
+  locales share whatever is left.
+- In the HYBRID flow, no locale gets more than `HYBRID_QUOTA_PER_LOCALE` articles per run, so reviewers
+  aren't flooded when other locales run short. The budget is only fully spent when it's at most
+  quota × locales with work.
+- A budget or quota of 0 or less queues nothing for that flow.
+- Translations triggered by marking an English revision ready for localization go to every AI and HYBRID
+  locale and don't count against either budget.
+
 ## Configuration
 
 ### Settings
@@ -143,7 +162,11 @@ HYBRID_ENABLED_LOCALES = ['it', 'pt-BR']  # Example
 
 # Stale translation detection
 STALE_TRANSLATION_THRESHOLD_DAYS = 30
-STALE_TRANSLATION_BATCH_SIZE = 50
+
+# Per-run budgets of the periodic translation tasks
+AI_TRANSLATION_BATCH_SIZE = 50
+HYBRID_TRANSLATION_BATCH_SIZE = 15
+HYBRID_QUOTA_PER_LOCALE = 3  # most HYBRID articles one locale gets per run
 
 # Translation workflow settings
 REVIEW_GRACE_PERIOD = 72  # hours

@@ -1577,8 +1577,11 @@ HYBRID_ENABLED_LOCALES = config("HYBRID_ENABLED_LOCALES", default="", cast=Csv()
 STALE_TRANSLATION_THRESHOLD_DAYS = config(
     "STALE_TRANSLATION_THRESHOLD_DAYS", default=180, cast=int
 )
-STALE_TRANSLATION_BATCH_SIZE = config("STALE_TRANSLATION_BATCH_SIZE", default=10, cast=int)
-HYBRID_QUOTA_PER_LOCALE = config("HYBRID_QUOTA_PER_LOCALE", default=2, cast=int)
+# Articles each periodic translation task may queue per run, per flow.
+AI_TRANSLATION_BATCH_SIZE = config("AI_TRANSLATION_BATCH_SIZE", default=50, cast=int)
+HYBRID_TRANSLATION_BATCH_SIZE = config("HYBRID_TRANSLATION_BATCH_SIZE", default=15, cast=int)
+# Most HYBRID articles one locale gets per run, so its reviewers aren't flooded.
+HYBRID_QUOTA_PER_LOCALE = config("HYBRID_QUOTA_PER_LOCALE", default=3, cast=int)
 REVIEW_GRACE_PERIOD = config("REVIEW_GRACE_PERIOD", default=168, cast=int)  # Hours - 7 days
 STALE_ANCHOR_RECORD_RETENTION_DAYS = config(
     "STALE_ANCHOR_RECORD_RETENTION_DAYS", default=90, cast=int
