@@ -10,6 +10,10 @@ class EditKBArticlePage(BasePage):
         self.edit_article_page_header = page.locator("h1")
         self.edit_by_another_user_warning_banner = page.locator("div#locked-warning")
         self.edit_by_another_user_edit_anyway_option = page.locator("a#unlock-button")
+        self.draft_revision_banner = page.locator("ul.user-messages li").filter(
+            has=page.locator("input[name='restore']"))
+        self.draft_revision_banner_restore_button = page.locator("input[name='restore']")
+        self.draft_revision_banner_discard_button = page.locator("input[name='discard']")
 
         """Locators belonging to the kb article edit page field section."""
         self.edit_article_keywords_field = page.locator("input#id_keywords")
@@ -21,6 +25,9 @@ class EditKBArticlePage(BasePage):
         self.edit_article_submit_for_review_button = page.locator(
             "article#edit-document").get_by_role(
             "button", name="Submit for Review", exact=True)
+        self.edit_article_save_as_draft_button = page.locator(
+            "article#edit-document button.btn-draft").first
+        self.edit_article_draft_message = page.locator("div#draft-message")
 
         """Locators belonging to the submit your changes section."""
         self.edit_article_submit_changes_panel_comment_field = page.locator("input#id_comment")
@@ -35,6 +42,12 @@ class EditKBArticlePage(BasePage):
 
     def is_edit_anyway_option_visible(self) -> bool:
         return self._is_element_visible(self.edit_by_another_user_edit_anyway_option)
+
+    def click_on_restore_draft_button(self):
+        self._click(self.draft_revision_banner_restore_button, wait_for_navigation=True)
+
+    def click_on_discard_draft_button(self):
+        self._click(self.draft_revision_banner_discard_button, wait_for_navigation=True)
 
     """Actions against the kb article page field locators."""
     def fill_edit_article_keywords_field(self, text: str):
@@ -61,6 +74,10 @@ class EditKBArticlePage(BasePage):
     """Actions against the submit your changes section locators."""
     def click_submit_for_review_button(self):
         self._click_on_first_item(self.edit_article_submit_for_review_button)
+
+    def click_on_save_as_draft_button(self):
+        with self.page.expect_response(lambda response: "save-draft" in response.url):
+            self._click(self.edit_article_save_as_draft_button)
 
     def fill_edit_article_changes_panel_comment(self, text: str):
         self._fill(self.edit_article_submit_changes_panel_comment_field, text)

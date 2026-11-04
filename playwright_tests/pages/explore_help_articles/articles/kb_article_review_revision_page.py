@@ -33,6 +33,13 @@ class KBArticleReviewRevisionPage(BasePage):
         self.revision_rendered_html_header = page.get_by_role(
             "heading", name="Revision rendered html:", exact=True)
         self.revision_rendered_html_content = page.locator("div#doc-content p")
+        self.submitted_revision_keywords = page.locator(
+            "//h4[text()='Keywords:']/following-sibling::div[contains(@class, 'diff-this')][1]"
+            "/div[@class='to']")
+        self.submitted_revision_search_results_summary = page.locator(
+            "//h4[text()='Search results summary:']/following-sibling::"
+            "div[contains(@class, 'diff-this')][1]/div[@class='to']")
+        self.submitted_revision_content = page.locator("div#content-diff div.to")
         self.defer_revision_button = page.locator("button#btn-reject")
         self.approve_revision_button = page.locator("button#btn-approve")
 

@@ -31,6 +31,10 @@ class TranslateArticlePage(BasePage):
             "button[class*='btn-submit']").first
         self.save_translation_as_draft_button = page.locator("button[class*='btn-draft']").first
         self.draft_saved_successfully_message = page.locator("div#draft-message")
+        self.draft_revision_banner = page.locator("ul.user-messages li").filter(
+            has=page.locator("input[name='restore']"))
+        self.draft_revision_banner_restore_button = page.locator("input[name='restore']")
+        self.draft_revision_banner_discard_button = page.locator("input[name='discard']")
         self.translation_changes_description_input_field = page.locator("input#id_comment")
         self.translation_changes_description_submit_button = page.locator(
             "button#submit-document-form")
@@ -70,4 +74,11 @@ class TranslateArticlePage(BasePage):
         self._click(self.translation_changes_description_submit_button)
 
     def click_on_save_translation_as_draft_button(self):
-        self.save_translation_as_draft_button.first.click()
+        with self.page.expect_response(lambda response: "save-draft" in response.url):
+            self._click(self.save_translation_as_draft_button)
+
+    def click_on_restore_draft_button(self):
+        self._click(self.draft_revision_banner_restore_button, wait_for_navigation=True)
+
+    def click_on_discard_draft_button(self):
+        self._click(self.draft_revision_banner_discard_button, wait_for_navigation=True)

@@ -16,84 +16,8 @@ troubleshooting_topic_url = "https://support.allizom.org/en-US/topics/browse"
 TOPIC_SHARDS = 6
 
 
-#  C2663958, C2663959
-@pytest.mark.exploreByTopics
-@pytest.mark.parametrize("shard", range(TOPIC_SHARDS))
-def test_explore_by_topic_product_filter(page: Page, shard: int):
-    sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
-
-    with allure.step("Navigating to the /topics/ Browse page"):
-        utilities.navigate_to_link(troubleshooting_topic_url)
-    for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options()[
-            shard::TOPIC_SHARDS]:
-        topic = topic.strip()
-        if topic != "Browse":
-            sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
-        with check, allure.step("Verifying that the correct page header is displayed for the"
-                                f"{topic} topic"):
-            expect(sumo_pages.explore_by_topic_page.explore_by_topic_page_header).to_have_text(
-                topic)
-        for product in sumo_pages.explore_by_topic_page.get_all_filter_by_product_options():
-            utilities.wait_for_dom_to_load()
-            product = product.strip()
-            if product.strip() == "All Products":
-                continue
-            else:
-                sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product.strip())
-                if not sumo_pages.explore_by_topic_page.get_metadata_of_all_listed_articles():
-                    pytest.fail(f"There is no sublist for {product} for the {topic} filter")
-
-                for sublist in (sumo_pages.explore_by_topic_page
-                    .get_metadata_of_all_listed_articles()):
-                    with check, allure.step(f"Verifying that '{product}' is listed in the "
-                                            f"article metadata for the {topic} topic filter"):
-                        assert product in sublist
-
-
-# C2462867
-@pytest.mark.exploreByTopics
-@pytest.mark.parametrize("shard", range(TOPIC_SHARDS))
-def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory, shard: int):
-    sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
-    test_user = create_user_factory()
-
-    with allure.step(f"Signing in with {test_user['username']} user account"):
-        utilities.start_existing_session(cookies=test_user)
-
-    with allure.step("Navigating to the /topics/ Browse page"):
-        utilities.navigate_to_link(troubleshooting_topic_url)
-    for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options()[
-            shard::TOPIC_SHARDS]:
-        topic = topic.strip()
-        if topic != "Browse":
-            sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
-        for product in sumo_pages.explore_by_topic_page.get_all_filter_by_product_options():
-            product = product.strip()
-            sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product)
-            with check, allure.step("Verifying the correct AAQ widget text is displayed for "
-                                    f"{product}"):
-                if product == "All Products":
-                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
-                        AAQWidgetMessages.NEUTRAL_AAQ_SUBHEADING_TEXT)
-                elif product in utilities.general_test_data['subscription_redirects']:
-                    with check, allure.step("Verifying that the AAQ widget is not displayed"):
-                        expect(sumo_pages.common_web_elements.aaq_widget).to_be_hidden()
-                elif product in utilities.general_test_data['freemium_products']:
-                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
-                        AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT)
-                elif product in utilities.general_test_data['premium_products']:
-                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
-                        AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT)
-                elif (product not in utilities.general_test_data['premium_products'] and
-                      product not in utilities.general_test_data['freemium_products']):
-                    with allure.step("Verifying that the AAQ widget is not displayed for the "
-                                     "product which has both AAQ and Zendesk configs disabled"):
-                        expect(sumo_pages.common_web_elements.aaq_widget).to_be_hidden()
-
-
 # C2663960
+# The slowest test in this file comes first, so xdist starts its shards before the others.
 @pytest.mark.exploreByTopics
 @pytest.mark.parametrize("shard", range(TOPIC_SHARDS))
 def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory, shard: int):
@@ -139,6 +63,83 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory, s
             # Only an AAQ click leaves the page; the user goes back to it with the back button.
             if utilities.get_page_url() != filtered_topic_url:
                 utilities.navigate_back()
+
+
+#  C2663958, C2663959
+@pytest.mark.exploreByTopics
+@pytest.mark.parametrize("shard", range(TOPIC_SHARDS))
+def test_explore_by_topic_product_filter(page: Page, shard: int):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    with allure.step("Navigating to the /topics/ Browse page"):
+        utilities.navigate_to_link(troubleshooting_topic_url)
+    for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options()[
+            shard::TOPIC_SHARDS]:
+        topic = topic.strip()
+        if topic != "Browse":
+            sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
+        with check, allure.step("Verifying that the correct page header is displayed for the"
+                                f"{topic} topic"):
+            expect(sumo_pages.explore_by_topic_page.explore_by_topic_page_header).to_have_text(
+                topic)
+        with allure.step(f"Reading the products of every article listed for the {topic} topic"):
+            article_products = (
+                sumo_pages.explore_by_topic_page.get_products_of_all_listed_articles())
+        for product in sumo_pages.explore_by_topic_page.get_all_filter_by_product_options():
+            product = product.strip()
+            if product == "All Products":
+                continue
+            sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product)
+            listed = set(sumo_pages.explore_by_topic_page.get_urls_of_all_listed_articles())
+            if not listed:
+                pytest.fail(f"There is no sublist for {product} for the {topic} filter")
+            expected = {url for url, products in article_products.items() if product in products}
+            with check, allure.step(f"Verifying that exactly the '{product}' articles are "
+                                    f"listed for the {topic} topic filter"):
+                assert listed == expected
+
+
+# C2462867
+@pytest.mark.exploreByTopics
+@pytest.mark.parametrize("shard", range(TOPIC_SHARDS))
+def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory, shard: int):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory()
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Navigating to the /topics/ Browse page"):
+        utilities.navigate_to_link(troubleshooting_topic_url)
+    for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options()[
+            shard::TOPIC_SHARDS]:
+        topic = topic.strip()
+        if topic != "Browse":
+            sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
+        for product in sumo_pages.explore_by_topic_page.get_all_filter_by_product_options():
+            product = product.strip()
+            sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product)
+            with check, allure.step("Verifying the correct AAQ widget text is displayed for "
+                                    f"{product}"):
+                if product == "All Products":
+                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                        AAQWidgetMessages.NEUTRAL_AAQ_SUBHEADING_TEXT)
+                elif product in utilities.general_test_data['subscription_redirects']:
+                    with check, allure.step("Verifying that the AAQ widget is not displayed"):
+                        expect(sumo_pages.common_web_elements.aaq_widget).to_be_hidden()
+                elif product in utilities.general_test_data['freemium_products']:
+                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                        AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT)
+                elif product in utilities.general_test_data['premium_products']:
+                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                        AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT)
+                elif (product not in utilities.general_test_data['premium_products'] and
+                      product not in utilities.general_test_data['freemium_products']):
+                    with allure.step("Verifying that the AAQ widget is not displayed for the "
+                                     "product which has both AAQ and Zendesk configs disabled"):
+                        expect(sumo_pages.common_web_elements.aaq_widget).to_be_hidden()
 
 
 # C2663961

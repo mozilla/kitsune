@@ -11,6 +11,8 @@ class KBArticleRevision:
                                                          "an admin.")
     KB_REVISION_PREVIEW = "/revision/"
     KB_EDIT_METADATA = "/edit/metadata"
+    KB_ARTICLE_DRAFT_SAVED_MESSAGE = "Draft has been saved on:"
+    KB_ARTICLE_DRAFT_REVISION_BANNER = "You have a draft revision for this article saved on"
 
     def get_kb_article_revision_details(self,
                                         revision_id: str,

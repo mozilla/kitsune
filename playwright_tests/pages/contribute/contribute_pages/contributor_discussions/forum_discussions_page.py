@@ -28,7 +28,7 @@ class ForumDiscussionsPage(BasePage):
             "tbody.threads td.title").get_by_role("link", name=thread_name, exact=True)
         self.thread_type = lambda thread_name, type_image: page.locator(
             f"//tbody[@class='threads']//td[@class='title']/a[text()='{thread_name}']/../../"
-            f"td[@class='type']/img[@title='{type_image}']")
+            f"td[@class='type']").get_by_role("img", name=type_image, exact=True)
         self.thread_author = lambda thread_name: page.locator(
             f"//tbody[@class='threads']//td[@class='title']/a[text()='{thread_name}']/../../"
             f"td[@class='author']/a")

@@ -252,7 +252,7 @@ def test_revisions_cannot_be_marked_as_ready_for_l10n_if_lacking_permissions(pag
     with allure.step("Clicking on the ready for l10n button and verifying that it has no "
                      "effect"):
         sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
-            article_details['first_revision_id']
+            article_details['first_revision_id'], expect_modal=False
         )
         utilities.wait_for_given_timeout(2000)
         expect(sumo_pages.kb_article_show_history_page.l10n_modal).to_be_hidden()
@@ -561,3 +561,136 @@ def test_locale_redirect_from_article_without_en_us_parent(page: Page, create_us
             sumo_pages.footer_section.switch_to_a_locale("de")
         response = response_info.value
         assert response.status == 404
+
+
+@pytest.mark.kbArticleTranslation
+@pytest.mark.parametrize("user_type", ['Simple user', 'Knowledge Base Reviewer'])
+def test_kb_article_translation_save_as_draft(page: Page, user_type, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user_two = (create_user_factory(groups=["Knowledge Base Reviewers"])
+                     if user_type == 'Knowledge Base Reviewer' else create_user_factory())
+    test_user_three = create_user_factory()
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating a new simple article and approving its first revision"):
+        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
+
+    with allure.step("Navigating to the 'Translate Article' page for the ro locale, filling in "
+                     "the translation fields and saving them as a draft"):
+        draft = sumo_pages.submit_kb_translation_flow._add_article_translation(
+            approve_translation_revision=False, save_as_draft=True, submit=False, locale="ro")
+
+    with check, allure.step("Verifying that the draft saved notification is displayed"):
+        expect(sumo_pages.translate_article_page.draft_saved_successfully_message
+               ).to_have_class(re.compile(r"\bsuccess\b"))
+
+    with check, allure.step(f"Signing in with {test_user_three['username']} user account, "
+                            f"navigating to the 'Translate Article' page and verifying that the "
+                            f"draft revision banner is not displayed"):
+        utilities.start_existing_session(cookies=test_user_three)
+        utilities.refresh_page()
+        expect(sumo_pages.translate_article_page.article_translation_page_title).to_be_visible()
+        expect(sumo_pages.translate_article_page.draft_revision_banner).to_be_hidden()
+
+    with check, allure.step(f"Signing back in with {test_user_two['username']} user account, "
+                            f"navigating to the 'Translate Article' page and verifying that the "
+                            f"draft revision banner is displayed"):
+        utilities.start_existing_session(cookies=test_user_two)
+        utilities.refresh_page()
+        expect(sumo_pages.translate_article_page.draft_revision_banner).to_be_visible()
+
+    with check, allure.step("Clicking on the 'Restore' button and verifying that the draft "
+                            "edits are restored"):
+        sumo_pages.translate_article_page.click_on_restore_draft_button()
+        expect(sumo_pages.translate_article_page.translation_title_field).to_have_value(
+            draft['translation_title'])
+        expect(sumo_pages.translate_article_page.translation_slug_field).to_have_value(
+            draft['translation_slug'])
+        expect(sumo_pages.translate_article_page.translation_keyword_field).to_have_value(
+            draft['translation_keyword'])
+        expect(sumo_pages.translate_article_page.translation_summary_field).to_have_value(
+            draft['translation_summary'])
+        expect(sumo_pages.translate_article_page.translation_text).to_have_value(
+            draft['translation_body'])
+
+    with check, allure.step("Submitting the translation based on the restored draft and "
+                            "verifying that it is created with the restored slug"):
+        revision_id = sumo_pages.submit_kb_translation_flow.submit_translation()
+        expect(page).to_have_url(
+            re.compile(rf"/ro/kb/{re.escape(draft['translation_slug'])}/history"))
+
+    with allure.step(f"Signing in with {test_user['username']} user account and navigating "
+                     f"to the newly created translation revision"):
+        utilities.start_existing_session(cookies=test_user)
+        utilities.refresh_page()
+        sumo_pages.kb_article_show_history_page.click_on_review_revision(revision_id)
+
+    with check, allure.step("Verifying that the translation revision contains the restored "
+                            "draft edits"):
+        expect(sumo_pages.kb_article_review_revision_page.keywords_content).to_have_text(
+            draft['translation_keyword'])
+        expect(sumo_pages.kb_article_review_revision_page.search_results_summary_content
+               ).to_have_text(draft['translation_summary'])
+        expect(sumo_pages.kb_article_review_revision_page.revision_source_content_locator
+               ).to_have_text(draft['translation_body'])
+
+
+@pytest.mark.kbArticleTranslation
+@pytest.mark.parametrize("user_type", ['Simple user', 'Knowledge Base Reviewer'])
+def test_kb_article_translation_discard_draft(page: Page, user_type, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user_two = (create_user_factory(groups=["Knowledge Base Reviewers"])
+                     if user_type == 'Knowledge Base Reviewer' else create_user_factory())
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating a new simple article and approving its first revision"):
+        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True)
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
+
+    with allure.step("Navigating to the 'Translate Article' page for the ro locale, filling in "
+                     "the translation fields and saving them as a draft"):
+        sumo_pages.submit_kb_translation_flow._add_article_translation(
+            approve_translation_revision=False, save_as_draft=True, submit=False, locale="ro")
+
+    with check, allure.step("Verifying that the draft saved notification is displayed"):
+        expect(sumo_pages.translate_article_page.draft_saved_successfully_message
+               ).to_have_class(re.compile(r"\bsuccess\b"))
+
+    with check, allure.step("Navigating to the 'Translate Article' page and verifying that the "
+                            "draft revision banner is displayed"):
+        utilities.refresh_page()
+        expect(sumo_pages.translate_article_page.draft_revision_banner).to_be_visible()
+
+    with check, allure.step("Clicking on the 'Discard' button and verifying that the draft "
+                            "revision banner is no longer displayed and the form starts from "
+                            "the English article again"):
+        sumo_pages.translate_article_page.click_on_discard_draft_button()
+        expect(sumo_pages.translate_article_page.draft_revision_banner).to_be_hidden()
+        expect(sumo_pages.translate_article_page.translation_title_field).to_have_value("")
+        expect(sumo_pages.translate_article_page.translation_slug_field).to_have_value("")
+        expect(sumo_pages.translate_article_page.translation_keyword_field).to_have_value(
+            article_details['keyword'])
+        expect(sumo_pages.translate_article_page.translation_summary_field).to_have_value(
+            article_details['search_results_summary'])
+        expect(sumo_pages.translate_article_page.translation_text).to_have_value(
+            article_details['article_content'])
+
+    with check, allure.step("Reloading the 'Translate Article' page and verifying that the "
+                            "draft revision banner is still not displayed"):
+        utilities.refresh_page()
+        expect(sumo_pages.translate_article_page.article_translation_page_title).to_be_visible()
+        expect(sumo_pages.translate_article_page.draft_revision_banner).to_be_hidden()

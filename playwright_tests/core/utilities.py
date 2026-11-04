@@ -22,6 +22,7 @@ from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import Locator, Page, Response, expect
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
+from playwright_tests.core.basepage import RECOVERABLE_ERROR_STATUSES
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.top_navbar import TopNavbar
@@ -279,8 +280,9 @@ class Utilities:
     def navigate_back(self, retries: int = 3) -> Response | None:
         """
         Navigates back using the browser back button. If go_back() didn't change the URL,
-        retries up to `retries` times. If the resulting response is a 502, reloads the
-        destination page up to `retries - 1` times until a non-502 response is received.
+        retries up to `retries` times. If the resulting response is a
+        recoverable gateway error (502/503), reloads the destination page up to `retries - 1`
+        times until it isn't.
 
         Args:
             retries (int): How many attempts to make in total before giving up.
@@ -304,9 +306,9 @@ class Utilities:
             break
 
         for attempt in range(retries - 1):
-            if response is None or response.status != 502:
+            if response is None or response.status not in RECOVERABLE_ERROR_STATUSES:
                 return response
-            print(f"502 after go_back, reload attempt "
+            print(f"{response.status} after go_back, reload attempt "
                   f"{attempt + 1}/{retries - 1} in 5s...")
             self.page.wait_for_timeout(5000)
             try:
@@ -318,8 +320,9 @@ class Utilities:
     def navigate_forward(self, retries: int = 3) -> Response | None:
         """
         Navigates forward using the browser forward button. If go_forward() didn't change the
-        URL, retries up to `retries` times. If the resulting response is a 502, reloads the
-        destination page up to `retries - 1` times until a non-502 response is received.
+        URL, retries up to `retries` times. If the resulting response is a
+        recoverable gateway error (502/503), reloads the destination page up to `retries - 1`
+        times until it isn't.
 
         Args:
             retries (int): How many attempts to make in total before giving up.
@@ -343,9 +346,9 @@ class Utilities:
             break
 
         for attempt in range(retries - 1):
-            if response is None or response.status != 502:
+            if response is None or response.status not in RECOVERABLE_ERROR_STATUSES:
                 return response
-            print(f"502 after go_forward, reload attempt "
+            print(f"{response.status} after go_forward, reload attempt "
                   f"{attempt + 1}/{retries - 1} in 5s...")
             self.page.wait_for_timeout(5000)
             try:
@@ -363,8 +366,9 @@ class Utilities:
     def navigate_to_link(self, link: str, retries: int = 3) -> Response | None:
         """
         Navigates to a given link and blocks until DOMContentLoaded. If the navigation response
-        is a 502, waits 5s and retries up to `retries` times. Returns the final response (or
-        None when the navigation didn't produce one, e.g. ERR_ABORTED on redirects).
+        is a recoverable gateway error (502/503), waits 5s and retries up to `retries` times.
+        Returns the final response (or None when the navigation didn't produce one, e.g.
+        ERR_ABORTED on redirects).
 
         Args:
             link (str): The link to navigate to.
@@ -379,10 +383,10 @@ class Utilities:
                     print(f"Ignored benign navigation error to {link}: {e}")
                     return None
                 raise
-            if response is None or response.status != 502:
+            if response is None or response.status not in RECOVERABLE_ERROR_STATUSES:
                 return response
             if attempt < retries - 1:
-                print(f"502 on goto({link}), attempt "
+                print(f"{response.status} on goto({link}), attempt "
                       f"{attempt + 1}/{retries}. Retrying in 5s...")
                 self.page.wait_for_timeout(5000)
         return response
@@ -391,8 +395,8 @@ class Utilities:
     def click_and_wait_for_navigation(self, click_fn, retries: int = 3) -> Response | None:
         """
         Executes a click that triggers a full-page navigation and waits for that navigation.
-        If the resulting page is a 502, reloads the destination URL up to `retries - 1` times
-        until a non-502 response is received. The click is performed only once: re-clicking
+        If the resulting page is a recoverable gateway error (502/503), reloads the destination
+        URL up to `retries - 1` times until it isn't. The click is performed only once: re-clicking
         would target a button on the source page, which no longer exists after navigation.
 
         Args:
@@ -405,9 +409,9 @@ class Utilities:
             click_fn()
         response = nav_info.value
         for attempt in range(retries - 1):
-            if response is None or response.status != 502:
+            if response is None or response.status not in RECOVERABLE_ERROR_STATUSES:
                 return response
-            print(f"502 after click, reload attempt "
+            print(f"{response.status} after click, reload attempt "
                   f"{attempt + 1}/{retries - 1} in 5s...")
             self.page.wait_for_timeout(5000)
             try:
@@ -602,10 +606,10 @@ class Utilities:
         new_page = context.new_page()
         new_page.set_default_navigation_timeout(30000)
 
-        # Wire up the same 502 nav-status tracking the autouse `navigate_to_homepage`
+        # Wire up the same 502/503 nav-status tracking the autouse `navigate_to_homepage`
         # fixture sets up for the default page. Without this, `_last_main_nav_status`
         # is never set on manually-created windows (e.g. the admin page), so
-        # `BasePage._recover_if_on_error_page` can't detect a 502 and never reloads,
+        # `BasePage._recover_if_on_error_page` can't detect a 502/503 and never reloads,
         # leaving the window stuck on the error page.
         new_page._last_main_nav_status = None
 
@@ -752,8 +756,9 @@ class Utilities:
     def refresh_page(self, retries: int = 3) -> Response | None:
         """
         Reloads the current page and blocks until DOMContentLoaded. If the reload response is a
-        502, waits 5s and retries up to `retries` times. Returns the final response (or None
-        when the reload produced none, e.g. ERR_ABORTED on redirects).
+        recoverable gateway error (502/503), waits 5s and retries up to `retries` times.
+        Returns the final response (or None when the reload produced none, e.g. ERR_ABORTED
+        on redirects).
         """
         response = None
         for attempt in range(retries):
@@ -779,12 +784,12 @@ class Utilities:
                     self.wait_for_dom_to_load()
                     return None
                 raise
-            if response is None or response.status != 502:
+            if response is None or response.status not in RECOVERABLE_ERROR_STATUSES:
                 # Scrolling to the top of the page.
                 self.page.keyboard.press("Home")
                 return response
             if attempt < retries - 1:
-                print(f"502 on reload, attempt "
+                print(f"{response.status} on reload, attempt "
                       f"{attempt + 1}/{retries}. Retrying in 5s...")
                 self.page.wait_for_timeout(5000)
         return response

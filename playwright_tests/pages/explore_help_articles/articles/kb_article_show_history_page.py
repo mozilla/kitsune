@@ -83,11 +83,12 @@ class KBArticleShowHistoryPage(BasePage):
     def click_on_a_particular_revision_editor(self, revision_id: str, username: str):
         self._click(self.revision_editor(revision_id, username))
 
-    def click_on_ready_for_l10n_option(self, revision_id: str):
+    def click_on_ready_for_l10n_option(self, revision_id: str, expect_modal: bool = True):
         # A click that lands while the page is still shifting its layout can leave the modal
         # closed, so retry until its Submit button shows.
         self._click(self.ready_for_localization_button(revision_id),
-                    expected_locator=self.ready_for_l10_modal_submit_button)
+                    expected_locator=self.ready_for_l10_modal_submit_button if expect_modal else
+                    None)
 
     def click_on_submit_l10n_readiness_button(self, revision_id: str):
         """

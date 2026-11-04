@@ -17,10 +17,10 @@ class ExploreByTopicPage(BasePage):
             f"//ol[@id='breadcrumbs']/li/a[text()='{product}']")
 
         """Locators belonging to the page header section."""
-        self.explore_by_topic_page_header = page.locator("div.documents-product-title h1")
+        self.explore_by_topic_page_header = page.locator("header.topic-header h1.topic-title")
 
         """Locators belonging to the listed KB articles."""
-        self.article_metadata_info = page.locator("div#document_metadata span.tooltip")
+        self.listed_articles = page.locator("section[data-topic-list] article.topic-doc-list--item")
 
         """Locators belonging to the page side-navbar section."""
         self.filter_by_product_dropdown = page.locator("select#products-topics-dropdown")
@@ -37,18 +37,32 @@ class ExploreByTopicPage(BasePage):
             "ul.sidebar-nav--list li").get_by_role("link", name=option, exact=True)
 
     """Actions against the listed KB articles."""
-    def get_metadata_of_all_listed_articles(self, timeout=5000) -> list[list[str]]:
-        """Get the metadata of all listed articles."""
+    def get_urls_of_all_listed_articles(self, timeout=5000) -> list[str]:
+        """Get the URL of every listed article."""
         try:
-            self.article_metadata_info.first.wait_for(state="attached", timeout=timeout)
+            self.listed_articles.first.wait_for(state="attached", timeout=timeout)
         except PlaywrightTimeoutError:
             return []
-        elements = [
-            [i.strip() for i in item.strip().split(',')]
-            for metadata in self.article_metadata_info.all()
-            for item in self._get_text_content_of_all_locators(metadata)
-        ]
-        return elements
+        return self.listed_articles.evaluate_all(
+            "articles => articles.map(a => a.querySelector('h3 a').getAttribute('href'))")
+
+    def get_products_of_all_listed_articles(self, timeout=5000) -> dict[str, list[str]]:
+        """Map every listed article's URL to the products in its metadata.
+
+        Only the "All Products" listing names the products; with a product selected, the
+        metadata names the article's other products instead.
+        """
+        try:
+            self.listed_articles.first.wait_for(state="attached", timeout=timeout)
+        except PlaywrightTimeoutError:
+            return {}
+        return self.listed_articles.evaluate_all("""articles => Object.fromEntries(
+            articles.map(a => {
+                const spans = a.querySelectorAll('.topic-doc-list--meta span');
+                const products = spans.length > 2 ? spans[spans.length - 1].textContent : '';
+                return [a.querySelector('h3 a').getAttribute('href'),
+                        products.split(',').map(p => p.trim()).filter(Boolean)];
+            }))""")
 
     """Actions against the page side-navbar section."""
     def get_all_topics_side_navbar_options(self) -> list[str]:

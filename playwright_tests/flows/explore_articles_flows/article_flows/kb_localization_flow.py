@@ -59,14 +59,17 @@ class KbArticleTranslationFlow:
         if save_as_draft:
             self.translate_article_page.click_on_save_translation_as_draft_button()
 
-        if submit:
-            self.translate_article_page.click_on_submit_translation_for_approval_button()
-            self.translate_article_page.fill_translation_changes_description_field(
-                self.utilities.kb_article_test_data['translated_review_description']
-            )
-            self.translate_article_page.click_on_description_submit_button()
+        translation_details = {
+            "translation_title": translation_title,
+            "translation_slug": translation_slug,
+            "translation_keyword": translation_keyword,
+            "translation_summary": translation_summary,
+            "translation_body": translation_body,
+        }
+        if not submit:
+            return translation_details
 
-        first_revision_id = self.kb_article_show_history_page.get_last_revision_id()
+        first_revision_id = self.submit_translation()
         if approve_translation_revision:
             self.approve_kb_translation(revision_id=first_revision_id)
 
@@ -77,14 +80,20 @@ class KbArticleTranslationFlow:
 
         return {
             "translation_url": article_page_url,
-            "translation_title": translation_title,
-            "translation_slug": translation_slug,
-            "translation_keyword": translation_keyword,
-            "translation_summary": translation_summary,
-            "translation_body": translation_body,
+            **translation_details,
             "revision_id": first_revision_id,
             "translation_id": translation_id
         }
+
+    def submit_translation(self) -> str:
+        """Submits the translation filled in on the translate page for approval and returns the
+        id of the created revision."""
+        self.translate_article_page.click_on_submit_translation_for_approval_button()
+        self.translate_article_page.fill_translation_changes_description_field(
+            self.utilities.kb_article_test_data['translated_review_description']
+        )
+        self.translate_article_page.click_on_description_submit_button()
+        return self.kb_article_show_history_page.get_last_revision_id()
 
     def approve_kb_translation(self, revision_id: str):
         self.kb_article_show_history_page.click_on_review_revision(

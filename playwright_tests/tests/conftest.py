@@ -16,10 +16,10 @@ from playwright_tests.pages.sumo_pages import SumoPages
 def navigate_to_homepage(page: Page):
     """
     Sets the default navigation timeout, blocks Pontoon requests, and navigates to the SuMo
-    homepage. 502 responses on the initial navigation are retried by `navigate_to_link`. A
+    homepage. 502/503 responses on the initial navigation are retried by `navigate_to_link`. A
     passive response listener records the status of the last main-frame navigation response on
     `page._last_main_nav_status`, so `BasePage._recover_if_on_error_page` can reload the page
-    when a click navigates to a 502.
+    when a click navigates to a 502/503.
     """
     utilities = Utilities(page)
     page.set_default_navigation_timeout(30000)

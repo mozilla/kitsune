@@ -7,11 +7,14 @@ class ProductTopicPage(BasePage):
         super().__init__(page)
 
         """Locators belonging to the product topic page."""
-        self.page_title = page.locator("h1[class='topic-title sumo-page-heading']")
+        self.page_title = page.locator("h1.topic-title")
         self.page_subheading = page.locator("div[class='sumo-article-header--text'] p")
-        self.all_articles = page.locator("section[class='topic-list'] article h2 a")
+        # Articles an editor features in a curated block are moved out of the list into cards.
+        self.all_articles = page.locator(
+            "section.topic-doc-list article h3 a, "
+            "section.curated-block.is-articles h3.curated-block--title a")
         self.article_link = lambda article_title: page.locator(
-            "h2[class='sumo-card-heading']").get_by_role(
+            "h3.topic-doc-list--title").get_by_role(
             "link", name=article_title, exact=True)
 
         """Locators belonging to the product topic page navbar."""
@@ -19,11 +22,6 @@ class ProductTopicPage(BasePage):
         self.selected_nav_link = page.locator("a[class*='selected']")
         self.navbar_option = lambda option_name: page.locator(
             "ul[class='sidebar-nav--list'] li").get_by_role("link").filter(has_text=option_name)
-
-        """Locators belonging to the product topic page article metadata."""
-        self.article_helpfulness_count = lambda article_name: page.locator(
-            f"//a[normalize-space(text())='{article_name}']/../../div[@id='document_metadata']//"
-            f"span[@class='helpful-count']")
 
     """Actions against the general product topic page locators."""
     def get_all_listed_article_titles(self) -> list[str]:

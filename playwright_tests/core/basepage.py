@@ -15,6 +15,10 @@ NAVIGATION_EXPECTED_WINDOW = 5
 # How long a page load the click started gets to commit the new page (or turn into a download).
 NAVIGATION_COMMIT_TIMEOUT = 30
 
+# Transient stage gateway errors worth reloading through: 502 Bad Gateway and the 503
+# "no healthy upstream" page the stage proxy serves while no backend is available.
+RECOVERABLE_ERROR_STATUSES = frozenset({502, 503})
+
 # Describes the click target: whether it is a link to another page or a form submit, and if
 # so starts recording whether the click (and the form submit) reach the page unhandled, i.e.
 # without a script calling preventDefault().
@@ -295,21 +299,22 @@ class BasePage:
         return not (outcome["submitted"] and outcome["submitPrevented"])
 
     def _recover_if_on_error_page(self, retries: int = 3) -> None:
-        """If the last main-frame navigation response was a 502, reload the page until it
-        isn't. The `_last_main_nav_status` attribute is maintained by the response listener
-        registered in `tests/conftest.py::navigate_to_homepage`.
+        """If the last main-frame navigation response was a recoverable gateway error (502, or
+        the 503 "no healthy upstream" page), reload the page until it isn't. The
+        `_last_main_nav_status` attribute is maintained by the response listener registered in
+        `tests/conftest.py::navigate_to_homepage`.
         """
         for attempt in range(retries):
             status = getattr(self.page, "_last_main_nav_status", None)
-            if status is None or status != 502:
+            if status not in RECOVERABLE_ERROR_STATUSES:
                 return
-            print(f"On 502 page, reload attempt "
+            print(f"On {status} page, reload attempt "
                   f"{attempt + 1}/{retries} in 5s...")
             self.page.wait_for_timeout(5000)
             try:
                 self.page.reload(wait_until="domcontentloaded")
             except PlaywrightError as e:
-                print(f"Reload during 502 recovery failed: {e}")
+                print(f"Reload during {status} recovery failed: {e}")
 
     def _click_on_an_element_by_index(self, locator: Locator, index: int):
         """Clicks on an element at a given index within a locator."""

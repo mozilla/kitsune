@@ -801,6 +801,166 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
             article_details['article_title'])
 
 
+# C4503461
+@pytest.mark.kbArticleCreationAndAccess
+@pytest.mark.parametrize("user_type", ['Simple user', 'Knowledge Base Reviewer'])
+def test_kb_article_edit_save_as_draft(page: Page, user_type, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    is_admin = user_type == 'Knowledge Base Reviewer'
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user_two = (create_user_factory(groups=["Knowledge Base Reviewers"]) if is_admin
+                     else create_user_factory())
+    test_user_three = create_user_factory()
+    draft_keywords = utilities.kb_article_test_data['updated_keywords']
+    draft_summary = utilities.kb_article_test_data['updated_search_result_summary']
+    draft_content = utilities.kb_article_test_data['updated_article_content']
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating a new simple article and approving its first revision"):
+        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
+
+    with allure.step("Navigating to the 'Edit Article' page"):
+        sumo_pages.kb_article_page.click_on_edit_article_option()
+
+    with allure.step("Editing the search result summary and the content"):
+        if is_admin:
+            sumo_pages.kb_edit_article_page.fill_edit_article_keywords_field(draft_keywords)
+        sumo_pages.kb_edit_article_page.fill_edit_article_search_result_summary_field(
+            draft_summary)
+        sumo_pages.kb_edit_article_page.fill_edit_article_content_field(draft_content)
+
+    with check, allure.step("Clicking on the 'Save as Draft' button and verifying that the "
+                            "draft saved notification is displayed"):
+        sumo_pages.kb_edit_article_page.click_on_save_as_draft_button()
+        expect(sumo_pages.kb_edit_article_page.edit_article_draft_message).to_contain_text(
+            KBArticleRevision.KB_ARTICLE_DRAFT_SAVED_MESSAGE)
+
+    with check, allure.step(f"Signing in with {test_user_three['username']} user account, "
+                            f"navigating to the 'Edit Article' page and verifying that the "
+                            f"draft revision banner is not displayed"):
+        utilities.start_existing_session(cookies=test_user_three)
+        utilities.refresh_page()
+        if sumo_pages.kb_edit_article_page.is_edit_anyway_option_visible():
+            sumo_pages.kb_edit_article_page.click_on_edit_anyway_option()
+        expect(sumo_pages.kb_edit_article_page.edit_article_page_header).to_be_visible()
+        expect(sumo_pages.kb_edit_article_page.draft_revision_banner).to_be_hidden()
+
+    with check, allure.step(f"Signing back in with {test_user_two['username']} user account, "
+                            f"navigating to the 'Edit Article' page and verifying that the "
+                            f"draft revision banner is displayed"):
+        utilities.start_existing_session(cookies=test_user_two)
+        utilities.refresh_page()
+        if sumo_pages.kb_edit_article_page.is_edit_anyway_option_visible():
+            sumo_pages.kb_edit_article_page.click_on_edit_anyway_option()
+        expect(sumo_pages.kb_edit_article_page.draft_revision_banner).to_contain_text(
+            KBArticleRevision.KB_ARTICLE_DRAFT_REVISION_BANNER)
+
+    with check, allure.step("Clicking on the 'Restore' button and verifying that the draft "
+                            "edits are restored"):
+        sumo_pages.kb_edit_article_page.click_on_restore_draft_button()
+        if is_admin:
+            expect(sumo_pages.kb_edit_article_page.edit_article_keywords_field).to_have_value(
+                draft_keywords)
+        expect(sumo_pages.kb_edit_article_page.edit_article_search_result_summary_field
+               ).to_have_value(draft_summary)
+        expect(sumo_pages.kb_edit_article_page.edit_article_content_textarea_field
+               ).to_have_value(draft_content)
+
+    with allure.step("Submitting a new revision based on the restored draft"):
+        sumo_pages.kb_edit_article_page.click_submit_for_review_button()
+        sumo_pages.kb_edit_article_page.fill_edit_article_changes_panel_comment(
+            utilities.kb_article_test_data['changes_description'])
+        sumo_pages.kb_edit_article_page.click_edit_article_changes_panel_submit_button()
+        revision_id = sumo_pages.kb_article_show_history_page.get_last_revision_id()
+
+    with allure.step(f"Signing in with {test_user['username']} user account and navigating "
+                     f"to the newly created revision"):
+        utilities.start_existing_session(cookies=test_user)
+        utilities.refresh_page()
+        sumo_pages.kb_article_show_history_page.click_on_review_revision(revision_id)
+
+    with check, allure.step("Verifying that the new revision contains the restored draft "
+                            "edits"):
+        if is_admin:
+            expect(sumo_pages.kb_article_review_revision_page.submitted_revision_keywords
+                   ).to_have_text(draft_keywords)
+        expect(sumo_pages.kb_article_review_revision_page.submitted_revision_search_results_summary
+               ).to_have_text(draft_summary)
+        expect(sumo_pages.kb_article_review_revision_page.submitted_revision_content
+               ).to_have_text(draft_content)
+
+
+# C4503482
+@pytest.mark.kbArticleCreationAndAccess
+@pytest.mark.parametrize("user_type", ['Simple user', 'Knowledge Base Reviewer'])
+def test_kb_article_edit_discard_draft(page: Page, user_type, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    is_admin = user_type == 'Knowledge Base Reviewer'
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user_two = (create_user_factory(groups=["Knowledge Base Reviewers"]) if is_admin
+                     else create_user_factory())
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating a new simple article and approving its first revision"):
+        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True)
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
+
+    with allure.step("Navigating to the 'Edit Article' page"):
+        sumo_pages.kb_article_page.click_on_edit_article_option()
+
+    with allure.step("Editing the search result summary and the content"):
+        if is_admin:
+            sumo_pages.kb_edit_article_page.fill_edit_article_keywords_field(
+                utilities.kb_article_test_data['updated_keywords'])
+        sumo_pages.kb_edit_article_page.fill_edit_article_search_result_summary_field(
+            utilities.kb_article_test_data['updated_search_result_summary'])
+        sumo_pages.kb_edit_article_page.fill_edit_article_content_field(
+            utilities.kb_article_test_data['updated_article_content'])
+
+    with check, allure.step("Clicking on the 'Save as Draft' button and verifying that the "
+                            "draft saved notification is displayed"):
+        sumo_pages.kb_edit_article_page.click_on_save_as_draft_button()
+        expect(sumo_pages.kb_edit_article_page.edit_article_draft_message).to_contain_text(
+            KBArticleRevision.KB_ARTICLE_DRAFT_SAVED_MESSAGE)
+
+    with check, allure.step("Navigating to the 'Edit Article' page and verifying that the "
+                            "draft revision banner is displayed"):
+        utilities.refresh_page()
+        expect(sumo_pages.kb_edit_article_page.draft_revision_banner).to_contain_text(
+            KBArticleRevision.KB_ARTICLE_DRAFT_REVISION_BANNER)
+
+    with check, allure.step("Clicking on the 'Discard' button and verifying that the draft "
+                            "revision banner is no longer displayed and the article's current "
+                            "revision is shown"):
+        sumo_pages.kb_edit_article_page.click_on_discard_draft_button()
+        expect(sumo_pages.kb_edit_article_page.draft_revision_banner).to_be_hidden()
+        if is_admin:
+            expect(sumo_pages.kb_edit_article_page.edit_article_keywords_field).to_have_value(
+                article_details['keyword'])
+        expect(sumo_pages.kb_edit_article_page.edit_article_search_result_summary_field
+               ).to_have_value(article_details['search_results_summary'])
+        expect(sumo_pages.kb_edit_article_page.edit_article_content_textarea_field
+               ).to_have_value(article_details['article_content'])
+
+    with check, allure.step("Reloading the 'Edit Article' page and verifying that the draft "
+                            "revision banner is still not displayed"):
+        utilities.refresh_page()
+        expect(sumo_pages.kb_edit_article_page.edit_article_page_header).to_be_visible()
+        expect(sumo_pages.kb_edit_article_page.draft_revision_banner).to_be_hidden()
+
+
 # C2243447, C2243449
 @pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
