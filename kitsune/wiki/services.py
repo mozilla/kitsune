@@ -1,4 +1,6 @@
 import logging
+import random
+from collections.abc import Callable
 from datetime import timedelta
 
 from django.conf import settings
@@ -90,158 +92,105 @@ class TranslationQueryBuilder:
             .filter(has_pending_revision=False)
         )
 
-    def get_stale_docs_hybrid(
-        self, limit: int | None = None
-    ) -> list[tuple[Document, Document, str]]:
-        """Find non-archived stale translations in HYBRID locales.
+    def _pick(
+        self,
+        method: TranslationMethod,
+        candidates: Callable[[str, bool], models.QuerySet[Document]],
+    ) -> list[tuple[str, int]]:
+        """Pick documents for one flow, within its per-run budget.
 
-        Distributes evenly across locales to avoid overloading reviewers.
+        The budget is shared round-robin, one document per round to each locale that still has
+        candidates, in a locale order shuffled on every run, so when the budget can't reach every
+        locale the locales left out change from run to run. In the AI flow, non-archived documents
+        in AI locales come first; archived documents in AI and HYBRID locales share what's left.
+        In the HYBRID flow, no locale gets more than HYBRID_QUOTA_PER_LOCALE.
 
         Args:
-            limit: Maximum number of candidates to return
+            method: TranslationMethod.AI or TranslationMethod.HYBRID
+            candidates: Builds the candidate queryset for a locale and an archive status
 
         Returns:
-            List of tuples: (english_document, translation_document, target_locale)
+            List of tuples: (locale, document_id)
         """
-        if limit is None:
-            limit = settings.STALE_TRANSLATION_BATCH_SIZE
+        if method == TranslationMethod.AI:
+            budget = per_locale = settings.AI_TRANSLATION_BATCH_SIZE
+            tiers = [
+                (settings.AI_ENABLED_LOCALES, False),
+                ([*settings.AI_ENABLED_LOCALES, *settings.HYBRID_ENABLED_LOCALES], True),
+            ]
+        elif method == TranslationMethod.HYBRID:
+            budget = settings.HYBRID_TRANSLATION_BATCH_SIZE
+            per_locale = settings.HYBRID_QUOTA_PER_LOCALE
+            tiers = [(settings.HYBRID_ENABLED_LOCALES, False)]
+        else:
+            raise ValueError(f"No translation budget for {method!r}")
 
-        cutoff_date = timezone.now() - timedelta(days=settings.STALE_TRANSLATION_THRESHOLD_DAYS)
-        result: list[tuple[Document, Document, str]] = []
-
-        for locale in settings.HYBRID_ENABLED_LOCALES:
-            if len(result) >= limit:
+        picks: list[tuple[str, int]] = []
+        for locales, is_archived in tiers:
+            left = budget - len(picks)
+            fetch = min(left, per_locale)
+            if fetch <= 0:
                 break
 
-            remaining = limit - len(result)
-            fetch_count = min(settings.HYBRID_QUOTA_PER_LOCALE, remaining)
+            pool: dict[str, list[int]] = {}
+            for locale in dict.fromkeys(locales):
+                queryset = candidates(locale, is_archived).values_list("id", flat=True)
+                if ids := list(queryset[:fetch]):
+                    pool[locale] = ids
 
-            queryset = self._base_stale_translations([locale], cutoff_date).filter(
-                parent__is_archived=False
-            )[:fetch_count]
+            order = list(pool)
+            random.shuffle(order)
+            taken = dict.fromkeys(order, 0)
+            while left > 0 and order:
+                for locale in order[:left]:
+                    taken[locale] += 1
+                left -= min(left, len(order))
+                order = [locale for locale in order if taken[locale] < len(pool[locale])]
 
-            result.extend(
-                (translation_doc.parent, translation_doc, translation_doc.locale)
-                for translation_doc in queryset
-            )
+            picks += [
+                (locale, pk) for locale, count in taken.items() for pk in pool[locale][:count]
+            ]
+        return picks
 
-        return result
-
-    def get_stale_docs_ai(self, limit: int | None = None) -> list[tuple[Document, Document, str]]:
-        """Find stale translations for AI flow.
-
-        Includes:
-        - All documents (archived + non-archived) in AI locales
-        - Only archived documents in HYBRID locales
-
-        Args:
-            limit: Maximum number of candidates to return
+    def get_stale_docs(self, method: TranslationMethod) -> list[tuple[Document, Document, str]]:
+        """Find stale translations for one flow, within its per-run budget (see `_pick`).
 
         Returns:
             List of tuples: (english_document, translation_document, target_locale)
         """
         cutoff_date = timezone.now() - timedelta(days=settings.STALE_TRANSLATION_THRESHOLD_DAYS)
-
-        # AI locales: all documents
-        ai_locales_queryset = self._base_stale_translations(
-            settings.AI_ENABLED_LOCALES, cutoff_date
+        picks = self._pick(
+            method,
+            lambda locale, is_archived: self._base_stale_translations(
+                [locale], cutoff_date
+            ).filter(parent__is_archived=is_archived),
         )
+        docs = Document.objects.select_related(
+            "parent", "parent__latest_localizable_revision", "current_revision"
+        ).in_bulk([pk for _, pk in picks])
+        return [(docs[pk].parent, docs[pk], locale) for locale, pk in picks if pk in docs]
 
-        # HYBRID locales: only archived documents
-        hybrid_locales_queryset = self._base_stale_translations(
-            settings.HYBRID_ENABLED_LOCALES, cutoff_date
-        ).filter(parent__is_archived=True)
+    def get_missing_docs(self, method: TranslationMethod) -> list[tuple[Document, None, str]]:
+        """Find untranslated English documents for one flow, within its per-run budget.
 
-        # Combine both querysets
-        queryset = ai_locales_queryset.union(hybrid_locales_queryset)
-
-        if limit:
-            queryset = queryset[:limit]
-
-        return [
-            (translation_doc.parent, translation_doc, translation_doc.locale)
-            for translation_doc in queryset
-        ]
-
-    def get_missing_docs_hybrid(
-        self, limit: int | None = None
-    ) -> list[tuple[Document, None, str]]:
-        """Find non-archived English docs without translations in HYBRID locales.
-
-        Distributes evenly across locales to avoid overloading reviewers.
-
-        Args:
-            limit: Maximum number of candidates to return
+        Each locale takes the newest English revisions first (see `_pick` for the spread).
 
         Returns:
             List of tuples: (english_document, None, target_locale)
         """
-        if limit is None:
-            limit = settings.STALE_TRANSLATION_BATCH_SIZE
-
-        result: list[tuple[Document, None, str]] = []
-
-        for locale in settings.HYBRID_ENABLED_LOCALES:
-            if len(result) >= limit:
-                break
-
-            remaining = limit - len(result)
-            fetch_count = min(settings.HYBRID_QUOTA_PER_LOCALE, remaining)
-
-            docs = (
+        picks = self._pick(
+            method,
+            lambda locale, is_archived: (
                 self._base_english_docs()
-                .filter(is_archived=False)
+                .filter(is_archived=is_archived)
                 .exclude(translations__locale=locale)
-                .select_related("latest_localizable_revision")
-                .order_by("-latest_localizable_revision__created")[:fetch_count]
-            )
-
-            result.extend((doc, None, locale) for doc in docs)
-
-        return result
-
-    def get_missing_docs_ai(self, limit: int | None = None) -> list[tuple[Document, None, str]]:
-        """Find English docs without translations for AI flow.
-
-        Includes:
-        - All documents (archived + non-archived) in AI locales
-        - Only archived documents in HYBRID locales
-
-        Args:
-            limit: Maximum number of candidates to return
-
-        Returns:
-            List of tuples: (english_document, None, target_locale)
-        """
-        # Combine AI and HYBRID locales
-        all_locales = list(settings.AI_ENABLED_LOCALES) + list(settings.HYBRID_ENABLED_LOCALES)
-        missing_translations: list[tuple[Document, None, str]] = []
-
-        for locale in all_locales:
-            if limit is not None and len(missing_translations) >= limit:
-                break
-
-            # Build archive filter based on locale type
-            base_query = self._base_english_docs().exclude(translations__locale=locale)
-
-            if locale in settings.AI_ENABLED_LOCALES:
-                # AI locales: all documents
-                docs = base_query
-            else:
-                # HYBRID locales: only archived documents
-                docs = base_query.filter(is_archived=True)
-
-            docs = docs.select_related("latest_localizable_revision").order_by(
-                "-latest_localizable_revision__created"
-            )
-
-            remaining_limit = limit - len(missing_translations) if limit else None
-            if remaining_limit:
-                docs = docs[:remaining_limit]
-
-            missing_translations.extend((doc, None, locale) for doc in docs)
-
-        return missing_translations
+                .order_by("-latest_localizable_revision__created")
+            ),
+        )
+        docs = Document.objects.select_related("latest_localizable_revision").in_bulk(
+            {pk for _, pk in picks}
+        )
+        return [(docs[pk], None, locale) for locale, pk in picks if pk in docs]
 
     def get_pending_translations(self) -> models.QuerySet[Revision]:
         """Find unreviewed hybrid translations pending grace period expiration.
@@ -372,60 +321,32 @@ class BaseTranslationService:
 class StaleTranslationService(BaseTranslationService):
     """Service for managing stale translation detection and processing."""
 
-    def process_stale(
-        self, limit: int | None = None, strategy: str | None = None
-    ) -> list[tuple[Document, Document | None, str]]:
-        """Process stale translations using appropriate strategies.
+    def process_stale(self) -> list[tuple[Document, Document | None, str]]:
+        """Process stale translations, each flow within its own per-run budget.
 
-        Args:
-            limit: Maximum number of translations to process
-            strategy: Optional strategy filter (TranslationMethod.AI or TranslationMethod.HYBRID)
         Returns:
             List of tuples (english_document, translation_document, target_locale) that were processed
         """
-        if limit is None:
-            limit = settings.STALE_TRANSLATION_BATCH_SIZE
-
-        if strategy == TranslationMethod.AI:
-            candidates = self.query_builder.get_stale_docs_ai(limit)
-        elif strategy == TranslationMethod.HYBRID:
-            candidates = self.query_builder.get_stale_docs_hybrid(limit)
-        else:
-            ai_candidates = self.query_builder.get_stale_docs_ai(limit)
-            hybrid_limit = limit - len(ai_candidates) if limit else None
-            hybrid_candidates = self.query_builder.get_stale_docs_hybrid(hybrid_limit)
-            candidates = ai_candidates + hybrid_candidates
-
+        candidates = [
+            *self.query_builder.get_stale_docs(TranslationMethod.AI),
+            *self.query_builder.get_stale_docs(TranslationMethod.HYBRID),
+        ]
         return super().process(candidates, TranslationTrigger.STALE_TRANSLATION_UPDATE)
 
 
 class MissingTranslationService(BaseTranslationService):
     """Service for managing missing translation detection and processing."""
 
-    def process_missing(
-        self, limit: int | None = None, strategy: str | None = None
-    ) -> list[tuple[Document, Document | None, str]]:
-        """Process missing translations using appropriate strategies.
+    def process_missing(self) -> list[tuple[Document, Document | None, str]]:
+        """Process missing translations, each flow within its own per-run budget.
 
-        Args:
-            limit: Maximum number of translations to process
-            strategy: Optional strategy filter (TranslationMethod.AI or TranslationMethod.HYBRID)
         Returns:
             List of tuples (english_document, None, target_locale) that were processed
         """
-        if limit is None:
-            limit = settings.STALE_TRANSLATION_BATCH_SIZE
-
-        if strategy == TranslationMethod.AI:
-            candidates = self.query_builder.get_missing_docs_ai(limit)
-        elif strategy == TranslationMethod.HYBRID:
-            candidates = self.query_builder.get_missing_docs_hybrid(limit)
-        else:
-            ai_candidates = self.query_builder.get_missing_docs_ai(limit)
-            hybrid_limit = limit - len(ai_candidates) if limit else None
-            hybrid_candidates = self.query_builder.get_missing_docs_hybrid(hybrid_limit)
-            candidates = ai_candidates + hybrid_candidates
-
+        candidates = [
+            *self.query_builder.get_missing_docs(TranslationMethod.AI),
+            *self.query_builder.get_missing_docs(TranslationMethod.HYBRID),
+        ]
         return super().process(candidates, TranslationTrigger.INITIAL_TRANSLATION)
 
 

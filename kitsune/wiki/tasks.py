@@ -458,19 +458,12 @@ def translate(l10n_request_as_json: str) -> None:
 
 @shared_task
 @skip_if_read_only_mode
-def process_stale_translations(limit=None) -> None:
-    """Periodic task to process stale translations.
-
-    Args:
-        limit: Maximum number of stale translations to process
-        (defaults to STALE_TRANSLATION_BATCH_SIZE)
-    Returns:
-        dict: Summary of processing results
-    """
+def process_stale_translations() -> None:
+    """Periodic task to process stale translations within the per-run AI and HYBRID budgets."""
     from kitsune.wiki.services import StaleTranslationService
 
     service = StaleTranslationService()
-    processed_candidates = service.process_stale(limit=limit)
+    processed_candidates = service.process_stale()
 
     log.info(f"Processed {len(processed_candidates)} stale translations:")
     for parent, translated_doc, locale in processed_candidates:
@@ -480,17 +473,12 @@ def process_stale_translations(limit=None) -> None:
 
 @shared_task
 @skip_if_read_only_mode
-def create_missing_translations(limit=None) -> None:
-    """Periodic task to create missing translations for enabled locales.
-
-    Args:
-        limit: Maximum number of missing translations to process
-        (defaults to STALE_TRANSLATION_BATCH_SIZE)
-    """
+def create_missing_translations() -> None:
+    """Periodic task to create missing translations within the per-run AI and HYBRID budgets."""
     from kitsune.wiki.services import MissingTranslationService
 
     service = MissingTranslationService()
-    processed_candidates = service.process_missing(limit=limit)
+    processed_candidates = service.process_missing()
 
     log.info(f"Created {len(processed_candidates)} missing translations:")
     for english_doc, translation_doc, locale in processed_candidates:

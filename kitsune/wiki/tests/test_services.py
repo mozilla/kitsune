@@ -1,3 +1,4 @@
+from collections import Counter
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
@@ -549,7 +550,7 @@ class TranslationQueryBuilderTests(TestCase):
             reviewed=old_date,
         )
 
-        results = self.query_builder.get_stale_docs_hybrid(limit=10)
+        results = self.query_builder.get_stale_docs(TranslationMethod.HYBRID)
 
         # Should only find non-archived document
         self.assertEqual(len(results), 1)
@@ -601,7 +602,7 @@ class TranslationQueryBuilderTests(TestCase):
             is_ready_for_localization=True,
         )
 
-        results = self.query_builder.get_stale_docs_ai(limit=10)
+        results = self.query_builder.get_stale_docs(TranslationMethod.AI)
 
         # Should find both: AI locale (all docs) + HYBRID locale (archived only)
         self.assertEqual(len(results), 2)
@@ -614,7 +615,7 @@ class TranslationQueryBuilderTests(TestCase):
     )
     def test_get_missing_docs_hybrid(self):
         """Test finding missing translations in HYBRID locales (non-archived only)."""
-        results = self.query_builder.get_missing_docs_hybrid(limit=10)
+        results = self.query_builder.get_missing_docs(TranslationMethod.HYBRID)
 
         # Should find non-archived docs without translations
         english_ids = {english_doc.id for english_doc, _, _ in results}
@@ -628,7 +629,7 @@ class TranslationQueryBuilderTests(TestCase):
     )
     def test_get_missing_docs_ai(self):
         """Test finding missing translations for AI flow (all AI + archived HYBRID)."""
-        results = self.query_builder.get_missing_docs_ai(limit=10)
+        results = self.query_builder.get_missing_docs(TranslationMethod.AI)
 
         # Should find: all docs for AI locales + archived docs for HYBRID locales
         results_by_locale = {}
@@ -688,6 +689,81 @@ class TranslationQueryBuilderTests(TestCase):
 
 
 @override_settings(
+    AI_ENABLED_LOCALES=["de"], HYBRID_ENABLED_LOCALES=["es", "ro", "it"], HYBRID_QUOTA_PER_LOCALE=5
+)
+class TranslationBudgetTests(TestCase):
+    """Per-run budgets are spread evenly across locales, one article per locale per round."""
+
+    def setUp(self):
+        super().setUp()
+        self.query_builder = TranslationQueryBuilder()
+        self.live_docs = [self.english_doc(is_archived=False) for _ in range(5)]
+        self.archived_docs = [self.english_doc(is_archived=True) for _ in range(2)]
+
+    def english_doc(self, is_archived):
+        doc = DocumentFactory(is_localizable=True, is_archived=is_archived)
+        ApprovedRevisionFactory(
+            document=doc, significance=MAJOR_SIGNIFICANCE, is_ready_for_localization=True
+        )
+        return doc
+
+    def hybrid_picks(self):
+        candidates = self.query_builder.get_missing_docs(TranslationMethod.HYBRID)
+        picks = Counter(locale for _, _, locale in candidates)
+        return {locale: picks[locale] for locale in ("es", "ro", "it")}
+
+    def test_hybrid_budget_is_shared_evenly(self):
+        # (budget, picks per locale, smallest first)
+        cases = [(6, [2, 2, 2]), (7, [2, 2, 3]), (2, [0, 1, 1]), (0, [0, 0, 0]), (-1, [0, 0, 0])]
+        for budget, expected in cases:
+            with (
+                self.subTest(budget=budget),
+                override_settings(HYBRID_TRANSLATION_BATCH_SIZE=budget),
+            ):
+                self.assertEqual(sorted(self.hybrid_picks().values()), expected)
+
+    @override_settings(HYBRID_TRANSLATION_BATCH_SIZE=6)
+    def test_unused_share_goes_to_locales_with_work(self):
+        for doc in self.live_docs[:4]:
+            DocumentFactory(parent=doc, locale="es")
+
+        picks = self.hybrid_picks()
+
+        self.assertEqual(picks["es"], 1)
+        self.assertEqual(sorted([picks["ro"], picks["it"]]), [2, 3])
+
+    @override_settings(HYBRID_TRANSLATION_BATCH_SIZE=6)
+    def test_hybrid_quota_caps_each_locale(self):
+        """Locales with work don't absorb more than the quota when others run short."""
+        for doc in self.live_docs[:4]:
+            DocumentFactory(parent=doc, locale="es")
+
+        nothing = {"es": 0, "ro": 0, "it": 0}
+        for quota, expected in [(2, {"es": 1, "ro": 2, "it": 2}), (0, nothing), (-1, nothing)]:
+            with self.subTest(quota=quota), override_settings(HYBRID_QUOTA_PER_LOCALE=quota):
+                self.assertEqual(self.hybrid_picks(), expected)
+
+    @patch("kitsune.wiki.services.random.shuffle", side_effect=list.reverse)
+    @override_settings(HYBRID_TRANSLATION_BATCH_SIZE=1)
+    def test_leftover_slots_follow_the_shuffled_locale_order(self, _shuffle):
+        """Without the shuffle, the first configured locales would take every leftover slot."""
+        self.assertEqual(self.hybrid_picks(), {"es": 0, "ro": 0, "it": 1})
+
+    @override_settings(AI_TRANSLATION_BATCH_SIZE=3)
+    def test_ai_budget_goes_to_live_articles_before_archived(self):
+        """Archived articles, in AI and HYBRID locales alike, only get what live ones leave."""
+        for doc in self.live_docs[:3]:
+            DocumentFactory(parent=doc, locale="de")
+
+        candidates = self.query_builder.get_missing_docs(TranslationMethod.AI)
+
+        live = {(doc.id, locale) for doc, _, locale in candidates if not doc.is_archived}
+        archived = [(doc.id, locale) for doc, _, locale in candidates if doc.is_archived]
+        self.assertEqual(live, {(doc.id, "de") for doc in self.live_docs[3:]})
+        self.assertEqual(len(archived), 1)
+
+
+@override_settings(
     HYBRID_ENABLED_LOCALES=["es"],
     AI_ENABLED_LOCALES=[],
     STALE_TRANSLATION_THRESHOLD_DAYS=30,
@@ -733,12 +809,12 @@ class StaleTranslationPendingRevisionTests(TestCase):
 
     def assert_queued(self):
         """The Spanish document is offered up for machine translation."""
-        results = self.query_builder.get_stale_docs_hybrid(limit=10)
+        results = self.query_builder.get_stale_docs(TranslationMethod.HYBRID)
         self.assertEqual([doc.id for _, doc, _ in results], [self.doc_es.id])
 
     def assert_skipped(self):
         """The Spanish document is left alone."""
-        self.assertEqual(self.query_builder.get_stale_docs_hybrid(limit=10), [])
+        self.assertEqual(self.query_builder.get_stale_docs(TranslationMethod.HYBRID), [])
 
     def newer_english_revision(self):
         """Approve English content newer than anything yet marked ready for translation."""
@@ -910,14 +986,14 @@ class StaleTranslationServiceTests(TestCase):
 
     @override_settings(
         HYBRID_ENABLED_LOCALES=["es"],
-        AI_ENABLED_LOCALES=["de"],
+        AI_ENABLED_LOCALES=["de", "fr"],
         STALE_TRANSLATION_THRESHOLD_DAYS=30,
-        STALE_TRANSLATION_BATCH_SIZE=10,
+        AI_TRANSLATION_BATCH_SIZE=1,
+        HYBRID_TRANSLATION_BATCH_SIZE=1,
     )
     @patch("kitsune.wiki.services.TranslationStrategyFactory.execute")
-    def test_process_stale_with_strategy_filter(self, mock_execute):
-        """Test processing stale translations with strategy filter."""
-        # Create stale translations
+    def test_each_flow_spends_its_own_budget(self, _execute):
+        """A full AI budget leaves the HYBRID budget untouched."""
         old_date = timezone.now() - timedelta(days=35)
 
         doc_en = DocumentFactory(is_localizable=True, is_archived=False)
@@ -928,23 +1004,13 @@ class StaleTranslationServiceTests(TestCase):
             significance=MAJOR_SIGNIFICANCE,
             is_ready_for_localization=True,
         )
-
-        # Create old translations
-        doc_es = DocumentFactory(parent=doc_en, locale="es")
-        ApprovedRevisionFactory(
-            document=doc_es,
-            based_on=rev_en,
-            created=old_date,
-            reviewed=old_date,
-        )
-
-        doc_de = DocumentFactory(parent=doc_en, locale="de")
-        ApprovedRevisionFactory(
-            document=doc_de,
-            based_on=rev_en,
-            created=old_date,
-            reviewed=old_date,
-        )
+        for locale in ("de", "fr", "es"):
+            ApprovedRevisionFactory(
+                document=DocumentFactory(parent=doc_en, locale=locale),
+                based_on=rev_en,
+                created=old_date,
+                reviewed=old_date,
+            )
 
         # Update English to make translations stale
         ApprovedRevisionFactory(
@@ -955,14 +1021,10 @@ class StaleTranslationServiceTests(TestCase):
             is_ready_for_localization=True,
         )
 
-        # Process only HYBRID strategy
-        results = self.service.process_stale(limit=10, strategy=TranslationMethod.HYBRID)
+        picks = Counter(locale for _, _, locale in self.service.process_stale())
 
-        # Should only process HYBRID locale (es)
-        self.assertEqual(len(results), 1)
-        _, _, locale = results[0]
-        self.assertEqual(locale, "es")
-        self.assertEqual(mock_execute.call_count, 1)
+        self.assertEqual(picks["es"], 1)
+        self.assertEqual(picks["de"] + picks["fr"], 1)
 
 
 class MissingTranslationServiceTests(TestCase):
@@ -972,36 +1034,21 @@ class MissingTranslationServiceTests(TestCase):
         self.service = MissingTranslationService()
 
     @override_settings(
-        HYBRID_ENABLED_LOCALES=["es", "ro"],
+        HYBRID_ENABLED_LOCALES=["es"],
         AI_ENABLED_LOCALES=["de"],
-        STALE_TRANSLATION_BATCH_SIZE=10,
+        AI_TRANSLATION_BATCH_SIZE=2,
+        HYBRID_TRANSLATION_BATCH_SIZE=2,
     )
     @patch("kitsune.wiki.services.TranslationStrategyFactory.execute")
-    def test_process_missing(self, mock_execute):
-        """Test processing missing translations."""
-        # Create English documents
-        doc1_en = DocumentFactory(is_localizable=True, is_archived=False)
-        ApprovedRevisionFactory(
-            document=doc1_en,
-            created=datetime(2024, 1, 1),
-            reviewed=datetime(2024, 1, 2),
-            significance=MAJOR_SIGNIFICANCE,
-            is_ready_for_localization=True,
-        )
+    def test_each_flow_spends_its_own_budget(self, _execute):
+        """A full AI budget leaves the HYBRID budget untouched."""
+        for _ in range(3):
+            ApprovedRevisionFactory(
+                document=DocumentFactory(is_localizable=True, is_archived=False),
+                significance=MAJOR_SIGNIFICANCE,
+                is_ready_for_localization=True,
+            )
 
-        doc2_en = DocumentFactory(is_localizable=True, is_archived=True)
-        ApprovedRevisionFactory(
-            document=doc2_en,
-            created=datetime(2024, 1, 1),
-            reviewed=datetime(2024, 1, 2),
-            significance=MAJOR_SIGNIFICANCE,
-            is_ready_for_localization=True,
-        )
+        picks = Counter(locale for _, _, locale in self.service.process_missing())
 
-        results = self.service.process_missing(limit=50)
-
-        # Should create translations for:
-        # - AI locale (de): both docs
-        # - HYBRID locales (es, ro): only archived doc
-        self.assertGreater(len(results), 0)
-        self.assertGreater(mock_execute.call_count, 0)
+        self.assertEqual(picks, {"de": 2, "es": 2})
