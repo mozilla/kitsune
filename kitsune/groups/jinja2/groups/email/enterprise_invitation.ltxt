@@ -2,8 +2,10 @@
 {#- L10n: This is an email. Whitespace matters! -#}
 {{ _('Hi {name},')|f(name=name) }}
 
-{{ _('You now have Mozilla Support through {company}. You can:')|f(company=company) }}
-{% if covered_products %}
+{{ _('Welcome to Firefox Professional Support!') }} 🎉
+
+{{ _('Through {company}, you can:')|f(company=company) }}
+{%- if covered_products %}
 {#- L10n: {products} is a comma-separated list of product names, such as "Thunderbird, Mozilla VPN". #}
 - {{ _('Open support tickets for {products} with Mozilla support agents')|f(products=covered_products) }}
 {%- endif %}
@@ -13,14 +15,36 @@
 {%- endif %}
 
 {% if new_account -%}
-{{ _('To get started, open the link below and sign in or create a Mozilla account using {email}.')|f(email=email) }}
+{{ _('Your Firefox Professional Support account has already been created using your work email address. To get started, open the link below to activate your account by signing in or creating a Mozilla account with {email}.')|f(email=email) }}
 {%- else -%}
-{{ _('To get started, open the link below and sign in with your Mozilla account.') }}
+{{ _("Your Firefox Professional Support account is ready. Open the link below and sign in with your Mozilla account to access your organization's support resources.") }}
 {%- endif %}
 
 {{ start_url }}
 {%- if new_account %}
 
 {{ _('This link is only for you and expires soon. If it stops working, contact the person who invited you.') }}
+
+{{ _("Once you've activated your account, you'll be able to sign in to Firefox Professional Support and access your organization's support resources.") }}
 {%- endif %}
+{%- if guides %}
+
+{{ _('Need help getting started? Visit the getting started guide for your product:') }}
+{%- for product, url in guides %}
+{#- L10n: {product} is a product name, such as "Thunderbird". #}
+- {{ _('{product} getting started guide')|f(product=product) }}
+  {{ url }}
+{%- endfor %}
+
+{{ _("You'll learn about:") }}
+- {{ _('Accessing Firefox Professional Support') }}
+- {{ _("Your organization's support services and response times") }}
+- {{ _('Submitting and managing support requests') }}
+- {{ _('Best practices for working with the Mozilla support team') }}
+{%- endif %}
+
+{{ _("We're excited to work with you!") }}
+
+{{ _('Thank you,') }}
+{{ _('Mozilla Firefox Professional Support Team') }}
 {% endautoescape %}

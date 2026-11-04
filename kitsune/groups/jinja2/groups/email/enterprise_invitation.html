@@ -1,9 +1,23 @@
 {% extends 'email/base.html' %}
 
+{% block styles %}
+  .preheader {
+    display: none;
+    max-height: 0;
+    overflow: hidden;
+  }
+{% endblock %}
+
+{% block preheader %}
+  <div class="preheader">{{ _('Access your support resources and learn how to request help.') }}</div>
+{% endblock %}
+
 {% block content %}
   <p>{{ _('Hi {name},')|f(name=name) }}</p>
 
-  <p>{{ _('You now have Mozilla Support through {company}. You can:')|f(company=company) }}</p>
+  <p>{{ _('Welcome to Firefox Professional Support!') }} 🎉</p>
+
+  <p>{{ _('Through {company}, you can:')|f(company=company) }}</p>
 
   <ul>
     {% if covered_products %}
@@ -17,16 +31,42 @@
   </ul>
 
   {% if new_account %}
-    <p>{{ _('To get started, sign in or create a Mozilla account using {email}.')|f(email=email) }}</p>
-  {% else %}
-    <p>{{ _('To get started, sign in with your Mozilla account.') }}</p>
-  {% endif %}
+    <p>{{ _('Your Firefox Professional Support account has already been created using your work email address. To get started, activate your account by signing in or creating a Mozilla account with {email}.')|f(email=email) }}</p>
 
-  <p><a class="button" href="{{ start_url }}">{{ _('Open enterprise support') }}</a></p>
+    <p><a class="button" href="{{ start_url }}">{{ _('Activate account') }}</a></p>
 
-  {% if new_account %}
     <p>{{ _('This link is only for you and expires soon. If it stops working, contact the person who invited you.') }}</p>
+
+    <p>{{ _("Once you've activated your account, you'll be able to sign in to Firefox Professional Support and access your organization's support resources.") }}</p>
+  {% else %}
+    <p>{{ _("Your Firefox Professional Support account is ready. Sign in with your Mozilla account to access your organization's support resources.") }}</p>
+
+    <p><a class="button" href="{{ start_url }}">{{ _('Sign in') }}</a></p>
   {% endif %}
+
+  {% if guides %}
+    <p>{{ _('Need help getting started? Visit the getting started guide for your product:') }}</p>
+
+    <ul>
+      {% for product, url in guides %}
+        {# L10n: {product} is a product name, such as "Thunderbird". #}
+        <li><a href="{{ url }}">{{ _('{product} getting started guide')|f(product=product) }}</a></li>
+      {% endfor %}
+    </ul>
+
+    <p>{{ _("You'll learn about:") }}</p>
+
+    <ul>
+      <li>{{ _('Accessing Firefox Professional Support') }}</li>
+      <li>{{ _("Your organization's support services and response times") }}</li>
+      <li>{{ _('Submitting and managing support requests') }}</li>
+      <li>{{ _('Best practices for working with the Mozilla support team') }}</li>
+    </ul>
+  {% endif %}
+
+  <p>{{ _("We're excited to work with you!") }}</p>
+
+  <p>{{ _('Thank you,') }}<br />{{ _('Mozilla Firefox Professional Support Team') }}</p>
 {% endblock %}
 
 {% block footer %}{% endblock %}
