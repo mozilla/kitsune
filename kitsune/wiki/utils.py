@@ -168,7 +168,7 @@ def get_featured_articles(
         return random.sample(pinned_articles, limit)
 
     filter_kwargs = {
-        "restrict_to_groups__isnull": True,
+        "audiences__is_public": True,
         "category__in": settings.IA_DEFAULT_CATEGORIES,
     }
 
@@ -212,10 +212,8 @@ def get_featured_articles(
         .order_by("-visits__visits")
     )
 
-    if topics:
-        # Documents that match multiple topics will be repeated,
-        # so remove any duplicates when we're matching by topics.
-        qs = qs.distinct()
+    # A document in several topics or public knowledge bases matches once per join row.
+    qs = qs.distinct()
 
     # Only include the "limit * 2" most visited articles for sampling.
     docs = list(qs[: limit * 2])

@@ -9,7 +9,7 @@ from kitsune.kbforums.feeds import PostsFeed, ThreadsFeed
 from kitsune.kbforums.tests import PostFactory, ThreadFactory, get
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 
 class FeedSortingTestCase(TestCase):
@@ -51,7 +51,7 @@ class FeedRestrictedVisibilityTestCase(TestCase):
         self.group = GroupFactory()
         self.restricted_doc = ApprovedRevisionFactory(
             document__allow_discussion=True,
-            document__restrict_to_groups=[self.group],
+            document__audiences=[AudienceFactory(groups=[self.group])],
         ).document
         self.thread = ThreadFactory(document=self.restricted_doc)
         PostFactory(thread=self.thread)

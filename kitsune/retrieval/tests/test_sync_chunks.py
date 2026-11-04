@@ -12,7 +12,7 @@ from kitsune.retrieval.tests import ChunkIndexTestCase
 from kitsune.search.es_utils import es_client
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.models import Document
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 COMMAND = "kitsune.retrieval.management.commands.sync_chunks"
 
@@ -92,7 +92,7 @@ class BackfillTests(SyncChunksTestCase):
 
     def test_an_ineligible_document_is_never_enqueued(self):
         restricted = self._document("Internal runbook", "internal-runbook")
-        restricted.restrict_to_groups.add(GroupFactory())
+        restricted.audiences.set([AudienceFactory(groups=[GroupFactory()])])
 
         with mock.patch(f"{COMMAND}.enqueue_document_batch") as enqueue:
             self._run("--backfill")
@@ -166,7 +166,10 @@ class ReconcileTests(SyncChunksTestCase):
         # A distinctive id and name: a small integer would match a count or part of the
         # timestamped index name by coincidence, so asserting its absence would prove nothing.
         group = GroupFactory(id=987_654_321, name="Confidential Partner Staff")
-        self.document.restrict_to_groups.add(group)
+        audience = AudienceFactory(
+            id=987_654_322, name="Confidential Partner Audience", groups=[group]
+        )
+        self.document.audiences.set([audience])
 
         with (
             mock.patch(f"{COMMAND}.enqueue_document_batch"),
@@ -176,8 +179,8 @@ class ReconcileTests(SyncChunksTestCase):
 
         self.assertIn("ACCESS DRIFT", output.upper())
         self.assertIn(GateCategory.ACCESS_DRIFT.value, output)
-        self.assertNotIn(str(group.id), output)
-        self.assertNotIn(group.name, output)
+        for identifier in (str(group.id), group.name, str(audience.id), audience.name):
+            self.assertNotIn(identifier, output)
         evict.assert_called_once_with(self.identity, target_index=self.index)
 
     def test_a_dry_run_dispatches_nothing(self):

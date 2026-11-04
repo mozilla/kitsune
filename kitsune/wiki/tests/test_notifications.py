@@ -20,6 +20,7 @@ from kitsune.wiki.events import (
 from kitsune.wiki.models import Revision
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     RevisionFactory,
     new_document_data,
@@ -118,7 +119,7 @@ class ReviewTests(TestCase):
             is_ready=True,
             creator=creator,
             significance=MEDIUM_SIGNIFICANCE,
-            document__restrict_to_groups=[self.group],
+            document__audiences=[AudienceFactory(groups=[self.group])],
         )
         # 1 mail to the approved watcher and 1 to the creator, but
         # none to the ready watcher, since that user is not a member of self.group.
@@ -135,7 +136,7 @@ class ReviewTests(TestCase):
             is_ready=True,
             creator=creator,
             significance=MEDIUM_SIGNIFICANCE,
-            document__restrict_to_groups=[other_group],
+            document__audiences=[AudienceFactory(groups=[other_group])],
         )
         # 1 mail to the ready watcher and 1 to the creator, but none
         # to the approved watcher, since that user is not a member of the "other" group.
@@ -349,7 +350,7 @@ class ReviewableRevisionInLocaleEventTests(TestCase):
         a revision for a restricted document.
         """
         data = new_document_data()
-        data["restrict_to_groups"] = [self.group1.id, self.group2.id]
+        data["audiences"] = [AudienceFactory(groups=[self.group1, self.group2]).id]
         response = self.client.post(reverse("wiki.new_document"), data)
         self.assertEqual(302, response.status_code)
 
@@ -361,7 +362,7 @@ class ReviewableRevisionInLocaleEventTests(TestCase):
 
         data["title"] = "Another Test Article"
         data["slug"] = "another-test-article"
-        data["restrict_to_groups"] = [self.group3.id]
+        data["audiences"] = [AudienceFactory(groups=[self.group3]).id]
         response = self.client.post(reverse("wiki.new_document"), data)
         self.assertEqual(302, response.status_code)
 

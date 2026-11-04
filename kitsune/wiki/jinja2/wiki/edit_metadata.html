@@ -33,20 +33,20 @@
           {{ errorlist(document_form) }}
           <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
             {% csrf_token %}
-            {% if in_staff_group(request.user) %}
+            {% if "audiences" in document_form.fields %}
               <div class="mzp-c-emphasis-box field full-width">
                 <fieldset>
-                    <legend>{{ _("Restrict Visibility") }}</legend>
-                    <span class="{% if document_form.restrict_to_groups.errors %}has-error{% endif %}">
-                      {{ document_form.restrict_to_groups|label_with_help }}
-                      {{ document_form.restrict_to_groups.as_widget(attrs={"class": "tom-select-restrict-to-groups"}) }}
-                      {{ document_form.restrict_to_groups.errors }}
+                    <legend>{{ _("Knowledge bases") }}</legend>
+                    <span class="{% if document_form.audiences.errors %}has-error{% endif %}">
+                      {{ document_form.audiences|label_with_help }}
+                      {{ document_form.audiences.as_widget(attrs={"class": "tom-select-audiences"}) }}
+                      {{ document_form.audiences.errors }}
                     </span>
                 </fieldset>
               </div>
             {% endif %}
               {% for field in document_form.visible_fields() if
-                (field.name != 'restrict_to_groups') and (field.name != 'is_localizable' or not document.translations.exists()) %}
+                (field.name != 'audiences') and (field.name != 'is_localizable' or not document.translations.exists()) %}
                 {% if (field.name != 'related_documents') or document.allows_related_documents %}
                 <div class="field full-width">
                   {{ field|label_with_help }}

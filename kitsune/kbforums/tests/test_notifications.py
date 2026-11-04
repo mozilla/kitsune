@@ -15,7 +15,7 @@ from kitsune.kbforums.tests import PostFactory, ThreadFactory
 from kitsune.sumo.tests import TestCase, attrs_eq, post, starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import GroupFactory, UserFactory
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 # Some of these contain a locale prefix on included links, while others don't.
 # This depends on whether the tests use them inside or outside the scope of a
@@ -490,7 +490,7 @@ class RestrictedVisibilityTests(TestCase):
             {self.user1.email, self.user2.email},
         )
 
-        doc.restrict_to_groups.add(self.group)
+        doc.audiences.set([AudienceFactory(groups=[self.group])])
 
         mail.outbox = []
         post2 = PostFactory(thread=thread)
@@ -518,7 +518,7 @@ class RestrictedVisibilityTests(TestCase):
             {self.user1.email, self.user2.email},
         )
 
-        doc.restrict_to_groups.add(self.group)
+        doc.audiences.set([AudienceFactory(groups=[self.group])])
 
         mail.outbox = []
         thread2 = ThreadFactory(document=doc)
@@ -547,7 +547,7 @@ class RestrictedVisibilityTests(TestCase):
             {self.user1.email, self.user2.email},
         )
 
-        doc.restrict_to_groups.add(self.group)
+        doc.audiences.set([AudienceFactory(groups=[self.group])])
 
         mail.outbox = []
         post2 = PostFactory(thread=thread)
@@ -575,7 +575,7 @@ class RestrictedVisibilityTests(TestCase):
             {self.user1.email, self.user2.email},
         )
 
-        doc.restrict_to_groups.add(self.group)
+        doc.audiences.set([AudienceFactory(groups=[self.group])])
 
         mail.outbox = []
         thread2 = ThreadFactory(document=doc)

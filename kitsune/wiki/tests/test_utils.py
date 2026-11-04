@@ -20,6 +20,7 @@ from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.models import PinnedArticleConfig
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     RedirectRevisionFactory,
     RevisionFactory,
@@ -266,6 +267,14 @@ class FeaturedArticlesTestCase(TestCase):
             )
             self.assertEqual(len(featured), 1)
             self.assertEqual(featured[0].id, self.de1.id)
+
+        with self.subTest("in two public knowledge bases"):
+            self.d1.audiences.add(AudienceFactory(is_public=True))
+            featured = get_featured_articles(limit=10)
+            self.assertCountEqual(
+                [d.id for d in featured],
+                [self.d1.id, self.d2.id, self.de1.parent.id, self.de2.parent.id],
+            )
 
 
 class RemoveExpiredFromKBVisitedTests(TestCase):
@@ -870,7 +879,7 @@ class GetVisibleDocumentTests(TestCase):
         en_doc = ApprovedRevisionFactory(
             document__locale="en-US",
             document__slug="restricted-test-document",
-            document__restrict_to_groups=[g1],
+            document__audiences=[AudienceFactory(groups=[g1])],
             document__allow_discussion=False,
             is_ready_for_localization=True,
         ).document
@@ -1049,7 +1058,7 @@ class GetPinnedArticlesTests(TestCase):
         self.en_restricted_doc = ApprovedRevisionFactory(
             document__locale="en-US",
             document__slug="test-restricted-document",
-            document__restrict_to_groups=[group1],
+            document__audiences=[AudienceFactory(groups=[group1])],
         ).document
 
         self.de_restricted_doc = TranslatedRevisionFactory(
@@ -1069,7 +1078,7 @@ class GetPinnedArticlesTests(TestCase):
             document__locale="fr",
             document__parent=None,
             document__slug="test-parent-restricted-document-fr",
-            document__restrict_to_groups=[group1],
+            document__audiences=[AudienceFactory(groups=[group1])],
         ).document
 
         # Create some pinned-article configs.

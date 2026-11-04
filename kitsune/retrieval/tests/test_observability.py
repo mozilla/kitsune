@@ -27,7 +27,7 @@ from kitsune.retrieval.tests.test_embeddings import (
 )
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.users.tests import GroupFactory
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 _EMIT_CALL = re.compile(r"\bemit\(\s*\"(retrieval\.[a-z0-9_.]+)\"", re.S)
 
@@ -36,6 +36,7 @@ _EMIT_CALL = re.compile(r"\bemit\(\s*\"(retrieval\.[a-z0-9_.]+)\"", re.S)
 _FORBIDDEN_FIELDS = frozenset(
     {
         "access_group_ids",
+        "audiences",
         "content",
         "content_text",
         "content_vector",
@@ -46,7 +47,6 @@ _FORBIDDEN_FIELDS = frozenset(
         "key",
         "keywords",
         "password",
-        "restrict_to_groups",
         "secret",
         "summary",
         "text",
@@ -273,7 +273,7 @@ class ApprovalLatencyTests(ObservabilityTestCase):
 
     def test_an_eviction_reports_no_latency_rather_than_a_misleading_one(self):
         sync_document_chunks(self.document.id)
-        self.document.restrict_to_groups.add(GroupFactory())
+        self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             sync_document_chunks(self.document.id)
@@ -287,13 +287,23 @@ class CrossCuttingPrivacyTests(ObservabilityTestCase):
 
     def test_no_seam_emits_article_text_vectors_or_restriction_identifiers(self):
         group = GroupFactory(id=987_654_321, name="Confidential Partner Staff")
-        secrets = ("Install Firefox", "How to install.", group.name, str(group.id))
+        audience = AudienceFactory(
+            id=987_654_322, name="Confidential Partner Audience", groups=[group]
+        )
+        secrets = (
+            "Install Firefox",
+            "How to install.",
+            group.name,
+            str(group.id),
+            audience.name,
+            str(audience.id),
+        )
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             sync_document_chunks(self.document.id)
             sync_document_batch([self.document.id])
             gate_index(self.index)
-            self.document.restrict_to_groups.add(group)
+            self.document.audiences.set([audience])
             sync_document_chunks(self.document.id)
             gate_index(self.index)
             with document_lock(self.identity), self.assertRaises(DocumentLockUnavailable):

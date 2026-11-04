@@ -3,8 +3,8 @@ from unittest import mock
 from django.test import TestCase, override_settings
 
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.users.tests import GroupFactory
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.models import Audience
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 
 class SignalTestCase(TestCase):
@@ -113,42 +113,44 @@ class TaxonomyChangeTests(SignalTestCase):
 
 
 @override_settings(RETRIEVAL_LIVE_INDEXING=True)
-class RestrictionChangeTests(SignalTestCase):
+class AudienceChangeTests(SignalTestCase):
     """An access change is an ordinary freshness transition (ADR 0006)."""
 
     def setUp(self):
         super().setUp()
-        self.group = GroupFactory()
+        self.audience = AudienceFactory()
 
     def test_restricting_a_document_refreshes_it_so_it_is_evicted(self):
         # Under the public-only policy this makes the document ineligible; the sync core
         # then evicts it. The signal's job is only to notice.
         self.assertIn(
             self.document.id,
-            self._queued_syncs(lambda: self.document.restrict_to_groups.add(self.group)),
+            self._queued_syncs(lambda: self.document.audiences.set([self.audience])),
         )
 
     def test_widening_access_refreshes_it_so_it_is_indexed(self):
-        self.document.restrict_to_groups.add(self.group)
+        self.document.audiences.set([self.audience])
         self.assertIn(
             self.document.id,
-            self._queued_syncs(lambda: self.document.restrict_to_groups.remove(self.group)),
+            self._queued_syncs(lambda: self.document.audiences.add(Audience.objects.default())),
         )
 
-    def test_clearing_restrictions_refreshes_the_document(self):
-        self.document.restrict_to_groups.add(self.group)
-        self.assertIn(self.document.id, self._queued_syncs(self.document.restrict_to_groups.clear))
+    def test_clearing_audiences_refreshes_the_document(self):
+        self.assertIn(self.document.id, self._queued_syncs(self.document.audiences.clear))
 
-    def test_changes_from_the_group_side_find_the_documents(self):
-        relation = self.group.restricted_documents
+    def test_changes_from_the_audience_side_find_the_documents(self):
+        relation = self.audience.documents
         self.assertIn(self.document.id, self._queued_syncs(lambda: relation.add(self.document)))
         self.assertIn(self.document.id, self._queued_syncs(lambda: relation.remove(self.document)))
         relation.add(self.document)
         self.assertIn(self.document.id, self._queued_syncs(relation.clear))
 
-    def test_deleting_a_group_refreshes_the_documents_it_restricted(self):
-        self.document.restrict_to_groups.add(self.group)
-        self.assertIn(self.document.id, self._queued_syncs(self.group.delete))
+    def test_flipping_visibility_refreshes_the_kb_documents(self):
+        self.document.audiences.set([self.audience])
+        self.audience.name = "Renamed"
+        self.assertEqual(self._queued_syncs(self.audience.save), set())
+        self.audience.is_public = True
+        self.assertIn(self.document.id, self._queued_syncs(self.audience.save))
 
 
 @override_settings(RETRIEVAL_LIVE_INDEXING=True)

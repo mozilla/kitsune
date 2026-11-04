@@ -22,6 +22,7 @@ from kitsune.retrieval.query import (
     parse_positive_integer_id,
 )
 from kitsune.retrieval.validation import is_nonnegative_int, is_positive_int
+from kitsune.wiki.managers import audience_access, effective_group_ids
 from kitsune.wiki.models import Document
 
 PRIMARY_DATABASE = "default"
@@ -67,16 +68,15 @@ class AuthorizedCandidate:
 
 
 def viewer_access_for(user: User | AnonymousUser) -> ViewerAccess:
-    """Resolve group membership once; staff and superusers bypass restrictions."""
+    """Resolve effective group membership once; staff and superusers bypass restrictions."""
     if not user.is_authenticated:
         return ViewerAccess()
     if user.is_superuser:
         return ViewerAccess(privileged=True)
 
-    memberships = tuple(user.groups.using(PRIMARY_DATABASE).values_list("id", "name"))
-    if any(name == settings.STAFF_GROUP for _, name in memberships):
+    if user.groups.using(PRIMARY_DATABASE).filter(name=settings.STAFF_GROUP).exists():
         return ViewerAccess(privileged=True)
-    return ViewerAccess(tuple(sorted(group_id for group_id, _ in memberships)))
+    return ViewerAccess(tuple(sorted(effective_group_ids(user, using=PRIMARY_DATABASE))))
 
 
 def retrieve(
@@ -185,17 +185,7 @@ def authorize_candidates(
         )
 
         if not viewer_access.privileged:
-            access = Q(parent__isnull=True, restrict_to_groups__isnull=True) | Q(
-                parent__isnull=False, parent__restrict_to_groups__isnull=True
-            )
-            if viewer_access.group_ids:
-                access |= Q(
-                    parent__isnull=True, restrict_to_groups__id__in=viewer_access.group_ids
-                ) | Q(
-                    parent__isnull=False,
-                    parent__restrict_to_groups__id__in=viewer_access.group_ids,
-                )
-            documents = documents.filter(access)
+            documents = documents.filter(audience_access(viewer_access.group_ids))
 
         if product_id is not None:
             documents = documents.filter(

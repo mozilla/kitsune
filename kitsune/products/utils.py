@@ -12,14 +12,10 @@ def get_enterprise_companies(request) -> list[GroupProfile]:
 
     More than one means the company is ambiguous. They are resolved once per request.
     """
-    if not hasattr(request, "_enterprise_companies"):
-        user = request.user
-        request._enterprise_companies = (
-            list(GroupProfile.objects.enterprise_companies(user)[:2])
-            if user and user.is_authenticated and user.is_active
-            else []
-        )
-    return request._enterprise_companies
+    user = request.user
+    if not (user and user.is_authenticated and user.is_active):
+        return []
+    return GroupProfile.objects.cached_enterprise_companies(user)[:2]
 
 
 def get_support_company(request) -> GroupProfile | None:

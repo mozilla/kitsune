@@ -1,14 +1,20 @@
 import itertools
 
 import markdown
+from django import forms
 from django.contrib import admin
+from django.db.models import Count, Exists, OuterRef
 from django.urls import reverse
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.sumo.sanitize import RESTRICTED_HTML_ATTRIBUTES, RESTRICTED_HTML_TAGS, clean
+from kitsune.wiki.config import DEFAULT_AUDIENCE_SLUG
 from kitsune.wiki.models import (
+    Audience,
     Document,
+    DocumentAudience,
     ImportantDate,
     Locale,
     PinnedArticleConfig,
@@ -16,8 +22,24 @@ from kitsune.wiki.models import (
 )
 
 
+class NoAudienceFilter(admin.SimpleListFilter):
+    title = _lazy("knowledge base")
+    parameter_name = "audience"
+
+    def lookups(self, request, model_admin):
+        return (("none", _lazy("No knowledge base")),)
+
+    def queryset(self, request, queryset):
+        if self.value() == "none":
+            return queryset.filter(
+                ~Exists(DocumentAudience.objects.filter(document=OuterRef("pk"))),
+                parent__isnull=True,
+            )
+        return queryset
+
+
 class DocumentAdmin(admin.ModelAdmin):
-    exclude = ("tags",)
+    exclude = ("tags", "restrict_to_groups")
     list_display = (
         "locale",
         "title",
@@ -37,6 +59,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "is_archived",
         "allow_discussion",
         "topics",
+        NoAudienceFilter,
     )
     raw_id_fields = ("parent", "contributors")
     readonly_fields = ("id", "current_revision", "latest_localizable_revision")
@@ -92,6 +115,74 @@ class DocumentAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Document, DocumentAdmin)
+
+
+class AudienceAdminForm(forms.ModelForm):
+    confirm_publish = forms.BooleanField(
+        required=False,
+        label=_lazy("Publish its articles"),
+        help_text=_lazy(
+            "Making this knowledge base public makes every article in it readable by everyone."
+        ),
+    )
+
+    class Meta:
+        model = Audience
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Read-only fields are missing from cleaned_data; the instance still holds old values.
+        is_public = cleaned_data.get("is_public", self.instance.is_public)
+        if is_public and cleaned_data.get("groups"):
+            self.add_error("groups", _lazy("A public knowledge base cannot have groups."))
+        if cleaned_data.get("slug") == DEFAULT_AUDIENCE_SLUG and not is_public:
+            self.add_error("is_public", _lazy("The default knowledge base is always public."))
+        if (
+            is_public
+            and self.instance.pk
+            and not self.instance.is_public
+            and self.instance.documents.exists()
+            and not cleaned_data.get("confirm_publish")
+        ):
+            self.add_error(
+                "confirm_publish", _lazy("Confirm that its articles become readable by everyone.")
+            )
+        return cleaned_data
+
+
+class AudienceAdmin(admin.ModelAdmin):
+    form = AudienceAdminForm
+    list_display = ("name", "slug", "is_public", "document_count")
+
+    def get_fields(self, request, obj=None):
+        fields = ["name", "slug", "is_public", "groups"]
+        if obj is not None and not obj.is_public:
+            fields.append("confirm_publish")
+        return fields
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(document_count=Count("documents"))
+
+    @admin.display(description=_lazy("Documents"), ordering="document_count")
+    def document_count(self, obj):
+        return obj.document_count
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return ()
+        return ("slug", "is_public") if obj.slug == DEFAULT_AUDIENCE_SLUG else ("slug",)
+
+    def has_delete_permission(self, request, obj=None):
+        if obj is not None and obj.slug == DEFAULT_AUDIENCE_SLUG:
+            return False
+        return super().has_delete_permission(request, obj)
+
+    def delete_queryset(self, request, queryset):
+        super().delete_queryset(request, queryset.exclude(slug=DEFAULT_AUDIENCE_SLUG))
+
+
+admin.site.register(Audience, AudienceAdmin)
 
 
 class ImportantDateAdmin(admin.ModelAdmin):

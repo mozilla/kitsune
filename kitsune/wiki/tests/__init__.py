@@ -16,6 +16,7 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
 )
 from kitsune.wiki.models import (
+    Audience,
     Document,
     DraftRevision,
     HelpfulVote,
@@ -23,6 +24,19 @@ from kitsune.wiki.models import (
     Revision,
     RevisionAnchorRecord,
 )
+
+
+class AudienceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Audience
+
+    name = factory.Sequence(lambda n: f"Audience {n}")
+    slug = factory.LazyAttribute(lambda o: slugify(o.name))
+
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        if create and extracted:
+            self.groups.add(*extracted)
 
 
 class DocumentFactory(factory.django.DjangoModelFactory):
@@ -64,14 +78,13 @@ class DocumentFactory(factory.django.DjangoModelFactory):
                 self.tags.add(t)
 
     @factory.post_generation
-    def restrict_to_groups(self, create, extracted, **kwargs):
-        if not create:
-            # Simple build, do nothing
+    def audiences(self, create, extracted, **kwargs):
+        if not create or self.parent_id:
             return
 
-        if extracted is not None:
-            for p in extracted:
-                self.restrict_to_groups.add(p)
+        if extracted is None:
+            extracted = [Audience.objects.default()]
+        self.audiences.add(*extracted)
 
 
 class TemplateDocumentFactory(DocumentFactory):

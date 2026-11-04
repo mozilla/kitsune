@@ -41,7 +41,7 @@ from kitsune.retrieval.tests.test_index import _expected, _source, _vector
 from kitsune.search.es_utils import es_client
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.models import Document
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 
 def _chunks(count, *, text="body {i}"):
@@ -317,7 +317,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
 
     def test_an_ineligible_document_is_evicted(self):
         self._sync()
-        self.document.restrict_to_groups.add(GroupFactory())
+        self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             report = self._sync()
@@ -406,7 +406,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
         self._sync()
 
         def restrict_then_embed(*args, **kwargs):
-            self.document.restrict_to_groups.add(GroupFactory())
+            self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
             return get_embeddings(*args, **kwargs)
 
         ApprovedRevisionFactory(document=self.document, content="New content to force embed.")
@@ -424,7 +424,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
         self.document.refresh_from_db()
 
         def restrict_then_embed(*args, **kwargs):
-            self.document.restrict_to_groups.add(GroupFactory())
+            self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
             return get_embeddings(*args, **kwargs)
 
         with (
@@ -559,7 +559,7 @@ class SingleWriteGenerationTests(ChunkIndexTestCase):
         sync_document_chunks(self.document.id, target_index=self.first)
         second = self._second_generation()
         sync_document_chunks(self.document.id)
-        self.document.restrict_to_groups.add(GroupFactory())
+        self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
 
         report = sync_document_chunks(self.document.id)
 

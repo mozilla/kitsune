@@ -10,7 +10,6 @@ ineligible and the sync core evicts it; widening access makes it eligible and it
 """
 
 from django.conf import settings
-from django.contrib.auth.models import Group
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.signals import m2m_changed, post_save, pre_delete
@@ -19,7 +18,7 @@ from django.dispatch import receiver
 from kitsune.products.models import Product, Topic
 from kitsune.retrieval.index import ChunkIdentity
 from kitsune.retrieval.tasks import enqueue_document_delete, enqueue_document_sync
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Audience, Document
 
 CONTENT_TYPE = "kb"
 
@@ -97,20 +96,19 @@ def taxonomy_deleted(sender, instance, **kwargs):
 
 @receiver(
     m2m_changed,
-    sender=Document.restrict_to_groups.through,
-    dispatch_uid="retrieval.document_restrictions_changed",
+    sender=Document.audiences.through,
+    dispatch_uid="retrieval.document_audiences_changed",
 )
-def restrictions_changed(sender, instance, action, reverse, pk_set, **kwargs):
+def audiences_changed(sender, instance, action, reverse, pk_set, **kwargs):
     _refresh_families(
-        _affected_documents(
-            instance, action, reverse, pk_set, reverse_accessor="restricted_documents"
-        )
+        _affected_documents(instance, action, reverse, pk_set, reverse_accessor="documents")
     )
 
 
-@receiver(pre_delete, sender=Group, dispatch_uid="retrieval.group_deleted")
-def group_deleted(sender, instance, **kwargs):
-    _refresh_families(instance.restricted_documents.values_list("id", flat=True))
+@receiver(post_save, sender=Audience, dispatch_uid="retrieval.audience_visibility_changed")
+def audience_visibility_changed(sender, instance, **kwargs):
+    if getattr(instance, "visibility_changed", False):
+        _refresh_families(instance.documents.values_list("id", flat=True))
 
 
 @receiver(pre_delete, sender=Document, dispatch_uid="retrieval.document_deleted")

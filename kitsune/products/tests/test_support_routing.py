@@ -165,7 +165,8 @@ class EnterpriseSupportRoutingTests(TestCase):
 
     def route(self, user=None, product=None, **params):
         request = RequestFactory().get("/", params)
-        request.user = user if user is not None else self.user
+        # Each request loads its own user, as companies are cached on the user.
+        request.user = user if user is not None else User.objects.get(pk=self.user.pk)
         return route_support(request, product if product is not None else self.product)
 
     def test_company_and_department_members_are_covered(self):
@@ -553,7 +554,8 @@ class SupportPresentationTests(TestCase):
         User.groups.through.objects.bulk_create(
             [User.groups.through(user_id=member.pk, group_id=EnterpriseCompanyFactory().group_id)]
         )
-        for user in (inactive, member):
+        # A new request loads its own user, as companies are cached on the user.
+        for user in (inactive, User.objects.get(pk=member.pk)):
             with self.subTest(user=user):
                 self.assertEqual(get_professional_support_products(self.request_for(user)), [])
 

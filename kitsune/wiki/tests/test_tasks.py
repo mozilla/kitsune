@@ -17,9 +17,10 @@ from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.badges import WIKI_BADGES
 from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
-from kitsune.wiki.models import Document, Revision, RevisionAnchorRecord
+from kitsune.wiki.models import Document, Revision, RevisionAnchorRecord, doc_html_cache_key
 from kitsune.wiki.tasks import (
     _rebuild_kb_chunk,
+    add_short_links,
     cleanup_old_anchor_records,
     rebuild_kb,
     render_document_cascade,
@@ -28,7 +29,9 @@ from kitsune.wiki.tasks import (
 )
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DeferredRevisionFactory,
+    DocumentFactory,
     RevisionAnchorRecordFactory,
     RevisionFactory,
 )
@@ -218,6 +221,17 @@ class TestDocumentRenderCascades(TestCase):
         self.assertEqual(self._clean(d2), "ONE two")
         self.assertEqual(self._clean(d3), "ONE ONE two three")
 
+    def test_cascade_clears_the_family_page_cache(self):
+        original = ApprovedRevisionFactory().document
+        # Fallback pages are cached under the request locale.
+        keys = [doc_html_cache_key(locale, original.slug) for locale in ("de", "en-US")]
+        cache.set_many(dict.fromkeys(keys, ("<html>", {})))
+        self.assertCountEqual(cache.get_many(keys), keys)
+
+        render_document_cascade(original.id)
+
+        self.assertEqual(cache.get_many(keys), {})
+
 
 class TestMaybeAwardBadge(TestCase):
     """Test that the annual wiki badges are awarded correctly."""
@@ -342,3 +356,18 @@ class CleanupOldAnchorRecordsTestCase(TestCase):
         self.assertTrue(RevisionAnchorRecord.objects.filter(pk=record_4.pk).exists())
 
         mock_log.info.assert_called_once_with("Deleted 2 stale anchor record(s).")
+
+
+class AddShortLinksTests(TestCase):
+    @mock.patch("kitsune.wiki.tasks.generate_short_url", return_value="https://mzl.la/short")
+    def test_add_short_links_skips_private_documents(self, generate_short_url):
+        public = DocumentFactory()
+        public_translation = DocumentFactory(parent=public, locale="de")
+        private = DocumentFactory(audiences=[AudienceFactory()])
+        translation = DocumentFactory(parent=private, locale="de")
+
+        add_short_links([public.pk, public_translation.pk, private.pk, translation.pk])
+
+        self.assertEqual(generate_short_url.call_count, 2)
+        shared = Document.objects.exclude(share_link="").values_list("pk", flat=True)
+        self.assertQuerySetEqual(shared, [public.pk, public_translation.pk], ordered=False)

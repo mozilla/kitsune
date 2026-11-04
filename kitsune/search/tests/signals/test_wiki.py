@@ -14,6 +14,7 @@ from kitsune.wiki.config import (
 from kitsune.wiki.models import Document
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     RevisionFactory,
     TemplateDocumentFactory,
@@ -120,7 +121,7 @@ class WikiDocumentPrepareDiscardTests(TestCase):
         self.assert_discarded(doc, False)
 
     def test_each_public_indexing_exclusion_is_discarded(self):
-        restricted = DocumentFactory(restrict_to_groups=[GroupFactory()])
+        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
         ApprovedRevisionFactory(document=restricted)
         redirect = DocumentFactory()
         Document.objects.filter(pk=redirect.pk).update(

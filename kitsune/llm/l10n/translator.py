@@ -155,15 +155,14 @@ def resolve_internal_anchors(
 
     from kitsune.wiki.parser import wiki_to_html
 
+    audience_ids = source_doc.original.private_audience_ids
     source_html = wiki_to_html(
         source_content,
         locale=source_doc.locale,
         doc_id=source_doc.id,
-        restrict_to_groups=source_doc.restrict_to_groups,
+        audience_ids=audience_ids,
     )
-    target_html = wiki_to_html(
-        target_content, locale=target_locale, restrict_to_groups=source_doc.restrict_to_groups
-    )
+    target_html = wiki_to_html(target_content, locale=target_locale, audience_ids=audience_ids)
 
     anchor_map_result = get_anchor_map(source_doc.locale, source_html, target_locale, target_html)
     anchor_map = anchor_map_result["map"]

@@ -13,7 +13,9 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.config import CATEGORIES, TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
 from kitsune.wiki.models import (
+    Audience,
     Document,
+    DocumentAudience,
     DraftRevision,
     HelpfulVote,
     HelpfulVoteMetadata,
@@ -22,6 +24,7 @@ from kitsune.wiki.models import (
 )
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    AudienceFactory,
     DocumentFactory,
     DraftRevisionFactory,
     RedirectRevisionFactory,
@@ -391,8 +394,7 @@ class PreviewRevisionVisibilityTests(TestCase):
 
     def test_preview_blocks_restricted_include(self):
         """Preview of an unrestricted doc should not render restricted includes."""
-        group = GroupFactory()
-        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        restricted = DocumentFactory(title="Restricted Doc", audiences=[AudienceFactory()])
         ApprovedRevisionFactory(document=restricted, content="Secret content")
 
         source = ApprovedRevisionFactory()
@@ -409,13 +411,13 @@ class PreviewRevisionVisibilityTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Secret content")
 
-    def test_preview_allows_restricted_include_when_same_group(self):
-        """Preview of a restricted doc should render includes restricted to the same group."""
-        group = GroupFactory()
-        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+    def test_preview_allows_restricted_include_when_same_audience(self):
+        """Preview of a restricted doc should render includes with the same audience."""
+        audience = AudienceFactory()
+        restricted = DocumentFactory(title="Restricted Doc", audiences=[audience])
         ApprovedRevisionFactory(document=restricted, content="Secret content")
 
-        source = DocumentFactory(title="Source Doc", restrict_to_groups=[group])
+        source = DocumentFactory(title="Source Doc", audiences=[audience])
         ApprovedRevisionFactory(document=source)
         user = UserFactory(is_superuser=True)
         self.client.login(username=user.username, password="testpass")
@@ -430,10 +432,9 @@ class PreviewRevisionVisibilityTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Secret content")
 
-    def test_preview_without_slug_blocks_restricted_include(self):
-        """Preview without a source doc (new doc) should block restricted includes."""
-        group = GroupFactory()
-        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+    def test_preview_of_new_document_rejects_private_include(self):
+        """Preview without a source doc (a new doc) is public, so private includes are blocked."""
+        restricted = DocumentFactory(title="Restricted Doc", audiences=[AudienceFactory()])
         ApprovedRevisionFactory(document=restricted, content="Secret content")
 
         user = UserFactory(is_superuser=True)
@@ -444,6 +445,7 @@ class PreviewRevisionVisibilityTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Secret content")
+        self.assertContains(response, 'The document "Restricted Doc" does not exist.')
 
 
 class DocumentRevisionsVisibilityTests(TestCase):
@@ -970,6 +972,17 @@ class GetHelpfulVotesAsyncVisibilityTests(TestCase):
             reverse("wiki.get_helpful_votes_async", args=[rev.document.slug])
         )
         self.assertEqual(response.status_code, 200)
+
+    def test_helpful_votes_not_shared_across_viewers(self):
+        group = GroupFactory()
+        rev = ApprovedRevisionFactory(document__audiences=[AudienceFactory(groups=[group])])
+        url = reverse("wiki.get_helpful_votes_async", args=[rev.document.slug])
+
+        self.client.login(username=UserFactory(groups=[group]).username, password="testpass")
+        self.assertEqual(self.client.get(url).status_code, 200)
+
+        self.client.login(username=UserFactory().username, password="testpass")
+        self.assertEqual(self.client.get(url).status_code, 404)
 
 
 class AddContributorVisibilityTests(TestCase):
@@ -1573,7 +1586,9 @@ class JsonViewTests(TestCase):
     def test_json_view_restricted_document(self):
         """Restricted documents should not be visible to users outside the group."""
         group = GroupFactory()
-        d = DocumentFactory(title="restricted article", restrict_to_groups=[group])
+        d = DocumentFactory(
+            title="restricted article", audiences=[AudienceFactory(groups=[group])]
+        )
         RevisionFactory(document=d, is_approved=True)
         url = reverse("wiki.json")
 
@@ -1604,7 +1619,7 @@ class WhatLinksWhereTests(TestCase):
         ApprovedRevisionFactory(
             content="[[D1]]",
             document__title="D3",
-            document__restrict_to_groups=[group],
+            document__audiences=[AudienceFactory(groups=[group])],
         )
 
         url = reverse("wiki.what_links_here", args=[d1.slug])
@@ -1984,6 +1999,156 @@ class DocumentEditingTests(TestCase):
         self.client.post(trans_url, data)
         draft_revision = DraftRevision.objects.filter(id=draft.id)
         self.assertEqual(False, draft_revision.exists())
+
+
+class DocumentAudienceEditingTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        group = GroupFactory()
+        self.private = AudienceFactory(groups=[group])
+        self.public = Audience.objects.default()
+        self.contributor = UserFactory(groups=[group])
+        self.staff = UserFactory(groups=[group, GroupFactory(name=settings.STAFF_GROUP)])
+        for user in (self.contributor, self.staff):
+            add_permission(user, Document, "change_document")
+
+    def _login(self, user):
+        self.client.login(username=user.username, password="testpass")
+
+    def _new_document(self, **extra):
+        return self.client.post(reverse("wiki.new_document"), {**new_document_data(), **extra})
+
+    def _edit_metadata(self, document, **extra):
+        data = new_document_data()
+        data.update({"title": document.title, "slug": document.slug, "form": "doc", **extra})
+        return self.client.post(reverse("wiki.edit_document_metadata", args=[document.slug]), data)
+
+    def test_non_staff_metadata_save_keeps_audiences(self):
+        document = ApprovedRevisionFactory(document__audiences=[self.private]).document
+        self._login(self.contributor)
+
+        response = self._edit_metadata(document)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertQuerySetEqual(document.audiences.all(), [self.private])
+
+    def test_non_staff_forged_audiences_ignored(self):
+        document = ApprovedRevisionFactory(document__audiences=[self.private]).document
+        self._login(self.contributor)
+
+        with self.subTest(view="new_document"):
+            response = self._new_document(audiences=[self.private.pk])
+            self.assertEqual(response.status_code, 302)
+            created = Document.objects.get(slug="a-test-article")
+            self.assertQuerySetEqual(created.audiences.all(), [self.public])
+
+        with self.subTest(view="edit_document_metadata"):
+            response = self._edit_metadata(document, audiences=[self.public.pk])
+            self.assertEqual(response.status_code, 302)
+            self.assertQuerySetEqual(document.audiences.all(), [self.private])
+
+    def test_non_staff_new_article_gets_public(self):
+        self._login(self.contributor)
+        response = self.client.get(reverse("wiki.new_document"))
+        self.assertEqual(len(pq(response.content)("#id_audiences")), 0)
+
+        response = self._new_document()
+
+        self.assertEqual(response.status_code, 302)
+        created = Document.objects.get(slug="a-test-article")
+        self.assertQuerySetEqual(created.audiences.all(), [self.public])
+
+    def test_staff_sets_audiences(self):
+        document = ApprovedRevisionFactory().document
+        self._login(self.staff)
+        response = self.client.get(reverse("wiki.new_document"))
+        selected = pq(response.content)("#id_audiences option[selected]")
+        self.assertEqual([int(option.attrib["value"]) for option in selected], [self.public.pk])
+
+        with self.subTest(view="new_document"):
+            response = self._new_document(audiences=[self.private.pk])
+            self.assertEqual(response.status_code, 302)
+            created = Document.objects.get(slug="a-test-article")
+            self.assertQuerySetEqual(created.audiences.all(), [self.private])
+
+        with self.subTest(view="edit_document_metadata"):
+            response = self._edit_metadata(document, audiences=[self.private.pk])
+            self.assertEqual(response.status_code, 302)
+            self.assertQuerySetEqual(document.audiences.all(), [self.private])
+
+    def test_staff_new_document_form_does_not_create_public(self):
+        DocumentAudience.objects.filter(audience=self.public).delete()
+        self.public.delete()
+        audience_count = Audience.objects.count()
+        self._login(self.staff)
+
+        response = self.client.get(reverse("wiki.new_document"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Audience.objects.count(), audience_count)
+
+    def test_rename_and_audience_change_in_one_metadata_save(self):
+        document = ApprovedRevisionFactory(document__audiences=[self.private]).document
+        old_slug = document.slug
+        self._login(self.staff)
+
+        response = self._edit_metadata(document, slug="renamed", audiences=[self.public.pk])
+
+        self.assertEqual(response.status_code, 302)
+        stub = Document.objects.get(slug=old_slug)
+        self.assertQuerySetEqual(stub.audiences.all(), [self.public])
+
+    def test_staff_must_pick_an_audience(self):
+        document = ApprovedRevisionFactory().document
+        self._login(self.staff)
+
+        for view, response in (
+            ("new_document", self._new_document()),
+            ("edit_document_metadata", self._edit_metadata(document)),
+        ):
+            with self.subTest(view=view):
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(len(pq(response.content)(".has-error #id_audiences")), 1)
+        self.assertFalse(Document.objects.filter(slug="a-test-article").exists())
+        self.assertQuerySetEqual(document.audiences.all(), [self.public])
+
+    def test_staff_translate_assigns_no_audiences(self):
+        parent = ApprovedRevisionFactory(is_ready_for_localization=True).document
+        self._login(self.staff)
+
+        response = self.client.post(
+            reverse("wiki.translate", locale="de", args=[parent.slug]),
+            {
+                "title": "Ein Testartikel",
+                "slug": "ein-testartikel",
+                "keywords": "key1, key2",
+                "summary": "lipsum",
+                "content": "lorem ipsum dolor sit amet",
+                "audiences": [self.private.pk],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        translation = parent.translations.get(locale="de")
+        self.assertFalse(translation.audiences.exists())
+        self.assertQuerySetEqual(parent.audiences.all(), [self.public])
+
+    @mock.patch("kitsune.wiki.tasks.generate_short_url", return_value="https://mzl.la/short")
+    def test_new_private_article_never_reaches_shortener(self, generate_short_url):
+        self._login(self.staff)
+
+        for audience, calls in ((self.private, 0), (self.public, 1)):
+            with self.subTest(audience=audience.slug):
+                generate_short_url.reset_mock()
+                with self.captureOnCommitCallbacks(execute=True):
+                    response = self._new_document(
+                        title=f"Article for {audience.name}",
+                        slug=f"article-for-{audience.slug}",
+                        audiences=[audience.pk],
+                    )
+                    self.assertEqual(generate_short_url.call_count, 0)
+                self.assertEqual(response.status_code, 302)
+                self.assertEqual(generate_short_url.call_count, calls)
 
 
 class AddRemoveContributorTests(TestCase):

@@ -13,6 +13,7 @@ _MAX_VALUE_LENGTH = 200
 
 _SENSITIVE_FIELDS = {
     "access_group_ids",
+    "audiences",
     "content",
     "content_text",
     "content_vector",
@@ -23,7 +24,6 @@ _SENSITIVE_FIELDS = {
     "key",
     "keywords",
     "password",
-    "restrict_to_groups",
     "secret",
     "summary",
     "text",

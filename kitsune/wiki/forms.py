@@ -2,7 +2,7 @@ import re
 
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.db import transaction
 from django.db.models.functions import Coalesce
 from django.template.defaultfilters import slugify
 from django.utils.translation import gettext_lazy as _lazy
@@ -13,11 +13,18 @@ from kitsune.sumo.form_fields import MultiUsernameField, MultiUsernameFilterFiel
 from kitsune.wiki.config import (
     CANNED_RESPONSES_CATEGORY,
     CATEGORIES,
+    DEFAULT_AUDIENCE_SLUG,
     SIGNIFICANCES,
     TEMPLATES_CATEGORY,
 )
 from kitsune.wiki.content_managers import ManualContentManager
-from kitsune.wiki.models import MAX_REVISION_COMMENT_LENGTH, Document, DraftRevision, Revision
+from kitsune.wiki.models import (
+    MAX_REVISION_COMMENT_LENGTH,
+    Audience,
+    Document,
+    DraftRevision,
+    Revision,
+)
 from kitsune.wiki.tasks import add_short_links
 from kitsune.wiki.widgets import ProductsWidget, RelatedDocumentsWidget, TopicsWidget
 
@@ -112,11 +119,14 @@ class DocumentForm(forms.ModelForm):
 
     is_archived = forms.BooleanField(label=_lazy("Obsolete:"), required=False)
 
-    restrict_to_groups = forms.ModelMultipleChoiceField(
-        required=False,
-        queryset=Group.objects.order_by("name").all(),
-        label=_lazy("The document will be restricted to members of the selected group(s)."),
-        help_text=_lazy("The document will be visible only to users in the selected group(s)."),
+    audiences = forms.ModelMultipleChoiceField(
+        queryset=Audience.objects.order_by("name"),
+        required=True,
+        label=_lazy("Knowledge bases"),
+        help_text=_lazy(
+            "Readers of any selected knowledge base can read this article. "
+            "A public knowledge base makes it readable by everyone."
+        ),
     )
 
     allow_discussion = forms.BooleanField(
@@ -251,12 +261,13 @@ class DocumentForm(forms.ModelForm):
             "needs_change",
             "needs_change_comment",
             "related_documents",
-            "restrict_to_groups",
+            "audiences",
         )
 
     def __init__(self, *args, **kwargs):
         # Quasi-kwargs:
         can_archive = kwargs.pop("can_archive", False)
+        can_assign_audiences = kwargs.pop("can_assign_audiences", False)
         can_edit_needs_change = kwargs.pop("can_edit_needs_change", False)
         initial_title = kwargs.pop("initial_title", "")
         locale = kwargs.pop("locale", None)
@@ -294,29 +305,39 @@ class DocumentForm(forms.ModelForm):
             del self.fields["needs_change"]
             del self.fields["needs_change_comment"]
 
+        # Without the field, save() keeps the existing assignment and ignores submitted values.
+        if not can_assign_audiences:
+            del self.fields["audiences"]
+        elif self.instance.pk is None:
+            self.fields["audiences"].initial = Audience.objects.filter(slug=DEFAULT_AUDIENCE_SLUG)
+
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
         doc = super().save(commit=False, **kwargs)
         doc.parent = parent_doc
+        is_new = doc.pk is None
 
         # If document doesn't need change, clear out the comment.
         if not doc.needs_change:
             doc.needs_change_comment = ""
 
-        # Create the share link if it doesn't exist and is in
-        # a category it should show for.
         doc.save()
-        if doc.category in settings.IA_DEFAULT_CATEGORIES and not doc.share_link:
-            # This operates under the constraints of passing in a list.
-            add_short_links.delay([doc.pk])
-
         self.save_m2m()
+
+        if is_new and not parent_doc and "audiences" not in self.fields:
+            doc.audiences.add(Audience.objects.default())
 
         if parent_doc:
             # Products are not set on translations.
             doc.products.remove(*list(doc.products.all()))
             # A child always inherits parent topics.
             doc.topics.add(*list(parent_doc.topics.all()))
+
+        # Create the share link if it doesn't exist and is in
+        # a category it should show for.
+        if doc.category in settings.IA_DEFAULT_CATEGORIES and not doc.share_link:
+            # On commit, so the task reads the saved audiences.
+            transaction.on_commit(lambda: add_short_links.delay([doc.pk]))
 
         return doc
 
