@@ -39,7 +39,7 @@ class NoAudienceFilter(admin.SimpleListFilter):
 
 
 class DocumentAdmin(admin.ModelAdmin):
-    exclude = ("tags", "restrict_to_groups")
+    exclude = ("tags",)
     list_display = (
         "locale",
         "title",
