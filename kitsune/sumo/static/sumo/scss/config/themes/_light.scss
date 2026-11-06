@@ -824,9 +824,9 @@
 // Firefox for Enterprise palette. The masthead shows a bubbles image over its color: cream in light,
 // a dark purple version of the image in dark. The cards are cream in light and a purple-10 tint over
 // the page in dark. The badges look the same in both themes, except Contact support, which brightens
-// in dark to stand out on the card. The dark banner gradient is built from three stop tokens and a
-// faint warm glow, which are `initial` in light because the light gradient is one value. The image,
-// gradients, glow and searchbox shadow appear in the theme maps only.
+// in dark to stand out on the card. The dark banner gradient is built from three stop tokens, which
+// are `initial` in light because the light gradient is one value. The image, gradients and searchbox
+// shadow appear in the theme maps only.
 //
 // Colors:
 // --pro-support-masthead-bg: #FCF5F0 - Dark: #190F2E
@@ -1078,7 +1078,6 @@ $light: (
   'pro-support-banner-stop-start': initial,
   'pro-support-banner-stop-mid': initial,
   'pro-support-banner-stop-end': initial,
-  'pro-support-banner-glow': initial,
   'pro-support-banner-bg': linear-gradient(110deg, #FFEDD5 0%, #FDE5CA 25%, #F6E7E5 50%, #EEE2F8 75%, #E0D2F6 100%),
   'pro-support-banner-title': var(--color-black),
   'pro-support-banner-text': var(--color-black),
