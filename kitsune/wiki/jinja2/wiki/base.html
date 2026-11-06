@@ -5,3 +5,6 @@
 {% if product %}
   {% set search_params = {'product': product.slug} %}
 {% endif %}
+{% if document and document.is_restricted %}
+  {% set suppress_analytics = True %}
+{% endif %}

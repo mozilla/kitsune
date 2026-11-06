@@ -3,9 +3,12 @@ from unittest import mock
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.test import Client, tag
+from django.test import Client, override_settings, tag
+from parameterized import parameterized
 from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 
+from kitsune.kbforums.tests import ThreadFactory
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.tests import SkipTest, TestCase, template_used
@@ -111,6 +114,89 @@ class DocumentVisibilityTests(TestCase):
         self.client.login(username=creator.username, password="testpass")
         response = self.client.get(rev.document.get_absolute_url())
         self.assertEqual(response.status_code, 200)
+
+
+@override_switch("matomo-mzla", active=True)
+@override_settings(
+    CACHE_MIDDLEWARE_SECONDS=3600,
+    GTM_CONTAINER_ID="GTM-TEST",
+    MATOMO_MZLA_PRODUCT_SLUGS=["thunderbird"],
+    MATOMO_MZLA_SITE_ID="8",
+)
+class DocumentPrivacyTests(TestCase):
+    @parameterized.expand(
+        [
+            ("public_anonymous", False, False),
+            ("public_member", False, True),
+            ("restricted_member", True, True),
+        ]
+    )
+    def test_analytics_referrer_and_caching(self, name, restricted, member):
+        group = GroupFactory()
+        private = AudienceFactory(groups=[group])
+        revision = ApprovedRevisionFactory(
+            document__products=[ProductFactory(slug="thunderbird")],
+            document__audiences=[private] if restricted else None,
+        )
+        if member:
+            self.client.force_login(UserFactory(groups=[group]))
+
+        response = self.client.get(revision.document.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertEqual("/gtm-snippet." in content, not restricted)
+        self.assertEqual("/matomo-mzla." in content, not restricted)
+        self.assertEqual(response.get("Referrer-Policy") == "strict-origin", restricted)
+        cache_control = {
+            directive.strip() for directive in response.get("Cache-Control", "").split(",")
+        }
+        self.assertEqual({"private", "no-store"} <= cache_control, restricted)
+        doc = pq(response.content)
+        self.assertEqual(bool(doc('meta[name="referrer"][content="strict-origin"]')), restricted)
+
+    @parameterized.expand(
+        [
+            (page, restricted)
+            for page in (
+                "revision",
+                "history",
+                "what_links_here",
+                "edit",
+                "translate",
+                "discussion",
+            )
+            for restricted in (True, False)
+        ]
+    )
+    def test_article_tool_pages_follow_the_article(self, page, restricted):
+        group = GroupFactory()
+        revision = ApprovedRevisionFactory(
+            document__products=[ProductFactory(slug="thunderbird")],
+            document__audiences=[AudienceFactory(groups=[group])] if restricted else None,
+        )
+        slug = revision.document.slug
+        thread = ThreadFactory(document=revision.document)
+        url = {
+            "revision": reverse("wiki.revision", args=[slug, revision.id]),
+            "history": reverse("wiki.document_revisions", args=[slug]),
+            "what_links_here": reverse("wiki.what_links_here", args=[slug]),
+            "edit": reverse("wiki.edit_document", args=[slug]),
+            "translate": reverse("wiki.translate", args=[slug], locale="de"),
+            "discussion": reverse("wiki.discuss.posts", args=[slug, thread.id]),
+        }[page]
+        self.client.force_login(UserFactory(groups=[group]))
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertEqual("/gtm-snippet." in content, not restricted)
+        self.assertNotIn("/matomo-mzla.", content)
+        self.assertEqual(
+            bool(pq(response.content)('meta[name="referrer"][content="strict-origin"]')),
+            restricted,
+        )
 
 
 class RevisionVisibilityTests(TestCase):

@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 
 from django.conf import settings
 from django.utils import timezone
+from parameterized import parameterized
 
 from kitsune.dashboards import LAST_30_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
@@ -14,6 +15,7 @@ from kitsune.dashboards.readouts import (
     NeedsChangesReadout,
     TemplateReadout,
     TemplateTranslationsReadout,
+    UnhelpfulReadout,
     UnreadyForLocalizationReadout,
     UnreviewedReadout,
     kb_overview_rows,
@@ -21,7 +23,8 @@ from kitsune.dashboards.readouts import (
 )
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.models import ModelBase
-from kitsune.sumo.tests import TestCase
+from kitsune.sumo.redis_utils import RedisError, redis_client
+from kitsune.sumo.tests import SkipTest, TestCase
 from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.config import (
     ADMINISTRATION_CATEGORY,
@@ -1121,3 +1124,32 @@ class CannedResponsesTests(ReadoutTestCase):
         d.products.add(p)
         self.assertEqual(1, len(self.rows(product=p)))
         self.assertEqual(self.row(product=p)["title"], d.title)
+
+
+class UnhelpfulTests(ReadoutTestCase):
+    readout = UnhelpfulReadout
+
+    def setUp(self):
+        super().setUp()
+        try:
+            self.redis = redis_client("helpfulvotes")
+            self.redis.delete(settings.HELPFULVOTES_UNHELPFUL_KEY)
+        except RedisError:
+            raise SkipTest
+        self.addCleanup(self.redis.delete, settings.HELPFULVOTES_UNHELPFUL_KEY)
+
+    @parameterized.expand([("anonymous", ["Public"]), ("member", ["Public", "Private"])])
+    def test_lists_only_readable_articles(self, viewer, titles):
+        group = GroupFactory()
+        private = AudienceFactory(groups=[group])
+        for title, audiences in (("Public", None), ("Private", [private])):
+            document = ApprovedRevisionFactory(
+                document__title=title, document__audiences=audiences
+            ).document
+            self.redis.rpush(
+                settings.HELPFULVOTES_UNHELPFUL_KEY,
+                f"{document.id}::5.0::0.4::0.0::0.0::{document.slug}::{document.title}",
+            )
+        user = UserFactory(groups=[group]) if viewer == "member" else None
+
+        self.assertEqual([row["title"] for row in self.rows(user=user)], titles)

@@ -27,6 +27,7 @@ from kitsune.access.decorators import group_required, login_required, permission
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.utils import send_support_ticket_to_zendesk
 from kitsune.flagit.models import FlaggedObject
+from kitsune.kbforums.models import Post as KBForumPost
 from kitsune.products.models import Product, Topic
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
@@ -34,6 +35,7 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import in_staff_group, paginate
 from kitsune.tags.models import SumoTag
+from kitsune.wiki.models import Document
 
 
 def get_flagged_objects(reason=None, exclude_reason=None, content_types=None, product_slug=None):
@@ -153,6 +155,10 @@ def flagged_queue(request):
             pass
 
     ct_support_ticket = ContentType.objects.get_for_model(SupportTicket)
+    ct_kb_post = ContentType.objects.get_for_model(KBForumPost)
+    unreadable_kb_posts = KBForumPost.objects.exclude(
+        thread__document__in=Document.objects.unrestricted(request.user)
+    ).values("id")
 
     objects = (
         get_flagged_objects(
@@ -163,6 +169,7 @@ def flagged_queue(request):
         .select_related("content_type", "creator")
         .prefetch_related("content_object")
         .exclude(content_type=ct_support_ticket)
+        .exclude(content_type=ct_kb_post, object_id__in=unreadable_kb_posts)
     )
 
     objects = paginate(request, objects)
@@ -174,6 +181,7 @@ def flagged_queue(request):
         FlaggedObject.objects.pending()
         .exclude(reason=FlaggedObject.REASON_CONTENT_MODERATION)
         .exclude(content_type=ct_support_ticket)
+        .exclude(content_type=ct_kb_post, object_id__in=unreadable_kb_posts)
         .values_list("content_type__id", "content_type__model")
         .distinct()
         .order_by("content_type__model")

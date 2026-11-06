@@ -1089,8 +1089,18 @@ class UnhelpfulReadout(Readout):
             log.error("Redis error: {}".format(e))
             output = []
 
+        # The cached list is shared by every viewer, so it can name articles they can't read.
+        readable_ids = {
+            str(document_id)
+            for document_id in Document.objects.visible(
+                self.user, id__in=[r.split("::")[0] for r in output]
+            ).values_list("id", flat=True)
+        }
+
         data = []
         for r in output:
+            if r.split("::")[0] not in readable_ids:
+                continue
             row = self.row_to_dict(r)
             if row:
                 data.append(row)

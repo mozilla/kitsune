@@ -7,6 +7,7 @@ from actstream.models import Action, Follow
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.utils import timezone
+from parameterized import parameterized
 
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
@@ -38,8 +39,8 @@ from kitsune.sumo.tests import TestCase
 from kitsune.tags.models import SumoTag
 from kitsune.tags.tests import TagFactory
 from kitsune.tags.utils import add_existing_tag
-from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import TranslatedRevisionFactory
+from kitsune.users.tests import GroupFactory, UserFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, TranslatedRevisionFactory
 
 
 class TestAnswer(TestCase):
@@ -724,6 +725,36 @@ class OldQuestionsArchiveTest(ElasticTestCase):
         # q1 is still unarchived.
         archived_questions = list(Question.objects.filter(is_archived=False))
         self.assertEqual(sorted([q.id for q in archived_questions]), [q1.id])
+
+
+class QuestionRelatedDocumentsTests(ElasticTestCase):
+    @parameterized.expand([("public", False), ("restricted", True)])
+    def test_related_documents_leave_out_restricted_articles(self, name, restricted):
+        product = ProductFactory()
+        text = "sync bookmarks between devices"
+        # The more_like_this defaults skip terms found in fewer than five documents.
+        for index in range(5):
+            ApprovedRevisionFactory(
+                document__title=f"Filler {index}",
+                document__products=[product],
+                content=f"{text} and other words",
+            )
+        ApprovedRevisionFactory(
+            document__title="Sync bookmarks",
+            document__products=[product],
+            document__audiences=[AudienceFactory(groups=[GroupFactory()])] if restricted else None,
+            content=text,
+            keywords=text,
+            summary=text,
+        )
+        question = QuestionFactory(
+            product=product, title="Sync bookmarks", content=f"{text} {text}"
+        )
+
+        titles = [document["title"] for document in question.related_documents]
+
+        self.assertTrue(titles)
+        self.assertEqual("Sync bookmarks" in titles, not restricted)
 
 
 class QuestionVisitsTests(TestCase):
