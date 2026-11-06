@@ -12,6 +12,7 @@ from kitsune.retrieval.query import (
     InvalidRetrievalResponse,
     LegacyQuestion,
     RetrievalPassage,
+    RetrievalResult,
     SimilarityFloorUnavailable,
     _build_retriever,
     _decode_response,
@@ -163,6 +164,61 @@ class LexicalClauseTests(SimpleTestCase):
             )
         )
 
+    def test_included_family_ids_scope_every_kb_clause_but_not_aaq(self):
+        clauses = build_lexical_clauses(
+            "firefox",
+            locale="de",
+            sources={"kb", "aaq"},
+            viewer_group_ids=(),
+            included_family_ids={"kb:5", "kb:3"},
+        )
+
+        scope = {"terms": {"family_id": ["kb:3", "kb:5"]}}
+        self.assertTrue(_contains(clauses.kb_requested.to_dict(), scope))
+        self.assertTrue(_contains(clauses.kb_english.to_dict(), scope))
+        self.assertFalse(_contains(clauses.aaq_requested.to_dict(), scope))
+
+    def test_restricted_only_replaces_the_kb_access_filter(self):
+        public = {"term": {"visibility": "public"}}
+        restricted = {"term": {"visibility": "group_restricted"}}
+        cases = (
+            (
+                {"viewer_group_ids": (9, 7)},
+                [restricted, {"terms": {"access_group_ids": [7, 9]}}],
+                [public],
+            ),
+            (
+                {"viewer_group_ids": (), "privileged": True},
+                [restricted],
+                [public, {"terms": {"visibility": ["public", "group_restricted"]}}],
+            ),
+            ({"viewer_group_ids": ()}, [{"match_none": {}}], [public, restricted]),
+        )
+        for options, present, absent in cases:
+            with self.subTest(**options):
+                kb = build_lexical_clauses(
+                    "firefox",
+                    locale="en-US",
+                    sources={"kb"},
+                    restricted_only=True,
+                    **options,
+                ).kb_requested.to_dict()
+                for expected in present:
+                    self.assertTrue(_contains(kb, expected))
+                for unexpected in absent:
+                    self.assertFalse(_contains(kb, unexpected))
+
+    def test_rejects_invalid_included_family_ids(self):
+        for family_ids in ("kb:1", b"kb:1", ("1",), ("aaq:1",), (1,), (None,), iter(["kb:1"])):
+            with self.subTest(family_ids=family_ids), self.assertRaises(ValueError):
+                build_lexical_clauses(
+                    "firefox",
+                    locale="en-US",
+                    sources={"kb"},
+                    viewer_group_ids=(),
+                    included_family_ids=family_ids,  # type: ignore[arg-type]
+                )
+
     def test_advanced_fields_are_rendered_for_each_source(self):
         clauses = build_lexical_clauses(
             'field:content:"startup crash" OR field:title:firefox',
@@ -241,6 +297,37 @@ class NativeRetrieverCompositionTests(SimpleTestCase):
 
         self.assertTrue(_contains(mixed, {"terms": {"family_id": ["aaq:7"]}}))
         self.assertEqual(set(semantic["standard"]["query"]), {"knn"})
+
+    def test_scope_restriction_and_exclusion_compose_in_the_lexical_and_semantic_children(self):
+        retriever = _build_retriever(
+            "firefox",
+            kb_index="retrieval-42",
+            locale="en-US",
+            sources={"kb"},
+            viewer_group_ids=(7,),
+            product_id=None,
+            query_vector=[1.0, 0.0],
+            similarity_floor=0.75,
+            semantic_k=10,
+            num_candidates=20,
+            rank_window_size=20,
+            locale_composition="combined",
+            included_family_ids=("kb:3", "kb:5"),
+            restricted_only=True,
+            excluded_family_ids=("kb:5",),
+        )
+
+        children = [child["standard"]["query"] for child in retriever["rrf"]["retrievers"]]
+        self.assertEqual(len(children), 2)
+        for query in children:
+            for expected in (
+                {"terms": {"family_id": ["kb:3", "kb:5"]}},
+                {"terms": {"family_id": ["kb:5"]}},
+                {"term": {"visibility": "group_restricted"}},
+                {"terms": {"access_group_ids": [7]}},
+            ):
+                self.assertTrue(_contains(query, expected))
+            self.assertFalse(_contains(query, {"term": {"visibility": "public"}}))
 
     def test_separate_locale_composition_uses_collapsed_children_and_distinct_bounds(self):
         retriever = _build_retriever(
@@ -492,6 +579,95 @@ class BoundedRetrievalTests(SimpleTestCase):
             _retrieve_unvalidated(**common, rank_window_size=20, offset=11, max_offset=10)
         with self.assertRaisesRegex(ValueError, "has_more"):
             _retrieve_unvalidated(**common, rank_window_size=10, offset=8, max_offset=10)
+
+    def test_a_scope_that_matches_no_kb_content_skips_elasticsearch(self):
+        common = {
+            "kb_index": "retrieval-42",
+            "locale": "en-US",
+            "sources": {"kb"},
+            "product_id": None,
+            "similarity_floor": 0.75,
+            "semantic_k": 10,
+            "num_candidates": 20,
+            "rank_window_size": 20,
+            "locale_composition": "combined",
+            "page_size": 2,
+            "offset": 0,
+            "max_offset": 10,
+        }
+        client = mock.Mock()
+        with mock.patch("kitsune.retrieval.query.es_client", return_value=client):
+            for options in (
+                {"included_family_ids": ()},
+                {"restricted_only": True},
+                {"restricted_only": True, "included_family_ids": ("kb:1",)},
+            ):
+                for query_vector, mode in ((None, "lexical"), ([1.0, 0.0], "hybrid")):
+                    with self.subTest(options=options, mode=mode):
+                        result = _retrieve_unvalidated(
+                            "firefox",
+                            viewer_group_ids=(),
+                            query_vector=query_vector,
+                            **common,
+                            **options,
+                        )
+                        self.assertEqual(
+                            result,
+                            RetrievalResult(
+                                candidates=(),
+                                approximate_total=0,
+                                has_more=False,
+                                mode=mode,
+                                degraded=False,
+                                failed_shards=0,
+                                took_ms=0,
+                            ),
+                        )
+
+            for options in (
+                {"included_family_ids": ""},
+                {"included_family_ids": ("aaq:1",)},
+                {"restricted_only": True, "viewer_group_ids": ""},
+            ):
+                with self.subTest(options=options), self.assertRaises(ValueError):
+                    _retrieve_unvalidated(
+                        "firefox",
+                        **{"viewer_group_ids": (), "query_vector": None, **common, **options},
+                    )
+        client.search.assert_not_called()
+
+    def test_an_empty_scope_leaves_aaq_candidates_unaffected(self):
+        client = mock.Mock()
+        client.search.return_value = {
+            "took": 1,
+            "timed_out": False,
+            "_shards": {"total": 1, "successful": 1, "skipped": 0, "failed": 0},
+            "hits": {"hits": []},
+            "aggregations": {"families": {"value": 0}},
+        }
+        with mock.patch("kitsune.retrieval.query.es_client", return_value=client):
+            _retrieve_unvalidated(
+                "firefox",
+                kb_index="retrieval-42",
+                locale="en-US",
+                sources={"kb", "aaq"},
+                viewer_group_ids=(),
+                product_id=None,
+                query_vector=None,
+                similarity_floor=None,
+                semantic_k=10,
+                num_candidates=20,
+                rank_window_size=20,
+                locale_composition="combined",
+                page_size=2,
+                offset=0,
+                max_offset=10,
+                included_family_ids=(),
+            )
+
+        retriever = client.search.call_args.kwargs["retriever"]
+        self.assertTrue(_contains(retriever, {"terms": {"family_id": []}}))
+        self.assertTrue(_contains(retriever, {"prefix": {"family_id": "aaq:"}}))
 
 
 class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
@@ -935,3 +1111,80 @@ class NativeRetrieverElasticsearchTests(ChunkIndexTestCase):
                     ),
                     expected,
                 )
+
+    def test_access_scope_restriction_and_exclusion_filter_both_children(self):
+        client = es_client().options(request_timeout=30)
+        now = datetime.now(UTC)
+        vector = [1.0, *([0.0] * (VECTOR_DIMS - 1))]
+        bulk(
+            client,
+            [
+                {
+                    "_index": ChunkDocument.Index.write_alias,
+                    "_id": f"{object_id}-0",
+                    "_source": {
+                        "kind": "chunk",
+                        "content_type": "kb",
+                        "object_id": object_id,
+                        "family_id": f"kb:{object_id}",
+                        "locale": "en-US",
+                        "position": 0,
+                        "heading_path": "Firefox",
+                        "scope": {"version": 1, "clauses": []},
+                        "visibility": visibility,
+                        "access_group_ids": group_ids,
+                        "product_ids": [],
+                        "topic_ids": [],
+                        "category": "10",
+                        "title": {"en-US": "firefox startup"},
+                        "summary": {"en-US": "firefox startup"},
+                        "content_text": {"en-US": "firefox startup"},
+                        "content_vector": vector,
+                        "updated": now,
+                    },
+                }
+                for object_id, visibility, group_ids in (
+                    ("1", "public", []),
+                    ("2", "group_restricted", [7]),
+                    ("3", "group_restricted", [8]),
+                )
+            ],
+            refresh=True,
+        )
+
+        cases = (
+            ({"viewer_group_ids": (7,)}, {"kb:1", "kb:2"}),
+            ({}, {"kb:1"}),
+            ({"viewer_group_ids": (7,), "restricted_only": True}, {"kb:2"}),
+            ({"privileged": True, "restricted_only": True}, {"kb:2", "kb:3"}),
+            ({"viewer_group_ids": (7,), "included_family_ids": ("kb:2",)}, {"kb:2"}),
+            ({"included_family_ids": ("kb:2",)}, set()),
+            ({"viewer_group_ids": (7,), "excluded_family_ids": ("kb:2",)}, {"kb:1"}),
+        )
+        children = (
+            ("lexical", {"query_vector": None}),
+            ("semantic", {"query_vector": vector, "include_lexical": False}),
+        )
+        for child, child_options in children:
+            for options, expected in cases:
+                with self.subTest(child=child, **options):
+                    result = _retrieve_unvalidated(
+                        "firefox startup",
+                        kb_index=ChunkDocument.Index.read_alias,
+                        locale="en-US",
+                        sources={"kb"},
+                        product_id=None,
+                        similarity_floor=0.5,
+                        semantic_k=10,
+                        num_candidates=20,
+                        rank_window_size=20,
+                        locale_composition="combined",
+                        page_size=10,
+                        offset=0,
+                        max_offset=10,
+                        strict=True,
+                        **{"viewer_group_ids": (), **child_options, **options},
+                    )
+                    self.assertEqual(
+                        {candidate.family_id for candidate in result.candidates}, expected
+                    )

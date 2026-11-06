@@ -17,7 +17,7 @@ from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, 
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
-from kitsune.wiki.models import PinnedArticleConfig
+from kitsune.wiki.models import Audience, PinnedArticleConfig
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     AudienceFactory,
@@ -35,6 +35,7 @@ from kitsune.wiki.utils import (
     get_kb_visited,
     get_pinned_articles,
     get_visible_document_or_404,
+    group_by_visibility,
     has_visited_kb,
     num_active_contributors,
     remove_expired_from_kb_visited,
@@ -275,6 +276,27 @@ class FeaturedArticlesTestCase(TestCase):
                 [d.id for d in featured],
                 [self.d1.id, self.d2.id, self.de1.parent.id, self.de2.parent.id],
             )
+
+
+class GroupByVisibilityTests(TestCase):
+    def test_groups_private_first_by_name_and_omits_empty_groups(self):
+        mine = Audience(name="Mine", is_public=False)
+        zulu = Audience(name="Zulu", is_public=True)
+        bravo = Audience(name="bravo", is_public=True)
+
+        def grouped(*knowledge_bases):
+            return [
+                (str(heading), [kb.name for kb in group])
+                for heading, group in group_by_visibility(knowledge_bases)
+            ]
+
+        self.assertEqual(
+            grouped(zulu, mine, bravo),
+            [("Your knowledge bases", ["Mine"]), ("Open to everyone", ["bravo", "Zulu"])],
+        )
+        self.assertEqual(grouped(zulu), [("Open to everyone", ["Zulu"])])
+        self.assertEqual(grouped(mine), [("Your knowledge bases", ["Mine"])])
+        self.assertEqual(grouped(), [])
 
 
 class RemoveExpiredFromKBVisitedTests(TestCase):

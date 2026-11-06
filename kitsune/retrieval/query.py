@@ -165,6 +165,8 @@ def _kb_clause(
     product_id: int | None,
     viewer_group_ids: Sequence[int],
     privileged: bool,
+    included_family_ids: Collection[str] | None,
+    restricted_only: bool,
     default_operator: DefaultOperator,
     minimum_should_match: str | None,
 ) -> Query:
@@ -191,6 +193,8 @@ def _kb_clause(
         product_id=product_id,
         viewer_group_ids=viewer_group_ids,
         privileged=privileged,
+        included_family_ids=included_family_ids,
+        restricted_only=restricted_only,
     )
     return DSLQ(
         "bool",
@@ -215,32 +219,45 @@ def _kb_filters(
     product_id: int | None,
     viewer_group_ids: Sequence[int],
     privileged: bool,
+    included_family_ids: Collection[str] | None = None,
+    restricted_only: bool = False,
 ) -> list[Query]:
     if isinstance(viewer_group_ids, str | bytes) or any(
         not is_positive_int(group_id) for group_id in viewer_group_ids
     ):
         raise ValueError("viewer_group_ids must contain only positive integers")
+    if included_family_ids is not None and (
+        isinstance(included_family_ids, str | bytes)
+        or not isinstance(included_family_ids, Collection)
+        or any(
+            not isinstance(family_id, str) or not family_id.startswith(f"{KB_SOURCE}:")
+            for family_id in included_family_ids
+        )
+    ):
+        raise ValueError("included_family_ids must contain KB family IDs")
 
     public = DSLQ("term", visibility=PUBLIC_VISIBILITY)
     if privileged:
-        access = DSLQ("terms", visibility=[PUBLIC_VISIBILITY, RESTRICTED_VISIBILITY])
+        access = (
+            DSLQ("term", visibility=RESTRICTED_VISIBILITY)
+            if restricted_only
+            else DSLQ("terms", visibility=[PUBLIC_VISIBILITY, RESTRICTED_VISIBILITY])
+        )
     elif viewer_group_ids:
-        access = DSLQ(
+        restricted = DSLQ(
             "bool",
-            should=[
-                public,
-                DSLQ(
-                    "bool",
-                    filter=[
-                        DSLQ("term", visibility=RESTRICTED_VISIBILITY),
-                        DSLQ("terms", access_group_ids=sorted(set(viewer_group_ids))),
-                    ],
-                ),
+            filter=[
+                DSLQ("term", visibility=RESTRICTED_VISIBILITY),
+                DSLQ("terms", access_group_ids=sorted(set(viewer_group_ids))),
             ],
-            minimum_should_match=1,
+        )
+        access = (
+            restricted
+            if restricted_only
+            else DSLQ("bool", should=[public, restricted], minimum_should_match=1)
         )
     else:
-        access = public
+        access = DSLQ("match_none") if restricted_only else public
 
     locales = list(dict.fromkeys(locales))
     locale_filter = (
@@ -255,6 +272,8 @@ def _kb_filters(
     ]
     if product_id is not None:
         filters.append(DSLQ("term", product_ids=str(product_id)))
+    if included_family_ids is not None:
+        filters.append(DSLQ("terms", family_id=sorted(set(included_family_ids))))
     return filters
 
 
@@ -298,6 +317,8 @@ def build_lexical_clauses(
     viewer_group_ids: Sequence[int],
     product_id: int | None = None,
     privileged: bool = False,
+    included_family_ids: Collection[str] | None = None,
+    restricted_only: bool = False,
     default_operator: DefaultOperator = "AND",
     minimum_should_match: str | None = None,
 ) -> LexicalClauses:
@@ -319,6 +340,8 @@ def build_lexical_clauses(
             product_id=product_id,
             viewer_group_ids=viewer_group_ids,
             privileged=privileged,
+            included_family_ids=included_family_ids,
+            restricted_only=restricted_only,
             default_operator=default_operator,
             minimum_should_match=minimum_should_match,
         )
@@ -330,6 +353,8 @@ def build_lexical_clauses(
                 product_id=product_id,
                 viewer_group_ids=viewer_group_ids,
                 privileged=privileged,
+                included_family_ids=included_family_ids,
+                restricted_only=restricted_only,
                 default_operator=default_operator,
                 minimum_should_match=minimum_should_match,
             )
@@ -406,6 +431,8 @@ def _build_retriever(
     minimum_should_match: str | None = None,
     include_lexical: bool = True,
     excluded_family_ids: Collection[str] = (),
+    included_family_ids: Collection[str] | None = None,
+    restricted_only: bool = False,
 ) -> dict:
     """Build the private native retriever tree used by serving and evaluation."""
     bounds = {
@@ -420,10 +447,14 @@ def _build_retriever(
         raise ValueError("num_candidates must be at least semantic_k")
     if locale_composition not in ("combined", "separate"):
         raise ValueError("locale_composition must be 'combined' or 'separate'")
-    if isinstance(excluded_family_ids, str | bytes) or any(
-        not isinstance(family_id, str)
-        or not family_id.startswith((f"{KB_SOURCE}:", f"{AAQ_SOURCE}:"))
-        for family_id in excluded_family_ids
+    if (
+        isinstance(excluded_family_ids, str | bytes)
+        or not isinstance(excluded_family_ids, Collection)
+        or any(
+            not isinstance(family_id, str)
+            or not family_id.startswith((f"{KB_SOURCE}:", f"{AAQ_SOURCE}:"))
+            for family_id in excluded_family_ids
+        )
     ):
         raise ValueError("excluded_family_ids must contain namespaced family IDs")
     excluded_family_ids = tuple(sorted(set(excluded_family_ids)))
@@ -437,6 +468,8 @@ def _build_retriever(
             viewer_group_ids=viewer_group_ids,
             product_id=product_id,
             privileged=privileged,
+            included_family_ids=included_family_ids,
+            restricted_only=restricted_only,
             default_operator=default_operator,
             minimum_should_match=minimum_should_match,
         )
@@ -481,6 +514,8 @@ def _build_retriever(
                     product_id=product_id,
                     viewer_group_ids=viewer_group_ids,
                     privileged=privileged,
+                    included_family_ids=included_family_ids,
+                    restricted_only=restricted_only,
                 ),
             ],
             must_not=(
@@ -538,6 +573,8 @@ def _retrieve_unvalidated(
     strict: bool = False,
     include_lexical: bool = True,
     excluded_family_ids: Collection[str] = (),
+    included_family_ids: Collection[str] | None = None,
+    restricted_only: bool = False,
     family_distribution_size: int | None = None,
 ) -> RetrievalResult[UnvalidatedCandidate]:
     """Execute one bounded search and return evidence that still requires authorization."""
@@ -585,7 +622,27 @@ def _retrieve_unvalidated(
         minimum_should_match=minimum_should_match,
         include_lexical=include_lexical,
         excluded_family_ids=excluded_family_ids,
+        included_family_ids=included_family_ids,
+        restricted_only=restricted_only,
     )
+
+    mode: RetrievalMode = (
+        "hybrid" if query_vector is not None and KB_SOURCE in source_set else "lexical"
+    )
+    # After the retriever build, so invalid arguments still raise before this short-circuit.
+    if source_set == {KB_SOURCE} and (
+        (included_family_ids is not None and not included_family_ids)
+        or (restricted_only and not privileged and not viewer_group_ids)
+    ):
+        return RetrievalResult(
+            candidates=(),
+            approximate_total=0,
+            has_more=False,
+            mode=mode,
+            degraded=False,
+            failed_shards=0,
+            took_ms=0,
+        )
 
     highlight_fields = {}
     if KB_SOURCE in source_set:
@@ -645,9 +702,6 @@ def _retrieve_unvalidated(
     raw = getattr(response, "body", response)
     if not isinstance(raw, Mapping):
         raise InvalidRetrievalResponse("Elasticsearch returned a non-object response")
-    mode: RetrievalMode = (
-        "hybrid" if query_vector is not None and KB_SOURCE in source_set else "lexical"
-    )
     return _decode_response(
         raw,
         page_size=page_size,

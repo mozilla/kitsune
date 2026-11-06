@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _lazy
 from kitsune import search as constants
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product
+from kitsune.wiki.models import Audience
 
 SEARCH_LANGUAGES = [(k, LOCALES[k].native) for k in settings.SUMO_LANGUAGES]
 
@@ -32,16 +33,28 @@ class SimpleSearchForm(BaseSearchForm):
     explain = forms.BooleanField(required=False)
     all_products = forms.BooleanField(required=False)
     language = forms.CharField(required=False)
+    kb = forms.CharField(required=False)
 
     product = forms.MultipleChoiceField(
         required=False, label=_lazy("Relevant to"), widget=forms.CheckboxSelectMultiple()
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.user = user
 
         product_field = self.fields["product"]
         product_field.choices = Product.active.values_list("slug", "title")
+
+    def clean_kb(self):
+        """The KB to scope the search to, or None. Unreadable and unknown slugs fail alike."""
+        slug = self.cleaned_data["kb"]
+        if not slug:
+            return None
+        try:
+            return Audience.objects.browsable_by(self.user).get(slug=slug)
+        except Audience.DoesNotExist:
+            raise forms.ValidationError(_lazy("Select a valid knowledge base."))
 
     def clean_products(self):
         products = self.cleaned_data["products"]

@@ -277,6 +277,31 @@ class SyncExecutorTests(ChunkIndexTestCase):
             self.assertAlmostEqual(before, after, places=6)
         self.assertNotEqual(stored.chunks[0]["product_ids"], [])
 
+    def test_access_only_changes_update_metadata_and_keep_the_vectors(self):
+        first_group, second_group = GroupFactory(), GroupFactory()
+        kb = AudienceFactory(groups=[first_group])
+        self._sync()
+        vectors_before = [item["content_vector"] for item in self._stored_state().chunks]
+        self.assertGreater(len(vectors_before), 0)
+
+        def assert_metadata_only_sync(group_ids):
+            report = self._sync()
+
+            self.assertEqual(report.outcome, SyncOutcome.METADATA_ONLY)
+            self.assertEqual(report.embedding_calls, 0)
+            chunks = self._stored_state().chunks
+            for item, vector_before in zip(chunks, vectors_before, strict=True):
+                self.assertEqual(item["visibility"], "group_restricted")
+                self.assertEqual(item["access_group_ids"], group_ids)
+                for before, after in zip(vector_before, item["content_vector"], strict=True):
+                    self.assertAlmostEqual(before, after, places=6)
+
+        self.document.audiences.set([kb])
+        assert_metadata_only_sync([first_group.id])
+
+        kb.groups.add(second_group)
+        assert_metadata_only_sync(sorted([first_group.id, second_group.id]))
+
     def test_changed_content_re_embeds(self):
         self._sync()
         ApprovedRevisionFactory(document=self.document, content="Totally different guidance.")
@@ -317,7 +342,7 @@ class SyncExecutorTests(ChunkIndexTestCase):
 
     def test_an_ineligible_document_is_evicted(self):
         self._sync()
-        self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
+        Document.objects.filter(pk=self.document.pk).update(is_archived=True)
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             report = self._sync()
@@ -402,16 +427,16 @@ class SyncExecutorTests(ChunkIndexTestCase):
         self.assertEqual(report.outcome, SyncOutcome.ABORTED_STALE)
         self.assertEqual(self._stored_state().chunks, [])
 
-    def test_a_restriction_during_provider_work_evicts_instead_of_writing(self):
+    def test_an_archive_during_provider_work_evicts_instead_of_writing(self):
         self._sync()
 
-        def restrict_then_embed(*args, **kwargs):
-            self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
+        def archive_then_embed(*args, **kwargs):
+            Document.objects.filter(pk=self.document.pk).update(is_archived=True)
             return get_embeddings(*args, **kwargs)
 
         ApprovedRevisionFactory(document=self.document, content="New content to force embed.")
         self.document.refresh_from_db()
-        with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=restrict_then_embed):
+        with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=archive_then_embed):
             report = self._sync()
 
         self.assertEqual(report.outcome, SyncOutcome.DELETED)
@@ -423,12 +448,12 @@ class SyncExecutorTests(ChunkIndexTestCase):
         ApprovedRevisionFactory(document=self.document, content="New content to force embed.")
         self.document.refresh_from_db()
 
-        def restrict_then_embed(*args, **kwargs):
-            self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
+        def archive_then_embed(*args, **kwargs):
+            Document.objects.filter(pk=self.document.pk).update(is_archived=True)
             return get_embeddings(*args, **kwargs)
 
         with (
-            mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=restrict_then_embed),
+            mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=archive_then_embed),
             mock.patch.object(RedisLease, "renew", side_effect=DocumentLockUnavailable("stolen")),
             self.assertRaises(DocumentLockUnavailable),
         ):
@@ -559,7 +584,7 @@ class SingleWriteGenerationTests(ChunkIndexTestCase):
         sync_document_chunks(self.document.id, target_index=self.first)
         second = self._second_generation()
         sync_document_chunks(self.document.id)
-        self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
+        Document.objects.filter(pk=self.document.pk).update(is_archived=True)
 
         report = sync_document_chunks(self.document.id)
 

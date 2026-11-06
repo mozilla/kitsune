@@ -11,6 +11,10 @@ export default function trackEvent(name, parameters) {
 }
 
 export function addGAEventListeners(containerSelector) {
+  // Pages render private articles to these viewers, and click events carry link URLs.
+  if (document.body.dataset.privateSearch) {
+    return;
+  }
   const elementsWithGAEvent = document.querySelectorAll(`${containerSelector} *[data-event-name]`);
   elementsWithGAEvent.forEach((elementWithGAEvent) => {
     elementWithGAEvent.addEventListener("click", (event) => {

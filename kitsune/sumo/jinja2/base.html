@@ -97,6 +97,9 @@
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-messages-api="{{ url('messages.api.get_autocomplete_suggestions') }}"
       data-media-url="{{ MEDIA_URL }}"
+      {% if has_private_kb_access(request.user) %}
+        data-private-search="true"
+      {% endif %}
       {% if ga_alternate_url %}
         data-ga-alternate-url="{{ ga_alternate_url }}"
       {% endif %}
