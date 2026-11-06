@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from django.db import models
 from django.db.models import Exists, OuterRef, Q
 
@@ -25,6 +26,26 @@ def effective_group_ids(user, using=None):
             user.groups.using(using).values_list("id", flat=True)
         ).union(company.group_id for company in companies)
     return user._kb_effective_group_ids
+
+
+def has_private_kb_access(user):
+    """
+    Whether the user can read private knowledge bases: Staff and superusers, and users with
+    an effective group in any private audience, listed or not. Cached on the user.
+    """
+    if not (user and user.is_authenticated):
+        return False
+
+    if not hasattr(user, "_kb_has_private_access"):
+        if user.is_superuser or in_staff_group(user):
+            user._kb_has_private_access = True
+        else:
+            group_ids = effective_group_ids(user)
+            user._kb_has_private_access = (
+                bool(group_ids)
+                and Group.objects.filter(id__in=group_ids, kb_audiences__is_public=False).exists()
+            )
+    return user._kb_has_private_access
 
 
 def audience_access(group_ids, prefix=""):
@@ -159,3 +180,32 @@ class AudienceManager(models.Manager):
             slug=DEFAULT_AUDIENCE_SLUG, defaults={"name": "Default", "is_public": True}
         )
         return audience
+
+    def _listed(self, condition):
+        return (
+            self.filter(condition, is_listed=True)
+            .exclude(slug=DEFAULT_AUDIENCE_SLUG)
+            .distinct()
+            .order_by("is_public", "name")
+        )
+
+    def listed_for(self, user):
+        """
+        The knowledge bases the user sees in menus, the directory and search filters: listed
+        public ones, and listed private ones with a group in the user's effective groups.
+        Membership only, so Staff don't list every customer's knowledge base.
+        """
+        condition = Q(is_public=True)
+        group_ids = effective_group_ids(user)
+        if group_ids:
+            condition |= Q(groups__in=group_ids)
+        return self._listed(condition)
+
+    def browsable_by(self, user):
+        """
+        The listed knowledge bases whose page and search filter the user may open: those the
+        user lists, plus every listed one for Staff and superusers.
+        """
+        if user and (user.is_superuser or in_staff_group(user)):
+            return self._listed(Q())
+        return self.listed_for(user)
