@@ -6,7 +6,7 @@ from langchain_core.exceptions import OutputParserException
 from langchain_core.runnables import Runnable, RunnableLambda
 from langchain_core.runnables.base import RunnableLike, coerce_to_runnable
 
-DEFAULT_LLM_MODEL = "gemini-2.5-flash"
+DEFAULT_LLM_MODEL = "gemini-3.8-flash"
 
 
 @lru_cache(maxsize=1)
@@ -22,7 +22,12 @@ def get_llm(
     from langchain_google_vertexai import ChatVertexAI
 
     return ChatVertexAI(
-        model=model_name, temperature=temperature, max_tokens=max_tokens, max_retries=max_retries
+        model=model_name,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        max_retries=max_retries,
+        # Newer Gemini models (e.g. gemini-4-argon) aren't served from regional endpoints.
+        location="global",
     )
 
 
