@@ -38,7 +38,7 @@
                 <fieldset>
                     <legend>{{ _("Knowledge bases") }}</legend>
                     <span class="{% if document_form.audiences.errors %}has-error{% endif %}">
-                      {{ document_form.audiences|label_with_help }}
+                      <label for="{{ document_form.audiences.auto_id }}">{{ document_form.audiences.help_text }}</label>
                       {{ document_form.audiences.as_widget(attrs={"class": "tom-select-audiences"}) }}
                       {{ document_form.audiences.errors }}
                     </span>
