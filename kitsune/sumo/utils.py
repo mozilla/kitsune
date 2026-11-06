@@ -11,6 +11,7 @@ from django.db import models
 from django.db.models.signals import pre_delete
 from django.templatetags.static import static
 from django.utils import timezone
+from django.utils.cache import patch_cache_control
 from django.utils.encoding import iri_to_uri
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django_ratelimit.core import is_ratelimited as is_ratelimited_core
@@ -73,6 +74,13 @@ def build_paged_url(request):
     qsa = urlencode(items)
 
     return "{}?{}".format(base, qsa)
+
+
+def mark_private(response):
+    """Keep a response that shows private content out of shared caches and referrers."""
+    response["Referrer-Policy"] = "strict-origin"
+    patch_cache_control(response, private=True, no_store=True)
+    return response
 
 
 def smart_int(string, fallback=0):

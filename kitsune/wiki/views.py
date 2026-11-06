@@ -36,6 +36,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
     get_next_url,
     in_staff_group,
+    mark_private,
     paginate,
     set_aaq_context,
     smart_int,
@@ -361,9 +362,13 @@ def document(request, document_slug, document=None):
             sorted(pgettext("DB: products.Product.title", p.title) for p in products)
         ),
         "related_docs": related_documents,
+        "suppress_analytics": doc.is_restricted,
     }
 
-    return maybe_vary_on_accept_language(render(request, "wiki/document.html", data))
+    response = render(request, "wiki/document.html", data)
+    if doc.is_restricted:
+        mark_private(response)
+    return maybe_vary_on_accept_language(response)
 
 
 def revision(request, document_slug, revision_id):

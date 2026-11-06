@@ -1,3 +1,4 @@
+from parameterized import parameterized
 from pyquery import PyQuery as pq
 
 from kitsune.forums.tests import ThreadFactory
@@ -5,8 +6,13 @@ from kitsune.questions.tests import AnswerFactory
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import ContributorFactory, UserFactory
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
+from kitsune.users.tests import ContributorFactory, GroupFactory, UserFactory
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    AudienceFactory,
+    DocumentFactory,
+    RevisionFactory,
+)
 
 
 class UserSearchTests(ElasticTestCase):
@@ -82,6 +88,22 @@ class LandingTests(ElasticTestCase):
         community_news = doc("#doc-content")
         self.assertEqual(len(community_news), 1)
         assert "splendid" in community_news.text()
+
+    @parameterized.expand([("anonymous", False), ("member", True)])
+    def test_restricted_news_only_for_readers(self, viewer, shown):
+        group = GroupFactory()
+        ApprovedRevisionFactory(
+            document__title="Community Hub News",
+            document__audiences=[AudienceFactory(groups=[group])],
+            content="splendid",
+        )
+        if viewer == "member":
+            self.client.force_login(UserFactory(groups=[group]))
+
+        response = self.client.get(reverse("community.home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(pq(response.content)("#doc-content")), int(shown))
 
     def test_recent_threads(self):
         """Verify the Community Discussions section."""

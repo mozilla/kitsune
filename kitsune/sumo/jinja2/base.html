@@ -33,8 +33,12 @@
   {% if DARK_MODE -%}
   <script>{{ theme_head_script() }}</script>
   {% endif -%}
-  {% include "includes/google-analytics.html" %}
-  {% if matomo_mzla %}{% include "includes/matomo-mzla.html" %}{% endif %}
+  {% if suppress_analytics %}
+    <meta name="referrer" content="strict-origin"/>
+  {% else %}
+    {% include "includes/google-analytics.html" %}
+    {% if matomo_mzla %}{% include "includes/matomo-mzla.html" %}{% endif %}
+  {% endif %}
 
   {% block head_top %}{% endblock %}
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
