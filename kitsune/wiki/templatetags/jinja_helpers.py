@@ -1,14 +1,55 @@
 import re
+from typing import NamedTuple
 
+from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
+from django.core.cache import cache
 from django_jinja import library
 from markupsafe import Markup
 
 from kitsune.wiki.content_managers import HybridContentManager
 from kitsune.wiki.diff import BetterHtmlDiff
 from kitsune.wiki.facets import documents_for
-from kitsune.wiki.models import Document
+from kitsune.wiki.managers import effective_group_ids, has_private_kb_access
+from kitsune.wiki.models import Audience, Document
+from kitsune.wiki.utils import group_by_visibility, public_kb_listing_key
 
 TABLE_TAG = re.compile(r"<table(?=[\s/>])|</table\s*>", re.IGNORECASE)
+
+library.global_function(has_private_kb_access)
+
+
+class MenuKnowledgeBase(NamedTuple):
+    slug: str
+    name: str
+    is_public: bool
+
+
+@library.global_function
+def kb_menu(request):
+    """
+    The knowledge bases of the main menu, grouped by visibility: the listed public ones, cached
+    for everyone, and the listed private ones of the user's groups, read per request. Anonymous
+    pages can be cached whole, so they only ever carry the public part.
+    """
+    listing_key = public_kb_listing_key()
+    rows = cache.get(listing_key)
+    if rows is None:
+        # Plain values, which the cache keeps unchanged across deploys.
+        rows = list(
+            Audience.objects.listed_for(AnonymousUser()).values_list(*MenuKnowledgeBase._fields)
+        )
+        cache.set(listing_key, rows, settings.CACHE_LONG_TIMEOUT)
+
+    user = getattr(request, "user", None)
+    if effective_group_ids(user):
+        rows = rows + list(
+            Audience.objects.listed_for(user)
+            .filter(is_public=False)
+            .values_list(*MenuKnowledgeBase._fields)
+        )
+
+    return group_by_visibility(MenuKnowledgeBase(*row) for row in rows)
 
 
 @library.global_function

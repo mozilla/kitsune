@@ -90,6 +90,7 @@ def _retrieve(
     product_id=None,
     page_size=10,
     offset=0,
+    **options,
 ):
     sources = (
         {"aaq"}
@@ -116,6 +117,7 @@ def _retrieve(
             authorization_overfetch=5,
             offset=offset,
             max_offset=20,
+            **options,
         )
     return authorized, search
 
@@ -259,6 +261,69 @@ class CandidateAuthorizationTests(TestCase):
         self.assertEqual(allowed_evidence.display.locale, "en-US")
         self.assertEqual(len(privileged.candidates), 1)
         self.assertTrue(search.call_args.kwargs["privileged"])
+
+    def test_scope_options_reach_the_search(self):
+        document = _approved()
+
+        _, search = _retrieve(
+            _result(_passage(document)),
+            viewer_access=ViewerAccess((7,)),
+            included_family_ids=(f"kb:{document.id}",),
+            restricted_only=True,
+            excluded_family_ids=("kb:99",),
+        )
+
+        kwargs = search.call_args.kwargs
+        self.assertEqual(kwargs["included_family_ids"], (f"kb:{document.id}",))
+        self.assertTrue(kwargs["restricted_only"])
+        self.assertEqual(kwargs["excluded_family_ids"], ("kb:99",))
+
+        _, search = _retrieve(_result(_passage(document)))
+        kwargs = search.call_args.kwargs
+        self.assertIsNone(kwargs["included_family_ids"])
+        self.assertFalse(kwargs["restricted_only"])
+        self.assertEqual(kwargs["excluded_family_ids"], ())
+
+    def test_a_scope_that_matches_no_kb_content_returns_an_empty_result_without_queries(self):
+        for options in ({"included_family_ids": ()}, {"restricted_only": True}):
+            with (
+                self.subTest(options=options),
+                mock.patch("kitsune.retrieval.query.es_client") as client,
+                self.assertNumQueries(0),
+            ):
+                result = retrieve(
+                    "firefox",
+                    viewer_access=ViewerAccess(),
+                    kb_index="retrieval-read",
+                    locale="en-US",
+                    sources={"kb"},
+                    product_id=None,
+                    query_vector=None,
+                    similarity_floor=None,
+                    semantic_k=20,
+                    num_candidates=40,
+                    rank_window_size=50,
+                    locale_composition="combined",
+                    page_size=10,
+                    authorization_overfetch=5,
+                    offset=0,
+                    max_offset=20,
+                    **options,
+                )
+
+            client.assert_not_called()
+            self.assertEqual(
+                result,
+                RetrievalResult(
+                    candidates=(),
+                    approximate_total=0,
+                    has_more=False,
+                    mode="lexical",
+                    degraded=False,
+                    failed_shards=0,
+                    took_ms=0,
+                ),
+            )
 
     def test_aaq_needs_no_database_authorization_query(self):
         with self.assertNumQueries(0):

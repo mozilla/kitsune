@@ -464,6 +464,51 @@ class HybridOrchestrationTests(SimpleTestCase):
         self.assertEqual(record.getMessage(), "retrieval.query.degraded")
         self.assertEqual(record.reason, "similarity_floor_unavailable")
 
+    def test_private_block_reuses_the_query_vector_and_logs_one_search(self):
+        cases = (({"kb", "aaq"}, True, 2), ({"aaq"}, True, 1), ({"kb"}, False, 1))
+        for sources, with_private_block, calls in cases:
+            with self.subTest(sources=sources, with_private_block=with_private_block):
+                with (
+                    _run(retrieve=_result()) as (_, cached, _, embed, _, retrieve),
+                    mock.patch(
+                        "kitsune.search.hybrid.effective_group_ids",
+                        return_value=frozenset({7, 3}),
+                    ),
+                    self.assertLogs("k.retrieval", level="INFO") as logs,
+                ):
+                    result = run_hybrid_search(
+                        _request(),
+                        query="firefox",
+                        locale="en-US",
+                        sources=sources,
+                        product_id=2,
+                        page=1,
+                        with_private_block=with_private_block,
+                    )
+
+                embed.assert_not_called()
+                self.assertEqual(cached.call_count, int("kb" in sources))
+                self.assertEqual(retrieve.call_count, calls)
+                main = retrieve.call_args.kwargs
+                self.assertEqual(main["sources"], sources)
+                self.assertEqual(main["excluded_family_ids"], ())
+                self.assertFalse(main.get("restricted_only"))
+                if calls == 2:
+                    block = retrieve.call_args_list[0].kwargs
+                    self.assertTrue(block["restricted_only"])
+                    self.assertEqual(block["viewer_access"], ViewerAccess((3, 7)))
+                    self.assertEqual(block["sources"], {"kb"})
+                    self.assertEqual(block["product_id"], 2)
+                    self.assertEqual(block["query_vector"], main["query_vector"])
+                self.assertEqual(result.private_block, ())
+                self.assertIsNone(result.private_block_heading)
+                [event] = [
+                    record
+                    for record in logs.records
+                    if record.getMessage() == "retrieval.query.completed"
+                ]
+                self.assertEqual(event.es_ms, 7 * calls)
+
     def test_aaq_only_skips_the_retrieval_index_and_embedding_path(self):
         with _run() as (target, cached, limited, embed, floor, retrieve):
             result = run_hybrid_search(

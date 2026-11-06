@@ -14,8 +14,6 @@ from kitsune.retrieval.eligibility import (
     access_group_ids_for,
     eligible_documents,
     family_id_for,
-    is_publicly_accessible,
-    is_retrieval_content_eligible,
     is_retrieval_indexable,
     visibility_for,
 )
@@ -136,46 +134,20 @@ class SharedContentExclusionsTests(TestCase):
 
 
 class RetrievalPredicateTests(TestCase):
-    """The three retrieval predicates in retrieval.eligibility."""
+    """The retrieval predicates in retrieval.eligibility."""
 
-    def test_content_eligible_requires_current_revision(self):
-        self.assertFalse(is_retrieval_content_eligible(DocumentFactory()))
-        self.assertTrue(is_retrieval_content_eligible(_approved()))
-
-    def test_content_eligible_is_access_agnostic(self):
-        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
-        ApprovedRevisionFactory(document=restricted)
-        self.assertTrue(is_retrieval_content_eligible(_reload(restricted)))
-
-    def test_content_eligible_excludes_content_type_exclusions(self):
-        template = TemplateDocumentFactory()
+    def test_retrieval_indexable_is_content_eligibility_whatever_the_audience(self):
+        private = AudienceFactory(groups=[GroupFactory()])
+        template = TemplateDocumentFactory(audiences=[private])
         ApprovedRevisionFactory(document=template)
-        self.assertFalse(is_retrieval_content_eligible(_reload(template)))
-
-    def test_public_accessibility_reflects_restrictions(self):
-        public = _approved()
-        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
-        self.assertTrue(is_publicly_accessible(public))
-        self.assertFalse(is_publicly_accessible(_reload(restricted)))
-
-    def test_translation_inherits_parent_restriction(self):
-        parent = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
-        ApprovedRevisionFactory(document=parent)
-        translation = _translation(_reload(parent))
-        self.assertFalse(is_publicly_accessible(translation))
-
-    def test_translation_of_public_parent_is_accessible(self):
-        parent = _approved()
-        self.assertTrue(is_publicly_accessible(_translation(parent)))
-
-    def test_retrieval_indexable_combines_content_revision_and_access_rules(self):
-        public = _approved()
-        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
-        ApprovedRevisionFactory(document=restricted)
         cases = (
-            (public, True),
-            (_reload(restricted), False),
+            (_approved(), True),
+            (_approved(audiences=[private]), True),
+            (_approved(audiences=[AudienceFactory()]), True),
+            (_approved(audiences=[]), True),
             (DocumentFactory(), False),
+            (DocumentFactory(audiences=[private]), False),
+            (_reload(template), False),
         )
         for document, expected in cases:
             with self.subTest(document=document):
@@ -189,16 +161,26 @@ class EligibleDocumentsQuerysetTests(TestCase):
         eligible = _approved()
         eligible_translation = _translation(eligible)
 
-        restricted = DocumentFactory(audiences=[AudienceFactory(groups=[GroupFactory()])])
-        ApprovedRevisionFactory(document=restricted)
-        restricted_translation = _translation(_reload(restricted))
+        agents_group, company_group = GroupFactory(), GroupFactory()
+        agents_kb = AudienceFactory(groups=[agents_group])
+        company_kb = AudienceFactory(groups=[company_group])
+        no_group_kb = AudienceFactory()
+        agents_article = _approved(audiences=[agents_kb])
+        company_article = _approved(audiences=[company_kb])
+        company_translation = _translation(company_article)
+        no_group_article = _approved(audiences=[no_group_kb])
+        no_kb_article = _approved(audiences=[])
+        shared_article = _approved(audiences=[Audience.objects.default(), company_kb])
 
         no_revision = DocumentFactory()
+        private_no_revision = DocumentFactory(audiences=[company_kb])
         template = TemplateDocumentFactory()
         ApprovedRevisionFactory(document=template)
         archived = DocumentFactory(is_archived=True)
         ApprovedRevisionFactory(document=archived)
         archived_translation = _translation(_reload(archived))
+        private_archived = DocumentFactory(is_archived=True, audiences=[agents_kb])
+        ApprovedRevisionFactory(document=private_archived)
         canned = DocumentFactory(category=CANNED_RESPONSES_CATEGORY)
         ApprovedRevisionFactory(document=canned)
         administration = DocumentFactory(category=ADMINISTRATION_CATEGORY)
@@ -211,20 +193,57 @@ class EligibleDocumentsQuerysetTests(TestCase):
         self.assertEqual(actual, expected)
 
         # Guard against a vacuous match: the corpus must exercise both sides.
-        self.assertEqual({eligible.pk, eligible_translation.pk}, expected)
+        self.assertEqual(
+            {
+                eligible.pk,
+                eligible_translation.pk,
+                agents_article.pk,
+                company_article.pk,
+                company_translation.pk,
+                no_group_article.pk,
+                no_kb_article.pk,
+                shared_article.pk,
+            },
+            expected,
+        )
         for excluded in (
-            restricted,
-            restricted_translation,
             no_revision,
+            private_no_revision,
             template,
             archived,
             archived_translation,
+            private_archived,
             canned,
             administration,
             redirect,
             stale_template_translation,
         ):
             self.assertNotIn(excluded.pk, actual)
+
+        metadata = {
+            document.pk: (visibility_for(document), access_group_ids_for(document))
+            for document in eligible_documents()
+        }
+        self.assertEqual(
+            metadata,
+            {
+                eligible.pk: ("public", []),
+                eligible_translation.pk: ("public", []),
+                agents_article.pk: ("group_restricted", [agents_group.id]),
+                company_article.pk: ("group_restricted", [company_group.id]),
+                company_translation.pk: ("group_restricted", [company_group.id]),
+                no_group_article.pk: ("group_restricted", []),
+                no_kb_article.pk: ("group_restricted", []),
+                shared_article.pk: ("public", []),
+            },
+        )
+
+        for pk, expected_metadata in metadata.items():
+            unprefetched = Document.objects.get(pk=pk)
+            self.assertEqual(
+                (visibility_for(unprefetched), access_group_ids_for(unprefetched)),
+                expected_metadata,
+            )
 
     def test_queryset_prefetches_original_owned_metadata(self):
         product = ProductFactory()
@@ -251,12 +270,13 @@ class EligibleDocumentsQuerysetTests(TestCase):
             mixed = _approved(audiences=[Audience.objects.default(), mixed_audience])
             _translation(mixed)
             _translation(_approved(), locale="fr")
+            private = _approved(audiences=[AudienceFactory(groups=[GroupFactory()])])
+            _translation(private)
 
         def iteration_queries():
             with CaptureQueriesContext(connection) as queries:
                 for document in eligible_documents():
                     build_source(document)
-                    is_publicly_accessible(document)
             return len(queries)
 
         add_families()
@@ -264,7 +284,7 @@ class EligibleDocumentsQuerysetTests(TestCase):
         add_families()
         add_families()
 
-        self.assertEqual(eligible_documents().count(), 12)
+        self.assertEqual(eligible_documents().count(), 18)
         self.assertEqual(iteration_queries(), baseline)
 
 

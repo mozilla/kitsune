@@ -5,8 +5,9 @@ never schedules work, and every receiver that needs to know *what changed* reads
 rows disappear — a ``post_clear`` or post-cascade handler cannot recover what was unlinked.
 
 Access changes are handled here as ordinary freshness transitions rather than by a separate
-security workflow (ADR 0006). Under the public-only policy, restricting a document makes it
-ineligible and the sync core evicts it; widening access makes it eligible and it is indexed.
+security workflow (ADR 0006): a change to an article's knowledge bases, or to a knowledge
+base's visibility or groups, refreshes the affected families and the sync core rewrites their
+access metadata.
 """
 
 from django.conf import settings
@@ -102,6 +103,25 @@ def taxonomy_deleted(sender, instance, **kwargs):
 def audiences_changed(sender, instance, action, reverse, pk_set, **kwargs):
     _refresh_families(
         _affected_documents(instance, action, reverse, pk_set, reverse_accessor="documents")
+    )
+
+
+@receiver(
+    m2m_changed,
+    sender=Audience.groups.through,
+    dispatch_uid="retrieval.audience_groups_changed",
+)
+def audience_groups_changed(sender, instance, action, reverse, pk_set, **kwargs):
+    if action in ("post_add", "post_remove") and not pk_set:
+        return
+    # Here the helper resolves the changed audiences, not documents.
+    audience_ids = _affected_documents(
+        instance, action, reverse, pk_set, reverse_accessor="kb_audiences"
+    )
+    _refresh_families(
+        Document.audiences.through.objects.filter(audience_id__in=audience_ids).values_list(
+            "document_id", flat=True
+        )
     )
 
 

@@ -1,0 +1,56 @@
+{% macro kb_mark(knowledge_base, size='md') -%}
+<span class="kb-mark is-{{ size }} kb-color--{{ knowledge_base.color }}" aria-hidden="true">{{ knowledge_base.monogram }}</span>
+{%- endmacro %}
+
+{% macro lock_icon() -%}
+<svg class="kb-lock" width="12" height="12" viewBox="0 0 24 24" role="img" aria-label="{{ _('Private') }}"><rect x="4" y="11" width="16" height="10" rx="2" fill="currentColor"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2.5"></path></svg>
+{%- endmacro %}
+
+{% macro kb_privacy(knowledge_base) -%}
+<p class="kb-privacy">
+  {% if knowledge_base.is_public %}
+    <svg class="kb-privacy--icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z"></path></svg>
+    {# L10n: Shown under the search box of a public knowledge base's page. #}
+    <span>{{ _('Open to everyone.') }}</span>
+  {% else %}
+    <svg class="kb-privacy--icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" fill="currentColor"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2.5"></path></svg>
+    {# L10n: Shown under the search box of a private knowledge base's page, whose articles only the members of a team or company can read. #}
+    <span>{{ _('Only members can see these articles.') }}</span>
+  {% endif %}
+</p>
+{%- endmacro %}
+
+{% macro kb_card(knowledge_base) -%}
+<div class="card card--product card--kb">
+  {{ kb_mark(knowledge_base) }}
+  <div class="card--details">
+    <h3 class="card--title">
+      <a class="expand-this-link" href="{{ url('wiki.knowledge_base', knowledge_base.slug) }}">{{ knowledge_base.name }}</a>
+      {% if not knowledge_base.is_public %}{{ lock_icon() }}{% endif %}
+    </h3>
+    {% if knowledge_base.description %}
+      <p class="card--desc">{{ knowledge_base.description }}</p>
+    {% endif %}
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro kb_product_filter(products, selected_product, page_url, list_params=None) -%}
+{% if products %}
+{# L10n: Accessible label for the product filter on a knowledge base's page. #}
+<nav id="kb-product-filter" class="subtopic-nav" aria-label="{{ _('Filter by product') }}">
+  <ul class="subtopic-nav--list">
+    <li>
+      <a class="subtopic-nav--link" href="{{ page_url|urlparams(**(list_params or {})) }}" {% if not selected_product %}aria-current="page"{% endif %}>{{ _('All Products') }}</a>
+    </li>
+    {% for product in products %}
+      <li>
+        <a class="subtopic-nav--link" href="{{ page_url|urlparams(product=product.slug, **(list_params or {})) }}" {% if product == selected_product %}aria-current="page"{% endif %}>
+          {{ pgettext('DB: products.Product.title', product.title)|forceescape }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}
+{%- endmacro %}

@@ -882,6 +882,32 @@
 //
 // Style guide: colors.callout-info
 
+// Knowledge bases
+//
+// The colors a knowledge base can pick for its mark and hero. `--kb-accent-<color>` fills the
+// mark under `--color-text-on-accent` and is the same in both themes; `--kb-accent-<color>-ink`
+// colors the privacy icon on the hero, lighter in dark. Each color's hero glow
+// (`--kb-accent-<color>-aurora`), mark shadow (`--kb-accent-<color>-glow`), and the hero's base
+// gradient (`--kb-hero-base`) can't be shown as swatches, so they appear only in the theme maps.
+//
+// Colors:
+// --kb-accent-violet: #7542E4 (violet-07) - Dark: #7542E4 (violet-07)
+// --kb-accent-violet-ink: #7542E4 (violet-07) - Dark: #AB71FF (violet-05)
+// --kb-accent-blue: #0060DF (blue-06) - Dark: #0060DF (blue-06)
+// --kb-accent-blue-ink: #0060DF (blue-06) - Dark: #8FBEFA (azure-03)
+// --kb-accent-teal: #008787 (green-08) - Dark: #008787 (green-08)
+// --kb-accent-teal-ink: #008787 (green-08) - Dark: #2AC3A2 (green-07)
+// --kb-accent-green: #2C7A3B - Dark: #2C7A3B
+// --kb-accent-green-ink: #2C7A3B - Dark: #83D5AD (sage-01)
+// --kb-accent-orange: #E25820 (orange-07) - Dark: #E25820 (orange-07)
+// --kb-accent-orange-ink: #E25820 (orange-07) - Dark: #FF8A50 (orange-05)
+// --kb-accent-red: #E12850 (red-07) - Dark: #E12850 (red-07)
+// --kb-accent-red-ink: #E12850 (red-07) - Dark: #FF848B (red-04)
+//
+// Weight: 47
+//
+// Style guide: colors.knowledge-bases
+
 $light: (
   'page-bg': white,
   'card-bg': var(--page-bg),
@@ -1062,6 +1088,51 @@ $light: (
   'brand-callout-action-shadow': 0 6px 16px -6px rgba(0, 0, 0, 0.45),
   'enterprise-callout-base': linear-gradient(120deg, #3A2470 0%, #39217D 100%),
   'enterprise-callout-glow': radial-gradient(50% 150% at 0% 50%, rgba(130, 84, 235, 0.32), transparent 70%),
+
+  // Knowledge bases
+  'kb-hero-base': linear-gradient(180deg, #F2EFFC 0%, #F9F9FB 72%),
+  'kb-accent-violet': var(--color-violet-07),
+  'kb-accent-violet-ink': var(--kb-accent-violet),
+  'kb-accent-violet-glow': 0 14px 34px rgba(c.color('violet', '07'), 0.34),
+  'kb-accent-violet-aurora': (
+    radial-gradient(ellipse 60% 95% at 14% -28%, rgba(c.color('violet', '07'), 0.26), transparent 66%),
+    radial-gradient(ellipse 46% 85% at 86% -28%, rgba(c.color('violet', '07'), 0.14), transparent 66%)
+  ),
+  'kb-accent-blue': var(--color-blue-06),
+  'kb-accent-blue-ink': var(--kb-accent-blue),
+  'kb-accent-blue-glow': 0 14px 34px rgba(c.color('blue', '06'), 0.34),
+  'kb-accent-blue-aurora': (
+    radial-gradient(ellipse 60% 95% at 14% -28%, rgba(c.color('blue', '06'), 0.24), transparent 66%),
+    radial-gradient(ellipse 46% 85% at 86% -28%, rgba(c.color('blue', '06'), 0.13), transparent 66%)
+  ),
+  'kb-accent-teal': var(--color-green-08),
+  'kb-accent-teal-ink': var(--kb-accent-teal),
+  'kb-accent-teal-glow': 0 14px 34px rgba(c.color('green', '08'), 0.34),
+  'kb-accent-teal-aurora': (
+    radial-gradient(ellipse 60% 95% at 14% -28%, rgba(c.color('green', '08'), 0.24), transparent 66%),
+    radial-gradient(ellipse 46% 85% at 86% -28%, rgba(c.color('green', '08'), 0.13), transparent 66%)
+  ),
+  'kb-accent-green': #2C7A3B,
+  'kb-accent-green-ink': var(--kb-accent-green),
+  'kb-accent-green-glow': 0 14px 34px rgba(44, 122, 59, 0.34),
+  'kb-accent-green-aurora': (
+    radial-gradient(ellipse 60% 95% at 14% -28%, rgba(44, 122, 59, 0.24), transparent 66%),
+    radial-gradient(ellipse 46% 85% at 86% -28%, rgba(44, 122, 59, 0.13), transparent 66%)
+  ),
+  'kb-accent-orange': var(--color-orange-07),
+  'kb-accent-orange-ink': var(--kb-accent-orange),
+  'kb-accent-orange-glow': 0 14px 34px rgba(c.color('orange', '07'), 0.34),
+  'kb-accent-orange-aurora': (
+    radial-gradient(ellipse 60% 95% at 14% -28%, rgba(c.color('orange', '07'), 0.22), transparent 66%),
+    radial-gradient(ellipse 46% 85% at 86% -28%, rgba(c.color('orange', '07'), 0.12), transparent 66%)
+  ),
+  'kb-accent-red': var(--color-red-07),
+  'kb-accent-red-ink': var(--kb-accent-red),
+  'kb-accent-red-glow': 0 14px 34px rgba(c.color('red', '07'), 0.34),
+  'kb-accent-red-aurora': (
+    radial-gradient(ellipse 60% 95% at 14% -28%, rgba(c.color('red', '07'), 0.22), transparent 66%),
+    radial-gradient(ellipse 46% 85% at 86% -28%, rgba(c.color('red', '07'), 0.12), transparent 66%)
+  ),
 
   // Professional support
   'pro-support-masthead-bg': #FCF5F0,

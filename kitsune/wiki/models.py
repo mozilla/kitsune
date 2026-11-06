@@ -36,6 +36,7 @@ from kitsune.wiki.config import (
     CATEGORIES,
     DEFAULT_AUDIENCE_SLUG,
     DOC_HTML_CACHE_KEY,
+    KB_COLORS,
     MAJOR_SIGNIFICANCE,
     MEDIUM_SIGNIFICANCE,
     PINNED_ARTICLE_LIMIT_Q,
@@ -84,6 +85,27 @@ class Audience(ModelBase):
         help_text=_lazy("Readable by everyone, including signed-out visitors."),
     )
     groups = models.ManyToManyField(Group, blank=True, related_name="kb_audiences")
+    is_listed = models.BooleanField(
+        default=False,
+        verbose_name=_lazy("listed"),
+        help_text=_lazy(
+            "Show as a knowledge base: its own page, and a place in menus, the directory "
+            "and search filters."
+        ),
+    )
+    description = models.TextField(blank=True)
+    color = models.CharField(max_length=16, choices=KB_COLORS, default=KB_COLORS[0][0])
+    mark = models.CharField(
+        max_length=3,
+        blank=True,
+        help_text=_lazy("Up to three characters. Blank uses the initials of the name."),
+    )
+    support_text = models.CharField(max_length=255, blank=True)
+    support_link_text = models.CharField(max_length=80, blank=True)
+    support_url = models.URLField(
+        blank=True,
+        help_text=_lazy("The help ribbon on the knowledge base page is shown only when set."),
+    )
 
     objects = AudienceManager()
 
@@ -98,6 +120,10 @@ class Audience(ModelBase):
 
     def __str__(self):
         return self.name
+
+    @property
+    def monogram(self):
+        return self.mark or "".join(word[0] for word in self.name.split()[:2]).upper()
 
     def save(self, *args, **kwargs):
         was_public = (
@@ -917,6 +943,25 @@ class DocumentAudience(ModelBase):
 
     def __str__(self):
         return f"{self.document.title}: {self.audience.name}"
+
+
+class AudienceFeaturedDocument(ModelBase):
+    audience = models.ForeignKey(Audience, on_delete=models.CASCADE, related_name="featured")
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ("order", "id")
+        verbose_name = _lazy("featured article")
+        verbose_name_plural = _lazy("featured articles")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["audience", "document"], name="unique_audience_featured_document"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.audience.name}: {self.document.title}"
 
 
 class AbstractRevision(models.Model):
