@@ -48,10 +48,18 @@ or indexed storage.
 Every retrieval chunk and its `ChunkSource` carry two keyword fields:
 
 ```python
-access_group_ids = sorted(
-    document.original.restrict_to_groups.values_list("id", flat=True)
+access_group_ids = (
+    sorted(
+        set(
+            document.original.audiences.filter(groups__isnull=False).values_list(
+                "groups", flat=True
+            )
+        )
+    )
+    if document.is_restricted
+    else []
 )
-visibility = "group_restricted" if access_group_ids else "public"
+visibility = "group_restricted" if document.is_restricted else "public"
 ```
 
 `access_group_ids` uses canonical, sorted integer group IDs. Translations read the IDs
