@@ -17,7 +17,7 @@
 // Style guide: banner
 
 .sumo-banner {
-  background: var(--color-moz-inverse-bg);
+  background: var(--surface-inverse-image) var(--color-inverse-bg);
   color: var(--color-inverse);
 
   border-radius: var(--global-radius);
@@ -100,6 +100,34 @@
     .sumo-close-button {
       position: static;
       margin-inline-end: p.$spacing-xl;
+    }
+  }
+}
+
+// The built-in VPN promo banner sits right above the breadcrumbs, so it uses tighter spacing.
+#built-in-vpn-banner {
+  margin: p.$spacing-md 0;
+
+  .heading {
+    margin: 0 p.$spacing-md;
+  }
+
+  .sumo-button {
+    margin: p.$spacing-md p.$spacing-md 0;
+  }
+
+  @media #{p.$mq-md} {
+    .heading {
+      margin: p.$spacing-md;
+    }
+
+    .sumo-button {
+      margin-block: p.$spacing-md;
+      margin-inline: 0 p.$spacing-md;
+    }
+
+    .sumo-close-button {
+      margin-inline-end: p.$spacing-md;
     }
   }
 }
