@@ -154,6 +154,7 @@ class DocumentPrivacyTests(TestCase):
         self.assertEqual({"private", "no-store"} <= cache_control, restricted)
         doc = pq(response.content)
         self.assertEqual(bool(doc('meta[name="referrer"][content="strict-origin"]')), restricted)
+        self.assertEqual(doc("body").attr("data-private-search") == "true", member)
 
     @parameterized.expand(
         [

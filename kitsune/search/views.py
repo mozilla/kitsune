@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import timedelta
+from functools import wraps
 
 import waffle
 from django.conf import settings
@@ -13,6 +14,8 @@ from django.views.decorators.cache import cache_page
 
 from kitsune import search as constants
 from kitsune.products.models import Product, ProductSupportConfig
+from kitsune.retrieval.access import PRIMARY_DATABASE
+from kitsune.retrieval.query import KB_SOURCE
 from kitsune.search.base import SumoSearchPaginator
 from kitsune.search.forms import SimpleSearchForm
 from kitsune.search.hybrid import run_hybrid_search, sources_for_where
@@ -26,9 +29,12 @@ from kitsune.sumo.utils import (
     get_aaq_context,
     get_aaq_url,
     has_support_action,
+    mark_private,
     paginate,
 )
 from kitsune.wiki.facets import documents_for
+from kitsune.wiki.managers import effective_group_ids, has_private_kb_access
+from kitsune.wiki.models import Audience
 
 log = logging.getLogger("k.search")
 
@@ -82,13 +88,36 @@ def _get_product_title(product_title):
     return product, product_titles
 
 
+def _private_access_headers(view):
+    """Keep the responses of viewers with private KB access out of caches and referrers."""
+
+    @wraps(view)
+    def wrapper(request, *args, **kwargs):
+        response = view(request, *args, **kwargs)
+        if has_private_kb_access(request.user):
+            mark_private(response)
+        return response
+
+    return wrapper
+
+
+@_private_access_headers
 def simple_search(request):
     is_json = request.GET.get("format") == "json"
-    search_form = SimpleSearchForm(request.GET, auto_id=False)
+    # Retrieval authorizes against the primary; cache the membership from there first.
+    effective_group_ids(request.user, using=PRIMARY_DATABASE)
+    search_form = SimpleSearchForm(request.GET, auto_id=False, user=request.user)
 
     if not search_form.is_valid():
         if not is_json:
-            return render(request, "search/form.html", {"search_form": search_form})
+            return render(
+                request,
+                "search/form.html",
+                {
+                    "search_form": search_form,
+                    "suppress_analytics": has_private_kb_access(request.user),
+                },
+            )
         return HttpResponse(
             json.dumps({"error": _("Invalid search data.")}),
             content_type="application/json",
@@ -97,6 +126,7 @@ def simple_search(request):
         )
 
     cleaned = search_form.cleaned_data
+    knowledge_base = cleaned["kb"]
 
     # get language
     language = locale_or_default(cleaned["language"] or request.LANGUAGE_CODE)
@@ -107,9 +137,8 @@ def simple_search(request):
 
     hybrid = None
     # The form still accepts the legacy discussion value, which retrieval does not index.
-    use_hybrid = (
-        waffle.switch_is_active("retrieval-hybrid-search")
-        and cleaned["w"] != constants.WHERE_DISCUSSION
+    use_hybrid = waffle.switch_is_active("retrieval-hybrid-search") and (
+        knowledge_base is not None or cleaned["w"] != constants.WHERE_DISCUSSION
     )
     if use_hybrid:
         try:
@@ -122,9 +151,13 @@ def simple_search(request):
             request,
             query=cleaned["q"],
             locale=language,
-            sources=sources_for_where(cleaned["w"]),
+            sources=(
+                frozenset({KB_SOURCE}) if knowledge_base else sources_for_where(cleaned["w"])
+            ),
             product_id=product.id if product else None,
             page=page_number,
+            knowledge_base=knowledge_base,
+            with_private_block=has_private_kb_access(request.user),
         )
         page = None
         results = list(hybrid.results)
@@ -132,7 +165,12 @@ def simple_search(request):
             redirect_params = request.GET.copy()
             redirect_params["page"] = 1
             return HttpResponseRedirect(f"{request.path}?{redirect_params.urlencode()}")
-        total = hybrid.approximate_total if results else 0
+        total = (hybrid.approximate_total if results else 0) + hybrid.private_block_count
+    elif knowledge_base is not None:
+        # The legacy index can't filter by KB, and a scoped search must never broaden.
+        page = paginate(request, [], per_page=settings.SEARCH_RESULTS_PER_PAGE)
+        total = 0
+        results = []
     else:
         search = CompoundSearch()
         if cleaned["w"] & constants.WHERE_WIKI:
@@ -159,10 +197,20 @@ def simple_search(request):
         else None
     )
 
-    # generate fallback results if necessary
+    # generate fallback results if necessary, never broadening a KB-scoped search
     fallback_results = None
-    if total == 0:
+    if total == 0 and knowledge_base is None:
         fallback_results = _fallback_results(request.user, language, cleaned["product"])
+
+    knowledge_bases = []
+    if use_hybrid:
+        knowledge_bases = list(Audience.objects.listed_for(request.user))
+        if knowledge_base is not None and knowledge_base not in knowledge_bases:
+            # Staff can open any listed KB, but list only their own beside the selected one.
+            knowledge_bases = sorted(
+                [*knowledge_bases, knowledge_base],
+                key=lambda kb: (kb.is_public, kb.name.casefold()),
+            )
 
     data = {
         "num_results": total,
@@ -176,6 +224,13 @@ def simple_search(request):
         "total_is_approximate": hybrid is not None,
         "pagination": hybrid_pagination,
         "pagination_url": build_paged_url(request) if hybrid else None,
+        "knowledge_bases": [
+            {"slug": kb.slug, "name": kb.name, "is_private": not kb.is_public}
+            for kb in knowledge_bases
+        ],
+        "kb": knowledge_base.slug if knowledge_base else None,
+        "private_block": hybrid.private_block if hybrid else (),
+        "private_block_heading": hybrid.private_block_heading if hybrid else None,
     }
 
     if not is_json:
@@ -184,6 +239,7 @@ def simple_search(request):
                 "product": product,
                 "pages": page,
                 "search_form": search_form,
+                "suppress_analytics": has_private_kb_access(request.user),
             }
         )
         return render(request, "search/results.html", data)

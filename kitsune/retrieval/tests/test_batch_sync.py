@@ -45,8 +45,8 @@ from kitsune.retrieval.sync import (
 from kitsune.retrieval.tasks import enqueue_document_batch, sync_documents
 from kitsune.retrieval.tests import ChunkIndexTestCase, read_indexed_document
 from kitsune.sumo.redis_utils import redis_client
-from kitsune.users.tests import GroupFactory
-from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
+from kitsune.wiki.models import Document
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 def _max_diff(first, second):
@@ -215,7 +215,7 @@ class BatchExecutorTests(BatchTestCase):
 
     def test_an_ineligible_document_is_evicted_and_costs_no_input(self):
         sync_document_batch(self.ids)
-        self.documents[0].audiences.set([AudienceFactory(groups=[GroupFactory()])])
+        Document.objects.filter(pk=self.ids[0]).update(is_archived=True)
         ApprovedRevisionFactory(document=self.documents[1], content="Fresh content to embed.")
         self.documents[1].refresh_from_db()
 
@@ -312,17 +312,17 @@ class BatchExecutorTests(BatchTestCase):
         self.assertEqual(report.redispatch, (document.id,))
         self.assertEqual(self._stored(document).manifest, newer)
 
-    def test_a_restriction_during_the_shared_call_evicts_that_document_only(self):
+    def test_an_archive_during_the_shared_call_evicts_that_document_only(self):
         sync_document_batch(self.ids)
         for document in self.documents:
             ApprovedRevisionFactory(document=document, content=f"New body for {document.slug}.")
             document.refresh_from_db()
 
-        def restrict_then_embed(*args, **kwargs):
-            self.documents[2].audiences.set([AudienceFactory(groups=[GroupFactory()])])
+        def archive_then_embed(*args, **kwargs):
+            Document.objects.filter(pk=self.ids[2]).update(is_archived=True)
             return get_embeddings(*args, **kwargs)
 
-        with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=restrict_then_embed):
+        with mock.patch("kitsune.retrieval.sync.get_embeddings", side_effect=archive_then_embed):
             report = sync_document_batch(self.ids)
 
         self.assertEqual(report.reports[self.ids[2]].outcome, SyncOutcome.DELETED)
@@ -358,7 +358,7 @@ class BatchExecutorTests(BatchTestCase):
 
     def test_invalid_target_metadata_does_not_block_eviction_of_an_ineligible_document(self):
         sync_document_batch(self.ids)
-        self.documents[0].audiences.set([AudienceFactory(groups=[GroupFactory()])])
+        Document.objects.filter(pk=self.ids[0]).update(is_archived=True)
 
         with (
             mock.patch(

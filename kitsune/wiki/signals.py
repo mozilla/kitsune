@@ -1,8 +1,9 @@
 from django.db import transaction
-from django.db.models.signals import m2m_changed, post_save, pre_delete
+from django.db.models.signals import m2m_changed, post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
 from kitsune.wiki.models import Audience, Document
+from kitsune.wiki.utils import retire_public_kb_listing
 
 
 def _rerender_after_commit(document_ids):
@@ -89,6 +90,16 @@ def render_on_audience_visibility_change(sender, instance, **kwargs):
         _follow_access_change(
             set(instance.documents.values_list("id", flat=True)), sync_redirects=False
         )
+
+
+@receiver(
+    [post_save, post_delete],
+    sender=Audience,
+    dispatch_uid="wiki.clear_public_kb_listing_on_audience_change",
+)
+def clear_public_kb_listing(sender, **kwargs):
+    """Retire the menu's cached public knowledge bases once the change is visible to others."""
+    transaction.on_commit(retire_public_kb_listing)
 
 
 @receiver(

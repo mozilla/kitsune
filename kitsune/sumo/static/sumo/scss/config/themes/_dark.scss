@@ -178,6 +178,51 @@ $dark: (
   'enterprise-callout-base': linear-gradient(120deg, #24163F 0%, #26164C 100%),
   'enterprise-callout-glow': radial-gradient(50% 150% at 0% 50%, rgba(117, 67, 227, 0.2), transparent 70%),
 
+  // Knowledge bases
+  'kb-hero-base': linear-gradient(180deg, #101318 0%, #14171D 100%),
+  'kb-accent-violet': var(--color-violet-07),
+  'kb-accent-violet-ink': var(--color-violet-05),
+  'kb-accent-violet-glow': 0 14px 34px rgba(c.color('violet', '07'), 0.3),
+  'kb-accent-violet-aurora': (
+    radial-gradient(ellipse 55% 110% at 20% -10%, rgba(c.color('violet', '05'), 0.3), transparent 70%),
+    radial-gradient(ellipse 45% 90% at 82% -15%, rgba(c.color('violet', '05'), 0.14), transparent 70%)
+  ),
+  'kb-accent-blue': var(--color-blue-06),
+  'kb-accent-blue-ink': var(--color-azure-03),
+  'kb-accent-blue-glow': 0 14px 34px rgba(c.color('blue', '06'), 0.3),
+  'kb-accent-blue-aurora': (
+    radial-gradient(ellipse 55% 110% at 20% -10%, rgba(c.color('azure', '03'), 0.24), transparent 70%),
+    radial-gradient(ellipse 45% 90% at 82% -15%, rgba(c.color('azure', '03'), 0.12), transparent 70%)
+  ),
+  'kb-accent-teal': var(--color-green-08),
+  'kb-accent-teal-ink': var(--color-green-07),
+  'kb-accent-teal-glow': 0 14px 34px rgba(c.color('green', '08'), 0.3),
+  'kb-accent-teal-aurora': (
+    radial-gradient(ellipse 55% 110% at 20% -10%, rgba(c.color('green', '07'), 0.22), transparent 70%),
+    radial-gradient(ellipse 45% 90% at 82% -15%, rgba(c.color('green', '07'), 0.1), transparent 70%)
+  ),
+  'kb-accent-green': #2C7A3B,
+  'kb-accent-green-ink': var(--color-sage-01),
+  'kb-accent-green-glow': 0 14px 34px rgba(44, 122, 59, 0.3),
+  'kb-accent-green-aurora': (
+    radial-gradient(ellipse 55% 110% at 20% -10%, rgba(c.color('sage', '01'), 0.2), transparent 70%),
+    radial-gradient(ellipse 45% 90% at 82% -15%, rgba(c.color('sage', '01'), 0.1), transparent 70%)
+  ),
+  'kb-accent-orange': var(--color-orange-07),
+  'kb-accent-orange-ink': var(--color-orange-05),
+  'kb-accent-orange-glow': 0 14px 34px rgba(c.color('orange', '07'), 0.3),
+  'kb-accent-orange-aurora': (
+    radial-gradient(ellipse 55% 110% at 20% -10%, rgba(c.color('orange', '05'), 0.22), transparent 70%),
+    radial-gradient(ellipse 45% 90% at 82% -15%, rgba(c.color('orange', '05'), 0.1), transparent 70%)
+  ),
+  'kb-accent-red': var(--color-red-07),
+  'kb-accent-red-ink': var(--color-red-04),
+  'kb-accent-red-glow': 0 14px 34px rgba(c.color('red', '07'), 0.3),
+  'kb-accent-red-aurora': (
+    radial-gradient(ellipse 55% 110% at 20% -10%, rgba(c.color('red', '04'), 0.22), transparent 70%),
+    radial-gradient(ellipse 45% 90% at 82% -15%, rgba(c.color('red', '04'), 0.1), transparent 70%)
+  ),
+
   // Professional support
   'pro-support-masthead-bg': #190F2E,
   'pro-support-masthead-image': url('../../sumo/img/pro-support-bubbles-dark.webp'),

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% from "includes/icons.html" import icon %}
+{% from 'products/includes/topic_macros.html' import help_topics with context %}
+{% from 'wiki/includes/kb_macros.html' import kb_mark, kb_privacy, kb_product_filter %}
+{% set title = knowledge_base.name %}
+{% set crumbs = [(url('wiki.knowledge_bases'), _('Knowledge Bases'))] %}
+{% if list_mode %}
+  {% set crumbs = crumbs + [(page_url, knowledge_base.name)] %}
+  {% if selected_topic %}
+    {% set list_heading = pgettext('DB: products.Topic.title', selected_topic.title)|forceescape %}
+  {% else %}
+    {% set list_heading = _('All articles') %}
+  {% endif %}
+  {% set crumbs = crumbs + [(None, list_heading)] %}
+{% else %}
+  {% set crumbs = crumbs + [(None, knowledge_base.name)] %}
+{% endif %}
+{% set classes = 'kb-page' %}
+
+{% block hidden_search_masthead %}{% endblock %}
+
+{% block masthead %}
+<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg has-aurora kb-hero kb-color--{{ knowledge_base.color }}">
+  <div class="mzp-l-content">
+    {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+  </div>
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      {{ kb_mark(knowledge_base, 'lg') }}
+      <h1 class="sumo-page-heading-xl">{{ knowledge_base.name }}</h1>
+      {% if knowledge_base.description %}
+        <p class="kb-hero--description">{{ knowledge_base.description }}</p>
+      {% endif %}
+      {# L10n: Placeholder of the search box on a knowledge base's page, which searches only that knowledge base. {name} is the knowledge base's name. #}
+      {{ search_box(settings, id='kb-search', params={'kb': knowledge_base.slug}, placeholder=_('Search {name}')|f(name=knowledge_base.name)) }}
+      {{ kb_privacy(knowledge_base) }}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block contentwrap %}
+<div id="main-content" class="kb-content">
+  {% if not has_documents %}
+    <section class="mzp-l-content sumo-page-section--inner">
+      <div id="kb-empty" class="topic-doc-list-empty">
+        {# L10n: Shown on a knowledge base's page when it has no articles yet. #}
+        <p class="topic-doc-list-empty--title">{{ _('There are no articles here yet.') }}</p>
+      </div>
+    </section>
+  {% elif list_mode %}
+    <section id="kb-articles" class="mzp-l-content sumo-page-section--inner">
+      <div class="list-toolbar">
+        <div class="list-toolbar--title">
+          <h2 class="list-toolbar--heading">{{ list_heading }}</h2>
+          <span class="list-toolbar--count">{{ documents.paginator.count }}</span>
+        </div>
+        {{ kb_product_filter(products, selected_product, page_url, {'topic': selected_topic.slug if selected_topic else None, 'page': 1}) }}
+      </div>
+      <section class="topic-doc-list">
+        {% for document in documents.object_list %}
+          <article class="topic-doc-list--item">
+            <div class="topic-doc-list--text">
+              <h3 class="topic-doc-list--title">
+                <a href="{{ url('wiki.document', document.slug) }}">{{ document.title }}</a>
+              </h3>
+              {% if document.current_revision.summary %}
+                <p class="topic-doc-list--summary">{{ document.current_revision.summary }}</p>
+              {% endif %}
+              <p class="topic-doc-list--meta">
+                {# L10n: Date a Knowledge Base article was last updated, shown under its title in topic lists. {date} is a formatted date, such as Oct 21, 2026. #}
+                <span>{{ _('Updated {date}')|fe(date=datetimeformat(document.current_revision.created, format='date')) }}</span>
+                {% if document.locale != request.LANGUAGE_CODE %}
+                  <span aria-hidden="true">&middot;</span>
+                  <span>{{ _('In English') }}</span>
+                {% endif %}
+              </p>
+            </div>
+          </article>
+        {% endfor %}
+      </section>
+      {{ documents|paginator }}
+    </section>
+  {% else %}
+    {% if featured %}
+      <section id="kb-start-here" class="mzp-l-content sumo-page-section--inner">
+        {# L10n: Heading of the articles a knowledge base's page recommends reading first. #}
+        <h2 class="sumo-page-subheading">{{ _('Start here') }}</h2>
+        <div class="sumo-card-grid is-product-wrap kb-start-here">
+          <div class="scroll-wrap">
+            {% for document in featured %}
+              <div class="card card--article">
+                {{ icon('reader-mode', class='card--icon-sm') }}
+                <div class="card--details">
+                  <h3 class="card--title">
+                    <a class="expand-this-link" href="{{ url('wiki.document', document.slug) }}">{{ document.title }}</a>
+                  </h3>
+                  <p class="card--desc">{{ document.current_revision.summary }}</p>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if topic_cards %}
+      <section id="kb-topics" class="mzp-l-content sumo-page-section--inner">
+        <div class="sumo-page-subheader kb-subheader">
+          <h2 class="sumo-page-subheading">{{ _('Topics') }}</h2>
+          {{ kb_product_filter(products, selected_product, page_url) }}
+        </div>
+        {{ help_topics(topic_cards) }}
+      </section>
+    {% endif %}
+
+    <section id="kb-recent" class="mzp-l-content sumo-page-section--inner">
+      <div class="sumo-page-subheader kb-subheader">
+        <h2 class="sumo-page-subheading">{{ _('Recently updated') }}</h2>
+        {# L10n: Link on a knowledge base's page to the list of all its articles. #}
+        <a class="kb-browse-all" href="{{ page_url|urlparams(page=1) }}">{{ _('Browse all articles') }}</a>
+      </div>
+      <ul class="kb-recent">
+        {% for document in recent %}
+          <li class="kb-recent--item">
+            <div class="kb-recent--text">
+              <a class="kb-recent--title" href="{{ url('wiki.document', document.slug) }}">{{ document.title }}</a>
+              {% if document.kb_topics %}
+                <span class="kb-recent--topic">{{ pgettext('DB: products.Topic.title', document.kb_topics[0].title)|forceescape }}</span>
+              {% endif %}
+            </div>
+            <span class="kb-recent--date">{{ datetimeformat(document.current_revision.created, format='date') }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if knowledge_base.support_url %}
+    <section id="kb-support" class="support-callouts mzp-l-content sumo-page-section--inner">
+      <div class="card card--ribbon is-inverse heading-is-one-line">
+        <div class="card--details">
+          <h3 class="card--title">
+            <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                <g transform="translate(2.000000, 1.878680)" stroke="currentColor" stroke-width="2">
+                  <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+                  <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+                </g>
+              </g>
+            </svg>
+            {{ _("Still need help?") }}
+          </h3>
+          {% if knowledge_base.support_text %}
+            <p class="card--desc">{{ knowledge_base.support_text }}</p>
+          {% endif %}
+          <a class="sumo-button primary-button button-lg" href="{{ knowledge_base.support_url }}">{{ knowledge_base.support_link_text or _("Contact Support") }}</a>
+        </div>
+      </div>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

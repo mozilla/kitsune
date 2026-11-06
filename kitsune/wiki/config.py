@@ -115,6 +115,9 @@ SIMPLE_WIKI_LANDING_PAGE_SLUG = "frequently-asked-questions"
 
 DEFAULT_AUDIENCE_SLUG = "default"
 
+KB_PUBLIC_LISTING_CACHE_KEY = "wiki:kb-public-listing"
+KB_PUBLIC_LISTING_VERSION_KEY = "wiki:kb-public-listing:version"
+
 KB_COLORS = (
     ("violet", _lazy("Violet")),
     ("blue", _lazy("Blue")),

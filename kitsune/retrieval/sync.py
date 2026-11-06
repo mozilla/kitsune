@@ -18,6 +18,7 @@ from django.core.exceptions import ImproperlyConfigured
 from kitsune.retrieval.chunking import CHUNKING_GENERATION, Chunk, chunk
 from kitsune.retrieval.eligibility import (
     access_group_ids_for,
+    audience_prefetches,
     family_id_for,
     is_retrieval_indexable,
     visibility_for,
@@ -209,10 +210,9 @@ def _load_many(document_ids) -> dict[int, Document]:
         .prefetch_related(
             "products",
             "topics",
-            "audiences",
             "parent__products",
             "parent__topics",
-            "parent__audiences",
+            *audience_prefetches(),
         )
     )
     return {document.id: document for document in documents}

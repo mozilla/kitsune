@@ -37,10 +37,10 @@ CachedXHR.prototype.store = function (url, cacheKey, lifetime, data) {
 CachedXHR.prototype.request = function (url, options) {
   var self = this;
 
-  options = Object.assign({ lifetime: 5 * 60 * 1000 }, options);
+  options = Object.assign({ lifetime: 5 * 60 * 1000, cache: true }, options);
   var success = options.success;
 
-  var cached = self.fetch(url, options.cacheKey);
+  var cached = options.cache && self.fetch(url, options.cacheKey);
   if (cached && cached.expires > Date.now() && !options.forceReload) {
     if (success) {
       success(cached.data);
@@ -54,7 +54,9 @@ CachedXHR.prototype.request = function (url, options) {
     dataType: options.dataType || "json",
   })
     .then(function (data) {
-      self.store(url, options.cacheKey, options.lifetime, data);
+      if (options.cache) {
+        self.store(url, options.cacheKey, options.lifetime, data);
+      }
       if (success) {
         success(data);
       }

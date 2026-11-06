@@ -546,9 +546,8 @@ def update_chunks_metadata_for(
 
     The cheapest correct path when only scope or source metadata changed: it preserves each
     chunk's stored text and vector and makes no embedding call. This never creates a missing
-    position, because a chunk without text and a vector would be incomplete. Access changes
-    reach here only once restricted ingestion lands; until then they flip eligibility and
-    sync evicts or reindexes instead (ADR 0006).
+    position, because a chunk without text and a vector would be incomplete. Access-only
+    changes take this path (ADR 0006).
     """
     _require_concrete_index(index)
     _verify_expected_state(chunks, source, expected_state)

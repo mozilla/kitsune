@@ -91,8 +91,8 @@ class BackfillTests(SyncChunksTestCase):
         )
 
     def test_an_ineligible_document_is_never_enqueued(self):
-        restricted = self._document("Internal runbook", "internal-runbook")
-        restricted.audiences.set([AudienceFactory(groups=[GroupFactory()])])
+        archived = self._document("Old runbook", "old-runbook")
+        Document.objects.filter(pk=archived.pk).update(is_archived=True)
 
         with mock.patch(f"{COMMAND}.enqueue_document_batch") as enqueue:
             self._run("--backfill")
@@ -172,7 +172,7 @@ class ReconcileTests(SyncChunksTestCase):
         self.document.audiences.set([audience])
 
         with (
-            mock.patch(f"{COMMAND}.enqueue_document_batch"),
+            mock.patch(f"{COMMAND}.enqueue_document_batch") as enqueue,
             mock.patch(f"{COMMAND}.enqueue_document_delete") as evict,
         ):
             output = self._run("--reconcile")
@@ -181,7 +181,8 @@ class ReconcileTests(SyncChunksTestCase):
         self.assertIn(GateCategory.ACCESS_DRIFT.value, output)
         for identifier in (str(group.id), group.name, str(audience.id), audience.name):
             self.assertNotIn(identifier, output)
-        evict.assert_called_once_with(self.identity, target_index=self.index)
+        enqueue.assert_called_once_with([self.document.id], target_index=self.index)
+        evict.assert_not_called()
 
     def test_a_dry_run_dispatches_nothing(self):
         with (

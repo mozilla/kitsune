@@ -69,6 +69,8 @@ Search.prototype.query = function(string, success, error) {
 
   cxhr.request(this.baseUrl, {
     cacheKey: this.lastParams,
+    // Private results come from the server every time, so authorization runs again.
+    cache: !document.body.dataset.privateSearch,
     data: data,
     dataType: 'json',
     success,

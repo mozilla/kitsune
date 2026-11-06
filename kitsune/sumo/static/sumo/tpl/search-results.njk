@@ -1,8 +1,28 @@
-{% from 'macros.njk' import search_result %}
+{% from 'macros.njk' import lock_icon, search_result %}
 
 <section class="mzp-l-content sumo-page-section--inner">
   <div id="search-results" class="sumo-l-two-col">
     <aside class="sumo-l-two-col--sidebar">
+      {% if knowledge_bases and knowledge_bases.length %}
+      <h3 class="sidebar-subheading">{{ _('Filter by knowledge base') }}</h3>
+      {# a.selected, not li.selected: the mobile product menu takes its label from the first li.selected. #}
+      <nav class="sidebar-nav">
+      <ul id="kb-filter" class="search-filter sidebar-nav--list">
+        <li>
+          <a href="#" {% if not kb %}class="selected"{% endif %} data-instant-search-unset-params="kb&page" data-instant-search="link">
+            {{ _('All results') }}
+          </a>
+        </li>
+        {% for entry in knowledge_bases %}
+          <li>
+            <a href="#" {% if kb == entry.slug %}class="selected"{% endif %} data-instant-search-set-params="kb={{ entry.slug }}" data-instant-search-unset-params="page" data-instant-search="link">
+              {% if entry.is_private %}{{ lock_icon() }}&nbsp;{% endif %}{{ entry.name }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+      </nav>
+      {% endif %}
       <h3 class="sidebar-subheading">{{ _('Filter by product') }}</h3>
       <nav class="sidebar-nav">
       <a class="details-heading">Menu Title</a>

@@ -1,3 +1,7 @@
+{% macro lock_icon() -%}
+<svg class="kb-lock" width="12" height="12" viewBox="0 0 24 24" role="img" aria-label="{{ _('Private') }}"><rect x="4" y="11" width="16" height="10" rx="2" fill="currentColor"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2.5"></path></svg>
+{%- endmacro %}
+
 {% macro search_result(result, icons) %}
 <article class="topic-article {{ result.type }}">
   <div class="topic-article--icon-wrap">
@@ -53,6 +57,13 @@
       </ul>
     {% endif %}
     <p>{{ result.search_summary | safe }}</p>
+    {% if result.knowledge_bases and result.knowledge_bases.length %}
+      <ul class="tag-list">
+        {% for entry in result.knowledge_bases %}
+          <li>{% if entry.is_private %}{{ lock_icon() }}&nbsp;{% endif %}{{ entry.name }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
   </div>
 </article>
 {% endmacro %}

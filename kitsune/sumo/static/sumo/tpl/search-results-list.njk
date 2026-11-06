@@ -44,12 +44,24 @@
 </nav>
 
 {% if num_results > 0 %}
+  {% if private_block and private_block.length %}
+    <section id="private-block" class="curated-block is-articles" aria-labelledby="private-block-heading">
+      <header class="curated-block--head">
+        <h2 id="private-block-heading" class="curated-block--heading">{{ private_block_heading }}</h2>
+      </header>
+      {% for doc in private_block %}
+        {{ search_result(doc, icons) }}
+      {% endfor %}
+    </section>
+  {% endif %}
   <section class="topic-list content-box">
     {% for doc in results %}
       {{ search_result(doc, icons) }}
     {% endfor %}
   </section>
 {% else %}
+  {# A KB-scoped search has no fallback (null), so it never broadens. #}
+  {% if fallback_results and fallback_results.length %}
   <p>{{ _("Try searching again with a different keyword, or browse our featured articles below instead.") }}</p>
 
   <section class="sumo-card-grid extra-padding content-box">
@@ -73,6 +85,7 @@
       {% endfor %}
     </div>
   </section>
+  {% endif %}
 {% endif %}
 
 {% if total_is_approximate %}

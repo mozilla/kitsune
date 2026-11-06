@@ -26,6 +26,7 @@ urlpatterns = i18n_patterns(
         r"^kb$", redirect_to, {"url": "products.product", "slug": "firefox"}, name="wiki.landing"
     ),
     path("kb/", include("kitsune.wiki.urls")),
+    path("knowledge-bases/", include("kitsune.wiki.urls_knowledge_bases")),
     path("search/", include("kitsune.search.urls")),
     path("forums/", include("kitsune.forums.urls")),
     path("questions/", include("kitsune.questions.urls")),
