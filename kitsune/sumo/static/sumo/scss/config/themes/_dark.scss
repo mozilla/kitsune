@@ -190,14 +190,18 @@ $dark: (
   'pro-support-badge-contact-icon': var(--color-white),
   'pro-support-badge-getting-started-bg': linear-gradient(135deg, #E4D7FC, #C8B2F6),
   'pro-support-badge-account-bg': linear-gradient(to bottom, #FEC583, #FD845A),
-  'pro-support-banner-stop-start': #4F2740,
-  'pro-support-banner-stop-mid': #3A1D52,
-  'pro-support-banner-stop-end': #271250,
-  'pro-support-banner-bg': linear-gradient(
-    110deg,
-    var(--pro-support-banner-stop-start) 0%,
-    var(--pro-support-banner-stop-mid) 50%,
-    var(--pro-support-banner-stop-end) 100%
+  'pro-support-banner-stop-start': #6E2A48,
+  'pro-support-banner-stop-mid': #45155F,
+  'pro-support-banner-stop-end': #2B0A58,
+  'pro-support-banner-glow': rgba(253, 132, 90, 0.22),
+  'pro-support-banner-bg': (
+    radial-gradient(45% 160% at 0% 50%, var(--pro-support-banner-glow), transparent 70%),
+    linear-gradient(
+      110deg,
+      var(--pro-support-banner-stop-start) 0%,
+      var(--pro-support-banner-stop-mid) 50%,
+      var(--pro-support-banner-stop-end) 100%
+    )
   ),
   'pro-support-banner-title': var(--color-heading),
   'pro-support-banner-text': var(--color-text),
