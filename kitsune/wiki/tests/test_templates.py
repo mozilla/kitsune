@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from unittest import mock, skip
 
 from django.conf import settings
@@ -3399,6 +3399,33 @@ class MatomoMzlaDocumentTests(TestCase):
         response = self.client.get(r.document.get_absolute_url())
         self.assertEqual(200, response.status_code)
         self.assertNotContains(response, _MATOMO_MARKER)
+
+
+@mock.patch("django.utils.timezone.now", return_value=datetime(2026, 11, 6, tzinfo=UTC))
+class VpnPromoBannerTests(TestCase):
+    """The VPN promo banner shows on the built-in VPN articles until the promo ends."""
+
+    def setUp(self):
+        super().setUp()
+        ProductFactory()
+
+    def banner(self, slug):
+        r = ApprovedRevisionFactory(document__slug=slug)
+        response = self.client.get(r.document.get_absolute_url())
+        self.assertEqual(200, response.status_code)
+        return pq(response.content)("#built-in-vpn-banner")
+
+    def test_shown_on_vpn_articles(self, _now):
+        for slug in ("built-in-vpn", "mobile-android-vpn"):
+            with self.subTest(slug=slug):
+                self.assertEqual(1, len(self.banner(slug)))
+
+    def test_not_shown_on_other_articles(self, _now):
+        self.assertEqual(0, len(self.banner("some-other-article")))
+
+    def test_hidden_after_promo_ends(self, now):
+        now.return_value = datetime(2200, 1, 1, tzinfo=UTC)
+        self.assertEqual(0, len(self.banner("built-in-vpn")))
 
 
 class ReviewFormTests(TestCase):
