@@ -130,3 +130,11 @@ class NonSupportedTests(TestCase):
 
         response = self.client.get("/SU/")
         self.assertRedirects(response, "/en-US/")
+
+    def test_removed_locales(self):
+        for locale, fallback in [("ta-LK", "ta"), ("bm", "fr"), ("zu", "en-US")]:
+            with self.subTest(locale=locale):
+                response = self.client.get(f"/{locale}/kb/some-article")
+                self.assertRedirects(
+                    response, f"/{fallback}/kb/some-article", fetch_redirect_response=False
+                )
