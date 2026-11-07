@@ -37,27 +37,27 @@ repos:
         language: system
         pass_filenames: false
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.4.0
+    rev: v2.4.1
     hooks:
       - id: mypy
         additional_dependencies:
-          - boto3-stubs==1.43.120
+          - boto3-stubs==1.43.123
           - types-redis==4.6.0.20241004
-          - types-requests==2.33.0.20261006
-          - types-python-dateutil==2.9.0.20261021
-          - types-simplejson==4.2.0.20261006
-          - types-PyYAML==6.0.12.20260906
-          - types-Markdown==3.10.2.20261007
+          - types-requests==2.33.0.20261030
+          - types-python-dateutil==2.9.0.20261104
+          - types-simplejson==4.2.0.20261104
+          - types-PyYAML==6.0.12.20261103
+          - types-Markdown==3.11.2.20261029
         files: "^kitsune/"
         exclude: "/migrations/"
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v10.13.0
+    rev: v10.14.0
     hooks:
       - id: eslint
         files: "^(svelte/|webpack/).*\\.(js|ts|jsx|tsx)$"
         exclude: "webpack/.*|webpack\\..*\\.js"
         additional_dependencies:
-          - eslint@10.13.0
+          - eslint@10.14.0
           - eslint-plugin-import-x@4.17.1
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
     rev: v17.16.0
@@ -66,10 +66,10 @@ repos:
         language_version: "22.23.3"
         files: "^(kitsune/sumo/static/sumo/scss/|svelte/).*\\.(scss|svelte)$"
         additional_dependencies:
-          - stylelint@17.16.0
+          - stylelint@18.0.0
           - stylelint-config-recommended-scss@17.0.1
-          - stylelint-order@8.1.2
-          - "@stylistic/stylelint-plugin@5.3.1"
+          - stylelint-order@8.1.3
+          - "@stylistic/stylelint-plugin@6.0.0"
           - stylelint-scss@7.4.0
           - postcss-html@2.0.0
           - postcss-scss@4.0.9
