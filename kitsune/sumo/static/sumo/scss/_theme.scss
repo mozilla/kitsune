@@ -62,7 +62,7 @@
 
 // With locales where Mozilla Headline and Mozilla Text have partial character support,
 // we use Inter for everything to avoid mixed fonts within a word/sentence:
-[lang="ee"], [lang="ig"], [lang="vi"], [lang="yo"] {
+[lang="vi"] {
   --body-font-family: Inter, X-LocaleSpecific, sans-serif;
   --title-font-family: Inter, X-LocaleSpecific, sans-serif;
 }
