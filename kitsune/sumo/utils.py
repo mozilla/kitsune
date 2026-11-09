@@ -3,10 +3,12 @@ import re
 import sys
 from functools import lru_cache
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.templatetags.static import static
@@ -458,3 +460,32 @@ def get_aaq_url(aaq_context, topic=None):
         return reverse("questions.aaq_step3", kwargs={"product_slug": product_slug})
 
     return reverse("questions.aaq_step1")
+
+
+def request_timezone(request) -> ZoneInfo:
+    """
+    Return the timezone of the request's session, seeded from the user's profile, else the
+    site's timezone.
+    """
+    default_tzinfo = convert_tzinfo = ZoneInfo(settings.TIME_ZONE)
+
+    if hasattr(request, "session"):
+        if "timezone" not in request.session:
+            if hasattr(request, "user") and request.user.is_authenticated:
+                # Through the relation: users.models imports this module.
+                try:
+                    convert_tzinfo = request.user.profile.timezone or default_tzinfo
+                except ObjectDoesNotExist, AttributeError:
+                    pass
+            request.session["timezone"] = str(convert_tzinfo)
+        else:
+            tz_str = request.session.get("timezone")
+            if tz_str:
+                try:
+                    convert_tzinfo = ZoneInfo(tz_str)
+                except ZoneInfoNotFoundError, ValueError, TypeError, OSError:
+                    convert_tzinfo = default_tzinfo
+            else:
+                convert_tzinfo = default_tzinfo
+
+    return convert_tzinfo

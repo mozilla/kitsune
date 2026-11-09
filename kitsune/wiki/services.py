@@ -204,6 +204,7 @@ class TranslationQueryBuilder:
             creator=self.sumo_bot,
             is_approved=False,
             reviewed__isnull=True,
+            schedule__isnull=True,
             document__parent__in=english_docs,
             document__locale__in=settings.HYBRID_ENABLED_LOCALES,
         )

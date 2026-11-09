@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import transaction
 from django.db.models.signals import post_save
 
 from kitsune.wiki.models import Revision
@@ -38,16 +39,19 @@ def on_revision_save(sender, instance, **kwargs):
     """
     rev = instance
     created_year = rev.created.year
-    creator = rev.creator
+    creator_id = rev.creator_id
     reviewed_year = rev.reviewed.year if rev.reviewed else None
-    reviewer = rev.reviewer
+    reviewer_id = rev.reviewer_id
 
     from kitsune.wiki.tasks import maybe_award_badge
 
+    # Queued on commit: the task counts approved revisions, and this one must be among them.
     # If the revision is reviewed (and in the default locale), maybe award the reviewer.
-    if reviewer and reviewed_year and rev.document.locale == settings.WIKI_DEFAULT_LANGUAGE:
-        maybe_award_badge.delay(
-            WIKI_BADGES["reviewer-badge"], reviewed_year, reviewer.id
+    if reviewer_id and reviewed_year and rev.document.locale == settings.WIKI_DEFAULT_LANGUAGE:
+        transaction.on_commit(
+            lambda: maybe_award_badge.delay(
+                WIKI_BADGES["reviewer-badge"], reviewed_year, reviewer_id
+            )
         )
 
     # If the revision is approved, maybe award the creator.
@@ -58,7 +62,9 @@ def on_revision_save(sender, instance, **kwargs):
         else:
             badge_template = WIKI_BADGES["l10n-badge"]
 
-        maybe_award_badge.delay(badge_template, created_year, creator.id)
+        transaction.on_commit(
+            lambda: maybe_award_badge.delay(badge_template, created_year, creator_id)
+        )
 
 
 def register_signals():

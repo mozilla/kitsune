@@ -118,6 +118,7 @@ def translation_needs_review(locale):
             document__locale=locale,
             document__is_archived=False,
             reviewed__isnull=True,
+            schedule__isnull=True,
         ).filter(
             Q(id__gt=F("document__current_revision__id"))
             | Q(document__current_revision__isnull=True)
@@ -201,6 +202,7 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
             Revision.objects.filter(
                 document=OuterRef("pk"),
                 reviewed=None,
+                schedule__isnull=True,
             )
             .filter(
                 Q(document__current_revision__isnull=True)
@@ -642,6 +644,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
                     Revision.objects.filter(
                         document=OuterRef("pk"),
                         reviewed__isnull=True,
+                        schedule__isnull=True,
                         id__gt=OuterRef("current_revision__id"),
                     )
                 )
@@ -695,7 +698,9 @@ class CategoryReadout(Readout):
 
         qs = qs.annotate(
             needs_review=Exists(
-                Revision.objects.filter(document=OuterRef("pk"), reviewed__isnull=True).filter(
+                Revision.objects.filter(
+                    document=OuterRef("pk"), reviewed__isnull=True, schedule__isnull=True
+                ).filter(
                     Q(id__gt=F("document__current_revision__id"))
                     | Q(document__current_revision__isnull=True)
                 )
@@ -995,6 +1000,7 @@ class UnreviewedReadout(Readout):
             Revision.objects.visible(
                 self.user,
                 reviewed__isnull=True,
+                schedule__isnull=True,
                 document__locale=self.locale,
                 **{f"document__{prefix}is_archived": False},
             )

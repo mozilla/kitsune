@@ -485,3 +485,33 @@
   </section>
 {% endif %}
 {%- endmacro %}
+
+{% macro scheduled_for(document, schedule) -%}
+  {# The button names its form, so it also works inside another form (the history's compare form). #}
+  <div class="scheduled">
+    {# L10n: {time} is the date and time the revision goes live. #}
+    {{ _('Scheduled for {time}')|fe(time=datetimeformat(schedule.publish_at, format='datetime')) }}
+    {% if document.allows(user, 'review_revision') %}
+      <button type="submit" form="cancel-schedule" class="sumo-button link-button">{{ _('Cancel schedule') }}</button>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro other_schedule_warning(revision, schedule) -%}
+  <div class="warning-box">
+    {# L10n: {id} is a revision number and {time} the date and time that revision goes live. #}
+    {% if schedule.revision_id < revision.id %}
+      {{ _('Revision {id} is scheduled to go live on {time}. Approving or scheduling this revision cancels that schedule.')|fe(id=schedule.revision_id, time=datetimeformat(schedule.publish_at, format='datetime')) }}
+    {% else %}
+      {{ _('Revision {id} is scheduled to go live on {time} and will replace this one. Scheduling this revision cancels that schedule.')|fe(id=schedule.revision_id, time=datetimeformat(schedule.publish_at, format='datetime')) }}
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro cancel_schedule_form(document, schedule) -%}
+  {% if document.allows(user, 'review_revision') %}
+    <form id="cancel-schedule" action="{{ url('wiki.cancel_revision_schedule', document.slug, schedule.revision_id, locale=document.locale) }}" method="post">
+      {% csrf_token %}
+    </form>
+  {% endif %}
+{%- endmacro %}

@@ -517,7 +517,10 @@ def send_weekly_ready_for_review_digest() -> None:
     categories = (HOW_TO_CATEGORY, TROUBLESHOOTING_CATEGORY, TEMPLATES_CATEGORY)
 
     revs = Revision.objects.filter(
-        reviewed=None, document__is_archived=False, document__category__in=categories
+        reviewed=None,
+        schedule__isnull=True,
+        document__is_archived=False,
+        document__category__in=categories,
     )
 
     revs = revs.filter(
@@ -629,3 +632,14 @@ def cleanup_old_translation_records() -> None:
     num_deleted, _ = RevisionTranslationRecord.objects.filter(created__lt=cutoff).delete()
 
     log.info(f"Deleted {num_deleted} old translation record(s).")
+
+
+@shared_task
+@skip_if_read_only_mode
+def release_scheduled_revisions() -> None:
+    # kitsune.wiki.review imports render_document_cascade from this module.
+    from kitsune.wiki.review import release_due_revisions
+
+    released = release_due_revisions()
+
+    log.info(f"Released {released} scheduled revision(s).")
