@@ -121,9 +121,6 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
     # Is this document localizable or not?
     is_localizable = models.BooleanField(default=True, db_index=True)
 
-    restrict_to_groups = models.ManyToManyField(
-        Group, blank=True, related_name="restricted_documents"
-    )
     audiences = models.ManyToManyField(
         Audience, through="DocumentAudience", related_name="documents", blank=True
     )
