@@ -414,21 +414,21 @@ describe("markup: LinkButton article dropdown", () => {
   });
 });
 
+function htmlResponse(htmlStr) {
+  return {
+    ok: true,
+    status: 200,
+    headers: { get: () => "text/html" },
+    json: async () => JSON.parse(htmlStr),
+    text: async () => htmlStr,
+  };
+}
+
 describe("markup: MediaButton upload link", () => {
   afterEach(() => {
     sinon.restore();
     document.body.innerHTML = "";
   });
-
-  function htmlResponse(htmlStr) {
-    return {
-      ok: true,
-      status: 200,
-      headers: { get: () => "text/html" },
-      json: async () => JSON.parse(htmlStr),
-      text: async () => htmlStr,
-    };
-  }
 
   it("opens the gallery in a new tab and closes the modal when Upload Image is clicked", () => {
     document.body.innerHTML =
@@ -453,5 +453,122 @@ describe("markup: MediaButton upload link", () => {
     expect(openStub.firstCall.args[1]).to.equal("_blank");
     // And the modal was destroyed on close.
     expect(document.querySelector("a.upload")).to.equal(null);
+  });
+});
+
+describe("markup: MediaButton knowledge base filter", () => {
+  const KNOWLEDGE_BASES = JSON.stringify([
+    { id: 3, name: "Foo" },
+    { id: 7, name: "Bar" },
+  ]);
+  let fetchStub;
+
+  beforeEach(() => {
+    fetchStub = sinon
+      .stub(window, "fetch")
+      .resolves(
+        htmlResponse(
+          '<ol id="media-list"><li><a href="/gallery/image/1" title="Fox Logo"><img alt=""></a></li></ol>' +
+            '<ol class="pagination"><li><a href="?q=&amp;page=2">2</a></li></ol>'
+        )
+      );
+  });
+
+  afterEach(() => {
+    sinon.restore();
+    document.body.innerHTML = "";
+  });
+
+  // Open the picker in an editor listing these knowledge bases (undefined: no attribute).
+  function openPicker(knowledgeBases) {
+    document.body.innerHTML =
+      '<div class="editor" data-media-search-url="/gallery/async" data-media-gallery-url="/gallery/">' +
+      '<textarea id="id_content"></textarea></div>' +
+      '<select id="_languages-select-box"><option value="en-US">English</option><option value="de">German</option></select>';
+    if (knowledgeBases !== undefined) {
+      document.querySelector(".editor").dataset.mediaKnowledgeBases = knowledgeBases;
+    }
+    const btn = new Marky.MediaButton();
+    btn.bind(document.getElementById("id_content"));
+    btn.openModal({ preventDefault() {} });
+    return document.querySelector("div.kb-filter select");
+  }
+
+  function choose(select, value) {
+    select.value = value;
+    select.dispatchEvent(new window.Event("change"));
+  }
+
+  function lastRequest() {
+    return new URL(fetchStub.lastCall.args[0], "http://localhost").searchParams;
+  }
+
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  it("filters every request by the chosen knowledge base", async () => {
+    expect(openPicker(undefined)).to.equal(null);
+    expect(lastRequest().has("kb")).to.equal(false);
+
+    const select = openPicker(KNOWLEDGE_BASES);
+    const options = Array.from(select.options).map((o) => [o.value, o.textContent]);
+    expect(options).to.deep.equal([
+      ["", "Public"],
+      ["3", "Foo"],
+      ["7", "Bar"],
+    ]);
+    expect(lastRequest().has("kb")).to.equal(false);
+
+    choose(select, "3");
+    expect(lastRequest().get("kb")).to.equal("3");
+    await settle();
+
+    document.querySelector('input[name="q"]').value = "logo";
+    document
+      .querySelector("form#gallery-modal-search")
+      .dispatchEvent(new window.Event("submit", { cancelable: true }));
+    expect([lastRequest().get("q"), lastRequest().get("kb")]).to.deep.equal(["logo", "3"]);
+
+    choose(document.querySelector("div.locale-filter select"), "de");
+    expect([lastRequest().get("locale"), lastRequest().get("kb")]).to.deep.equal(["de", "3"]);
+
+    await settle();
+    document.querySelector("ol.pagination a").click();
+    expect([lastRequest().get("page"), lastRequest().get("kb")]).to.deep.equal(["2", "3"]);
+
+    choose(select, "");
+    expect(lastRequest().has("kb")).to.equal(false);
+  });
+
+  it("inserts the image title whichever knowledge base it is picked from", async () => {
+    const select = openPicker(KNOWLEDGE_BASES);
+    choose(select, "3");
+    await settle();
+
+    document.querySelector("#media-list > li").click();
+    document.querySelector("div.submit button").click();
+
+    expect(document.getElementById("id_content").value).to.equal("[[Image:Fox Logo]] ");
+  });
+
+  it("lists the knowledge base chosen last, whatever order the responses arrive in", async () => {
+    const pending = [];
+    fetchStub.callsFake(
+      () => new Promise((resolve, reject) => pending.push({ resolve, reject }))
+    );
+    const list = (title) =>
+      htmlResponse(`<ol id="media-list"><li><a href="#" title="${title}"></a></li></ol>`);
+    const select = openPicker(KNOWLEDGE_BASES);
+    choose(select, "3");
+    choose(select, "7");
+
+    pending[2].resolve(list("Bar shot"));
+    await settle();
+    pending[1].resolve(list("Foo shot"));
+    pending[0].reject(new Error("late failure"));
+    await settle();
+
+    const titles = Array.from(document.querySelectorAll("#media-list a")).map((a) => a.title);
+    expect(titles).to.deep.equal(["Bar shot"]);
+    expect(document.querySelector("div.placeholder .msg")).to.equal(null);
   });
 });

@@ -812,6 +812,7 @@ Marky.MediaButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
     var mediaQ = "";
     var mediaLocale = document.documentElement.lang;
     var mediaPage = 1;
+    var mediaKb = "";
     var kbox;
 
     // Handle locale filter
@@ -825,6 +826,28 @@ Marky.MediaButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
       mediaLocale = localeSelect.value;
       updateResults();
     });
+
+    // Handle knowledge base filter, which only editors that list knowledge bases offer
+    if (editorEl && editorEl.dataset.mediaKnowledgeBases) {
+      var kbSelect = document.createElement("select");
+      kbSelect.setAttribute("aria-label", gettext("Knowledge base"));
+      var knowledgeBases = JSON.parse(editorEl.dataset.mediaKnowledgeBases);
+      [{ id: "", name: gettext("Public") }].concat(knowledgeBases).forEach(function (kb) {
+        var option = document.createElement("option");
+        option.value = kb.id;
+        option.textContent = kb.name;
+        kbSelect.append(option);
+      });
+      kbSelect.addEventListener("change", function () {
+        mediaPage = 1;
+        mediaKb = kbSelect.value;
+        updateResults();
+      });
+      var kbFilter = document.createElement("div");
+      kbFilter.className = "kb-filter";
+      kbFilter.append(gettext("Knowledge base:") + " ", kbSelect);
+      html.querySelector("div.filter").append(kbFilter);
+    }
 
     // Handle Search
     html.querySelector("form#gallery-modal-search").addEventListener("submit", function (e) {
@@ -874,17 +897,26 @@ Marky.MediaButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
       kbox.close();
     });
 
+    var latestRequest = 0;
     updateResults();
 
-    // Update the media list via ajax call.
+    // Update the media list via ajax call; only the latest request's response counts.
     function updateResults() {
+      var request = ++latestRequest;
       html.classList.add("processing");
       apiFetch(mediaSearchUrl, {
         method: "GET",
-        data: { q: mediaQ, page: mediaPage, locale: mediaLocale },
+        data: { q: mediaQ, page: mediaPage, locale: mediaLocale, kb: mediaKb || undefined },
         dataType: "html",
       })
+        .catch(function () {
+          return '<div class="msg">' + gettext("Oops, there was an error.") + "</div>";
+        })
         .then(function (resultHtml) {
+          if (request !== latestRequest) {
+            return;
+          }
+          html.classList.remove("processing");
           html.querySelector("div.placeholder").innerHTML = resultHtml;
           html.querySelectorAll("#media-list > li").forEach(function (li) {
             li.addEventListener("click", function (e) {
@@ -897,14 +929,6 @@ Marky.MediaButton.prototype = Object.assign({}, Marky.SimpleButton.prototype, {
               e.preventDefault();
             });
           });
-        })
-        .catch(function () {
-          var message = gettext("Oops, there was an error.");
-          html.querySelector("div.placeholder").innerHTML =
-            '<div class="msg">' + message + "</div>";
-        })
-        .finally(function () {
-          html.classList.remove("processing");
         });
     }
 

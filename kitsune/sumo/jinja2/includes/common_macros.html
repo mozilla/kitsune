@@ -703,8 +703,10 @@
 {% else %}
   {% set gallery_url = url('gallery.home') %}
 {% endif %}
+{% set picker_knowledge_bases = media_knowledge_bases(request.user) %}
 <div class="field has-large-textarea editor{% if field.errors %} invalid{% endif %}"
-  data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ gallery_url }}">
+  data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ gallery_url }}"
+  {% if picker_knowledge_bases is not none %}data-media-knowledge-bases="{{ picker_knowledge_bases|json }}"{% endif %}>
   <div class="editor-tools"></div>
   <div>{{ field|safe }}</div>
   {{ field.errors }}
