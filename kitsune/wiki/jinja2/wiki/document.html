@@ -9,7 +9,7 @@
                                                     related_documents,
                                                     document_metadata with context %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
-{% from "includes/common_macros.html" import download_firefox %}
+{% from "includes/common_macros.html" import download_firefox, sumo_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 {% set announcement_product = product|default(None) %}
 {% set classes = 'document' %}
@@ -53,6 +53,16 @@
 {% endif %}
 
 {% block breadcrumbs %}
+  {# The VPN promo ends January 31, 2027, so the banner hides itself at midnight UTC on February 1. #}
+  {% set vpn_promo_ends = "2027-02-01T00:00:00+00:00"|parse_datetime %}
+  {% if document.slug in ("built-in-vpn", "mobile-android-vpn") and now() < vpn_promo_ends %}
+    {{ sumo_banner(
+        id="built-in-vpn-banner",
+        text=_("Now through January 31st, 2027 get unlimited bandwidth with built-in VPN. Head to Mozilla Connect for more details."),
+        button_text=_('Details'),
+        button_link="https://connect.mozilla.org/t5/discussions/unlimited-bandwidth-for-the-built-in-vpn-in-firefox-through/m-p/146563",
+    ) }}
+  {% endif %}
   {{ breadcrumbs(breadcrumb_items, id='main-breadcrumbs') }}
 {% endblock %}
 
