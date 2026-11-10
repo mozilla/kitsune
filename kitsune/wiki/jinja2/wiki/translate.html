@@ -191,7 +191,7 @@
             {{ submit_revision(revision_form, show_no_update_checkbox=(document and document.current_revision), include_diff=True, allow_draft=True) }}
             <div id="preview" class="cf"></div>
             <div id="preview-diff">
-                <div class="from">{{ revision_form.content.value() }}</div>
+                <div class="from">{{ base_revision.content }}</div>
                 <div class="to"></div>
                 <div class="output"></div>
               </div>
