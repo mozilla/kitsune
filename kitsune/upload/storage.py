@@ -17,9 +17,8 @@ elif settings.AWS_ACCESS_KEY_ID:
     DjangoStorage = S3Boto3Storage
 
 
-class RenameFileStorage(DjangoStorage):
-    """Subclass Django's file system storage to add our file naming
-    conventions."""
+class RenameFileMixin:
+    """Add our file naming conventions to a storage backend."""
 
     def get_available_name(self, name, max_length=None):
         dir_name, file_name = os.path.split(name)
@@ -39,3 +38,15 @@ class RenameFileStorage(DjangoStorage):
             name = os.path.join(dir_name, "{}_{}{}".format(file_root, next(count), file_ext))
 
         return name
+
+
+class RenameFileStorage(RenameFileMixin, DjangoStorage):
+    """The public backend with our file naming conventions."""
+
+
+class PrivateFileSystemStorage(RenameFileMixin, FileSystemStorage):
+    """Private files in a directory of their own."""
+
+
+class PrivateGoogleCloudStorage(RenameFileMixin, GoogleCloudStorage):
+    """Private files in a bucket of their own."""

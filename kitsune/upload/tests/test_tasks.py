@@ -1,12 +1,15 @@
 import os
+from pathlib import Path
 from unittest import mock
 
 from django.conf import settings
 from django.core.files import File
 from django.core.files.images import ImageFile
 from django.test import override_settings
+from parameterized import parameterized
 
 import kitsune.upload.tasks
+from kitsune.gallery.tests import ImageFactory, TemporaryMediaRoots
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
@@ -17,6 +20,7 @@ from kitsune.upload.tasks import (
 )
 from kitsune.upload.utils import FileTooLargeError, create_image_thumbnail
 from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import AudienceFactory
 
 
 class ScaleDimensionsTestCase(TestCase):
@@ -201,3 +205,30 @@ class CompressImageTestCase(TestCase):
         image = self._uploaded_image(testfile="animated.gif")
         compress_image("upload.ImageAttachment", image.id, "file")
         assert not call.called
+
+
+class CompressPrivateImageTestCase(TemporaryMediaRoots, TestCase):
+    @parameterized.expand([("optimized", 0, b"optimized"), ("failed", 1, None)])
+    @override_settings(OPTIPNG_PATH="/dude")
+    def test_compress_replaces_the_file_in_its_storage(self, _name, exit_code, expected):
+        """The image ends up with one file in the private root: optimized, or the original."""
+        image = ImageFactory(
+            audience=AudienceFactory(), file__filename="shot.png", file__format="PNG"
+        )
+        name = image.file.name
+        with image.file.open("rb") as f:
+            original = f.read()
+
+        def optipng(args):
+            Path(args[-1]).write_bytes(b"optimized")
+            return exit_code
+
+        with mock.patch.object(kitsune.upload.tasks.subprocess, "call", side_effect=optipng):
+            compress_image("gallery.Image", image.id, "file")
+
+        image.refresh_from_db()
+        self.assertEqual(name, image.file.name)
+        self.assertEqual({name}, self.files_under(self.private_root))
+        self.assertEqual(set(), self.files_under(self.media_root))
+        with image.file.open("rb") as f:
+            self.assertEqual(expected or original, f.read())

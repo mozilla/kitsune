@@ -128,6 +128,45 @@ class DeleteEditImageTests(TestCase):
         self.assertEqual(img.updated_by.username, u.username)
 
 
+@mock.patch.object(views, "schedule_rebuild_kb")
+@mock.patch.object(views, "compress_image")
+@mock.patch.object(views, "generate_thumbnail")
+class FinalizeDraftTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.user = UserFactory()
+        self.client.login(username=self.user.username, password="testpass")
+        ImageFactory(title="Taken title", locale="en-US")
+        self.draft = ImageFactory(creator=self.user, is_draft=True)
+
+    def tearDown(self):
+        Image.objects.all().delete()
+        super().tearDown()
+
+    def finalize(self, locale):
+        return post(
+            self.client,
+            "gallery.upload",
+            {"locale": locale, "title": "Taken title", "description": "A description."},
+        )
+
+    def test_title_taken_in_locale(self, *_tasks):
+        response = self.finalize("en-US")
+
+        self.assertEqual(200, response.status_code)
+        errors = pq(response.content)("#gallery-upload-image .errorlist li")
+        self.assertEqual("Image with this Locale and Title already exists.", errors.text())
+        self.assertIs(True, Image.objects.get(pk=self.draft.pk).is_draft)
+
+    def test_title_taken_in_other_locale(self, *_tasks):
+        response = self.finalize("de")
+
+        self.assertEqual(200, response.status_code)
+        image = Image.objects.get(pk=self.draft.pk)
+        self.assertIsNone(image.is_draft)
+        self.assertEqual(("de", "Taken title"), (image.locale, image.title))
+
+
 class ViewHelpersTests(TestCase):
     def tearDown(self):
         Image.objects.all().delete()

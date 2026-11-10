@@ -9,6 +9,7 @@ from kitsune.gallery.models import Image
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.upload.tasks import _scale_dimensions
 from kitsune.upload.utils import _image_to_png, check_file_size, upload_media
+from kitsune.wiki.models import Audience
 
 
 def create_image(files, user):
@@ -22,7 +23,7 @@ def create_image(files, user):
         image.exclude(pk=image[0].pk).delete()
         image = image[0]
     except IndexError:  # No drafts, create one
-        image = Image(creator=user, is_draft=True)
+        image = Image(creator=user, is_draft=True, audience=Audience.objects.default())
 
     # Async uploads fallback to these defaults.
     image.title = get_draft_title(user)

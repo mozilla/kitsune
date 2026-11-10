@@ -93,6 +93,25 @@ class ImageForm(MediaForm):
         model = Image
         fields = ("file", "locale", "title", "description")
 
+    def validate_unique(self):
+        super().validate_unique()
+
+        # Model validation skips the title constraint because "audience" isn't a form field.
+        if "locale" in self.errors or "title" in self.errors:
+            return
+
+        title_taken = (
+            Image.objects.filter(
+                locale=self.instance.locale,
+                title=self.instance.title,
+                audience=self.instance.audience_id,
+            )
+            .exclude(pk=self.instance.pk)
+            .exists()
+        )
+        if title_taken:
+            self.add_error(None, self.instance.unique_error_message(Image, ("locale", "title")))
+
 
 def save_form(form, update_user=None, is_draft=True, **kwargs):
     """Save a media form, add user to updated_by.
