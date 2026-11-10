@@ -88,6 +88,9 @@ TODO: better error messages ("invalid file" means too big, or extension, etc)
     {% csrf_token %}
     {# TODO: test for errors only shown during post. #}
     {{ errorlist(image_form) }}
+    {% if knowledge_base_form is not none %}
+      {{ form_row(knowledge_base_form, 'knowledge_base', classes='knowledge-base') }}
+    {% endif %}
     {{ image_fields(image_form, 'image', 'file') }}
     {{ form_row(image_form, 'locale', classes='metadata') }}
     {{ form_row(image_form, 'title', classes='metadata') }}

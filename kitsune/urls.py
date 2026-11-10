@@ -7,6 +7,7 @@ from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
 
 from kitsune.customercare.views import ZendeskWebhookView, chat_jwt
+from kitsune.gallery.views import private_media
 from kitsune.sumo import views as sumo_views
 from kitsune.sumo.i18n import i18n_patterns
 
@@ -57,6 +58,7 @@ urlpatterns += [
     path("wafflejs", wafflejs, name="wafflejs"),
     path("", include("kitsune.kpi.urls_api")),
     path("", include("kitsune.sumo.urls")),
+    re_path(r"^private-media/(?P<name>private/.+)$", private_media, name="gallery.private_media"),
     # v1 APIs
     path("api/1/kb/", include("kitsune.wiki.urls_api")),
     path("api/1/products/", include("kitsune.products.urls_api")),

@@ -184,7 +184,7 @@
             </div>
             <div class="localized">
               <h3 class="sumo-page-subheading">{{ _('{locale} translation:')|f(locale=language) }}</h3>
-              {{ content_editor(revision_form.content) }}
+              {{ content_editor(revision_form.content, private_audience_ids=parent.private_audience_ids) }}
             </div>
           </div>
           {{ revision_form.hidden_fields()|join|safe }}

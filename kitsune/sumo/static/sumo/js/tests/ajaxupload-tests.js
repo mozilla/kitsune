@@ -66,6 +66,27 @@ describe("ajaxupload", () => {
       expect(onComplete.firstCall.args[1]).to.equal('{"status":"success"}');
     });
 
+    it("POSTs the fields extraData returns at upload time with the file", async () => {
+      document.body.innerHTML = '<form><input type="file" name="image"></form>';
+      const fetchStub = sinon
+        .stub(global, "fetch")
+        .resolves(textResponse('{"status":"success"}'));
+      const input = document.querySelector('input[type="file"]');
+      let choice = "public";
+      ajaxSubmitInput(input, { url: "/upload", extraData: () => ({ knowledge_base: choice }) });
+      choice = "7";
+
+      const file = new window.File(["x"], "pic.png", { type: "image/png" });
+      Object.defineProperty(input, "files", { value: [file], configurable: true });
+      input.dispatchEvent(new window.Event("change"));
+
+      await tick();
+
+      const body = fetchStub.firstCall.args[1].body;
+      expect(body.get("knowledge_base")).to.equal("7");
+      expect(body.get("image")).to.not.equal(null);
+    });
+
     it("cancels the upload when beforeSubmit returns false", () => {
       document.body.innerHTML = '<form><input type="file" name="image"></form>';
       const fetchStub = sinon.stub(global, "fetch");

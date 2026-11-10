@@ -6,34 +6,52 @@ from django.utils.html import escape
 
 from kitsune.gallery.forms import ImageForm
 from kitsune.gallery.models import Image
+from kitsune.gallery.storage import private_images_enabled
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.upload.tasks import _scale_dimensions
 from kitsune.upload.utils import _image_to_png, check_file_size, upload_media
+from kitsune.wiki.managers import has_private_kb_access
 from kitsune.wiki.models import Audience
 
 
-def create_image(files, user):
-    """Given an uploaded file, a user, and other data, it creates an Image"""
+def upload_knowledge_bases(user):
+    """Private knowledge bases the user may upload to or pick from; None if public images only."""
+    if not (private_images_enabled() and has_private_kb_access(user)):
+        return None
+
+    return list(Audience.objects.private_for(user).order_by("name"))
+
+
+def can_upload_to(user, audience):
+    """Whether the user may upload to, and finalize a draft in, the audience's knowledge base."""
+    if audience.is_public:
+        return True
+    return private_images_enabled() and (
+        Audience.objects.private_for(user).filter(pk=audience.pk).exists()
+    )
+
+
+def create_image(files, user, audience):
+    """Saves the upload as the user's single draft, re-homed to the audience's knowledge base."""
     up_file = list(files.values())[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
+    (up_file, _is_animated) = _image_to_png(up_file)
 
-    try:
-        image = Image.objects.filter(creator=user, is_draft=True)
-        # Delete other drafts, if any:
-        image.exclude(pk=image[0].pk).delete()
-        image = image[0]
-    except IndexError:  # No drafts, create one
-        image = Image(creator=user, is_draft=True, audience=Audience.objects.default())
-
+    image = Image.objects.filter(creator=user, is_draft=True).first() or Image(
+        creator=user, is_draft=True
+    )
+    old_files = [field_file.name for field_file in (image.file, image.thumbnail) if field_file]
+    image.audience = audience
+    image.thumbnail = None
     # Async uploads fallback to these defaults.
     image.title = get_draft_title(user)
     image.description = "Autosaved draft."
     image.locale = settings.WIKI_DEFAULT_LANGUAGE
 
-    (up_file, _is_animated) = _image_to_png(up_file)
-
     # Finally save the image along with uploading the file.
     image.file.save(up_file.name, File(up_file), save=True)
+    for name in set(old_files) - {image.file.name}:
+        image.file.storage.delete(name)
 
     name = escape(up_file.name)
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
@@ -48,9 +66,9 @@ def create_image(files, user):
     }
 
 
-def upload_image(request):
-    """Uploads an image from the request."""
-    return upload_media(request, ImageForm, create_image)
+def upload_image(request, audience):
+    """Uploads an image from the request into the audience's knowledge base."""
+    return upload_media(request, ImageForm, create_image, audience=audience)
 
 
 def check_media_permissions(media, user, perm_type):
