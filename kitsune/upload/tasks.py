@@ -1,13 +1,12 @@
 import logging
 import os
+import posixpath
 import subprocess
 from tempfile import NamedTemporaryFile
 
 from celery import shared_task
 from django.apps import apps
 from django.conf import settings
-from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
 
 log = logging.getLogger("k.task")
 
@@ -31,7 +30,7 @@ def generate_thumbnail(
     to_ = getattr(obj, to_field)
 
     # Bail silently if nothing to generate from. The image was probably deleted.
-    if not (from_ and default_storage.exists(from_.name)):
+    if not (from_ and from_.storage.exists(from_.name)):
         log.info(
             f"No file to generate from: {obj_model_name} {obj.id}, {from_field} -> {to_field}"
         )
@@ -42,8 +41,8 @@ def generate_thumbnail(
     if to_:
         # Clean up old file before creating new one.
         to_.delete(save=False)
-    # Don't modify the object.
-    to_.save(from_.name, thumb_content, save=False)
+    # Don't modify the object. Thumbnails are PNG whatever the source's format.
+    to_.save(f"{posixpath.splitext(from_.name)[0]}.png", thumb_content, save=False)
     # Use update to avoid race conditions with updating different fields.
     # E.g. when generating two thumbnails for different fields of a single
     # object.
@@ -80,7 +79,7 @@ def compress_image(obj_model_name, obj_id, for_field):
     for_ = getattr(obj, for_field)
 
     # Bail silently if nothing to compress. The image was probably deleted.
-    if not (for_ and default_storage.exists(for_.name)):
+    if not (for_ and for_.storage.exists(for_.name)):
         log.info(f"No file to compress for: {obj_model_name} {obj.id}, {for_field}")
         return
 
@@ -90,16 +89,26 @@ def compress_image(obj_model_name, obj_id, for_field):
         return
 
     log.info(f"Compressing {obj_model_name} {obj.id}: {for_field}")
-    _optipng(for_.name)
+    _optipng(for_)
 
 
-def _optipng(file_name):
+def _optipng(field_file):
+    """Optimizes the PNG and writes it back over the field's file, under the same name."""
     if not settings.OPTIPNG_PATH:
         return
 
-    with default_storage.open(file_name, "rb") as file_obj:
-        with NamedTemporaryFile(suffix=".png") as tmpfile:
+    storage = field_file.storage
+    with NamedTemporaryFile(suffix=".png") as tmpfile:
+        with storage.open(field_file.name, "rb") as file_obj:
             tmpfile.write(file_obj.read())
-            subprocess.call([settings.OPTIPNG_PATH, "-quiet", "-preserve", tmpfile.name])
-            file_content = ContentFile(tmpfile.read())
-            default_storage.save(file_name, file_content)
+        tmpfile.flush()
+        if subprocess.call([settings.OPTIPNG_PATH, "-quiet", "-preserve", tmpfile.name]) != 0:
+            log.warning(f"optipng failed for {field_file.name}")
+            return
+        # Read by path: optipng may replace the file rather than rewrite it.
+        with open(tmpfile.name, "rb") as optimized:
+            content = optimized.read()
+
+    # Not storage.save(): RenameFileMixin would store the copy under a new, unreferenced name.
+    with storage.open(field_file.name, "wb") as file_obj:
+        file_obj.write(content)

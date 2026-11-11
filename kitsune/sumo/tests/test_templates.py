@@ -1,3 +1,6 @@
+import json
+
+from django import forms
 from django.template import engines as template_engines
 from django.template.loader import render_to_string
 from django.test import override_settings
@@ -8,6 +11,7 @@ from parameterized import parameterized
 from pyquery import PyQuery as pq
 
 from kitsune.announcements.tests import AnnouncementFactory
+from kitsune.gallery.tests import PRIVATE_UPLOADS_OFF, PrivateKnowledgeBases
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -177,3 +181,44 @@ class IconMacroTests(TestCase):
         for attribute, value in attributes.items():
             self.assertEqual(value, svg.attr(attribute))
         self.assertEqual(title or "", svg("title").text())
+
+
+class ContentEditorKnowledgeBasesTests(PrivateKnowledgeBases, TestCase):
+    """The editor lists the image picker's knowledge bases for users with private access only."""
+
+    @parameterized.expand(
+        [
+            ("member", "foo_member", {}, ["foo"]),
+            ("staff", "staff", {}, ["bar", "foo"]),
+            ("no_private_access", "no_access", {}, None),
+            ("private_images_off", "staff", PRIVATE_UPLOADS_OFF, None),
+        ]
+    )
+    def test_knowledge_bases_attribute(self, _case, viewer, settings_overrides, knowledge_bases):
+        class EditorForm(forms.Form):
+            content = forms.CharField(widget=forms.Textarea)
+
+        request = RequestFactory().get("/")
+        request.LANGUAGE_CODE = "en-US"
+        request.user = self.users[viewer]
+        source = (
+            "{% from 'includes/common_macros.html' import content_editor with context %}"
+            "{{ content_editor(field) }}"
+        )
+        template = template_engines["jinja2"].from_string(source)
+
+        with self.settings(**settings_overrides):
+            html = template.render({"field": EditorForm()["content"]}, request=request)
+
+        editor = pq(html)("div.editor")
+        self.assertEqual(1, len(editor))
+        attribute = editor.attr("data-media-knowledge-bases")
+        if knowledge_bases is None:
+            self.assertIsNone(attribute)
+        else:
+            # Parsing the attribute back also shows the JSON's quotes were escaped.
+            expected = [
+                {"id": getattr(self, name).pk, "name": getattr(self, name).name}
+                for name in knowledge_bases
+            ]
+            self.assertEqual(expected, json.loads(attribute))

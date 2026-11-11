@@ -247,3 +247,10 @@ class AudienceManager(models.Manager):
         if user and (user.is_superuser or in_staff_group(user)):
             return self._listed(Q())
         return self.listed_for(user)
+
+    def private_for(self, user):
+        """Private knowledge bases a user may read, listed or not; all for Staff and superusers."""
+        private = self.filter(is_public=False)
+        if user and (user.is_superuser or in_staff_group(user)):
+            return private
+        return private.filter(groups__in=effective_group_ids(user)).distinct()

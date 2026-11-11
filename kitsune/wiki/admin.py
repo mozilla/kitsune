@@ -123,7 +123,9 @@ class AudienceAdminForm(forms.ModelForm):
         required=False,
         label=_lazy("Publish its articles"),
         help_text=_lazy(
-            "Making this knowledge base public makes every article in it readable by everyone."
+            "Making this knowledge base public makes every article in it readable by everyone. "
+            "Its images become readable by anyone with their address and stop showing in its "
+            "articles until uploaded again as public images."
         ),
     )
 
@@ -143,11 +145,12 @@ class AudienceAdminForm(forms.ModelForm):
             is_public
             and self.instance.pk
             and not self.instance.is_public
-            and self.instance.documents.exists()
+            and (self.instance.documents.exists() or self.instance.images.exists())
             and not cleaned_data.get("confirm_publish")
         ):
             self.add_error(
-                "confirm_publish", _lazy("Confirm that its articles become readable by everyone.")
+                "confirm_publish",
+                _lazy("Confirm that its articles and images become readable by everyone."),
             )
         return cleaned_data
 

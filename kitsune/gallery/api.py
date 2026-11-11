@@ -34,7 +34,7 @@ class ImageDetailSerializer(ImageShortSerializer):
 class ImageList(LocaleNegotiationMixin, generics.ListAPIView):
     """List all image ids."""
 
-    queryset = Image.objects.all()
+    queryset = Image.objects.public()
     serializer_class = ImageShortSerializer
     filterset_fields = ["height", "width"]
     filter_backends = [InequalityFilterBackend]
@@ -55,5 +55,5 @@ class ImageList(LocaleNegotiationMixin, generics.ListAPIView):
 
 
 class ImageDetail(generics.RetrieveAPIView):
-    queryset = Image.objects.all()
+    queryset = Image.objects.public()
     serializer_class = ImageDetailSerializer

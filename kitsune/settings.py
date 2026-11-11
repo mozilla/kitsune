@@ -468,6 +468,7 @@ ENGAGE_ROBOTS = config("ENGAGE_ROBOTS", default=not DEBUG, cast=bool)
 # Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = path("media")
 MEDIA_URL = config("MEDIA_URL", default="/media/")
+PRIVATE_MEDIA_ROOT = path("media-private")
 
 STATIC_ROOT = path("static")
 STATIC_URL = config("STATIC_URL", default="/static/")
@@ -915,6 +916,7 @@ MAX_FILEPATH_LENGTH = 250
 
 # GCP storage settings
 GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="")
+GS_PRIVATE_BUCKET_NAME = config("GS_PRIVATE_BUCKET_NAME", default="")
 GS_CUSTOM_ENDPOINT = config("MEDIA_URL", default="").rstrip("/")
 GS_LOCATION = config("GS_LOCATION", default="media")
 GS_QUERYSTRING_AUTH = config("GS_QUERYSTRING_AUTH", default=False, cast=bool)

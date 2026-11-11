@@ -5,6 +5,9 @@ from django.utils.translation import gettext_lazy as _lazy
 from kitsune.gallery.models import Image
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.upload.forms import LimitedImageField
+from kitsune.wiki.models import Audience
+
+PUBLIC_KNOWLEDGE_BASE = "public"
 
 # Error messages
 MSG_TITLE_REQUIRED = _lazy("Please provide a title.")
@@ -30,6 +33,10 @@ MSG_TITLE_DRAFT = _lazy("Please select a different title.")
 
 TITLE_HELP_TEXT = _lazy("Include this in wiki syntax with [[Image:title]]")
 DESCRIPTION_HELP_TEXT = _lazy("Provide a brief description of this image.")
+KNOWLEDGE_BASE_HELP_TEXT = _lazy(
+    "A private image shows only in the articles of its knowledge base, to their readers. "
+    "Choose before selecting the image: it can't be changed after the upload."
+)
 
 
 class MediaForm(forms.ModelForm):
@@ -92,6 +99,59 @@ class ImageForm(MediaForm):
     class Meta:
         model = Image
         fields = ("file", "locale", "title", "description")
+
+    def validate_unique(self):
+        super().validate_unique()
+
+        if self.instance.audience_id is None or "locale" in self.errors or "title" in self.errors:
+            return
+
+        # Model validation skips the title constraint because "audience" isn't a form field.
+        title_taken = (
+            Image.objects.filter(
+                locale=self.instance.locale,
+                title=self.instance.title,
+                audience=self.instance.audience_id,
+            )
+            .exclude(pk=self.instance.pk)
+            .exists()
+        )
+        if title_taken:
+            self.add_error(None, self.instance.unique_error_message(Image, ("locale", "title")))
+
+
+class KnowledgeBaseForm(forms.Form):
+    """Who can see an uploaded image; a draft's choice is shown locked."""
+
+    knowledge_base = forms.ChoiceField(
+        label=_lazy("Who can see this image"), help_text=KNOWLEDGE_BASE_HELP_TEXT
+    )
+
+    def __init__(self, *args, knowledge_bases, draft=None, preselect=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.knowledge_bases = {str(kb.pk): kb for kb in knowledge_bases}
+
+        choices = [("", _lazy("Choose…")), (PUBLIC_KNOWLEDGE_BASE, _lazy("Everyone (public)"))]
+        if self.knowledge_bases:
+            group_label = _lazy("Readers of a private knowledge base")
+            choices.append(
+                (group_label, [(pk, kb.name) for pk, kb in self.knowledge_bases.items()])
+            )
+
+        field = self.fields["knowledge_base"]
+        field.choices = choices
+        if draft:
+            field.disabled = True
+            field.initial = str(draft.audience_id) if draft.is_private else PUBLIC_KNOWLEDGE_BASE
+        elif preselect in self.knowledge_bases:
+            field.initial = preselect
+
+    def clean_knowledge_base(self):
+        choice = self.cleaned_data["knowledge_base"]
+        if choice == PUBLIC_KNOWLEDGE_BASE:
+            return Audience.objects.default()
+
+        return self.knowledge_bases[choice]
 
 
 def save_form(form, update_user=None, is_draft=True, **kwargs):

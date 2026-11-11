@@ -690,15 +690,23 @@
 </li>
 {% endmacro %}
 
-{% macro content_editor(field, mention_rules=false) %}
+{% macro content_editor(field, mention_rules=false, private_audience_ids=None) %}
 {% if mention_rules %}
   {# L10n: Text displayed above the content editor (particularly, when posting a question or a reply). Rules and guidelines refer to https://support.mozilla.org/kb/mozilla-support-rules-guidelines #}
   <div class="field-help-text">{% trans a_open='<a href="https://support.mozilla.org/kb/mozilla-support-rules-guidelines" target="_blank">'|safe, a_close='</a>'|safe %}
     Remember to follow our {{ a_open }}rules and guidelines{{ a_close }}.
   {% endtrans %}</div>
 {% endif %}
+{% if private_audience_ids and private_audience_ids|length == 1 %}
+  {# The gallery's home redirect would drop the knowledge base the upload form preselects. #}
+  {% set gallery_url = url('gallery.gallery')|urlparams(kb=private_audience_ids|first) %}
+{% else %}
+  {% set gallery_url = url('gallery.home') %}
+{% endif %}
+{% set picker_knowledge_bases = media_knowledge_bases(request.user) %}
 <div class="field has-large-textarea editor{% if field.errors %} invalid{% endif %}"
-  data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ url('gallery.home') }}">
+  data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ gallery_url }}"
+  {% if picker_knowledge_bases is not none %}data-media-knowledge-bases="{{ picker_knowledge_bases|json }}"{% endif %}>
   <div class="editor-tools"></div>
   <div>{{ field|safe }}</div>
   {{ field.errors }}

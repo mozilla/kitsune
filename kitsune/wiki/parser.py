@@ -58,17 +58,8 @@ def wiki_to_html(
     audience_ids=None,
 ):
     """Wiki Markup -> HTML with the wiki app's enhanced parser"""
-    if parser_cls is None:
-        parser_cls = WikiParser
-
-    with translation.override(locale):
-        content = parser_cls(doc_id=doc_id, audience_ids=audience_ids).parse(
-            wiki_markup,
-            show_toc=False,
-            locale=locale,
-            toc_string=_("Table of Contents"),
-        )
-    return content
+    parser = (parser_cls or WikiParser)(doc_id=doc_id, audience_ids=audience_ids)
+    return parser.to_html(wiki_markup, locale)
 
 
 def _format_template_content(content, params):
@@ -434,6 +425,13 @@ class WikiParser(sumo_parser.WikiParser):
 
         return html
 
+    def to_html(self, wiki_markup, locale):
+        """wiki_to_html() for a caller that keeps the parser to read what it rendered."""
+        with translation.override(locale):
+            return self.parse(
+                wiki_markup, show_toc=False, locale=locale, toc_string=_("Table of Contents")
+            )
+
     def _is_include_allowed(self, include_doc):
         """
         Check if the document can be included. Returns True only if every user who can
@@ -450,6 +448,15 @@ class WikiParser(sumo_parser.WikiParser):
             return False
 
         return self.audience_ids <= include_doc.audience_ids
+
+    def find_image(self, title):
+        """An article in exactly one private knowledge base searches it before the default one."""
+        image = None
+        if self.audience_ids and len(self.audience_ids) == 1:
+            (audience_id,) = self.audience_ids
+            own_kb = Image.objects.filter(audience_id=audience_id)
+            image = get_object_fallback(own_kb, title, self.locale)
+        return image or super().find_image(title)
 
     def _hook_include(self, parser, space, title):
         """Returns the document's parsed content."""
@@ -555,12 +562,10 @@ class WhatLinksHereParser(WikiParser):
 
         return super()._hook_include(parser, space, name)
 
-    def _hook_image_tag(self, parser, space, name):
-        """Record an image is included in a document, then call super()."""
-        title = name.split("|")[0]
-        image = get_object_fallback(Image, title, self.locale)
-
-        if image:
+    def find_image(self, title):
+        """Record the image the document embeds, then return it."""
+        image = super().find_image(title)
+        # add_image swallows a duplicate's IntegrityError, poisoning the enclosing atomic() block.
+        if image is not None and image not in self.rendered_images:
             self.current_doc.add_image(image)
-
-        return super()._hook_image_tag(parser, space, name)
+        return image

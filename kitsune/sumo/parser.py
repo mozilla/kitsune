@@ -2,6 +2,7 @@ import re
 from urllib.parse import parse_qs, urlparse
 
 from django.conf import settings
+from django.db.models import QuerySet
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
@@ -71,8 +72,8 @@ def wiki_to_html(
 
 
 def get_object_fallback(cls, title, locale, default=None, **kwargs):
-    """Return an instance of cls matching title and locale, or fall
-    back to the default locale.
+    """Return an instance of cls, a model or a queryset of one, matching
+    title and locale, or fall back to the default locale.
 
     When falling back to the default locale, follow any wiki redirects
     internally.
@@ -82,14 +83,15 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
     You may pass in additional kwargs which go straight to the query.
 
     """
+    objects = cls if isinstance(cls, QuerySet) else cls.objects
     try:
-        return cls.objects.get(title=title, locale=locale, **kwargs)
-    except OSError, cls.DoesNotExist:
+        return objects.get(title=title, locale=locale, **kwargs)
+    except OSError, objects.model.DoesNotExist:
         pass
 
     # Fallback
     try:
-        default_lang_doc = cls.objects.get(
+        default_lang_doc = objects.get(
             title=title, locale=settings.WIKI_DEFAULT_LANGUAGE, **kwargs
         )
 
@@ -116,7 +118,7 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
         # Return the English item:
         return default_lang_doc
     # Okay, all else failed
-    except OSError, cls.DoesNotExist:
+    except OSError, objects.model.DoesNotExist:
         return default
 
 
@@ -232,6 +234,7 @@ class WikiParser(Parser):
 
         self.youtube_videos = set()
         self.ui_components = set()
+        self.rendered_images = []
 
     def parse(
         self,
@@ -380,14 +383,20 @@ class WikiParser(Parser):
             url=link["url"], hash=hash, extra=extra_a_attr, text=text
         )
 
+    def find_image(self, title):
+        """The image [[Image:title]] embeds, from the default knowledge base, or None."""
+        return get_object_fallback(Image.objects.in_default_kb(), title, self.locale)
+
     def _hook_image_tag(self, parser, space, name):
         """Adds syntax for inserting images."""
         title, params = build_hook_params(name, self.locale, IMAGE_PARAMS, IMAGE_PARAM_VALUES)
 
-        message = _lazy('The image "%s" does not exist.') % title
-        image = get_object_fallback(Image, title, self.locale, message)
-        if isinstance(image, str):
-            return image
+        image = self.find_image(title)
+        if image is None:
+            return _lazy('The image "%s" does not exist.') % title
+
+        if image not in self.rendered_images:
+            self.rendered_images.append(image)
 
         return render_to_string(
             self.image_template,
