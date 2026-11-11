@@ -77,7 +77,7 @@ from kitsune.wiki.models import (
     TitleCollision,
     doc_html_cache_key,
 )
-from kitsune.wiki.parser import wiki_to_html
+from kitsune.wiki.parser import WikiParser
 from kitsune.wiki.review import apply_review, execute_l10n_strategy, schedule_revision
 from kitsune.wiki.strategies import TranslationTrigger
 from kitsune.wiki.tasks import schedule_rebuild_kb
@@ -761,15 +761,18 @@ def preview_revision(request):
         doc = None
         products = Product.active.all()
 
-    data = {
-        "content": wiki_to_html(
-            wiki_content,
-            request.LANGUAGE_CODE,
-            doc_id=doc.id if doc else None,
-            audience_ids=doc.original.private_audience_ids if doc else None,
-        ),
-        "products": products,
-    }
+    audience_ids = doc.original.private_audience_ids if doc else None
+    parser = WikiParser(doc_id=doc.id if doc else None, audience_ids=audience_ids)
+    content = parser.to_html(wiki_content, request.LANGUAGE_CODE)
+
+    public_images = []
+    if audience_ids is not None:
+        # An image outside the document's own knowledge bases came from the default one.
+        public_images = [
+            image for image in parser.rendered_images if image.audience_id not in audience_ids
+        ]
+
+    data = {"content": content, "products": products, "public_images": public_images}
     return render(request, "wiki/preview.html", data)
 
 

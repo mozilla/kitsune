@@ -4,7 +4,7 @@ from unittest.mock import patch
 from django.conf import settings
 from pyquery import PyQuery as pq
 
-from kitsune.gallery.tests import ImageFactory
+from kitsune.gallery.tests import ImageFactory, TemporaryMediaRoots
 from kitsune.sumo.parser import (
     ALLOWED_ATTRIBUTES,
     BASE_ALLOWED_ATTRIBUTES,
@@ -18,7 +18,7 @@ from kitsune.sumo.parser import (
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.models import Document
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 
 def pq_link(p, text):
@@ -634,6 +634,25 @@ class TestWikiImageTags(TestCase):
         img = img_a("img")
         assert "frameless" in img.attr("class")
         self.assertEqual("/en-US/kb/installing-firefox", img_a.attr("href"))
+
+
+class TestWikiImageScope(TemporaryMediaRoots, TestCase):
+    """Forums, questions and the rest of the markup search the default knowledge base only."""
+
+    def test_default_knowledge_base_only(self):
+        ImageFactory(title="Shot", audience=AudienceFactory())
+        ImageFactory(title="Private", audience=AudienceFactory())
+        shot, other = ImageFactory(title="Shot"), ImageFactory(title="Other")
+        parser = WikiParser()
+
+        html = parser.parse("[[Image:Other]] [[Image:Shot]] [[Image:Private]] [[Image:Other]]")
+
+        self.assertEqual(
+            [other.file.url, shot.file.url, other.file.url],
+            [img.get("src") for img in pq(html)("img")],
+        )
+        self.assertIn('The image "Private" does not exist.', html)
+        self.assertEqual([other, shot], parser.rendered_images)
 
 
 class AllowedAttributesTests(TestCase):

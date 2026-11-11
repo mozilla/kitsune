@@ -207,6 +207,47 @@ class KnowledgeBaseListingTests(TestCase):
         self.assertEqual(has_private_kb_access(user), private_access)
 
 
+class PrivateAudienceTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        agents_group = GroupFactory()
+        second_group = GroupFactory()
+        company = EnterpriseCompanyFactory()
+
+        cls.kbs = {
+            "listed": AudienceFactory(is_listed=True, groups=[agents_group]),
+            "unlisted": AudienceFactory(groups=[agents_group, second_group]),
+            "company": AudienceFactory(groups=[company.group]),
+            "other_company": AudienceFactory(groups=[EnterpriseCompanyFactory().group]),
+            "public": AudienceFactory(is_public=True, is_listed=True, groups=[agents_group]),
+            "default": Audience.objects.default(),
+        }
+        cls.viewers = {
+            "anonymous": AnonymousUser(),
+            "nobody": UserFactory(),
+            "agent": UserFactory(groups=[agents_group, second_group]),
+            "department": UserFactory(groups=[DepartmentFactory(company=company).group]),
+            "staff": UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)]),
+            "superuser": UserFactory(is_superuser=True),
+        }
+
+    @parameterized.expand(
+        [
+            ("anonymous", set()),
+            ("nobody", set()),
+            ("agent", {"listed", "unlisted"}),
+            ("department", {"company"}),
+            ("staff", {"listed", "unlisted", "company", "other_company"}),
+            ("superuser", {"listed", "unlisted", "company", "other_company"}),
+        ]
+    )
+    def test_private_for(self, viewer, expected):
+        self.assertCountEqual(
+            Audience.objects.private_for(self.viewers[viewer]),
+            [self.kbs[name] for name in expected],
+        )
+
+
 class KnowledgeBasePresentationTests(TestCase):
     def test_listing_is_private_first_then_by_name_and_distinct(self):
         groups = [GroupFactory(), GroupFactory()]

@@ -5,6 +5,7 @@ from django.db.models import ProtectedError
 from django.test import RequestFactory
 from django.urls import reverse
 
+from kitsune.gallery.tests import ImageFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.admin import AudienceAdmin, DocumentAdmin
@@ -105,19 +106,26 @@ class AudienceAdminTests(TestCase):
         )
         self.assertEqual(self.admin.get_readonly_fields(self.request, private_kb), ("slug",))
 
-    def test_publishing_a_kb_with_articles_needs_confirmation(self):
-        empty = AudienceFactory()
-        used = AudienceFactory()
-        DocumentFactory(audiences=[used])
+    def test_publishing_a_kb_with_content_needs_confirmation(self):
+        kbs = {
+            "articles": AudienceFactory(),
+            "images": AudienceFactory(),
+            "empty": AudienceFactory(),
+            "already public": AudienceFactory(is_public=True),
+        }
+        DocumentFactory(audiences=[kbs["articles"]])
+        ImageFactory(audience=kbs["images"], file="")
+        ImageFactory(audience=kbs["already public"], file="")
 
-        unconfirmed = self.change(used, is_public="on")
-        self.change(empty, is_public="on")
-        self.assertIn("confirm_publish", unconfirmed.context["adminform"].form.errors)
-        self.assertFalse(Audience.objects.get(pk=used.pk).is_public)
-        self.assertTrue(Audience.objects.get(pk=empty.pk).is_public)
-
-        self.change(used, is_public="on", confirm_publish="on")
-        self.assertTrue(Audience.objects.get(pk=used.pk).is_public)
+        for label, kb in kbs.items():
+            with self.subTest(label):
+                response = self.change(kb, is_public="on")
+                if label in ("articles", "images"):
+                    self.assertIn("confirm_publish", response.context["adminform"].form.errors)
+                    self.assertFalse(Audience.objects.get(pk=kb.pk).is_public)
+                    response = self.change(kb, is_public="on", confirm_publish="on")
+                self.assertEqual(302, response.status_code)
+                self.assertTrue(Audience.objects.get(pk=kb.pk).is_public)
 
     def test_featured_articles_must_belong_to_the_kb(self):
         kb = AudienceFactory()

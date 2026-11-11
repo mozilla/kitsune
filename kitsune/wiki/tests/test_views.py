@@ -8,6 +8,7 @@ from parameterized import parameterized
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
 
+from kitsune.gallery.tests import ImageFactory, TemporaryMediaRoots
 from kitsune.kbforums.tests import ThreadFactory
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.redis_utils import RedisError, redis_client
@@ -533,6 +534,59 @@ class PreviewRevisionVisibilityTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Secret content")
         self.assertContains(response, 'The document "Restricted Doc" does not exist.')
+
+
+class PrivateImageRenderingTests(TemporaryMediaRoots, TestCase):
+    """The preview and the revision page resolve images like the stored article HTML does."""
+
+    def setUp(self):
+        super().setUp()
+        ProductFactory()
+        self.group = GroupFactory()
+        self.kbs = {
+            "foo": AudienceFactory(groups=[self.group]),
+            "default": Audience.objects.default(),
+        }
+
+    @parameterized.expand(
+        [
+            ("own_kb_image", "foo", "foo", None),
+            (
+                "public_image_in_a_private_article",
+                "foo",
+                "default",
+                "Anyone can see these images: Shot",
+            ),
+            ("public_article", "default", "default", None),
+        ]
+    )
+    def test_preview(self, _name, article_kb, image_kb, notice):
+        image = ImageFactory(title="Shot", audience=self.kbs[image_kb])
+        document = DocumentFactory(audiences=[self.kbs[article_kb]])
+        ApprovedRevisionFactory(document=document)
+        self.client.force_login(UserFactory(is_superuser=True))
+
+        response = self.client.post(
+            reverse("wiki.preview"),
+            data={"content": "[[Image:Shot]]", "slug": document.slug, "locale": document.locale},
+        )
+
+        self.assertContains(response, f'data-original-src="{image.file.url}"')
+        if notice:
+            self.assertContains(response, notice)
+        else:
+            self.assertNotContains(response, "Anyone can see these images")
+
+    def test_revision_page_renders_the_documents_own_image(self):
+        image = ImageFactory(title="Shot", audience=self.kbs["foo"])
+        revision = ApprovedRevisionFactory(
+            document=DocumentFactory(audiences=[self.kbs["foo"]]), content="[[Image:Shot]]"
+        )
+        self.client.force_login(UserFactory(groups=[self.group]))
+        response = self.client.get(
+            reverse("wiki.revision", args=[revision.document.slug, revision.id])
+        )
+        self.assertContains(response, f'data-original-src="{image.file.url}"')
 
 
 class DocumentRevisionsVisibilityTests(TestCase):

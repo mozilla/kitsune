@@ -6,6 +6,7 @@ venv
 /static
 .env
 /media
+/media-private
 *.gz
 /locale
 /node_modules
