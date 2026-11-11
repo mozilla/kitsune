@@ -1,4 +1,5 @@
 {% from "includes/icons.html" import icon %}
+{% from "wiki/includes/kb_macros.html" import lock_icon %}
 {% macro search_result(result) %}
 <article class="topic-article result {{ result.type }}">
   <div class="topic-article--icon-wrap">
@@ -67,6 +68,14 @@
     {% endif %}
 
     <p>{{ result.search_summary|safe }}</p>
+
+    {% if result.knowledge_bases %}
+    <ul class="tag-list">
+      {% for entry in result.knowledge_bases %}
+      <li>{% if entry.is_private %}{{ lock_icon() }}&nbsp;{% endif %}{{ entry.name }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
 
     {% if 'explain' in request.GET and request.GET['explain'] == '1' %}
     <div class="explain">

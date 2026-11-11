@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (window.location.pathname === `/${locale}/search/`) {
     const params = new URL(window.location.href).searchParams;
     const searchTerm = params.get("q");
-    if (searchTerm) {
+    if (searchTerm && !document.body.dataset.privateSearch) {
       let contentFilter = "";
       let productFilter = params.get("product") || "";
 

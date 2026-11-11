@@ -185,14 +185,28 @@ class GateEnumerationTests(GateIndexTestCase):
         self.assertEqual(report.counts, {GateCategory.UNEXPECTED_IDENTITY.value: 1})
         self.assertEqual(report.unexpected_identities, (self.identity,))
 
-    def test_a_restricted_document_left_in_the_index_is_access_drift_not_generic_staleness(self):
+    def test_a_private_ineligible_row_still_indexed_is_an_unexpected_identity(self):
+        sync_document_chunks(self.document.id)
+        self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
+        Document.objects.filter(pk=self.document.id).update(is_archived=True)
+
+        report = gate_index(self.index)
+
+        self.assertEqual(report.counts, {GateCategory.UNEXPECTED_IDENTITY.value: 1})
+        self.assertEqual(report.unexpected_identities, (self.identity,))
+
+    def test_a_document_made_private_after_indexing_is_access_drift_named_for_sync(self):
         sync_document_chunks(self.document.id)
         self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
 
         report = gate_index(self.index)
 
-        self.assertEqual(report.counts, {GateCategory.ACCESS_DRIFT.value: 1})
-        self.assertEqual(report.unexpected_identities, (self.identity,))
+        self.assertEqual(
+            report.counts,
+            {GateCategory.ACCESS_DRIFT.value: 1, GateCategory.STALE_DOCUMENT.value: 1},
+        )
+        self.assertEqual(report.stale_document_ids, (self.document.id,))
+        self.assertEqual(report.unexpected_identities, ())
 
     def test_access_drift_with_a_current_hash_is_selected_and_repaired_without_embedding(self):
         sync_document_chunks(self.document.id)

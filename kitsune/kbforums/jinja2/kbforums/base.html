@@ -6,6 +6,9 @@
 {% endif %}
 {% set meta = (('robots', 'noindex'),) %}
 {% set ga_content_group = "kb-article-discussions" %}
+{% if document and document.is_restricted %}
+  {% set suppress_analytics = True %}
+{% endif %}
 
 {% block side_top %}
   {% block side_top_top %}{% endblock %}

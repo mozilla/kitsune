@@ -362,7 +362,19 @@
         { "fg": "--wizard-success-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
         { "fg": "--wizard-success-text", "bg": "--color-graphite-06", "min": 4.5, "themes": ["dark"] },
         { "fg": "--color-moz-text", "bg": "--card-bg", "min": 4.5, "themes": ["light", "dark"] },
-        { "fg": "--color-moz-text", "bg": "--color-graphite-06", "min": 4.5, "themes": ["dark"] }
+        { "fg": "--color-moz-text", "bg": "--color-graphite-06", "min": 4.5, "themes": ["dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--kb-accent-violet", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--kb-accent-blue", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--kb-accent-teal", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--kb-accent-green", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--kb-accent-orange", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--color-text-on-accent", "bg": "--kb-accent-red", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--kb-accent-violet-ink", "bg": "--color-shade-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--kb-accent-blue-ink", "bg": "--color-shade-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--kb-accent-teal-ink", "bg": "--color-shade-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--kb-accent-green-ink", "bg": "--color-shade-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--kb-accent-orange-ink", "bg": "--color-shade-bg", "min": 3, "themes": ["light", "dark"] },
+        { "fg": "--kb-accent-red-ink", "bg": "--color-shade-bg", "min": 3, "themes": ["light", "dark"] }
     ],
     "exceptions": [
         {

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from 'wiki/includes/kb_macros.html' import kb_card %}
+{% set title = _('Knowledge Bases') %}
+{% set crumbs = [(None, title)] %}
+{% set classes = 'kb-page' %}
+
+{% block masthead %}
+<section class="home-search-section sumo-page-section shade-bg has-aurora">
+  <div class="mzp-l-content">
+    {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+  </div>
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="sumo-page-heading-xl">{{ title }}</h1>
+      {# L10n: Introduction of the page that lists the knowledge bases a visitor can open. #}
+      <p class="kb-hero--description">{{ _('Collections of help articles, each written for a particular team or community.') }}</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block contentwrap %}
+<div id="main-content" class="kb-content">
+  <section id="kb-directory" class="mzp-l-content sumo-page-section">
+    {% for heading, knowledge_bases in sections %}
+      <section class="kb-directory--group">
+        <h2 class="sumo-page-subheading">{{ heading }}</h2>
+        <div class="sumo-card-grid is-product-wrap">
+          <div class="scroll-wrap">
+            {% for knowledge_base in knowledge_bases %}
+              {{ kb_card(knowledge_base) }}
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% else %}
+      <div id="kb-directory-empty" class="topic-doc-list-empty">
+        {# L10n: Shown on the page that lists knowledge bases when there are none to show. #}
+        <p class="topic-doc-list-empty--title">{{ _('There are no knowledge bases here yet.') }}</p>
+      </div>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}

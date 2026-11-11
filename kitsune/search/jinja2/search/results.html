@@ -1,5 +1,6 @@
 {% extends "search/base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% from "wiki/includes/kb_macros.html" import lock_icon %}
 {% from "search/includes/result.html" import search_result with context %}
 {% from "search/includes/macros.html" import basic_search_form with context %}
 {% from "includes/icons.html" import icon %}
@@ -37,6 +38,17 @@
           {% endif %}
         </p>
 
+        {% if private_block %}
+          <section id="private-block" class="curated-block is-articles" aria-labelledby="private-block-heading">
+            <header class="curated-block--head">
+              <h2 id="private-block-heading" class="curated-block--heading">{{ private_block_heading }}</h2>
+            </header>
+            {% for doc in private_block %}
+              {{ search_result(doc) }}
+            {% endfor %}
+          </section>
+        {% endif %}
+
         <div class="content-box">
           {% for doc in results %}
             {{ search_result(doc) }}
@@ -49,6 +61,8 @@
           {{ _("Sorry! 0 results found for ‘{q}’ in ‘{l}’")|fe(q=q, l=lang_name) }}
         </p>
 
+        {# A KB-scoped search has no fallback (None), so it never broadens. #}
+        {% if fallback_results %}
         <p>{{ _("Try searching again with a different keyword, or browse our featured articles and threads below instead.") }}</p>
 
         <section class="sumo-card-grid content-box">
@@ -72,6 +86,7 @@
             {% endfor %}
           </div>
         </section>
+        {% endif %}
       {% endif %}
 
       {% if num_results > 0 and total_is_approximate %}
@@ -122,6 +137,25 @@
   {% if w != 3 %}
     {% set base_product_url = base_product_url|urlparams(w=w) %}
   {% endif %}
+  {% if knowledge_bases %}
+    {% set base_kb_url = base_product_url|urlparams(
+         product=product.slug if product else None,
+         all_products=1 if search_form.cleaned_data.all_products else None) %}
+    <h3 class="sidebar-subheading">{{ _('Filter by knowledge base') }}</h3>
+    <ul id="kb-filter" class="search-filter sidebar-nav">
+      <li {{ kb|class_selected(None) }}>
+        <a href="{{ base_kb_url }}">{{ _('All results') }}</a>
+      </li>
+      {% for entry in knowledge_bases %}
+        <li {{ kb|class_selected(entry.slug) }}>
+          <a href="{{ base_kb_url|urlparams(kb=entry.slug) }}">
+            {% if entry.is_private %}{{ lock_icon() }}&nbsp;{% endif %}{{ entry.name }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  {% set base_product_url = base_product_url|urlparams(kb=kb) %}
   <ul id="product-filter" class="search-filter sidebar-nav">
     <li {{ product|class_selected(None) }}>
       <a href="{{ base_product_url|urlparams(all_products=1) }}">

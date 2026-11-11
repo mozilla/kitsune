@@ -13,6 +13,10 @@
   {% set scripts = scripts + ('switching-devices',) %}
 {% endif %}
 {% set ga_content_group = "kb-cms" %}
+{# The first translation has no document yet, so follow the original. #}
+{% if parent.is_restricted %}
+  {% set suppress_analytics = True %}
+{% endif %}
 
 {% block content %}
   {% set language = settings.LANGUAGES_DICT[locale.lower()] %}

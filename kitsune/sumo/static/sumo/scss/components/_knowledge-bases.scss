@@ -1,0 +1,209 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+// One class per KB_COLORS entry points the --kb-accent* properties at its theme tokens; violet is the fallback.
+$kb-colors: ('violet', 'blue', 'teal', 'green', 'orange', 'red');
+
+@each $color in $kb-colors {
+  .kb-color--#{$color} {
+    --kb-accent: var(--kb-accent-#{$color});
+    --kb-accent-ink: var(--kb-accent-#{$color}-ink);
+    --kb-accent-glow: var(--kb-accent-#{$color}-glow);
+    --kb-accent-aurora: var(--kb-accent-#{$color}-aurora);
+  }
+}
+
+.kb-mark {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  box-sizing: border-box;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: var(--kb-accent, var(--kb-accent-violet));
+  font-family: var(--body-font-family);
+  // Large text (bold, at least 18.66px), which the 3:1 contrast pairs of the accent fills assume.
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-text-on-accent);
+
+  &.is-lg {
+    width: 72px;
+    height: 72px;
+    box-shadow: var(--kb-accent-glow, none);
+    border-radius: 18px;
+    font-family: var(--title-font-family);
+    font-size: 26px;
+    font-weight: 600;
+
+    @media #{p.$mq-md} {
+      width: 88px;
+      height: 88px;
+      border-radius: 22px;
+      font-size: 32px;
+    }
+  }
+}
+
+.kb-lock {
+  flex-shrink: 0;
+  color: var(--color-text-light);
+}
+
+.home-search-section.has-aurora.kb-hero {
+  background-image: var(--kb-accent-aurora, var(--kb-accent-violet-aurora)), var(--kb-hero-base);
+
+  .kb-mark {
+    margin: 0 auto p.$spacing-lg;
+  }
+
+  h1 {
+    overflow-wrap: anywhere;
+  }
+}
+
+.kb-hero--description {
+  @include c.text-body-lg;
+  margin: p.$spacing-sm auto 0;
+  max-width: 58ch;
+  color: var(--color-text);
+}
+
+.kb-privacy {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: p.$spacing-sm;
+  margin: p.$spacing-md 0 0;
+  @include c.text-body-sm;
+  color: var(--color-text);
+
+  &--icon {
+    flex-shrink: 0;
+    color: var(--kb-accent-ink, var(--kb-accent-violet-ink));
+  }
+}
+
+// The instant search results replace the page below the hero, so the hero keeps only its search box.
+.search-results-visible .kb-hero {
+  .kb-mark,
+  .kb-hero--description,
+  .kb-privacy {
+    display: none;
+  }
+}
+
+.kb-subheader {
+  flex-direction: column;
+  gap: p.$spacing-md;
+  margin-bottom: p.$spacing-lg;
+
+  @media #{p.$mq-lg} {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sumo-page-subheading {
+    margin: 0;
+  }
+}
+
+.kb-content .topics-section {
+  padding: 0;
+}
+
+.kb-browse-all {
+  font-weight: 700;
+}
+
+.kb-recent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 40px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media #{p.$mq-md} {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &--item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: p.$spacing-md;
+    padding: 14px 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  &--text {
+    min-width: 0;
+  }
+
+  &--title {
+    font-weight: 700;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &--topic,
+  &--date {
+    @include c.text-body-sm;
+    color: var(--color-text-light);
+  }
+
+  &--topic {
+    display: block;
+  }
+
+  &--date {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
+.card--kb {
+  .card--title {
+    display: flex;
+    align-items: center;
+    gap: p.$spacing-xs;
+    overflow-wrap: anywhere;
+  }
+}
+
+.kb-directory--group + .kb-directory--group {
+  margin-top: p.$spacing-2xl;
+}
+
+.kb-directory--group .sumo-page-subheading {
+  margin-bottom: p.$spacing-lg;
+}
+
+.kb-menu {
+  // Indented like the panel's lists, which leave room for the item icon.
+  &--heading {
+    margin: 0;
+    margin-inline-start: 48px;
+    @include c.text-body-sm;
+    font-family: var(--body-font-family);
+    font-weight: 700;
+    color: var(--color-text-light);
+  }
+
+  .kb-menu--heading + .mzp-c-menu-item-list {
+    margin-top: p.$spacing-xs;
+  }
+
+  &--link .kb-lock {
+    margin-inline-start: p.$spacing-xs;
+    vertical-align: -1px;
+  }
+}

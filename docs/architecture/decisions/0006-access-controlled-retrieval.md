@@ -1,66 +1,70 @@
-# 6 - Access-controlled retrieval for group-restricted KB content
+# 6 - Access-controlled retrieval for private knowledge-base content
 
 Date: 2026-07-31
+Updated: 2026-11-03
 
 ## Status
 
-Proposed — pending restricted-content policy approval.
+Accepted on 2026-11-03.
 
-Until this decision is accepted, retrieval ingestion remains public-only: restricted
-content must not be sent to the embedding provider or stored in the retrieval index.
-The access fields and public-only policy boundary described below may be modeled while
-inert, but there is no runtime switch that can enable restricted ingestion.
+On 2026-11-02 the restricted-content policy owner approved sending private
+knowledge-base text to the embedding provider (Vertex) and storing it in the retrieval
+cluster. The approval covers agent and company knowledge bases alike.
 
 ## Context
 
-Kitsune knowledge-base documents can be restricted to one or more Django
-authentication groups. A document passes the group-access check when it is
-unrestricted, the caller belongs to any allowed group, or the caller is a superuser or
-a member of Kitsune's staff group. Translations inherit the restrictions of their
-original document.
+Kitsune knowledge-base articles are assigned to audiences, and each audience is a
+knowledge base. A public knowledge base is readable by everyone, including signed-out
+visitors. A private one is readable by the members of its groups; the company group of
+an enterprise company also grants its departments. An article whose original is in any
+public knowledge base is public. A private article is readable by users whose effective
+groups include a group of one of its knowledge bases, and by superusers and members of
+Kitsune's staff group. An article in no knowledge base is readable by those privileged
+users only. Translations inherit the audiences of their original document.
 
 The retrieval layer turns approved, rendered KB HTML into chunks, sends each chunk's
 text to a managed embedding provider, and stores the text, vector, and metadata in
-Elasticsearch. It initially indexes public content only. The desired future behavior
-is for an authenticated caller to retrieve both public content and restricted content
-that caller may view. The existing lexical `WikiDocument` index remains public-only.
+Elasticsearch. It indexes every content-eligible article, public or private. A caller
+retrieves the public content and the private content that caller may view. The existing
+lexical `WikiDocument` index remains public-only.
 
 Access control is not merely an Elasticsearch filter:
 
 - Elasticsearch is updated asynchronously and can contain stale access metadata.
-- A document's restrictions affect which templates and includes the wiki parser may
-  render into its stored HTML.
-- Changing the restrictions of an included document can therefore affect other
-  documents whose own access rules did not change.
-- Restricted text would be processed by the embedding provider and stored in the
-  retrieval cluster, which requires explicit policy approval.
+- A document's access affects which templates and includes the wiki parser may render
+  into its stored HTML.
+- Changing the access of an included document can therefore affect other documents whose
+  own access did not change.
+- Private text is processed by the embedding provider and stored in the retrieval
+  cluster, which required explicit policy approval (see Status).
 
-There is no current tenant-isolation requirement. Per-customer documentation scoping
-is hypothetical, and the anticipated material is hosted product documentation rather
-than a general secrets store. These constraints make eventual revocation an acceptable
-tradeoff for the present system; they do not themselves authorize external processing
-or indexed storage.
+Company knowledge bases hold one customer's documentation, so access control now keeps
+customers apart from one another as well as keeping private content from the public. The
+material is product documentation, not a general secrets store. That makes eventual
+revocation an acceptable tradeoff (see "Accept delayed revocation for previously
+authorized rendered content").
 
 ## Decision
 
 ### Model access independently from show-for scope
 
-Every retrieval chunk and its `ChunkSource` carry two keyword fields:
+Every retrieval chunk and its `ChunkSource` carry two keyword fields, derived from the
+original document's audiences. In effect:
 
 ```python
+visibility = "group_restricted" if document.is_restricted else "public"
 access_group_ids = (
-    sorted(
-        set(
-            document.original.audiences.filter(groups__isnull=False).values_list(
-                "groups", flat=True
-            )
-        )
-    )
+    sorted({group.id for kb in document.original.audiences for group in kb.groups})
     if document.is_restricted
     else []
 )
-visibility = "group_restricted" if document.is_restricted else "public"
 ```
+
+`is_restricted` is true unless the original is assigned a public knowledge base, so an
+article in a public knowledge base and a private one is `public` with no group IDs.
+A private article in knowledge bases without groups, or in no knowledge base, is
+`group_restricted` with an empty list: no caller without the staff or superuser bypass
+matches it in Elasticsearch, and the database check admits only privileged callers.
 
 `access_group_ids` uses canonical, sorted integer group IDs. Translations read the IDs
 from `document.original`. The fields are included in `index_state_hash`, so a change to
@@ -71,40 +75,21 @@ The per-document manifest stores `index_state_hash`, not a duplicate copy of the
 list. `visibility` is deliberately distinct from the chunker's `scope`, which
 represents show-for applicability rather than authorization.
 
-While ingestion is public-only, every indexed chunk has
-`visibility == "public"` and `access_group_ids == []`.
+### Ingest on content eligibility alone
 
-### Separate content eligibility from the rollout policy
-
-Retrieval uses three explicit predicates:
+Retrieval uses one predicate:
 
 ```python
-def is_retrieval_content_eligible(document) -> bool:
-    """Whether this is approved, supported KB content, independent of access."""
+def is_retrieval_indexable(document) -> bool:
+    """Whether the document is ingested: approved, supported KB content, whatever its audiences."""
     # Has a current revision; is not a redirect, template, or archived;
     # and is not in an excluded administrative/content category.
-
-
-def is_publicly_accessible(document) -> bool:
-    return not document.is_restricted
-
-
-def is_retrieval_indexable(document) -> bool:
-    """The current public-only ingestion policy."""
-    return (
-        is_retrieval_content_eligible(document)
-        and is_publicly_accessible(document)
-    )
 ```
 
-The bulk `eligible_documents()` queryset must be proven equivalent to the complete
-`is_retrieval_indexable()` predicate. Incremental ingestion, backfill, and
-reconciliation all use the same policy boundary.
-
-There is no `include_restricted` argument or configuration flag. Enabling restricted
-ingestion later is a deliberate code change to the object predicate, queryset,
-reconciliation expectations, and tests. It cannot happen through an environment
-toggle.
+The bulk `eligible_documents()` queryset must be proven equivalent to
+`is_retrieval_indexable()`. Incremental ingestion, backfill, and reconciliation all use
+the same policy boundary. Access never decides whether a document is ingested; it is
+stored with each chunk and enforced when the chunk is read.
 
 The lexical index keeps its existing, behavior-preserving public-only predicate. Its
 merged-locale representation is separate from the retrieval index, which stores one
@@ -113,7 +98,9 @@ source document per locale.
 ### Enforce source-document access at read time
 
 The retrieval caller's identity and group IDs are derived server-side, never accepted
-as caller-supplied group IDs.
+as caller-supplied group IDs. The caller's group IDs are the effective groups used for
+knowledge-base access: the caller's direct groups plus the company group of each
+enterprise company the caller belongs to, directly or through a department.
 
 For a caller without the staff/superuser bypass, Elasticsearch pre-filters candidates
 using:
@@ -128,7 +115,9 @@ Before a hit is returned or its text is placed in a prompt, the application perf
 one set-based primary-database query over the bounded KB candidate IDs and revalidates:
 
 - current content eligibility, including the approved/current revision; and
-- current authorization for the caller.
+- current authorization for the caller: the original is in a public knowledge base, or
+  in one that has a group among the caller's effective groups, unless the caller is
+  privileged.
 
 The Elasticsearch query uses fixed over-fetch. After database rejection, the reader
 returns the remaining results, even when that produces a short page; it does not run an
@@ -159,29 +148,31 @@ Elasticsearch access filter and authoritative database revalidation.
 Access changes use the existing freshness mechanisms rather than a separate security
 workflow:
 
-- While ingestion remains public-only, making a document restricted makes it
-  ineligible, so ordinary synchronization evicts it. Making it public makes it newly
-  eligible and indexes it.
-- Once restricted ingestion is deliberately enabled, a change that affects only
-  `visibility` or `access_group_ids` takes the metadata-only path because
-  `index_state_hash` changes while `content_hash` remains stable.
+- A change that affects only `visibility` or `access_group_ids`, such as assigning an
+  article to a knowledge base, a knowledge base turning public or private, or a
+  knowledge base's groups changing, takes the metadata-only path because
+  `index_state_hash` changes while `content_hash` remains stable. Vectors are preserved
+  and nothing is embedded again.
 - When an access change alters another document's rendered body, that dependent's
   `content_hash` changes and ordinary synchronization re-embeds it.
+- Content that becomes ineligible, such as an archived article or one turned into a
+  redirect, is evicted whatever its audiences.
 
-The wiki parser already enforces an important render-time invariant: it includes a
-restricted document only when every group allowed to view the containing document is
-also allowed to view the included document. The existing
-`render_document_cascade` task rerenders dependent documents after a restriction
-change, and each resulting `Document.save()` schedules the normal hash-gated retrieval
-sync.
+The wiki parser enforces an important render-time invariant: a public document can be
+included anywhere, and a private document can be included only in a private document
+that is assigned to knowledge bases, all of which also contain the included document.
+Every reader of the containing document can therefore read what is rendered into it.
+The existing `render_document_cascade` task rerenders dependent documents after an
+access change, and each resulting `Document.save()` schedules the normal hash-gated
+retrieval sync.
 
 There is no durable access-change embargo, ordered evict/rerender/resync coordinator,
 pre-mutation dependency-closure capture, or stale-workflow recovery scanner. The Redis
 ingestion lease continues to serialize workers; it is not authorization state.
 
 Reconciliation repairs missed retrieval synchronization and reports direct access
-drift: indexed identities whose stored access fields disagree with the database or
-which are indexed despite being ineligible under the active rollout policy. It does
+drift: indexed identities whose stored access fields disagree with the database. Indexed
+identities that are no longer eligible are reported and evicted. Reconciliation does
 not claim to repair wiki HTML when the render cascade itself failed.
 
 Render-cascade and retrieval-task failures must remain visible through normal Celery
@@ -205,46 +196,49 @@ authorized group-level audience, not strict fragment-level enforcement of the ne
 policy. Individual membership can change during the convergence interval; the system
 does not track historical per-user entitlement.
 
-This risk is accepted for the current non-tenant product-documentation use case. The
-document must not describe the interval as bounded unless an operational SLA and the
+The original decision named per-customer isolation as a reason to revisit this risk.
+Company knowledge bases make it real, and the accepted risk still holds:
+
+- every direct hit is re-checked in the primary database on every request, so a stale
+  index entry never grants access;
+- the parser includes private content in another article only when every reader of that
+  article can read it; and
+- the residual risk is delayed revocation of content already rendered into another
+  article, and only for readers who were authorized for it when it was rendered.
+
+The document must not describe the interval as bounded unless an operational SLA and the
 mechanisms that enforce it are introduced.
 
-### Gate restricted ingestion on policy and the secure reader
+### Conditions for ingesting private content
 
-Restricted ingestion may be enabled only after all of the following hold:
+Private content is ingested because all of the following hold:
 
-1. The restricted-content policy owner approves processing and storage. Approval must
-   cover the embedding provider and Elasticsearch, including retention,
-   regional/data-handling requirements, backups, and operator access.
+1. The restricted-content policy owner approved processing and storage. The approval
+   covers the embedding provider and Elasticsearch (see Status).
 2. The group-aware reader implements the server-derived ES filter, authoritative
    source-document eligibility/access revalidation, and over-fetching for rejected
    candidates.
-3. The reader does not cache results or generated answers unless a separately reviewed
-   invalidation design has been implemented.
+3. The reader does not cache results or generated answers.
 4. Reconciliation reports direct access drift without logging group names or IDs, and
    normal task-failure monitoring covers the wiki render cascade and retrieval sync.
 
-Once those conditions hold, enabling is an intentional reviewed code change that
-removes the public-access requirement from retrieval indexing while preserving content
-eligibility. Reconciliation/backfill then discovers newly eligible restricted documents
-and performs their initial paid embedding. Existing public vectors remain reusable.
+Reconciliation and backfill discover private articles that are not yet indexed and
+perform their first, paid embedding. Existing public vectors remain reusable.
 
 ## Consequences
 
 - The retrieval schema represents authorization from the start without overloading
   show-for scope.
-- Until explicit enablement, no restricted content reaches the embedding provider or
-  Elasticsearch; access fields are constant `public`/`[]` in indexed chunks.
+- Private article text reaches the embedding provider and is stored in Elasticsearch,
+  under the same retention, region, backup and operator-access setup as public content.
 - Direct source-document authorization is current and database-backed at read time.
 - Access changes use the ordinary signal, hash, metadata-update, deletion, rerender,
   and reconciliation paths. There is no separate durable coordinator to operate.
 - During a rebuild, stale candidates may remain in the old read generation until
   promotion; all mutations use the new write generation only, and the authoritative
   database recheck prevents stale index state from granting access.
-- Under the current public-only policy, public-to-restricted changes evict rather than
-  metadata-update the document.
-- After restricted ingestion is enabled, access-only source changes normally preserve
-  vectors; dependent rendered-body changes still require re-embedding.
+- Access-only source changes normally preserve vectors; dependent rendered-body changes
+  still require re-embedding.
 - Revocation of content already rendered into another document is eventually
   consistent and has no hard completion SLA.
 - The lexical search index remains public-only.
@@ -253,7 +247,8 @@ and performs their initial paid embedding. Existing public vectors remain reusab
 
 Any of the following invalidates the accepted-risk model:
 
-- Per-tenant or per-customer isolation becomes real.
+- A customer's content needs isolation stronger than group-level read access with
+  eventual revocation.
 - Content whose sensitivity warrants strict current-policy control, such as personal
   data or embargoed security material, enters scope.
 - Product or contractual requirements introduce a strict revocation SLA.
@@ -267,16 +262,15 @@ provenance with dependency-aware read-time validation.
 
 ## Alternatives considered
 
-- **Keep retrieval permanently public-only.** Simpler, but it cannot eventually return
-  useful group-restricted support material to authorized users.
+- **Keep retrieval public-only.** Simpler, and it keeps private text away from the
+  embedding provider, but agents and company readers would get no semantic retrieval
+  over their knowledge bases.
 - **Trust indexed group IDs without database revalidation.** Rejected because
   asynchronous ingestion inevitably creates stale direct-access metadata.
-- **Add an enable flag now.** Rejected because it could send restricted content to the
-  provider and index before policy approval and the secure reader exist.
 - **Durable embargo plus ordered dependency-closure eviction.** Stronger immediate
   revocation, but deferred because it introduces new database state, synchronous
-  closure capture, recovery, task coordination, and permanent operational burden for a
-  tenant-isolation requirement that does not exist today.
+  closure capture, recovery, task coordination, and permanent operational burden beyond
+  what the accepted risk requires.
 - **Dependency-aware provenance on every chunk.** Could make rendered-fragment access
   enforceable at read time, but deferred until strict fragment-level revocation is a
   real requirement.

@@ -115,6 +115,18 @@ SIMPLE_WIKI_LANDING_PAGE_SLUG = "frequently-asked-questions"
 
 DEFAULT_AUDIENCE_SLUG = "default"
 
+KB_PUBLIC_LISTING_CACHE_KEY = "wiki:kb-public-listing"
+KB_PUBLIC_LISTING_VERSION_KEY = "wiki:kb-public-listing:version"
+
+KB_COLORS = (
+    ("violet", _lazy("Violet")),
+    ("blue", _lazy("Blue")),
+    ("teal", _lazy("Teal")),
+    ("green", _lazy("Green")),
+    ("orange", _lazy("Orange")),
+    ("red", _lazy("Red")),
+)
+
 # Q object for filtering valid pinned articles.
 # This is used in both the admin UI (via limit_choices_to) and in runtime
 # filtering (via get_pinned_articles()) to ensure consistency.

@@ -200,7 +200,6 @@ class QuestionSearch(SumoSearch):
         return {
             "type": "question",
             "url": reverse("questions.details", kwargs={"question_id": hit.question_id}),
-            "score": hit.meta.score,
             "title": hit.question_title[self.locale],
             "search_summary": summary,
             "last_updated": datetime.fromisoformat(hit.question_updated),
@@ -273,7 +272,6 @@ class WikiSearch(SumoSearch):
         return {
             "type": "document",
             "url": reverse("wiki.document", args=[hit.slug[self.locale]], locale=self.locale),
-            "score": hit.meta.score,
             "title": hit.title[self.locale],
             "search_summary": summary,
             "id": hit.meta.id,

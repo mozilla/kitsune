@@ -1,16 +1,19 @@
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
+from parameterized import parameterized
 from pyquery import PyQuery as pq
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.tests import TestCaseBase
+from kitsune.kbforums.tests import PostFactory
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import get, post, translated_db_strings
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.users.tests import GroupFactory, UserFactory, add_permission
+from kitsune.wiki.tests import AudienceFactory
 
 
 class FlaggedQueueTestCase(TestCaseBase):
@@ -50,6 +53,26 @@ class FlaggedQueueTestCase(TestCaseBase):
         )
         doc = pq(response.content)
         self.assertEqual(num_answers - 1, len(doc("#flagged-queue li.answer")))
+
+    @parameterized.expand([("outsider", False), ("member", True)])
+    def test_kb_posts_listed_only_for_readers(self, viewer, listed):
+        group = GroupFactory()
+        kb_post = PostFactory(
+            thread__title="Private thread",
+            thread__document__audiences=[AudienceFactory(groups=[group])],
+        )
+        FlaggedObject.objects.create(content_object=kb_post, reason="spam", creator=self.flagger)
+        moderator = UserFactory(groups=[group] if viewer == "member" else [])
+        add_permission(moderator, FlaggedObject, "can_moderate")
+        self.client.force_login(moderator)
+
+        response = get(self.client, "flagit.flagged_queue")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual("Private thread" in response.content.decode(), listed)
+        options = pq(response.content)("#flagit-content-type-filter option")
+        kb_post_type = str(ContentType.objects.get_for_model(kb_post).id)
+        self.assertEqual(kb_post_type in [option.get("value") for option in options], listed)
 
     def test_support_tickets_excluded_from_queue(self):
         """Test that SupportTickets do not appear in the main flagged queue."""

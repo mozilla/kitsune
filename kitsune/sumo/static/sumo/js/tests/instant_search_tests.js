@@ -39,6 +39,8 @@ describe('instant search', () => {
     afterEach(() => {
       clock.restore();
       sinon.restore();
+      delete window.gtag;
+      delete document.body.dataset.privateSearch;
     });
 
     it('shows and hides the main content correctly', () => {
@@ -168,6 +170,108 @@ describe('instant search', () => {
       expect(event.search_result_source).to.equal('kb');
       expect(event.search_result_rank).to.equal(11);
       expect(event).not.to.have.property('score');
+    });
+
+    [
+      { fallback_results: null, offersFeatured: false },
+      {
+        fallback_results: [
+          { url: '/kb/featured', document_title: 'Featured article', document_summary: 'Summary' },
+        ],
+        offersFeatured: true,
+      },
+    ].forEach(({ fallback_results, offersFeatured }) => {
+      it(`${offersFeatured ? 'offers' : 'does not offer'} featured articles on zero results`, () => {
+        const searchInput = document.getElementById('search-q');
+        const query = `nothing matches ${offersFeatured}`;
+        searchInput.value = query;
+        fireInput(searchInput);
+        clock.tick(600);
+
+        cxhrMock.firstCall.args[1].success({
+          num_results: 0,
+          q: query,
+          product_titles: 'All Products',
+          products: [],
+          w: 3,
+          results: [],
+          fallback_results,
+        });
+
+        const content = document.getElementById('instant-search-content');
+        expect(content.textContent.includes('featured articles')).to.equal(offersFeatured);
+        expect(content.querySelectorAll('.sumo-card-grid .card')).to.have.length(
+          offersFeatured ? 1 : 0
+        );
+      });
+    });
+
+    [
+      { privateSearch: false, events: 1 },
+      { privateSearch: true, events: 0 },
+    ].forEach(({ privateSearch, events }) => {
+      it(`sends ${events} search and result click events when private search is ${privateSearch}`, () => {
+        window.gtag = sinon.fake();
+        if (privateSearch) {
+          document.body.dataset.privateSearch = 'true';
+        }
+        const searchInput = document.getElementById('search-q');
+        const query = `private search ${privateSearch}`;
+
+        // A query unlike the previous one, which the module would skip.
+        searchInput.value = query;
+        fireInput(searchInput);
+        clock.tick(600);
+        cxhrMock.firstCall.args[1].success({
+          num_results: 1,
+          q: query,
+          product_titles: 'All Products',
+          products: [],
+          w: 3,
+          results: [{ type: 'document', url: '/kb/private-article', title: 'Private article' }],
+        });
+        // jsdom doesn't implement navigation.
+        document.addEventListener('click', (event) => event.preventDefault(), { once: true });
+        document.querySelector('.topic-article a.title').click();
+
+        const sent = (name) => window.gtag.getCalls().filter((call) => call.args[1] === name);
+        expect(sent('search')).to.have.length(events);
+        expect(sent('link_click')).to.have.length(events);
+      });
+    });
+
+    [
+      { name: 'kb', value: 'northwind', link: 'data-instant-search-set-params="kb=agents"', expected: 'agents' },
+      { name: 'kb', value: 'northwind', link: 'data-instant-search-unset-params="kb&page"', expected: undefined },
+      {
+        name: 'product',
+        value: 'firefox',
+        link: 'data-instant-search-unset-params="product&page" data-instant-search-set-params="all_products=1"',
+        expected: undefined,
+      },
+    ].forEach(({ name, value, link, expected }) => {
+      it(`keeps the ${name} filter ${expected} chosen from the results when typing again`, () => {
+        document.querySelector('form').insertAdjacentHTML(
+          'beforeend',
+          `<input type="hidden" name="${name}" value="${value}">`
+        );
+        document.body.insertAdjacentHTML(
+          'beforeend',
+          `<a href="#" id="kb-link" data-instant-search="link" ${link}>KB</a>`
+        );
+        const searchInput = document.getElementById('search-q');
+
+        searchInput.value = 'scoped query';
+        fireInput(searchInput);
+        clock.tick(600);
+        document.getElementById('kb-link').click();
+        searchInput.value = 'scoped query again';
+        fireInput(searchInput);
+        clock.tick(600);
+
+        expect(cxhrMock.firstCall.args[1].data[name]).to.equal(value);
+        expect(cxhrMock.lastCall.args[1].data[name]).to.equal(expected);
+      });
     });
   });
 });

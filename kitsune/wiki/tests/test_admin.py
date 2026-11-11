@@ -8,7 +8,7 @@ from django.urls import reverse
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.admin import AudienceAdmin, DocumentAdmin
-from kitsune.wiki.models import Audience, Document
+from kitsune.wiki.models import Audience, AudienceFeaturedDocument, Document, DocumentAudience
 from kitsune.wiki.tests import AudienceFactory, DocumentFactory, TranslatedRevisionFactory
 
 
@@ -47,10 +47,19 @@ class AudienceAdminTests(TestCase):
         self.admin = AudienceAdmin(Audience, AdminSite())
         self.default = Audience.objects.default()
 
-    def change(self, audience, **data):
+    def change(self, audience, featured=(), **data):
+        featured_forms = {
+            "featured-TOTAL_FORMS": len(featured),
+            "featured-INITIAL_FORMS": 0,
+            "featured-MIN_NUM_FORMS": 0,
+            "featured-MAX_NUM_FORMS": 3,
+        }
+        for index, document in enumerate(featured):
+            featured_forms[f"featured-{index}-document"] = document.pk
+            featured_forms[f"featured-{index}-order"] = index
         return self.client.post(
             reverse("admin:wiki_audience_change", args=[audience.pk]),
-            {"name": audience.name, **data},
+            {"name": audience.name, "color": audience.color, **featured_forms, **data},
         )
 
     def test_default_cannot_be_deleted(self):
@@ -109,6 +118,31 @@ class AudienceAdminTests(TestCase):
 
         self.change(used, is_public="on", confirm_publish="on")
         self.assertTrue(Audience.objects.get(pk=used.pk).is_public)
+
+    def test_featured_articles_must_belong_to_the_kb(self):
+        kb = AudienceFactory()
+        inside = [DocumentFactory(audiences=[kb]) for _ in range(4)]
+        elsewhere = DocumentFactory(audiences=[AudienceFactory()])
+        translation = DocumentFactory(parent=inside[0], locale="de")
+        DocumentAudience.objects.create(document=translation, audience=kb)
+
+        for label, document in (("another kb", elsewhere), ("translation", translation)):
+            with self.subTest(label):
+                response = self.change(kb, featured=[document])
+                formset = response.context["inline_admin_formsets"][0].formset
+                self.assertIn("document", formset.errors[0])
+                self.assertFalse(kb.featured.exists())
+
+        too_many = self.change(kb, featured=inside)
+        formset = too_many.context["inline_admin_formsets"][0].formset
+        self.assertTrue(formset.non_form_errors())
+        self.assertFalse(kb.featured.exists())
+
+        self.change(kb, featured=inside[:3])
+        self.assertEqual(
+            list(kb.featured.values_list("document", flat=True)), [d.pk for d in inside[:3]]
+        )
+        self.assertEqual(AudienceFeaturedDocument.objects.count(), 3)
 
     def test_assigned_audience_cannot_be_deleted(self):
         audience = AudienceFactory()
