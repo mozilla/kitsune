@@ -45,7 +45,7 @@ class AddKbArticleFlow:
                                  product=None, search_summary=None,
                                  article_content=None, article_content_image=False,
                                  submit_article=True, is_template=False, expiry_date=None,
-                                 restricted_to_groups: list[str] = None, single_group="",
+                                 knowledge_bases: list[str] = None,
                                  approve_first_revision=False, ready_for_localization=False,
                                  locale="en-US",
                                  media_file_name="", media_file_type="") -> dict[str, Any]:
@@ -53,9 +53,17 @@ class AddKbArticleFlow:
         self.utilities.navigate_to_link(f"https://support.allizom.org/{locale}/kb/new")
         kb_article_test_data = self.utilities.kb_article_test_data
 
-        if restricted_to_groups or single_group:
-            for group in (restricted_to_groups or []) + ([single_group] if single_group else []):
-                self.submit_kb_article_page.add_and_select_restrict_visibility_group(group)
+        if knowledge_bases:
+            for knowledge_base in knowledge_bases:
+                self.submit_kb_article_page.add_and_select_knowledge_base(knowledge_base)
+            # The default knowledge base is public, and any public knowledge base makes the
+            # article readable by everyone, so it has to go for the article to be restricted.
+            default_knowledge_base = kb_article_test_data["default_knowledge_base"]
+            if (default_knowledge_base not in knowledge_bases and
+                    self.submit_kb_article_page.is_knowledge_base_selected(
+                        default_knowledge_base)):
+                self.submit_kb_article_page.remove_selected_knowledge_base(
+                    default_knowledge_base)
 
         kb_article_title = (article_title if article_title is not None else
                             kb_article_test_data[

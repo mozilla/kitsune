@@ -8,10 +8,7 @@ class SubmitKBArticlePage(BasePage):
         self.kb_article_for_contributors_sidebar = page.locator("nav#for-contributors-sidebar")
 
         """Locators belonging to the new kb article form."""
-        self.kb_article_restrict_visibility_field = page.locator(
-            "input#id_restrict_to_groups-ts-control")
-        self.kb_article_restrict_visibility_delete_all_groups = page.locator(
-            "div[class='clear-button']")
+        self.kb_article_knowledge_bases_field = page.locator("input#id_audiences-ts-control")
         self.kb_article_form_title = page.locator("input#id_title")
         self.kb_article_form_slug = page.locator("input#id_slug")
         self.kb_article_category_select = page.locator("select#id_category")
@@ -47,11 +44,15 @@ class SubmitKBArticlePage(BasePage):
         self.kb_slug_error = page.locator(
             "//input[@id='id_slug']//preceding-sibling::ul[@class='errorlist']/li")
         self.all_kb_errors = page.locator("ul[class='errorlist'] li")
-        self.restrict_visibility_to_group = lambda group_name: page.locator(
-            "//div[@id='id_restrict_to_groups-ts-dropdown']"
-            f"//div[contains(@class,'option') and normalize-space(.)='{group_name}']")
-        self.delete_group_restriction = lambda group_name: page.locator(
-            f"//div[@class='item' and text()='{group_name}']/a")
+        self.knowledge_base_option = lambda name: page.locator(
+            "//div[@id='id_audiences-ts-dropdown']"
+            f"//div[contains(@class,'option') and normalize-space(.)='{name}']")
+        self.non_matching_knowledge_base_option = lambda name: page.locator(
+            "//div[@id='id_audiences-ts-dropdown']"
+            f"//div[contains(@class,'option') and not(contains(normalize-space(.),'{name}'))]")
+        self.selected_knowledge_base = lambda name: page.locator(
+            "//input[@id='id_audiences-ts-control']/../div[@class='item']"
+            f"[normalize-space(text())='{name}']")
         self.relevant_to_product_checkbox = lambda product_name: page.locator(
             "//div[@id='id_products']//input[@id='id_products_{option_to_click}']/..")
         self.relevant_product = lambda product_name: page.locator(
@@ -68,16 +69,34 @@ class SubmitKBArticlePage(BasePage):
         return self._get_text_of_elements(self.all_kb_errors)
 
     """Actions against the new KB form locators."""
-    def add_and_select_restrict_visibility_group(self, group_name: str):
-        self._fill(self.kb_article_restrict_visibility_field, group_name)
-        self._wait_for_locator(self.restrict_visibility_to_group(group_name), raise_exception=True)
-        self._click(self.restrict_visibility_to_group(group_name))
+    def add_and_select_knowledge_base(self, name: str):
+        """Add a knowledge base to the article.
 
-    def delete_a_restricted_visibility_group(self, group_name: str):
-        self._click(self.delete_group_restriction(group_name))
+        Args:
+            name (str): The knowledge base name.
+        """
+        # The widget opens its dropdown on focus, so focus it before typing.
+        self._click(self.kb_article_knowledge_bases_field)
+        self._fill(self.kb_article_knowledge_bases_field, name)
+        # TomSelect filters the dropdown 300ms after typing and re-renders the options, so an
+        # option found in the unfiltered list can move before the click lands. Wait for the
+        # filtered list, and retry the click until the knowledge base is selected.
+        self._wait_for_locator(self.knowledge_base_option(name), timeout=10000,
+                               raise_exception=True)
+        self._wait_for_locator_to_be_hidden(self.non_matching_knowledge_base_option(name).first)
+        self._click(self.knowledge_base_option(name),
+                    expected_locator=self.selected_knowledge_base(name))
 
-    def delete_all_restricted_visibility_groups(self):
-        self._click(self.kb_article_restrict_visibility_delete_all_groups)
+    def is_knowledge_base_selected(self, name: str) -> bool:
+        return self._is_element_visible(self.selected_knowledge_base(name))
+
+    def remove_selected_knowledge_base(self, name: str):
+        """Remove a knowledge base from the article.
+
+        Args:
+            name (str): The knowledge base name.
+        """
+        self._click(self.selected_knowledge_base(name).locator("a.remove"))
 
     def add_text_to_article_form_title_field(self, text: str):
         # Clearing the field first from auto-population

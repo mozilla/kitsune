@@ -23,6 +23,12 @@ class ProductTopicPage(BasePage):
         self.navbar_option = lambda option_name: page.locator(
             "ul[class='sidebar-nav--list'] li").get_by_role("link").filter(has_text=option_name)
 
+        """Locators belonging to the product topic page article metadata."""
+        self.article_helpfulness_count = lambda article_title: page.locator(
+            "article.topic-doc-list--item").filter(
+            has=page.get_by_role("link", name=article_title, exact=True)).locator(
+            ".helpful-count")
+
     """Actions against the general product topic page locators."""
     def get_all_listed_article_titles(self) -> list[str]:
         """Returns a list of all the article titles displayed on the page."""

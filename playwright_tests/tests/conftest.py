@@ -1,5 +1,7 @@
 import random
 import string
+from types import SimpleNamespace
+
 import requests
 import allure
 import pytest
@@ -7,7 +9,7 @@ from playwright.sync_api import Page
 from slugify import slugify
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright._impl._errors import TargetClosedError
+from playwright._impl._errors import Error as PlaywrightError, TargetClosedError
 
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -240,3 +242,58 @@ def restmail_test_account_creation(page: Page, request):
         return user, user_password, cleanup
 
     return _create
+
+
+@pytest.fixture()
+def knowledge_base_factory(page: Page):
+    """Create private knowledge bases through the knowledge bases admin page."""
+    utilities = Utilities(page)
+    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
+    created_knowledge_bases = []
+    admin_page = None
+    admin_sumo_pages = None
+
+    def _admin_flows():
+        """Open an isolated context, signed in with the admin account, on first use."""
+        nonlocal admin_page, admin_sumo_pages
+        if admin_page is None or admin_page.is_closed():
+            admin_page = utilities.create_new_context_page()
+            admin_utilities = Utilities(admin_page)
+            admin_utilities.navigate_to_homepage()
+            admin_utilities.start_existing_session(session_file_name=staff_user)
+            admin_sumo_pages = SumoPages(admin_page)
+        return admin_sumo_pages.admin_knowledge_bases_flows
+
+    def _ensure(name: str, group_names: list[str]) -> str:
+        flows = _admin_flows()
+        if not flows.is_knowledge_base_listed(name):
+            flows.create_private_knowledge_base(name, group_names)
+        return name
+
+    def _create(group_names: list[str]) -> str:
+        name = "test-kb-" + "".join(
+            random.choice(string.ascii_lowercase + string.digits) for _ in range(10))
+        _admin_flows().create_private_knowledge_base(name, group_names)
+        created_knowledge_bases.append(name)
+        return name
+
+    yield SimpleNamespace(ensure=_ensure, create=_create)
+
+    for name in created_knowledge_bases:
+        try:
+            _admin_flows().delete_knowledge_base(name, ignore_missing=True)
+        except (PlaywrightError, AssertionError) as error:
+            # An article which wasn't deleted still uses it, so the deletion is refused.
+            print(f"WARNING: the '{name}' knowledge base could not be deleted: {error}")
+
+    if admin_page is not None and not admin_page.is_closed():
+        admin_page.context.close()
+
+
+@pytest.fixture()
+def restricted_knowledge_bases(knowledge_base_factory) -> list[str]:
+    """The private knowledge bases from the test data, created when missing."""
+    return [
+        knowledge_base_factory.ensure(knowledge_base["name"], [knowledge_base["group"]])
+        for knowledge_base in Utilities.kb_article_test_data["restricted_knowledge_bases"]
+    ]

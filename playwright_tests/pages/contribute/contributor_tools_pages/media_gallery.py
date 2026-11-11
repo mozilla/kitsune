@@ -41,6 +41,9 @@ class MediaGallery(BasePage):
 
         """Locators belonging to the insert media functionality at KB article level."""
         self.insert_media_panel = page.locator("div#media-modal")
+        self.insert_media_panel_loading = page.locator("div#media-modal section.processing")
+        self.selected_modal_media_file = lambda media_file_name: page.locator(
+            f"div#media-modal ol#media-list li.selected a[title='{media_file_name}']")
         self.search_gallery_searchbox_modal = page.locator("form#gallery-modal-search input")
         self.search_gallery_search_button_modal = page.locator("form#gallery-modal-search button")
         self.cancel_media_insert_button = page.locator("a[href='#cancel']")
@@ -231,7 +234,8 @@ class MediaGallery(BasePage):
 
     def click_on_insert_media_button(self):
         """Click on the 'Insert Image' button from the 'Insert image...' modal."""
-        self._click(self.insert_media_button)
+        self._click(self.insert_media_button,
+                    expected_locator_to_be_hidden=self.insert_media_panel)
 
     def click_on_upload_media_button(self):
         """Click on the 'Upload Image' button from the 'Insert image...' modal."""
@@ -246,12 +250,21 @@ class MediaGallery(BasePage):
             (False) we are targeting the search box available inside the 'Image Gallery' page.
         """
         if is_modal:
+            # The modal loads an unfiltered list on open and replaces it when the search
+            # returns, dropping any selection made on the old list. Let the initial load
+            # finish, then wait for the search results before selecting.
+            self._wait_for_locator_to_be_hidden(
+                self.insert_media_panel_loading, timeout=10000, raise_exception=True)
             self.click_on_search_modal_gallery_search_button()
+            self._wait_for_locator_to_be_hidden(
+                self.insert_media_panel_loading, timeout=10000, raise_exception=True)
+            self._click(self.media_file(media_file_name),
+                        expected_locator=self.selected_modal_media_file(media_file_name))
         else:
             self.click_on_media_gallery_searchbox_search_button()
-        # We need to wait a bit so that the list finishes to update in case of search.
-        self._wait_for_given_timeout(1000)
-        self._click(self.media_file(media_file_name))
+            # We need to wait a bit so that the list finishes to update in case of search.
+            self._wait_for_given_timeout(1000)
+            self._click(self.media_file(media_file_name))
 
 
     """Actions against the media file deletion confirmation page."""

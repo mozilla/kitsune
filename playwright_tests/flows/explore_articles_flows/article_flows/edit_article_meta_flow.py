@@ -28,8 +28,8 @@ class EditArticleMetaFlow:
 
     def edit_article_metadata(self, title=None, slug=None, category=None, product=None,
                               topics=None, obsolete=False, discussions=True, needs_change=False,
-                              needs_change_comment=False, restricted_to_groups: list[str] = None,
-                              related_documents: list[str] = None, single_group="",
+                              needs_change_comment=False, knowledge_bases: list[str] = None,
+                              related_documents: list[str] = None,
                               clear_selected_products_and_topics=False):
 
         if KBArticleRevision.KB_EDIT_METADATA not in self.utilities.get_page_url():
@@ -38,10 +38,17 @@ class EditArticleMetaFlow:
         if self.edit_kb_article_page.is_edit_anyway_option_visible():
             self.edit_kb_article_page.click_on_edit_anyway_option()
 
-        if restricted_to_groups or single_group:
-            for group in (restricted_to_groups or []) + ([single_group] if single_group else []):
-                (self.kb_article_edit_metadata_page.
-                 add_and_select_restrict_visibility_group_metadata(group))
+        if knowledge_bases:
+            for knowledge_base in knowledge_bases:
+                self.kb_article_edit_metadata_page.add_and_select_knowledge_base(knowledge_base)
+            # Any public knowledge base makes the article readable by everyone, so the public
+            # default has to go for the article to be restricted.
+            default_knowledge_base = self.utilities.kb_article_test_data["default_knowledge_base"]
+            if (default_knowledge_base not in knowledge_bases and
+                    self.kb_article_edit_metadata_page.is_knowledge_base_selected(
+                        default_knowledge_base)):
+                self.kb_article_edit_metadata_page.remove_selected_knowledge_base(
+                    default_knowledge_base)
 
         if title:
             self.kb_article_edit_metadata_page.add_text_to_title_field(title)
@@ -101,12 +108,27 @@ class EditArticleMetaFlow:
         self.kb_article_edit_metadata_page.click_on_save_changes_button()
         self.utilities.wait_for_page_to_load()
 
-    def remove_a_restricted_visibility_group(self, groups:[str, list[str]]):
+    def remove_knowledge_bases(self, knowledge_bases: str | list[str]):
+        """Remove knowledge bases from the article. An article needs at least one, so removing
+        the last one puts it back into the public default knowledge base.
+
+        Args:
+            knowledge_bases (str | list[str]): The knowledge base name or names.
+        """
         if KBArticleRevision.KB_EDIT_METADATA not in self.utilities.get_page_url():
             self.kb_article_page.click_on_edit_article_metadata()
 
         if self.edit_kb_article_page.is_edit_anyway_option_visible():
             self.edit_kb_article_page.click_on_edit_anyway_option()
-        self.kb_article_edit_metadata_page.delete_a_restricted_visibility_group_metadata(groups)
+
+        if isinstance(knowledge_bases, str):
+            knowledge_bases = [knowledge_bases]
+        for knowledge_base in knowledge_bases:
+            self.kb_article_edit_metadata_page.remove_selected_knowledge_base(knowledge_base)
+
+        if not self.kb_article_edit_metadata_page.get_selected_knowledge_bases():
+            self.kb_article_edit_metadata_page.add_and_select_knowledge_base(
+                self.utilities.kb_article_test_data["default_knowledge_base"])
+
         self.kb_article_edit_metadata_page.click_on_save_changes_button()
         self.utilities.wait_for_page_to_load()

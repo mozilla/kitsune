@@ -20,18 +20,20 @@ from playwright_tests.pages.sumo_pages import SumoPages
 @pytest.mark.smokeTest
 @pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
-def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
+def test_kb_restrict_visibility(page: Page, is_template, create_user_factory,
+                                restricted_knowledge_bases):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff"])
     test_user_two = create_user_factory()
     test_user_three = create_user_factory(groups=["Accessibility"])
     test_user_four = create_user_factory(groups=["Contributors"])
-    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
+    whitelisted_knowledge_bases = restricted_knowledge_bases
 
     utilities.start_existing_session(cookies=test_user)
     article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-        approve_first_revision=True, single_group=whitelisted_groups[0], is_template=is_template
+        approve_first_revision=True, knowledge_bases=[whitelisted_knowledge_bases[0]],
+        is_template=is_template
     )
 
     with check, allure.step("Navigating to the article and verifying that 404 is not returned"):
@@ -81,7 +83,7 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
     with allure.step("Signing in with an admin account and whitelisting a new group"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=whitelisted_groups[1]
+            knowledge_bases=[whitelisted_knowledge_bases[1]]
         )
 
     with allure.step("Signing in with a user which is part of the whitelisted groups"):
@@ -122,8 +124,8 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
 
     with allure.step("Signing in with an admin account and removing the first group"):
         utilities.start_existing_session(cookies=test_user)
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            whitelisted_groups[0]
+        sumo_pages.edit_article_metadata_flow.remove_knowledge_bases(
+            whitelisted_knowledge_bases[0]
         )
 
     with allure.step("Signing in with an account belonging to the removed group"):
@@ -147,8 +149,8 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
     with allure.step("Signing in with an admin account and removing all restricted groups"):
         utilities.start_existing_session(cookies=test_user)
 
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            whitelisted_groups[1])
+        sumo_pages.edit_article_metadata_flow.remove_knowledge_bases(
+            whitelisted_knowledge_bases[1])
 
     with allure.step("Deleting user session"):
         utilities.delete_cookies()
@@ -166,19 +168,20 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
 # C2466516
 @pytest.mark.smokeTest
 @pytest.mark.kbRestrictedVisibility
-def test_restricted_visibility_in_search_results(page: Page, create_user_factory):
+def test_restricted_visibility_in_search_results(page: Page, create_user_factory,
+                                                 restricted_knowledge_bases):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff"])
     test_user_two = create_user_factory()
     test_user_three = create_user_factory(groups=["Accessibility"])
-    whitelisted_group = utilities.kb_article_test_data['restricted_visibility_groups'][0]
+    whitelisted_knowledge_base = restricted_knowledge_bases[0]
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True, single_group=whitelisted_group
+            approve_first_revision=True, knowledge_bases=[whitelisted_knowledge_base]
         )
         utilities.reindex_document("WikiDocument", article_details["article_id"])
 
@@ -220,20 +223,21 @@ def test_restricted_visibility_in_search_results(page: Page, create_user_factory
 # C2466518
 @pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
-def test_restricted_visibility_in_recent_revisions(page: Page, is_template, create_user_factory):
+def test_restricted_visibility_in_recent_revisions(page: Page, is_template, create_user_factory,
+                                                   restricted_knowledge_bases):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff",
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
-    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
+    whitelisted_knowledge_bases = restricted_knowledge_bases
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True, single_group=whitelisted_groups[0],
+            approve_first_revision=True, knowledge_bases=[whitelisted_knowledge_bases[0]],
             is_template=is_template
         )
 
@@ -261,7 +265,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template, crea
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=whitelisted_groups[1]
+            knowledge_bases=[whitelisted_knowledge_bases[1]]
         )
 
     with allure.step("Signing in with the user belonging to group 2 and verifying that the "
@@ -276,8 +280,8 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template, crea
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
         utilities.start_existing_session(cookies=test_user)
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            whitelisted_groups)
+        sumo_pages.edit_article_metadata_flow.remove_knowledge_bases(
+            whitelisted_knowledge_bases)
 
     with check, allure.step("Navigating to the recent revisions page, signing out and verifying "
                             "that the article is displayed"):
@@ -292,14 +296,15 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template, crea
 # C2466524, C891378
 @pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
-def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_user_factory):
+def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_user_factory,
+                                                restricted_knowledge_bases):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff",
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
-    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
+    whitelisted_knowledge_bases = restricted_knowledge_bases
     media_title = utilities.generate_unique_title()
     media_description = "Automation test description" + utilities.generate_random_number(1, 1000)
 
@@ -313,7 +318,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
     with allure.step("Creating a new kb article with restricted visibility which contains the "
                      "newly uploaded image"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True, single_group=whitelisted_groups[0],
+            approve_first_revision=True, knowledge_bases=[whitelisted_knowledge_bases[0]],
             article_content_image=media_title,
             is_template=is_template
         )
@@ -357,7 +362,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=whitelisted_groups[1]
+            knowledge_bases=[whitelisted_knowledge_bases[1]]
         )
 
     with allure.step("Navigating to the 'Image Gallery' page"):
@@ -378,8 +383,8 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
     with allure.step("Removing restrictions"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            whitelisted_groups)
+        sumo_pages.edit_article_metadata_flow.remove_knowledge_bases(
+            whitelisted_knowledge_bases)
 
     with check, allure.step("Navigating to the media gallery image page and verifying that the "
                             "article is displayed for signed out users"):
@@ -400,20 +405,21 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
 # C2466531
 @pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
-def test_kb_restricted_visibility_discussion(page: Page, is_template, create_user_factory):
+def test_kb_restricted_visibility_discussion(page: Page, is_template, create_user_factory,
+                                             restricted_knowledge_bases):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff",
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
-    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
+    whitelisted_knowledge_bases = restricted_knowledge_bases
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True, single_group=whitelisted_groups[0],
+            approve_first_revision=True, knowledge_bases=[whitelisted_knowledge_bases[0]],
             is_template=is_template
         )
 
@@ -450,7 +456,7 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template, create_use
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=whitelisted_groups[1]
+            knowledge_bases=[whitelisted_knowledge_bases[1]]
         )
 
     with check, allure.step("Navigating to the article discussion page and verifying that the "
@@ -466,8 +472,8 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template, create_use
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
         utilities.start_existing_session(cookies=test_user)
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            whitelisted_groups)
+        sumo_pages.edit_article_metadata_flow.remove_knowledge_bases(
+            whitelisted_knowledge_bases)
 
     with check, allure.step("Navigating to the article discussion page and verifying that the "
                             "article is displayed for signed out users"):
@@ -481,20 +487,21 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template, create_use
 
 # C2466533
 @pytest.mark.kbRestrictedVisibility
-def test_kb_restricted_visibility_in_topics_page(page: Page, create_user_factory):
+def test_kb_restricted_visibility_in_topics_page(page: Page, create_user_factory,
+                                                 restricted_knowledge_bases):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff",
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
-    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
+    whitelisted_knowledge_bases = restricted_knowledge_bases
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True, single_group=whitelisted_groups[0]
+            approve_first_revision=True, knowledge_bases=[whitelisted_knowledge_bases[0]]
         )
 
     sumo_pages.kb_article_page.click_on_article_option()
@@ -529,7 +536,7 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_user_factory
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=whitelisted_groups[1]
+            knowledge_bases=[whitelisted_knowledge_bases[1]]
         )
 
     sumo_pages.kb_article_page.click_on_article_option()
@@ -548,20 +555,21 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_user_factory
 #  C2539825
 @pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
-def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_user_factory):
+def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_user_factory,
+                                                restricted_knowledge_bases):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff",
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
-    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
+    whitelisted_knowledge_bases = restricted_knowledge_bases
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True, single_group=whitelisted_groups[0],
+            approve_first_revision=True, knowledge_bases=[whitelisted_knowledge_bases[0]],
             is_template=is_template
         )
 
@@ -595,7 +603,7 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=whitelisted_groups[1]
+            knowledge_bases=[whitelisted_knowledge_bases[1]]
         )
 
     with allure.step("Navigating to the user profile page"):
@@ -613,8 +621,8 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
         utilities.start_existing_session(cookies=test_user)
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            whitelisted_groups
+        sumo_pages.edit_article_metadata_flow.remove_knowledge_bases(
+            whitelisted_knowledge_bases
         )
 
     with allure.step("Navigating to the user profile page"):
@@ -633,21 +641,22 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
 # C2468303
 @pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
-def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template, create_user_factory):
+def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template, create_user_factory,
+                                                     restricted_knowledge_bases):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff",
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
-    whitelisted_group = utilities.kb_article_test_data['restricted_visibility_groups'][0]
+    whitelisted_knowledge_base = restricted_knowledge_bases[0]
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True, ready_for_localization=True,
-            single_group=whitelisted_group, is_template=is_template
+            knowledge_bases=[whitelisted_knowledge_base], is_template=is_template
         )
 
     with check, allure.step("Verifying that the article is displayed for admin users inside "
@@ -678,8 +687,8 @@ def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template, cr
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
         utilities.start_existing_session(cookies=test_user)
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            whitelisted_group
+        sumo_pages.edit_article_metadata_flow.remove_knowledge_bases(
+            whitelisted_knowledge_base
         )
 
     with check, allure.step("Signing out and verifying that the article is displayed inside the "
@@ -695,20 +704,21 @@ def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template, cr
 # C2466519
 @pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
-def test_kb_restricted_visibility_in_dashboards(page: Page, is_template, create_user_factory):
+def test_kb_restricted_visibility_in_dashboards(page: Page, is_template, create_user_factory,
+                                                restricted_knowledge_bases):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff",
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
-    whitelisted_group = utilities.kb_article_test_data['restricted_visibility_groups'][0]
+    whitelisted_knowledge_base = restricted_knowledge_bases[0]
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True, ready_for_localization=True,
-            single_group=whitelisted_group, is_template=is_template
+            knowledge_bases=[whitelisted_knowledge_base], is_template=is_template
         )
 
     with check, allure.step("Verifying that the article is displayed for admin users inside "
@@ -736,8 +746,8 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template, create_
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
         utilities.start_existing_session(cookies=test_user)
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            whitelisted_group
+        sumo_pages.edit_article_metadata_flow.remove_knowledge_bases(
+            whitelisted_knowledge_base
         )
 
     with check, allure.step("Signing out and verifying that the article is displayed inside the "
@@ -752,14 +762,15 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template, create_
 @pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
 def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
-                                                       create_user_factory):
+                                                       create_user_factory,
+                                                       restricted_knowledge_bases):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff",
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
-    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
+    whitelisted_knowledge_bases = restricted_knowledge_bases
 
     with allure.step("Creating the kb article which the restricted article will link to"):
         utilities.start_existing_session(cookies=test_user)
@@ -770,7 +781,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
                      "previously created article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True, ready_for_localization=True,
-            single_group=whitelisted_groups[0], is_template=is_template,
+            knowledge_bases=[whitelisted_knowledge_bases[0]], is_template=is_template,
             article_content=f"Article content which links to "
                             f"[[{linked_article['article_title']}]]"
         )
@@ -806,7 +817,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=whitelisted_groups[1]
+            knowledge_bases=[whitelisted_knowledge_bases[1]]
         )
 
     utilities.start_existing_session(cookies=test_user_three)
@@ -822,8 +833,8 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
         utilities.start_existing_session(cookies=test_user)
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            whitelisted_groups
+        sumo_pages.edit_article_metadata_flow.remove_knowledge_bases(
+            whitelisted_knowledge_bases
         )
 
     with allure.step("Navigating to the linked kb article"):
@@ -840,20 +851,21 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
 # C2539824
 @pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
-def test_kb_restricted_visibility_category_page(page: Page, is_template, create_user_factory):
+def test_kb_restricted_visibility_category_page(page: Page, is_template, create_user_factory,
+                                                restricted_knowledge_bases):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff",
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
-    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
+    whitelisted_knowledge_bases = restricted_knowledge_bases
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True, ready_for_localization=True,
-            single_group=whitelisted_groups[0], is_template=is_template
+            knowledge_bases=[whitelisted_knowledge_bases[0]], is_template=is_template
         )
 
     with check, allure.step("Navigating to the article category field and verifying that the "
@@ -884,7 +896,7 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=whitelisted_groups[1]
+            knowledge_bases=[whitelisted_knowledge_bases[1]]
         )
 
     with check, allure.step("Verifying that the restricted kb article is displayed for the second "
@@ -898,8 +910,8 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
         utilities.start_existing_session(cookies=test_user)
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            whitelisted_groups
+        sumo_pages.edit_article_metadata_flow.remove_knowledge_bases(
+            whitelisted_knowledge_bases
         )
 
     utilities.navigate_to_link(article_details['article_url'])
@@ -962,7 +974,8 @@ def create_group_factory(page: Page):
 # C4262690
 @pytest.mark.kbRestrictedVisibility
 def test_kb_restricted_visibility_group_deletion(page: Page, create_user_factory,
-                                                 create_group_factory):
+                                                 create_group_factory,
+                                                 knowledge_base_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     staff_user = utilities.username_extraction_from_email(utilities.staff_user)
@@ -975,10 +988,15 @@ def test_kb_restricted_visibility_group_deletion(page: Page, create_user_factory
     first_group_user = create_user_factory(groups=[first_group])
     second_group_user = create_user_factory(groups=[second_group])
 
-    with allure.step("Creating a new kb article restricted to both of the new groups"):
+    with allure.step("Creating a private knowledge base for each of the new groups"):
+        first_knowledge_base = knowledge_base_factory.create([first_group])
+        second_knowledge_base = knowledge_base_factory.create([second_group])
+
+    with allure.step("Creating a new kb article in both of the new knowledge bases"):
         utilities.start_existing_session(cookies=test_user)
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True, restricted_to_groups=[first_group, second_group]
+            approve_first_revision=True,
+            knowledge_bases=[first_knowledge_base, second_knowledge_base]
         )
 
     with check, allure.step("Verifying that a member of each group can view the restricted "
@@ -996,22 +1014,13 @@ def test_kb_restricted_visibility_group_deletion(page: Page, create_user_factory
     with allure.step("Deleting the first group"):
         create_group_factory.delete(first_group)
 
-    with allure.step("Navigating to the Edit Article Metadata page"):
+    with check, allure.step("Verifying that the article keeps both knowledge bases inside the "
+                            "Edit Article Metadata section"):
         utilities.start_existing_session(session_file_name=staff_user)
         utilities.navigate_to_link(
             article_details['article_url'] + KBArticleRevision.KB_EDIT_METADATA)
-
-    with check, allure.step("Verifying that the deleted group is no longer displayed inside the "
-                            "Edit Article Metadata section"):
         expect(sumo_pages.kb_article_edit_article_metadata_page
-               .selected_restricted_visibility_groups).to_have_count(1)
-        expect(sumo_pages.kb_article_edit_article_metadata_page
-               .selected_restricted_visibility_group(first_group)).to_be_hidden()
-
-    with check, allure.step("Verifying that the group which was not deleted is still displayed "
-                            "inside the Edit Article Metadata section"):
-        expect(sumo_pages.kb_article_edit_article_metadata_page
-               .selected_restricted_visibility_group(second_group)).to_be_visible()
+               .selected_knowledge_bases).to_have_count(2)
 
     with check, allure.step("Verifying that the member of the deleted group can no longer view "
                             "the article"):
@@ -1035,46 +1044,42 @@ def test_kb_restricted_visibility_group_deletion(page: Page, create_user_factory
     with allure.step("Deleting the remaining group"):
         create_group_factory.delete(second_group)
 
-    with check, allure.step("Navigating to the Edit Article Metadata page and verifying that the "
-                            "article is no longer restricted to any group"):
+    with check, allure.step("Verifying that the article still belongs to both knowledge bases, "
+                            "since deleting their groups doesn't make it public"):
         utilities.start_existing_session(session_file_name=staff_user)
         utilities.navigate_to_link(
             article_details['article_url'] + KBArticleRevision.KB_EDIT_METADATA)
         expect(sumo_pages.kb_article_edit_article_metadata_page
-               .selected_restricted_visibility_groups).to_have_count(0)
+               .selected_knowledge_bases).to_have_count(2)
 
-    with allure.step("Reindexing the article"):
-        utilities.reindex_document("WikiDocument", article_details['article_id'])
-
-    with check, allure.step("Verifying that the members of both deleted groups can view the "
-                            "unrestricted article"):
+    with check, allure.step("Verifying that the members of both deleted groups can no longer "
+                            "view the article"):
         for user in (first_group_user, second_group_user):
             utilities.start_existing_session(cookies=user)
             with page.expect_navigation() as navigation_info:
                 utilities.navigate_to_link(article_details['article_url'])
             response = navigation_info.value
-            assert response.status != 404
+            assert response.status == 404
 
-            expect(sumo_pages.kb_article_page.kb_article_restricted_banner).to_be_hidden()
-
-    with allure.step("Signing out from SUMO"):
+    with check, allure.step("Verifying that signed out users can't view the article"):
         utilities.delete_cookies()
-
-    with check, allure.step("Verifying that signed out users can view the unrestricted article"):
         with page.expect_navigation() as navigation_info:
             utilities.navigate_to_link(article_details['article_url'])
         response = navigation_info.value
-        assert response.status != 404
+        assert response.status == 404
 
-        expect(sumo_pages.kb_article_page.kb_article_restricted_banner).to_be_hidden()
-
-    with check, allure.step("Verifying that the article is returned inside the search results "
-                            "for signed out users"):
+    with check, allure.step("Verifying that the article is not returned inside the search "
+                            "results for signed out users"):
+        utilities.reindex_document("WikiDocument", article_details['article_id'])
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         sumo_pages.search_page.fill_into_searchbar(article_details['article_title'])
         expect(sumo_pages.search_page.get_locator_of_a_particular_article(
-            article_details['article_title'])).to_be_visible()
+            article_details['article_title'])).to_be_hidden()
 
+    with allure.step("Deleting the article, so that its knowledge bases can be deleted"):
+        utilities.start_existing_session(session_file_name=staff_user)
+        utilities.navigate_to_link(article_details['article_show_history_url'])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 def _create_discussion_thread(page: Page) -> dict[str, Any]:
     sumo_pages = SumoPages(page)

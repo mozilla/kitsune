@@ -14,5 +14,6 @@
   "admin_announcement_page": "https://support.allizom.org/admin/announcements/announcement/",
   "admin_users_page": "https://support.allizom.org/admin/auth/user/",
   "admin_groups_page": "https://support.allizom.org/admin/auth/group/",
+  "admin_knowledge_bases_page": "https://support.allizom.org/admin/wiki/audience/",
   "media_gallery": "https://support.allizom.org/en-US/gallery/images"
 }
