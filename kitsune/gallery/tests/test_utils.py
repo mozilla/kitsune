@@ -8,6 +8,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.upload.tests import check_file_info
 from kitsune.users.tests import UserFactory, add_permission
+from kitsune.wiki.models import Audience
 
 
 class CheckPermissionsTestCase(TestCase):
@@ -56,9 +57,10 @@ class CreateImageTestCase(TestCase):
         """
         with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
             up_file = File(f)
-            file_info = create_image({"image": up_file}, self.user)
+            file_info = create_image({"image": up_file}, self.user, Audience.objects.default())
 
         image = Image.objects.all()[0]
+        self.assertEqual(image.audience, Audience.objects.default())
         delete_url = reverse("gallery.delete_media", args=[image.id])
         check_file_info(
             file_info,
@@ -79,7 +81,7 @@ class CreateImageTestCase(TestCase):
         filepath = "kitsune/upload/tests/media/animated.gif"
         with open(filepath, "rb") as f:
             up_file = File(f)
-            file_info = create_image({"image": up_file}, self.user)
+            file_info = create_image({"image": up_file}, self.user, Audience.objects.default())
 
         image = Image.objects.all()[0]
         delete_url = reverse("gallery.delete_media", args=[image.id])

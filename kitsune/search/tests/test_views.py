@@ -1,8 +1,10 @@
 import json
 from dataclasses import replace
+from types import SimpleNamespace
 from unittest import mock
 
 from django.conf import settings
+from django.test import SimpleTestCase
 from django.test.utils import override_settings
 from pyquery import PyQuery as pq
 from waffle.testutils import override_switch
@@ -14,6 +16,7 @@ from kitsune.products.tests import (
 )
 from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
 from kitsune.search.hybrid import HybridSearchResults
+from kitsune.search.search import QuestionSearch, WikiSearch
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -301,3 +304,27 @@ class TestHybridSearchSwitch(TestCase):
         self.assertIn("q=firefox", response.url)
         self.assertIn("w=1", response.url)
         self.assertIn("page=1", response.url)
+
+
+class LegacyResultTests(SimpleTestCase):
+    def test_results_do_not_expose_the_elasticsearch_score(self):
+        meta = SimpleNamespace(score=12.5, id="7")
+        wiki_hit = SimpleNamespace(
+            meta=meta, slug={"en-US": "a"}, title={"en-US": "A"}, content={"en-US": "Body"}
+        )
+        question_hit = SimpleNamespace(
+            meta=meta,
+            question_id=9,
+            question_title={"en-US": "Q"},
+            question_content={"en-US": "Body"},
+            question_updated="2026-01-01T00:00:00+00:00",
+            question_has_solution=False,
+            question_num_votes=0,
+        )
+
+        for result in (
+            WikiSearch(locale="en-US").make_result(wiki_hit),
+            QuestionSearch(locale="en-US").make_result(question_hit),
+        ):
+            with self.subTest(type=result["type"]):
+                self.assertNotIn("score", result)

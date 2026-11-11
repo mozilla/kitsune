@@ -46,6 +46,18 @@ function getCsrf() {
   return el ? el.value : '';
 }
 
+// The server stores the draft's bytes by this choice, so it's locked from upload to cancel.
+function knowledgeBaseChoice(form) {
+  return form ? form.querySelector('select[name="knowledge_base"]') : null;
+}
+
+function lockKnowledgeBaseChoice(form, locked) {
+  var choice = knowledgeBaseChoice(form);
+  if (choice) {
+    choice.disabled = locked;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   var mediaTypeSelect = document.getElementById('media-type-select');
   if (mediaTypeSelect) {
@@ -78,6 +90,7 @@ CONSTANTS.messages.file = {
   toolarge: gettext('Image too large. Please select a smaller image file.'),
   cancelled: gettext('Upload cancelled. Please select an image file.'),
   deleted: gettext('File deleted. Please select an image file.'),
+  choose: gettext('Please choose who can see the image, then select the image again.'),
 };
 
 // Save all initial values of input details:
@@ -102,12 +115,14 @@ function in_array(needle, haystack) {
 * This is the core of the gallery upload process. (See the original docstring
 * for the method-by-method summary.)
 */
-var GalleryUpload = {
-  forms: { image: document.getElementById('gallery-upload-image') },
-  modal: document.getElementById('gallery-upload-modal'),
+export var GalleryUpload = {
+  forms: {},
+  modal: null,
 
   init: function () {
     var self = this;
+    self.forms.image = document.getElementById('gallery-upload-image');
+    self.modal = document.getElementById('gallery-upload-modal');
     if (!self.modal || !self.forms.image) {
       return;
     }
@@ -140,6 +155,14 @@ var GalleryUpload = {
       ajaxSubmitInput(file, {
         url: uploadForm ? uploadForm.dataset.postUrl : undefined,
         beforeSubmit: function (input) {
+          var choice = knowledgeBaseChoice(uploadForm);
+          if (choice && !choice.value) {
+            // Cleared, so selecting the same file again uploads it.
+            input.value = '';
+            self.setInputMessage(input, 'choose');
+            choice.focus();
+            return false;
+          }
           if (!self.isValidFile(input)) {
             self.uploadError(input, 'invalid');
             return false;
@@ -149,6 +172,10 @@ var GalleryUpload = {
             return false;
           }
           return self.startUpload(input);
+        },
+        extraData: function () {
+          var choice = knowledgeBaseChoice(uploadForm);
+          return choice ? { knowledge_base: choice.value } : {};
         },
         onComplete: function (input, content, options) {
           fireAjaxComplete(input.closest('form'));
@@ -248,6 +275,7 @@ var GalleryUpload = {
       filename = filename.substr(0, CONSTANTS.maxFilenameLength) + '...';
     }
     hideFade(form.querySelector('.upload-media.' + type));
+    lockKnowledgeBaseChoice(form, true);
     var message = interpolate(gettext('Uploading "%s"...'), [filename]);
     if (progress) {
       var msgEl = progress.querySelector('.progress-message');
@@ -279,7 +307,8 @@ var GalleryUpload = {
     }
 
     if (json.status !== 'success') {
-      self.uploadError(input, 'invalid');
+      // Field errors come with a generic message; our 'invalid' text says more.
+      self.uploadError(input, 'invalid', json.errors ? undefined : json.message);
       return;
     }
     // Success!
@@ -334,23 +363,29 @@ var GalleryUpload = {
   },
 
   /*
-  * Display a message next to the file input.
+  * Display a message next to the file input: the server's own text if given, else ours
+  * for the reason.
   */
-  setInputMessage: function (input, reason) {
+  setInputMessage: function (input, reason, serverMessage) {
     if (!input) {
       return;
     }
     var type = input.getAttribute('name');
     var message = CONSTANTS.messages[type][reason];
+    var fromServer = typeof serverMessage === 'string' && serverMessage !== '';
     document.querySelectorAll('.upload-media.' + type + ' div.details').forEach(function (details) {
-      details.innerHTML = message;
+      if (fromServer) {
+        details.textContent = serverMessage;
+      } else {
+        details.innerHTML = message;
+      }
     });
   },
 
   /*
   * Cancel an existing upload and show an error message.
   */
-  uploadError: function (input, reason) {
+  uploadError: function (input, reason, serverMessage) {
     var self = this;
     var type = input.getAttribute('name');
     // Cancel existing upload.
@@ -358,7 +393,7 @@ var GalleryUpload = {
       a.click();
     });
     // Show an error message.
-    self.setInputMessage(input, reason);
+    self.setInputMessage(input, reason, serverMessage);
   },
 
   /*
@@ -428,6 +463,7 @@ var GalleryUpload = {
         el.style.display = 'none';
       });
       form.classList.remove('draft');
+      lockKnowledgeBaseChoice(form, false);
     }
     // finally, show the input again
     showFade(form.querySelector('.upload-media.' + type));

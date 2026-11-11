@@ -34,9 +34,9 @@ from kitsune.sumo.utils import (
     get_aaq_url,
     in_staff_group,
     is_trusted_user,
+    request_timezone,
     webpack_static,
 )
-from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
 log = logging.getLogger("k.helpers")
@@ -270,32 +270,12 @@ def datetimeformat(context, value, format="shortdatetime", use_timesince=False):
 
     request = context.get("request")
 
-    default_tzinfo = convert_tzinfo = ZoneInfo(settings.TIME_ZONE)
     if is_naive(value):
-        new_value = value.replace(tzinfo=default_tzinfo)
+        new_value = value.replace(tzinfo=ZoneInfo(settings.TIME_ZONE))
     else:
         new_value = value
 
-    if hasattr(request, "session"):
-        if "timezone" not in request.session:
-            if hasattr(request, "user") and request.user.is_authenticated:
-                try:
-                    convert_tzinfo = (
-                        Profile.objects.get(user=request.user).timezone or default_tzinfo
-                    )
-                except Profile.DoesNotExist, AttributeError:
-                    pass
-            request.session["timezone"] = str(convert_tzinfo)
-        else:
-            tz_str = request.session.get("timezone")
-            if tz_str:
-                try:
-                    convert_tzinfo = ZoneInfo(tz_str)
-                except Exception:
-                    convert_tzinfo = default_tzinfo
-            else:
-                convert_tzinfo = default_tzinfo
-
+    convert_tzinfo = request_timezone(request)
     convert_value = new_value.astimezone(convert_tzinfo)
     locale = _babel_locale(_contextual_locale(context))
 

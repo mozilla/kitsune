@@ -3,6 +3,7 @@ from unittest import mock
 from django.test import TestCase, override_settings
 
 from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.users.tests import GroupFactory
 from kitsune.wiki.models import Audience
 from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
@@ -120,15 +121,13 @@ class AudienceChangeTests(SignalTestCase):
         super().setUp()
         self.audience = AudienceFactory()
 
-    def test_restricting_a_document_refreshes_it_so_it_is_evicted(self):
-        # Under the public-only policy this makes the document ineligible; the sync core
-        # then evicts it. The signal's job is only to notice.
+    def test_restricting_a_document_refreshes_it_so_its_access_metadata_follows(self):
         self.assertIn(
             self.document.id,
             self._queued_syncs(lambda: self.document.audiences.set([self.audience])),
         )
 
-    def test_widening_access_refreshes_it_so_it_is_indexed(self):
+    def test_widening_access_refreshes_it_so_its_access_metadata_follows(self):
         self.document.audiences.set([self.audience])
         self.assertIn(
             self.document.id,
@@ -144,6 +143,36 @@ class AudienceChangeTests(SignalTestCase):
         self.assertIn(self.document.id, self._queued_syncs(lambda: relation.remove(self.document)))
         relation.add(self.document)
         self.assertIn(self.document.id, self._queued_syncs(relation.clear))
+
+    def test_changing_a_kbs_groups_refreshes_only_its_documents(self):
+        group = GroupFactory()
+        self.document.audiences.set([self.audience])
+        other = DocumentFactory()
+        ApprovedRevisionFactory(document=other)
+        relation = self.audience.groups
+
+        self.assertEqual(self._queued_syncs(lambda: relation.add(group)), {self.document.id})
+        self.assertEqual(self._queued_syncs(lambda: relation.remove(group)), {self.document.id})
+        relation.add(group)
+        self.assertEqual(self._queued_syncs(relation.clear), {self.document.id})
+
+    def test_changes_from_the_group_side_find_the_kb_documents(self):
+        group = GroupFactory()
+        self.document.audiences.set([self.audience])
+        relation = group.kb_audiences
+
+        self.assertIn(self.document.id, self._queued_syncs(lambda: relation.add(self.audience)))
+        self.assertIn(self.document.id, self._queued_syncs(lambda: relation.remove(self.audience)))
+        relation.add(self.audience)
+        self.assertIn(self.document.id, self._queued_syncs(relation.clear))
+
+    def test_a_group_change_that_changes_nothing_queues_nothing(self):
+        group = GroupFactory()
+        self.document.audiences.set([self.audience])
+        self.audience.groups.add(group)
+
+        self.assertEqual(self._queued_syncs(lambda: self.audience.groups.add(group)), set())
+        self.assertEqual(self._queued_syncs(lambda: group.kb_audiences.add(self.audience)), set())
 
     def test_flipping_visibility_refreshes_the_kb_documents(self):
         self.document.audiences.set([self.audience])

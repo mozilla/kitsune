@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 from kitsune.retrieval.chunking import chunk
-from kitsune.retrieval.eligibility import eligible_documents, is_publicly_accessible
+from kitsune.retrieval.eligibility import eligible_documents
 from kitsune.retrieval.events import emit
 from kitsune.retrieval.index import (
     ChunkIdentity,
@@ -192,22 +192,15 @@ def gate_index(
     unexpected = sorted(remaining, key=lambda item: (item.object_id, item.locale))
     for start in range(0, len(unexpected), page):
         batch = unexpected[start : start + page]
-        rows = (
-            Document.objects.select_related("parent")
-            .prefetch_related("audiences", "parent__audiences")
-            .in_bulk([int(item.object_id) for item in batch])
+        existing = set(
+            Document.objects.filter(pk__in=[int(item.object_id) for item in batch]).values_list(
+                "pk", flat=True
+            )
         )
         for identity in batch:
-            document = rows.get(int(identity.object_id))
-            if document is None:
+            if int(identity.object_id) not in existing:
                 finding = GateFinding(
                     GateCategory.UNEXPECTED_IDENTITY, identity, "source row no longer exists"
-                )
-            elif not is_publicly_accessible(document):
-                finding = GateFinding(
-                    GateCategory.ACCESS_DRIFT,
-                    identity,
-                    "indexed while the database restricts it",
                 )
             else:
                 finding = GateFinding(

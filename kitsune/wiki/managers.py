@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from django.db import models
 from django.db.models import Exists, OuterRef, Q
 
@@ -25,6 +26,26 @@ def effective_group_ids(user, using=None):
             user.groups.using(using).values_list("id", flat=True)
         ).union(company.group_id for company in companies)
     return user._kb_effective_group_ids
+
+
+def has_private_kb_access(user):
+    """
+    Whether the user can read private knowledge bases: Staff and superusers, and users with
+    an effective group in any private audience, listed or not. Cached on the user.
+    """
+    if not (user and user.is_authenticated):
+        return False
+
+    if not hasattr(user, "_kb_has_private_access"):
+        if user.is_superuser or in_staff_group(user):
+            user._kb_has_private_access = True
+        else:
+            group_ids = effective_group_ids(user)
+            user._kb_has_private_access = (
+                bool(group_ids)
+                and Group.objects.filter(id__in=group_ids, kb_audiences__is_public=False).exists()
+            )
+    return user._kb_has_private_access
 
 
 def audience_access(group_ids, prefix=""):
@@ -82,7 +103,19 @@ class VisibilityManager(models.Manager):
             audience_access(effective_group_ids(user), self.document_relation_prefix), **kwargs
         )
 
-    def visible(self, user=None, permission_locale=None, **kwargs):
+    def sees_unapproved(self, user, locale=None):
+        """
+        Whether the given user may see what otherwise only its creators see (documents
+        without approved content, held revisions): Staff, superusers, and users allowed to
+        delete documents or review revisions in the given locale.
+        """
+        return bool(user and user.is_authenticated) and (
+            user.is_superuser
+            or in_staff_group(user)
+            or can_delete_documents_or_review_revisions(user, locale=locale)
+        )
+
+    def visible(self, user=None, permission_locale=None, sees_unapproved=None, **kwargs):
         """
         Documents are effectively invisible when they are restricted and the given
         user doesn't meet the restrictions, or they have no approved content and the
@@ -94,7 +127,8 @@ class VisibilityManager(models.Manager):
         "<relation>__locale") filter. When the queryset spans multiple locales (for
         example, when filtering revisions by "document__in"), that locale can't be
         inferred, so callers can supply it explicitly via "permission_locale". It only
-        affects the permission check, never the filtering.
+        affects the permission check, never the filtering. Callers that already know
+        the result of "sees_unapproved" for that locale can pass it in.
         """
         prefix = self.document_relation_prefix
 
@@ -106,11 +140,10 @@ class VisibilityManager(models.Manager):
             # Anonymous users only see documents with approved content.
             return qs.filter(**{f"{prefix}current_revision__isnull": False})
 
-        if not (
-            user.is_superuser
-            or in_staff_group(user)
-            or can_delete_documents_or_review_revisions(user, locale=locale)
-        ):
+        if sees_unapproved is None:
+            sees_unapproved = self.sees_unapproved(user, locale)
+
+        if not sees_unapproved:
             # Authenticated users without permission to see documents that
             # have no approved content, can only see those they have created.
             return qs.filter(
@@ -146,6 +179,32 @@ class RevisionManager(VisibilityManager):
     def get_creator_condition(self, user):
         return Q(creator=user)
 
+    def get_held_visibility_condition(self, user, locale=None, sees_unapproved=None):
+        """
+        Return a condition that hides held revisions (those with a schedule) from the given
+        user, unless the user is their creator or may see unapproved content in the locale.
+        """
+        if sees_unapproved is None:
+            sees_unapproved = self.sees_unapproved(user, locale)
+
+        if sees_unapproved:
+            # Not Q(), which an OR with another condition drops.
+            return Q(pk__isnull=False)
+
+        if user and user.is_authenticated:
+            return Q(schedule__isnull=True) | self.get_creator_condition(user)
+
+        return Q(schedule__isnull=True)
+
+    def visible(self, user=None, permission_locale=None, **kwargs):
+        """Held revisions are also invisible, as "get_held_visibility_condition" decides."""
+        locale = permission_locale or kwargs.get(f"{self.document_relation_prefix}locale")
+        sees_unapproved = self.sees_unapproved(user, locale)
+        qs = super().visible(
+            user, permission_locale=locale, sees_unapproved=sees_unapproved, **kwargs
+        )
+        return qs.filter(self.get_held_visibility_condition(user, locale, sees_unapproved))
+
 
 class AudienceManager(models.Manager):
     """The manager for the Audience model."""
@@ -159,3 +218,39 @@ class AudienceManager(models.Manager):
             slug=DEFAULT_AUDIENCE_SLUG, defaults={"name": "Default", "is_public": True}
         )
         return audience
+
+    def _listed(self, condition):
+        return (
+            self.filter(condition, is_listed=True)
+            .exclude(slug=DEFAULT_AUDIENCE_SLUG)
+            .distinct()
+            .order_by("is_public", "name")
+        )
+
+    def listed_for(self, user):
+        """
+        The knowledge bases the user sees in menus, the directory and search filters: listed
+        public ones, and listed private ones with a group in the user's effective groups.
+        Membership only, so Staff don't list every customer's knowledge base.
+        """
+        condition = Q(is_public=True)
+        group_ids = effective_group_ids(user)
+        if group_ids:
+            condition |= Q(groups__in=group_ids)
+        return self._listed(condition)
+
+    def browsable_by(self, user):
+        """
+        The listed knowledge bases whose page and search filter the user may open: those the
+        user lists, plus every listed one for Staff and superusers.
+        """
+        if user and (user.is_superuser or in_staff_group(user)):
+            return self._listed(Q())
+        return self.listed_for(user)
+
+    def private_for(self, user):
+        """Private knowledge bases a user may read, listed or not; all for Staff and superusers."""
+        private = self.filter(is_public=False)
+        if user and (user.is_superuser or in_staff_group(user)):
+            return private
+        return private.filter(groups__in=effective_group_ids(user)).distinct()

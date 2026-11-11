@@ -3,14 +3,17 @@ import re
 import sys
 from functools import lru_cache
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.templatetags.static import static
 from django.utils import timezone
+from django.utils.cache import patch_cache_control
 from django.utils.encoding import iri_to_uri
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django_ratelimit.core import is_ratelimited as is_ratelimited_core
@@ -73,6 +76,13 @@ def build_paged_url(request):
     qsa = urlencode(items)
 
     return "{}?{}".format(base, qsa)
+
+
+def mark_private(response):
+    """Keep a response that shows private content out of shared caches and referrers."""
+    response["Referrer-Policy"] = "strict-origin"
+    patch_cache_control(response, private=True, no_store=True)
+    return response
 
 
 def smart_int(string, fallback=0):
@@ -458,3 +468,32 @@ def get_aaq_url(aaq_context, topic=None):
         return reverse("questions.aaq_step3", kwargs={"product_slug": product_slug})
 
     return reverse("questions.aaq_step1")
+
+
+def request_timezone(request) -> ZoneInfo:
+    """
+    Return the timezone of the request's session, seeded from the user's profile, else the
+    site's timezone.
+    """
+    default_tzinfo = convert_tzinfo = ZoneInfo(settings.TIME_ZONE)
+
+    if hasattr(request, "session"):
+        if "timezone" not in request.session:
+            if hasattr(request, "user") and request.user.is_authenticated:
+                # Through the relation: users.models imports this module.
+                try:
+                    convert_tzinfo = request.user.profile.timezone or default_tzinfo
+                except ObjectDoesNotExist, AttributeError:
+                    pass
+            request.session["timezone"] = str(convert_tzinfo)
+        else:
+            tz_str = request.session.get("timezone")
+            if tz_str:
+                try:
+                    convert_tzinfo = ZoneInfo(tz_str)
+                except ZoneInfoNotFoundError, ValueError, TypeError, OSError:
+                    convert_tzinfo = default_tzinfo
+            else:
+                convert_tzinfo = default_tzinfo
+
+    return convert_tzinfo

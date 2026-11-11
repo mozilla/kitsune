@@ -295,11 +295,13 @@ document.addEventListener('input', function (ev) {
         InstantSearchSettings.render,
         function () { recoverLatestQuery(query, requestId); }
       );
-      trackEvent("search", {
-        "search_term": query,
-        "search_product_filter": getSearchProductFilter(),
-        "search_content_filter": getSearchContentFilter()
-      });
+      if (!document.body.dataset.privateSearch) {
+        trackEvent("search", {
+          "search_term": query,
+          "search_product_filter": getSearchProductFilter(),
+          "search_content_filter": getSearchContentFilter()
+        });
+      }
     }, 600);
   }
 
@@ -316,6 +318,21 @@ document.addEventListener('input', function (ev) {
   }
 });
 
+// Typing copies the search forms' hidden inputs into the search, so a filter link updates them too.
+// An unset filter loses its input: a blank value is an invalid choice for some fields.
+function syncFormParam(key, value) {
+  document.querySelectorAll('[data-instant-search="form"] input[type="hidden"]').forEach(function (input) {
+    if (input.name !== key) {
+      return;
+    }
+    if (value === undefined) {
+      input.remove();
+    } else {
+      input.value = value;
+    }
+  });
+}
+
 document.addEventListener('click', function (ev) {
   var link = ev.target.closest('[data-instant-search="link"]');
   if (!link) {
@@ -327,7 +344,10 @@ document.addEventListener('click', function (ev) {
   if (setParams) {
     setParams.split('&').forEach(function (pair) {
       var p = pair.split('=');
-      search.setParam(p.shift(), p.join('='));
+      var key = p.shift();
+      var value = p.join('=');
+      search.setParam(key, value);
+      syncFormParam(key, value);
     });
   }
 
@@ -335,15 +355,18 @@ document.addEventListener('click', function (ev) {
   if (unsetParams) {
     unsetParams.split('&').forEach(function (key) {
       search.unsetParam(key);
+      syncFormParam(key);
     });
   }
 
   search.query(null, InstantSearchSettings.render);
-  trackEvent("search", {
-    "search_term": search.lastQuery,
-    "search_product_filter": getSearchProductFilter(),
-    "search_content_filter": getSearchContentFilter()
-  });
+  if (!document.body.dataset.privateSearch) {
+    trackEvent("search", {
+      "search_term": search.lastQuery,
+      "search_product_filter": getSearchProductFilter(),
+      "search_content_filter": getSearchContentFilter()
+    });
+  }
 
   // Scroll to top of the page
   window.scrollTo(0, 0);

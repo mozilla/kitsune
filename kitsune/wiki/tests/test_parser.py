@@ -2,10 +2,11 @@ import re
 from unittest.mock import patch
 
 from django.conf import settings
+from parameterized import parameterized
 from pyquery import PyQuery as pq
 
 import kitsune.sumo.tests.test_parser
-from kitsune.gallery.tests import ImageFactory
+from kitsune.gallery.tests import ImageFactory, TemporaryMediaRoots
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
@@ -1033,13 +1034,15 @@ class WhatLinksHereTests(TestCase):
         self.assertEqual(len(d3.links_from()), 1)
 
     def test_images(self):
+        """Each distinct image is recorded once, however often the article embeds it."""
         img = ImageFactory(title="image-file.png")
-        d1, _, _ = doc_rev_parser("[[Image:image-file.png]]", title="D1")
+        other = ImageFactory(title="other.png")
+        d1, _, _ = doc_rev_parser(
+            "[[Image:image-file.png]] [[Image:other.png]] [[Image:image-file.png]]", title="D1"
+        )
 
-        self.assertEqual(len(d1.images), 1)
-        self.assertEqual(d1.images[0], img)
-        self.assertEqual(len(img.documents()), 1)
-        self.assertEqual(img.documents()[0], d1)
+        self.assertCountEqual(d1.images, [img, other])
+        self.assertEqual(list(img.documents()), [d1])
 
 
 class TestLazyWikiImageTags(TestCase):
@@ -1057,6 +1060,70 @@ class TestLazyWikiImageTags(TestCase):
         self.assertEqual("test.jpg", img.attr("alt"))
         self.assertEqual(self.img.file.url, img.attr("data-original-src"))
         self.assertRegex(img.attr("src"), r"placeholder\.[0-9a-z]+\.gif")
+
+
+class TestWikiPrivateImages(TemporaryMediaRoots, TestCase):
+    """An image resolves in the article's own knowledge base first, then in the default one."""
+
+    def setUp(self):
+        super().setUp()
+        self.kbs = {
+            "foo": AudienceFactory(name="foo"),
+            "bar": AudienceFactory(name="bar"),
+            "default": Audience.objects.default(),
+        }
+
+    @parameterized.expand(
+        [
+            ("own_kb_image_wins_over_default", ["foo"], ["foo", "default"], "foo"),
+            ("default_image", ["foo"], ["default"], "default"),
+            ("other_kb_image", ["bar"], ["foo"], None),
+            ("several_kbs_use_default_only", ["foo", "bar"], ["foo", "default"], "default"),
+            ("no_kb_uses_default_only", [], ["foo"], None),
+            ("public_article_uses_default_only", ["default"], ["foo"], None),
+        ]
+    )
+    def test_stored_document_html(self, _name, article_kbs, image_kbs, rendered_kb):
+        images = {kb: ImageFactory(title="Shot", audience=self.kbs[kb]) for kb in image_kbs}
+        document = DocumentFactory(audiences=[self.kbs[kb] for kb in article_kbs])
+        ApprovedRevisionFactory(document=document, content="[[Image:Shot]]")
+        document.refresh_from_db()
+
+        if rendered_kb is None:
+            self.assertIn('The image "Shot" does not exist.', document.html)
+            self.assertNotIn("<img", document.html)
+            return
+
+        src = pq(document.html)("img").attr("data-original-src")
+        self.assertEqual(images[rendered_kb].file.url, src)
+        self.assertEqual(rendered_kb != "default", src.startswith("/private-media/private/"))
+
+    def test_translation_prefers_its_knowledge_bases_english_image(self):
+        image = ImageFactory(title="Shot", audience=self.kbs["foo"], locale="en-US")
+        ImageFactory(title="Shot", audience=self.kbs["default"], locale="de")
+        parent = DocumentFactory(audiences=[self.kbs["foo"]])
+        ApprovedRevisionFactory(document=parent)
+        translation = DocumentFactory(locale="de", parent=parent)
+        ApprovedRevisionFactory(document=translation, content="[[Image:Shot]]")
+        translation.refresh_from_db()
+
+        self.assertEqual(image.file.url, pq(translation.html)("img").attr("data-original-src"))
+
+    def test_document_images_record_only_the_images_the_lookup_found(self):
+        found = ImageFactory(title="Shot", audience=self.kbs["foo"])
+        ImageFactory(title="Other", audience=self.kbs["bar"])
+        document = DocumentFactory(audiences=[self.kbs["foo"]])
+        ApprovedRevisionFactory(document=document, content="[[Image:Shot]] [[Image:Other]]")
+
+        self.assertEqual([found], list(document.images))
+
+    def test_public_image_costs_one_query(self):
+        ImageFactory(title="Shot")
+
+        with self.assertNumQueries(1):
+            html = WikiParser().parse("[[Image:Shot]]")
+
+        self.assertIn("<img", html)
 
 
 class TestWikiUIComponent(TestCase):

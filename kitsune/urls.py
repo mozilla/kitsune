@@ -7,6 +7,7 @@ from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
 
 from kitsune.customercare.views import ZendeskWebhookView, chat_jwt
+from kitsune.gallery.views import private_media
 from kitsune.sumo import views as sumo_views
 from kitsune.sumo.i18n import i18n_patterns
 
@@ -26,6 +27,7 @@ urlpatterns = i18n_patterns(
         r"^kb$", redirect_to, {"url": "products.product", "slug": "firefox"}, name="wiki.landing"
     ),
     path("kb/", include("kitsune.wiki.urls")),
+    path("knowledge-bases/", include("kitsune.wiki.urls_knowledge_bases")),
     path("search/", include("kitsune.search.urls")),
     path("forums/", include("kitsune.forums.urls")),
     path("questions/", include("kitsune.questions.urls")),
@@ -56,6 +58,7 @@ urlpatterns += [
     path("wafflejs", wafflejs, name="wafflejs"),
     path("", include("kitsune.kpi.urls_api")),
     path("", include("kitsune.sumo.urls")),
+    re_path(r"^private-media/(?P<name>private/.+)$", private_media, name="gallery.private_media"),
     # v1 APIs
     path("api/1/kb/", include("kitsune.wiki.urls_api")),
     path("api/1/products/", include("kitsune.products.urls_api")),

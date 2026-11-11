@@ -1,4 +1,5 @@
 {% from "includes/icons.html" import icon %}
+{% from "wiki/includes/kb_macros.html" import lock_icon %}
 {% macro search_box(settings, id=False, prefix=None, target=None,
                     placeholder=_('Search questions, articles, or topics (example: saving passwords in Firefox)'),
                     params=None) %}
@@ -189,6 +190,44 @@
             {{ browse_by_topic() }}
           </section>
         </div>
+        {% set kb_sections = kb_menu(request) %}
+        {% if kb_sections %}
+        <div class="sumo-nav--dropdown-col">
+          <section id="kb-menu" class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item kb-menu">
+            <div class="mzp-c-menu-item-head">
+              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <rect x="3" y="3" width="5" height="18" rx="1" />
+                  <rect x="10" y="3" width="5" height="18" rx="1" />
+                  <path d="M17.5 4.5l3.5 15.5" />
+                </g>
+              </svg>
+              {# L10n: Heading of the main menu's list of knowledge bases, collections of help articles written for a particular team, company or community. #}
+              <h4 class="mzp-c-menu-item-title">{{ _('Knowledge Bases') }}</h4>
+            </div>
+            {% for heading, knowledge_bases in kb_sections %}
+              <h5 class="kb-menu--heading">{{ heading }}</h5>
+              <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                {% for knowledge_base in knowledge_bases %}
+                  <li>
+                    <a class="kb-menu--link" href="{{ url('wiki.knowledge_base', knowledge_base.slug) }}">
+                      <span class="kb-menu--name">{{ knowledge_base.name }}</span>
+                      {% if not knowledge_base.is_public %}{{ lock_icon() }}{% endif %}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endfor %}
+            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+              <li>
+                {# L10n: The last link of the main menu's list of knowledge bases, which leads to the page listing them all. #}
+                <a class="color-link" href="{{ url('wiki.knowledge_bases') }}">{{ _('See all knowledge bases') }}</a>
+              </li>
+            </ul>
+          </section>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -651,15 +690,23 @@
 </li>
 {% endmacro %}
 
-{% macro content_editor(field, mention_rules=false) %}
+{% macro content_editor(field, mention_rules=false, private_audience_ids=None) %}
 {% if mention_rules %}
   {# L10n: Text displayed above the content editor (particularly, when posting a question or a reply). Rules and guidelines refer to https://support.mozilla.org/kb/mozilla-support-rules-guidelines #}
   <div class="field-help-text">{% trans a_open='<a href="https://support.mozilla.org/kb/mozilla-support-rules-guidelines" target="_blank">'|safe, a_close='</a>'|safe %}
     Remember to follow our {{ a_open }}rules and guidelines{{ a_close }}.
   {% endtrans %}</div>
 {% endif %}
+{% if private_audience_ids and private_audience_ids|length == 1 %}
+  {# The gallery's home redirect would drop the knowledge base the upload form preselects. #}
+  {% set gallery_url = url('gallery.gallery')|urlparams(kb=private_audience_ids|first) %}
+{% else %}
+  {% set gallery_url = url('gallery.home') %}
+{% endif %}
+{% set picker_knowledge_bases = media_knowledge_bases(request.user) %}
 <div class="field has-large-textarea editor{% if field.errors %} invalid{% endif %}"
-  data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ url('gallery.home') }}">
+  data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ gallery_url }}"
+  {% if picker_knowledge_bases is not none %}data-media-knowledge-bases="{{ picker_knowledge_bases|json }}"{% endif %}>
   <div class="editor-tools"></div>
   <div>{{ field|safe }}</div>
   {{ field.errors }}

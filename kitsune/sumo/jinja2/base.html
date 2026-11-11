@@ -33,8 +33,12 @@
   {% if DARK_MODE -%}
   <script>{{ theme_head_script() }}</script>
   {% endif -%}
-  {% include "includes/google-analytics.html" %}
-  {% if matomo_mzla %}{% include "includes/matomo-mzla.html" %}{% endif %}
+  {% if suppress_analytics %}
+    <meta name="referrer" content="strict-origin"/>
+  {% else %}
+    {% include "includes/google-analytics.html" %}
+    {% if matomo_mzla %}{% include "includes/matomo-mzla.html" %}{% endif %}
+  {% endif %}
 
   {% block head_top %}{% endblock %}
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -93,6 +97,9 @@
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-messages-api="{{ url('messages.api.get_autocomplete_suggestions') }}"
       data-media-url="{{ MEDIA_URL }}"
+      {% if has_private_kb_access(request.user) %}
+        data-private-search="true"
+      {% endif %}
       {% if ga_alternate_url %}
         data-ga-alternate-url="{{ ga_alternate_url }}"
       {% endif %}

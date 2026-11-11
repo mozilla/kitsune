@@ -36,6 +36,7 @@ from kitsune.wiki.config import (
     CATEGORIES,
     DEFAULT_AUDIENCE_SLUG,
     DOC_HTML_CACHE_KEY,
+    KB_COLORS,
     MAJOR_SIGNIFICANCE,
     MEDIUM_SIGNIFICANCE,
     PINNED_ARTICLE_LIMIT_Q,
@@ -84,6 +85,27 @@ class Audience(ModelBase):
         help_text=_lazy("Readable by everyone, including signed-out visitors."),
     )
     groups = models.ManyToManyField(Group, blank=True, related_name="kb_audiences")
+    is_listed = models.BooleanField(
+        default=False,
+        verbose_name=_lazy("listed"),
+        help_text=_lazy(
+            "Show as a knowledge base: its own page, and a place in menus, the directory "
+            "and search filters."
+        ),
+    )
+    description = models.TextField(blank=True)
+    color = models.CharField(max_length=16, choices=KB_COLORS, default=KB_COLORS[0][0])
+    mark = models.CharField(
+        max_length=3,
+        blank=True,
+        help_text=_lazy("Up to three characters. Blank uses the initials of the name."),
+    )
+    support_text = models.CharField(max_length=255, blank=True)
+    support_link_text = models.CharField(max_length=80, blank=True)
+    support_url = models.URLField(
+        blank=True,
+        help_text=_lazy("The help ribbon on the knowledge base page is shown only when set."),
+    )
 
     objects = AudienceManager()
 
@@ -98,6 +120,10 @@ class Audience(ModelBase):
 
     def __str__(self):
         return self.name
+
+    @property
+    def monogram(self):
+        return self.mark or "".join(word[0] for word in self.name.split()[:2]).upper()
 
     def save(self, *args, **kwargs):
         was_public = (
@@ -620,7 +646,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
         """Return latest ready-to-localize revision if there is one,
         else the latest approved revision if there is one,
         else the latest unrejected (unreviewed) revision if there is one,
-        else None.
+        else None. Revisions held for scheduled publishing are never returned.
 
         include_rejected -- If true, fall back to the latest rejected
             revision if all else fails.
@@ -630,14 +656,15 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
         rev = self.latest_localizable_revision
         if not rev or not self.is_localizable:
             rejected = Q(is_approved=False, reviewed__isnull=False)
+            unscheduled = self.revisions.filter(schedule__isnull=True)
 
             # Try latest approved revision
             # or not approved revs. Try unrejected
             # or not unrejected revs. Maybe fall back to rejected
             rev = (
                 self.revisions.filter(is_approved=True).last()
-                or self.revisions.exclude(rejected).last()
-                or (self.revisions.last() if include_rejected else None)
+                or unscheduled.exclude(rejected).last()
+                or (unscheduled.last() if include_rejected else None)
             )
         return rev
 
@@ -916,6 +943,25 @@ class DocumentAudience(ModelBase):
         return f"{self.document.title}: {self.audience.name}"
 
 
+class AudienceFeaturedDocument(ModelBase):
+    audience = models.ForeignKey(Audience, on_delete=models.CASCADE, related_name="featured")
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ("order", "id")
+        verbose_name = _lazy("featured article")
+        verbose_name_plural = _lazy("featured articles")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["audience", "document"], name="unique_audience_featured_document"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.audience.name}: {self.document.title}"
+
+
 class AbstractRevision(models.Model):
     # **%(class)s** is being used because it will allow  a unique reverse name for the field
     # like created_revisions and created_draftrevisions
@@ -1175,6 +1221,31 @@ class Revision(ModelBase, AbstractRevision):
         if hasattr(self, "anchor_record"):
             return self.anchor_record.map
         return None
+
+
+class ScheduledRevision(ModelBase):
+    """A reviewer's decision to approve a revision at `publish_at`; the revision stays unreviewed."""
+
+    revision = models.OneToOneField(Revision, on_delete=models.CASCADE, related_name="schedule")
+    # Indexed by the one-per-document constraint.
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name="+", db_index=False
+    )
+    publish_at = models.DateTimeField(db_index=True)
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="+")
+    comment = models.TextField(blank=True)
+    significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
+    is_ready_for_localization = models.BooleanField(default=False)
+    needs_change = models.BooleanField(default=False)
+    needs_change_comment = models.CharField(max_length=500, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["document"], name="wiki_scheduledrevision_one_per_document"
+            )
+        ]
 
 
 class DraftRevision(ModelBase, AbstractRevision):  # type: ignore

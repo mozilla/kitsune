@@ -8,16 +8,23 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sessions.backends.base import SessionBase
+from django.core.cache import cache
 from django.db.models import Q
 from django.db.models.functions import Now
 from django.db.models.query import QuerySet
 from django.http import Http404, HttpRequest
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.config import PINNED_ARTICLE_LIMIT_Q, REDIRECT_HTML
+from kitsune.wiki.config import (
+    KB_PUBLIC_LISTING_CACHE_KEY,
+    KB_PUBLIC_LISTING_VERSION_KEY,
+    PINNED_ARTICLE_LIMIT_Q,
+    REDIRECT_HTML,
+)
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document, PinnedArticleConfig, Revision
 
@@ -375,6 +382,43 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
         topics_data.append(topic_data)
 
     return topics_data
+
+
+def group_by_visibility(knowledge_bases):
+    """
+    Group knowledge bases as the menu and the directory show them: the private ones, then the
+    public ones, each group sorted by name. Groups without knowledge bases are left out.
+    """
+    private = []
+    public = []
+    for knowledge_base in sorted(knowledge_bases, key=lambda kb: kb.name.casefold()):
+        (public if knowledge_base.is_public else private).append(knowledge_base)
+
+    groups = [
+        # L10n: Heading over the private knowledge bases the user belongs to, in the main menu and the directory.
+        (_lazy("Your knowledge bases"), private),
+        # L10n: Heading over the public knowledge bases, in the main menu and the directory.
+        (_lazy("Open to everyone"), public),
+    ]
+    return [(heading, group) for heading, group in groups if group]
+
+
+def public_kb_listing_key():
+    """The cache key of the menu's public knowledge bases, for the current listing version."""
+    # Seeded from the clock, so a version lost to eviction never leads back to an old listing.
+    version = cache.get_or_set(KB_PUBLIC_LISTING_VERSION_KEY, time.time_ns, timeout=None)
+    return f"{KB_PUBLIC_LISTING_CACHE_KEY}:{version}"
+
+
+def retire_public_kb_listing():
+    """
+    Move the menu's public knowledge bases to a new cache key. A request that read the old
+    state and caches it afterwards writes under the old key, which nothing reads anymore.
+    """
+    try:
+        cache.incr(KB_PUBLIC_LISTING_VERSION_KEY)
+    except ValueError:
+        cache.set(KB_PUBLIC_LISTING_VERSION_KEY, time.time_ns(), timeout=None)
 
 
 def remove_expired_from_kb_visited(

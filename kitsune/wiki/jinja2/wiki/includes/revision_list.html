@@ -1,3 +1,4 @@
+{% from "wiki/includes/document_macros.html" import scheduled_for, cancel_schedule_form with context %}
 <div id="revision-list">
   {% if revisions %}
     <form action="{{ url('wiki.compare_revisions', document.slug)  }}" method="get">
@@ -61,6 +62,9 @@
                <a href="{{ url('wiki.review_revision', document.slug, rev.id, locale=document.locale) }}">{{ _('Review') }}</a>
              {% else %}
                <span class="unreviewed">{{ pgettext('revision', 'Unreviewed') }}</span>
+             {% endif %}
+             {% if schedule and schedule.revision_id == rev.id %}
+               {{ scheduled_for(document, schedule) }}
              {% endif %}
            {% else %}
              {% if document.current_revision == rev %}
@@ -140,6 +144,9 @@
         </div>
       {% endif %}
     </form>
+    {% if schedule %}
+      {{ cancel_schedule_form(document, schedule) }}
+    {% endif %}
   {% else %}
     {{ _('This document has no revisions.') }}
   {% endif %}

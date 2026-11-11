@@ -30,6 +30,8 @@ def home(request):
     """Community hub landing page."""
 
     community_news = get_object_fallback(Document, COMMUNITY_NEWS_DOC, request.LANGUAGE_CODE)
+    if community_news and not community_news.is_unrestricted_for(request.user):
+        community_news = None
     locale = _validate_locale(request.GET.get("locale"))
     product = request.GET.get("product")
     if product:

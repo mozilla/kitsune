@@ -1,6 +1,6 @@
 {% extends "wiki/base.html" %}
 {% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
-{% from "wiki/includes/document_macros.html" import show_for, revision_diff with context %}
+{% from "wiki/includes/document_macros.html" import show_for, revision_diff, scheduled_for, cancel_schedule_form, other_schedule_warning with context %}
 {% set title = _('Review Translation {id} | {document}')|f(document=document.parent.title, id=revision.id) %}
 {% set crumbs = [(document.get_absolute_url(), document.title), (None, _('Review Translation'))] %}
 {% set classes = 'review' %}
@@ -18,6 +18,14 @@
         <br>
         {{ _('Translation Comment: {comment}')|f(comment=revision.comment) }}
       </p>
+
+      {% if schedule %}
+        {{ scheduled_for(document, schedule) }}
+        {{ cancel_schedule_form(document, schedule) }}
+      {% endif %}
+      {% if other_schedule %}
+        {{ other_schedule_warning(revision, other_schedule) }}
+      {% endif %}
 
       {% if unreviewed_revisions %}
         <p>
@@ -52,12 +60,11 @@
         </p>
       {% elif document.current_revision %}
         {# If there is a parent revision to diff, and this translation is not already based on it. #}
-        {% if parent_revision and document.current_revision.based_on and
-              document.current_revision.based_on != parent_revision %}
+        {% if parent_revision and current_based_on and current_based_on != parent_revision %}
           <details open="open">
             <summary class="sumo-card-heading">{{ _('Recent English Changes') }}</summary>
             {# Default locale diff #}
-            {{ revision_diff(document.current_revision.based_on, parent_revision, show_picker=True) }}
+            {{ revision_diff(current_based_on, parent_revision, show_picker=True) }}
           </details>
         {% endif %}
         <details open="open">

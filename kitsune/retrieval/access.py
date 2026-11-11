@@ -100,6 +100,9 @@ def retrieve(
     default_operator: DefaultOperator = "AND",
     minimum_should_match: str | None = None,
     strict: bool = False,
+    excluded_family_ids: Collection[str] = (),
+    included_family_ids: Collection[str] | None = None,
+    restricted_only: bool = False,
 ) -> RetrievalResult[AuthorizedCandidate]:
     """Retrieve candidates and authorize every selected KB source against the primary DB."""
     if not is_nonnegative_int(authorization_overfetch):
@@ -138,6 +141,9 @@ def retrieve(
         default_operator=default_operator,
         minimum_should_match=minimum_should_match,
         strict=strict,
+        excluded_family_ids=excluded_family_ids,
+        included_family_ids=included_family_ids,
+        restricted_only=restricted_only,
     )
     return authorize_candidates(
         result,

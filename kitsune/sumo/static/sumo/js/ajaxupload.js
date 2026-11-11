@@ -35,6 +35,8 @@ export function abortUpload(input) {
  *   inputEvent    - event that triggers the upload (default 'change')
  *   beforeSubmit  - called with the input before POSTing; return false to
  *                   cancel, or a value to pass through to onComplete
+ *   extraData     - called with the input when POSTing; returns an object of
+ *                   further fields to send with the file
  *   onComplete    - called with (input, responseText, beforeSubmitResult, ok)
  *                   when the request finishes. responseText is null on a
  *                   network error (mirroring the old empty-iframe case); ok is
@@ -53,6 +55,9 @@ export function ajaxSubmitInput(input, options) {
       accept: false,
       inputEvent: "change",
       beforeSubmit: function () {},
+      extraData: function () {
+        return {};
+      },
       onComplete: function () {},
     },
     options
@@ -82,6 +87,10 @@ export function ajaxSubmitInput(input, options) {
     if (csrfInput) {
       formData.append("csrfmiddlewaretoken", csrfInput.value);
     }
+    var extraData = options.extraData(input);
+    Object.keys(extraData).forEach(function (name) {
+      formData.append(name, extraData[name]);
+    });
 
     var controller = new AbortController();
     uploadControllers.set(input, controller);

@@ -13,6 +13,7 @@ from kitsune.sumo.sanitize import RESTRICTED_HTML_ATTRIBUTES, RESTRICTED_HTML_TA
 from kitsune.wiki.config import DEFAULT_AUDIENCE_SLUG
 from kitsune.wiki.models import (
     Audience,
+    AudienceFeaturedDocument,
     Document,
     DocumentAudience,
     ImportantDate,
@@ -122,7 +123,9 @@ class AudienceAdminForm(forms.ModelForm):
         required=False,
         label=_lazy("Publish its articles"),
         help_text=_lazy(
-            "Making this knowledge base public makes every article in it readable by everyone."
+            "Making this knowledge base public makes every article in it readable by everyone. "
+            "Its images become readable by anyone with their address and stop showing in its "
+            "articles until uploaded again as public images."
         ),
     )
 
@@ -142,24 +145,72 @@ class AudienceAdminForm(forms.ModelForm):
             is_public
             and self.instance.pk
             and not self.instance.is_public
-            and self.instance.documents.exists()
+            and (self.instance.documents.exists() or self.instance.images.exists())
             and not cleaned_data.get("confirm_publish")
         ):
             self.add_error(
-                "confirm_publish", _lazy("Confirm that its articles become readable by everyone.")
+                "confirm_publish",
+                _lazy("Confirm that its articles and images become readable by everyone."),
             )
         return cleaned_data
 
 
+class AudienceFeaturedDocumentForm(forms.ModelForm):
+    class Meta:
+        model = AudienceFeaturedDocument
+        fields = ("document", "order")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        document = cleaned_data.get("document")
+        # The inline formset sets "audience_id" on the instance; it is empty for a new KB.
+        if document is not None and not (
+            document.parent_id is None
+            and self.instance.audience_id
+            and document.audiences.filter(pk=self.instance.audience_id).exists()
+        ):
+            self.add_error(
+                "document",
+                _lazy("Choose an original article that is assigned to this knowledge base."),
+            )
+        return cleaned_data
+
+
+class AudienceFeaturedDocumentInline(admin.TabularInline):
+    model = AudienceFeaturedDocument
+    form = AudienceFeaturedDocumentForm
+    raw_id_fields = ("document",)
+    max_num = 3
+
+    def get_formset(self, request, obj=None, **kwargs):
+        # Without it the admin accepts submitted rows beyond max_num.
+        kwargs["validate_max"] = True
+        return super().get_formset(request, obj, **kwargs)
+
+
 class AudienceAdmin(admin.ModelAdmin):
     form = AudienceAdminForm
+    inlines = [AudienceFeaturedDocumentInline]
     list_display = ("name", "slug", "is_public", "document_count")
+
+    def get_inlines(self, request, obj):
+        # A new knowledge base has no articles to feature yet.
+        return self.inlines if obj is not None else []
 
     def get_fields(self, request, obj=None):
         fields = ["name", "slug", "is_public", "groups"]
         if obj is not None and not obj.is_public:
             fields.append("confirm_publish")
-        return fields
+        return [
+            *fields,
+            "is_listed",
+            "description",
+            "color",
+            "mark",
+            "support_text",
+            "support_link_text",
+            "support_url",
+        ]
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(document_count=Count("documents"))

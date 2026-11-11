@@ -2406,7 +2406,8 @@ def test_administration_and_navigation_articles_can_be_added_as_related_articles
 
 #  C3065910, C3177063, C3177062
 @pytest.mark.kbArticleCreationAndAccess
-def test_restricted_visibility_related_document_in_article_page(page: Page, create_user_factory):
+def test_restricted_visibility_related_document_in_article_page(page: Page, create_user_factory,
+                                                                knowledge_base_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_articles_url = []
@@ -2414,6 +2415,7 @@ def test_restricted_visibility_related_document_in_article_page(page: Page, crea
     test_user = create_user_factory()
     test_user_two = create_user_factory(groups=["Knowledge Base Reviewers", "Staff"])
     test_user_three = create_user_factory(groups=["Mobile"])
+    mobile_knowledge_base = knowledge_base_factory.ensure("Mobile", ["Mobile"])
 
     with allure.step(f"Signing in with {test_user_two['username']} user account"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -2428,12 +2430,13 @@ def test_restricted_visibility_related_document_in_article_page(page: Page, crea
             counter += 1
             utilities.reindex_document("WikiDocument", article_info["article_id"])
 
-    with allure.step(f"Navigating to the article: f{test_article_titles[1]} and "
-                     f"restricting the visibility of the article to 'Mobile' group"):
+    with allure.step(f"Navigating to the {test_article_titles[1]} article and restricting its "
+                     f"visibility to the 'Mobile' knowledge base"):
         utilities.navigate_to_link(test_articles_url[1])
-        sumo_pages.edit_article_metadata_flow.edit_article_metadata(single_group="Mobile")
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            knowledge_bases=[mobile_knowledge_base])
 
-    with allure.step(f"Navigating to the: f{test_article_titles[0]} article and adding the rest "
+    with allure.step(f"Navigating to the {test_article_titles[0]} article and adding the rest "
                      f"of test articles as related documents"):
         utilities.navigate_to_link(test_articles_url[0])
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
@@ -2441,23 +2444,31 @@ def test_restricted_visibility_related_document_in_article_page(page: Page, crea
             related_documents=test_article_titles[1:]
         )
 
-    with allure.step("Signing in with a users that doesn't belong to the 'Mobile' group"):
-        utilities.start_existing_session(cookies=test_user)
+    for user, description in ((test_user, "a user that doesn't belong to the 'Mobile' group"),
+                              (None, "a signed out user")):
+        with check, allure.step(f"Verifying that for {description} the restricted article is "
+                                f"not displayed inside the 'Related Documents' section, while "
+                                f"the public one is"):
+            if user:
+                utilities.start_existing_session(cookies=user)
+            else:
+                utilities.delete_cookies()
+            utilities.navigate_to_link(test_articles_url[0])
+            related_articles = sumo_pages.kb_article_page.get_list_of_related_articles()
+            # The public related article shows the section was saved and rendered, so the
+            # restricted one is missing because of its visibility.
+            assert test_article_titles[2] in related_articles
+            assert test_article_titles[1] not in related_articles
 
-    with check, allure.step("Verifying that the article is not displayed inside the 'Related "
-                            "Documents' section"):
-        utilities.navigate_to_link(test_articles_url[0])
-        assert (test_article_titles[1] not in sumo_pages.kb_article_page.
-                get_list_of_related_articles())
-
-    with check, allure.step(f"Signing in with the account that is part of the 'Mobile' group"
-                            f"group, navigating to the f{test_article_titles[0]} article and "
-                            f"verifying that the restricted visibility article is now visible in "
-                            f"the 'Related Documents' section"):
+    with check, allure.step(f"Signing in with the account that is part of the 'Mobile' group, "
+                            f"navigating to the {test_article_titles[0]} article and verifying "
+                            f"that both related articles are displayed in the 'Related "
+                            f"Documents' section"):
         utilities.start_existing_session(cookies=test_user_three)
         utilities.navigate_to_link(test_articles_url[0])
-        assert test_article_titles[1] in sumo_pages.kb_article_page.get_list_of_related_articles()
-
+        related_articles = sumo_pages.kb_article_page.get_list_of_related_articles()
+        assert test_article_titles[1] in related_articles
+        assert test_article_titles[2] in related_articles
 
 # C3180081
 @pytest.mark.kbArticleCreationAndAccess

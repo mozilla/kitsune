@@ -3,9 +3,13 @@ from unittest import mock
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.test import Client, tag
+from django.test import Client, override_settings, tag
+from parameterized import parameterized
 from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 
+from kitsune.gallery.tests import ImageFactory, TemporaryMediaRoots
+from kitsune.kbforums.tests import ThreadFactory
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.tests import SkipTest, TestCase, template_used
@@ -111,6 +115,90 @@ class DocumentVisibilityTests(TestCase):
         self.client.login(username=creator.username, password="testpass")
         response = self.client.get(rev.document.get_absolute_url())
         self.assertEqual(response.status_code, 200)
+
+
+@override_switch("matomo-mzla", active=True)
+@override_settings(
+    CACHE_MIDDLEWARE_SECONDS=3600,
+    GTM_CONTAINER_ID="GTM-TEST",
+    MATOMO_MZLA_PRODUCT_SLUGS=["thunderbird"],
+    MATOMO_MZLA_SITE_ID="8",
+)
+class DocumentPrivacyTests(TestCase):
+    @parameterized.expand(
+        [
+            ("public_anonymous", False, False),
+            ("public_member", False, True),
+            ("restricted_member", True, True),
+        ]
+    )
+    def test_analytics_referrer_and_caching(self, name, restricted, member):
+        group = GroupFactory()
+        private = AudienceFactory(groups=[group])
+        revision = ApprovedRevisionFactory(
+            document__products=[ProductFactory(slug="thunderbird")],
+            document__audiences=[private] if restricted else None,
+        )
+        if member:
+            self.client.force_login(UserFactory(groups=[group]))
+
+        response = self.client.get(revision.document.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertEqual("/gtm-snippet." in content, not restricted)
+        self.assertEqual("/matomo-mzla." in content, not restricted)
+        self.assertEqual(response.get("Referrer-Policy") == "strict-origin", restricted)
+        cache_control = {
+            directive.strip() for directive in response.get("Cache-Control", "").split(",")
+        }
+        self.assertEqual({"private", "no-store"} <= cache_control, restricted)
+        doc = pq(response.content)
+        self.assertEqual(bool(doc('meta[name="referrer"][content="strict-origin"]')), restricted)
+        self.assertEqual(doc("body").attr("data-private-search") == "true", member)
+
+    @parameterized.expand(
+        [
+            (page, restricted)
+            for page in (
+                "revision",
+                "history",
+                "what_links_here",
+                "edit",
+                "translate",
+                "discussion",
+            )
+            for restricted in (True, False)
+        ]
+    )
+    def test_article_tool_pages_follow_the_article(self, page, restricted):
+        group = GroupFactory()
+        revision = ApprovedRevisionFactory(
+            document__products=[ProductFactory(slug="thunderbird")],
+            document__audiences=[AudienceFactory(groups=[group])] if restricted else None,
+        )
+        slug = revision.document.slug
+        thread = ThreadFactory(document=revision.document)
+        url = {
+            "revision": reverse("wiki.revision", args=[slug, revision.id]),
+            "history": reverse("wiki.document_revisions", args=[slug]),
+            "what_links_here": reverse("wiki.what_links_here", args=[slug]),
+            "edit": reverse("wiki.edit_document", args=[slug]),
+            "translate": reverse("wiki.translate", args=[slug], locale="de"),
+            "discussion": reverse("wiki.discuss.posts", args=[slug, thread.id]),
+        }[page]
+        self.client.force_login(UserFactory(groups=[group]))
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertEqual("/gtm-snippet." in content, not restricted)
+        self.assertNotIn("/matomo-mzla.", content)
+        self.assertEqual(
+            bool(pq(response.content)('meta[name="referrer"][content="strict-origin"]')),
+            restricted,
+        )
 
 
 class RevisionVisibilityTests(TestCase):
@@ -446,6 +534,59 @@ class PreviewRevisionVisibilityTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Secret content")
         self.assertContains(response, 'The document "Restricted Doc" does not exist.')
+
+
+class PrivateImageRenderingTests(TemporaryMediaRoots, TestCase):
+    """The preview and the revision page resolve images like the stored article HTML does."""
+
+    def setUp(self):
+        super().setUp()
+        ProductFactory()
+        self.group = GroupFactory()
+        self.kbs = {
+            "foo": AudienceFactory(groups=[self.group]),
+            "default": Audience.objects.default(),
+        }
+
+    @parameterized.expand(
+        [
+            ("own_kb_image", "foo", "foo", None),
+            (
+                "public_image_in_a_private_article",
+                "foo",
+                "default",
+                "Anyone can see these images: Shot",
+            ),
+            ("public_article", "default", "default", None),
+        ]
+    )
+    def test_preview(self, _name, article_kb, image_kb, notice):
+        image = ImageFactory(title="Shot", audience=self.kbs[image_kb])
+        document = DocumentFactory(audiences=[self.kbs[article_kb]])
+        ApprovedRevisionFactory(document=document)
+        self.client.force_login(UserFactory(is_superuser=True))
+
+        response = self.client.post(
+            reverse("wiki.preview"),
+            data={"content": "[[Image:Shot]]", "slug": document.slug, "locale": document.locale},
+        )
+
+        self.assertContains(response, f'data-original-src="{image.file.url}"')
+        if notice:
+            self.assertContains(response, notice)
+        else:
+            self.assertNotContains(response, "Anyone can see these images")
+
+    def test_revision_page_renders_the_documents_own_image(self):
+        image = ImageFactory(title="Shot", audience=self.kbs["foo"])
+        revision = ApprovedRevisionFactory(
+            document=DocumentFactory(audiences=[self.kbs["foo"]]), content="[[Image:Shot]]"
+        )
+        self.client.force_login(UserFactory(groups=[self.group]))
+        response = self.client.get(
+            reverse("wiki.revision", args=[revision.document.slug, revision.id])
+        )
+        self.assertContains(response, f'data-original-src="{image.file.url}"')
 
 
 class DocumentRevisionsVisibilityTests(TestCase):

@@ -32,6 +32,7 @@ class Command(BaseCommand):
                     wiki_to_html(
                         document.current_revision.content,
                         locale=document.locale,
+                        audience_ids=document.original.private_audience_ids,
                     ).split("\n"),
                 )
                 diff_lines = "\n".join(filter(lambda x: not x.startswith("  "), diff))

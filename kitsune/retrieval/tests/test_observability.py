@@ -27,6 +27,7 @@ from kitsune.retrieval.tests.test_embeddings import (
 )
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.users.tests import GroupFactory
+from kitsune.wiki.models import Document
 from kitsune.wiki.tests import ApprovedRevisionFactory, AudienceFactory, DocumentFactory
 
 _EMIT_CALL = re.compile(r"\bemit\(\s*\"(retrieval\.[a-z0-9_.]+)\"", re.S)
@@ -273,7 +274,7 @@ class ApprovalLatencyTests(ObservabilityTestCase):
 
     def test_an_eviction_reports_no_latency_rather_than_a_misleading_one(self):
         sync_document_chunks(self.document.id)
-        self.document.audiences.set([AudienceFactory(groups=[GroupFactory()])])
+        Document.objects.filter(pk=self.document.pk).update(is_archived=True)
 
         with self.assertLogs("k.retrieval", level="INFO") as logs:
             sync_document_chunks(self.document.id)

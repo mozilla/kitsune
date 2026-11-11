@@ -11,6 +11,7 @@ kitsune/build.py
 **/*-all.js
 **/*-min.js
 media/uploads
+/media-private
 node_modules
 bower_components
 tmp

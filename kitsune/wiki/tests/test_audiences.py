@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.db import IntegrityError, transaction
+from parameterized import parameterized
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
@@ -8,6 +9,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.config import DEFAULT_AUDIENCE_SLUG
+from kitsune.wiki.managers import has_private_kb_access
 from kitsune.wiki.models import Audience, Document, DocumentAudience, Revision
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
@@ -147,3 +149,127 @@ class AudienceAccessTests(TestCase):
                 kb.save()
                 self.assertEqual(Document.objects.visible(anonymous).exists(), is_public)
                 self.assertEqual(Document.objects.get(pk=document.pk).is_restricted, not is_public)
+
+
+class KnowledgeBaseListingTests(TestCase):
+    def setUp(self):
+        agents_group = GroupFactory()
+        company = EnterpriseCompanyFactory()
+        legacy_group = GroupFactory()
+
+        default = Audience.objects.default()
+        default.is_listed = True
+        default.save()
+        self.kbs = {
+            "default": default,
+            "public": AudienceFactory(is_public=True, is_listed=True),
+            "agents": AudienceFactory(is_listed=True, groups=[agents_group]),
+            "company": AudienceFactory(is_listed=True, groups=[company.group]),
+            "empty": AudienceFactory(is_listed=True),
+            "legacy": AudienceFactory(groups=[legacy_group]),
+        }
+        self.viewers = {
+            "none": None,
+            "anonymous": AnonymousUser(),
+            "agent": UserFactory(groups=[agents_group]),
+            "department": UserFactory(groups=[DepartmentFactory(company=company).group]),
+            "other_department": UserFactory(groups=[DepartmentFactory().group]),
+            "company": UserFactory(groups=[company.group]),
+            "legacy": UserFactory(groups=[legacy_group]),
+            "nobody": UserFactory(),
+            "staff": UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)]),
+            "superuser": UserFactory(is_superuser=True),
+        }
+
+    @parameterized.expand(
+        [
+            ("none", {"public"}, {"public"}, False),
+            ("anonymous", {"public"}, {"public"}, False),
+            ("agent", {"public", "agents"}, {"public", "agents"}, True),
+            ("department", {"public", "company"}, {"public", "company"}, True),
+            ("other_department", {"public"}, {"public"}, False),
+            ("company", {"public", "company"}, {"public", "company"}, True),
+            ("legacy", {"public"}, {"public"}, True),
+            ("nobody", {"public"}, {"public"}, False),
+            ("staff", {"public"}, {"public", "agents", "company", "empty"}, True),
+            ("superuser", {"public"}, {"public", "agents", "company", "empty"}, True),
+        ]
+    )
+    def test_listed_and_browsable_kbs(self, viewer, listed, browsable, private_access):
+        user = self.viewers[viewer]
+
+        self.assertEqual(
+            set(Audience.objects.listed_for(user)), {self.kbs[name] for name in listed}
+        )
+        self.assertEqual(
+            set(Audience.objects.browsable_by(user)), {self.kbs[name] for name in browsable}
+        )
+        self.assertEqual(has_private_kb_access(user), private_access)
+
+
+class PrivateAudienceTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        agents_group = GroupFactory()
+        second_group = GroupFactory()
+        company = EnterpriseCompanyFactory()
+
+        cls.kbs = {
+            "listed": AudienceFactory(is_listed=True, groups=[agents_group]),
+            "unlisted": AudienceFactory(groups=[agents_group, second_group]),
+            "company": AudienceFactory(groups=[company.group]),
+            "other_company": AudienceFactory(groups=[EnterpriseCompanyFactory().group]),
+            "public": AudienceFactory(is_public=True, is_listed=True, groups=[agents_group]),
+            "default": Audience.objects.default(),
+        }
+        cls.viewers = {
+            "anonymous": AnonymousUser(),
+            "nobody": UserFactory(),
+            "agent": UserFactory(groups=[agents_group, second_group]),
+            "department": UserFactory(groups=[DepartmentFactory(company=company).group]),
+            "staff": UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)]),
+            "superuser": UserFactory(is_superuser=True),
+        }
+
+    @parameterized.expand(
+        [
+            ("anonymous", set()),
+            ("nobody", set()),
+            ("agent", {"listed", "unlisted"}),
+            ("department", {"company"}),
+            ("staff", {"listed", "unlisted", "company", "other_company"}),
+            ("superuser", {"listed", "unlisted", "company", "other_company"}),
+        ]
+    )
+    def test_private_for(self, viewer, expected):
+        self.assertCountEqual(
+            Audience.objects.private_for(self.viewers[viewer]),
+            [self.kbs[name] for name in expected],
+        )
+
+
+class KnowledgeBasePresentationTests(TestCase):
+    def test_listing_is_private_first_then_by_name_and_distinct(self):
+        groups = [GroupFactory(), GroupFactory()]
+        for name in ("Zed", "Aardvark", "Mid"):
+            AudienceFactory(name=name, is_public=True, is_listed=True)
+        AudienceFactory(name="Yankee", is_listed=True, groups=groups)
+        AudienceFactory(name="Bravo", is_listed=True, groups=groups[:1])
+        member = UserFactory(groups=groups)
+
+        for lister in (Audience.objects.listed_for, Audience.objects.browsable_by):
+            self.assertEqual(
+                [kb.name for kb in lister(member)],
+                ["Bravo", "Yankee", "Aardvark", "Mid", "Zed"],
+            )
+
+    @parameterized.expand(
+        [
+            ("Northwind Support Team", "", "NS"),
+            ("northwind  support", "", "NS"),
+            ("Acme", "", "A"),
+            ("Northwind Support", "NW", "NW"),
+        ]
+    )
+    def test_monogram(self, name, mark, expected):
+        self.assertEqual(Audience(name=name, mark=mark).monogram, expected)
