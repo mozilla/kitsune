@@ -9,7 +9,7 @@ from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_K
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import Count, Q
 from django.db.models.functions import Now
 from django.http import Http404, JsonResponse
@@ -326,11 +326,7 @@ def create_test_user(request):
     if not (username := data.get("username")):
         return JsonResponse({"message": 'Invalid JSON payload (missing "username").'}, status=400)
 
-    try:
-        test_user = User.objects.create_user(username=username)
-    except IntegrityError:
-        return JsonResponse({"message": f'Username "{username}" already exists.'}, status=409)
-
+    permissions = []
     if codenames := data.get("permissions"):
         if not isinstance(codenames, list):
             return JsonResponse(
@@ -339,14 +335,13 @@ def create_test_user(request):
 
         for codename in codenames:
             try:
-                permission = Permission.objects.get(codename=codename)
+                permissions.append(Permission.objects.get(codename=codename))
             except Permission.DoesNotExist:
                 return JsonResponse(
                     {"message": f'Permission "{codename}" does not exist.'}, status=400
                 )
-            else:
-                test_user.user_permissions.add(permission)
 
+    groups = []
     if group_names := data.get("groups"):
         if not isinstance(group_names, list):
             return JsonResponse(
@@ -355,13 +350,18 @@ def create_test_user(request):
 
         for name in group_names:
             try:
-                group = Group.objects.get(name=name)
+                groups.append(Group.objects.get(name=name))
             except Group.DoesNotExist:
                 return JsonResponse({"message": f'Group "{name}" does not exist.'}, status=400)
-            else:
-                test_user.groups.add(group)
 
-    Profile.objects.create(user=test_user, is_fxa_migrated=True)
+    try:
+        with transaction.atomic():
+            test_user = User.objects.create_user(username=username)
+            test_user.user_permissions.add(*permissions)
+            test_user.groups.add(*groups)
+            Profile.objects.create(user=test_user, is_fxa_migrated=True)
+    except IntegrityError:
+        return JsonResponse({"message": f'Username "{username}" already exists.'}, status=409)
 
     engine = import_module(settings.SESSION_ENGINE)
     session = engine.SessionStore()
