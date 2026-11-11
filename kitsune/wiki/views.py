@@ -37,6 +37,7 @@ from kitsune.sumo.utils import (
     get_next_url,
     in_staff_group,
     paginate,
+    request_timezone,
     set_aaq_context,
     smart_int,
     truncated_json_dumps,
@@ -47,10 +48,9 @@ from kitsune.wiki.config import (
     COLLAPSIBLE_DOCUMENTS,
     DOCUMENTS_PER_PAGE,
     FALLBACK_LOCALES,
-    MAJOR_SIGNIFICANCE,
     TEMPLATES_CATEGORY,
 )
-from kitsune.wiki.content_managers import ManualContentManager, NotificationType
+from kitsune.wiki.content_managers import ManualContentManager
 from kitsune.wiki.events import (
     ApproveRevisionInLocaleEvent,
     EditDocumentEvent,
@@ -71,18 +71,15 @@ from kitsune.wiki.models import (
     HelpfulVote,
     ImportantDate,
     Revision,
+    ScheduledRevision,
     SlugCollision,
     TitleCollision,
     doc_html_cache_key,
 )
 from kitsune.wiki.parser import wiki_to_html
-from kitsune.wiki.strategies import (
-    TranslationRequest,
-    TranslationStrategy,
-    TranslationStrategyFactory,
-    TranslationTrigger,
-)
-from kitsune.wiki.tasks import render_document_cascade, schedule_rebuild_kb
+from kitsune.wiki.review import apply_review, execute_l10n_strategy, schedule_revision
+from kitsune.wiki.strategies import TranslationTrigger
+from kitsune.wiki.tasks import schedule_rebuild_kb
 from kitsune.wiki.utils import (
     get_visible_document_or_404,
     get_visible_revision_or_404,
@@ -92,7 +89,6 @@ from kitsune.wiki.utils import (
 DRAFT_DOES_NOT_EXIST = _lazy("The draft you are trying to restore no longer exists.")
 
 log = logging.getLogger("k.wiki")
-l10n_factory = TranslationStrategyFactory()
 
 
 def doc_page_cache(view):
@@ -375,7 +371,11 @@ def revision(request, document_slug, revision_id):
         document__locale=request.LANGUAGE_CODE,
     )
     doc = rev.document
-    data = {"document": doc, "revision": rev}
+    data = {
+        "document": doc,
+        "revision": rev,
+        "schedule": ScheduledRevision.objects.filter(revision=rev).first(),
+    }
     return render(request, "wiki/revision.html", data)
 
 
@@ -561,10 +561,13 @@ def edit_init_and_perms(request, document_slug, revision_id=None, doctype="doc")
     if doc.parent:
         return translate(request, doc.parent.slug, revision_id)
 
+    revisions = doc.revisions.filter(
+        Revision.objects.get_held_visibility_condition(user, doc.locale)
+    )
     if revision_id:
-        rev = get_object_or_404(Revision, pk=revision_id, document=doc)
+        rev = get_object_or_404(revisions, pk=revision_id)
     else:
-        rev = doc.current_revision or doc.revisions.order_by("-created", "-id")[0]
+        rev = doc.current_revision or revisions.order_by("-created", "-id")[0]
 
     return user, doc, rev
 
@@ -623,6 +626,8 @@ def edit_document(request, document_slug, revision_id=None):
             rev_form = RevisionForm(request.POST)
             rev_form.instance.document = doc  # for rev_form.clean()
             if rev_form.is_valid():
+                if _is_held_from(user, rev_form.cleaned_data["based_on"], doc.locale):
+                    return HttpResponseBadRequest()
                 _document_lock_clear(doc.id, user.username)
                 _save_rev_and_notify(rev_form, user, doc, base_rev=rev)
                 if draft:
@@ -727,8 +732,11 @@ def draft_revision(request):
     parent document, user and locale. Get the parent document from the based on revision"""
     draft_form = DraftRevisionForm(request.POST)
     if draft_form.is_valid():
-        draft_form.save(request=request)
-        return HttpResponse(status=201)
+        based_on = draft_form.cleaned_data["based_on"]
+        # The translate page shows the based-on revision of a restored draft.
+        if not _is_held_from(request.user, based_on, based_on.document.locale):
+            draft_form.save(request=request)
+            return HttpResponse(status=201)
 
     return HttpResponseBadRequest()
 
@@ -777,7 +785,9 @@ def document_revisions(request, document_slug, contributor_form=None):
         url = reverse("wiki.document_revisions", args=[doc.slug], locale=locale)
         return HttpResponseRedirect(url)
 
-    revs = Revision.objects.filter(document=doc).order_by("-created", "-id")
+    revs = doc.revisions.filter(
+        Revision.objects.get_held_visibility_condition(request.user, doc.locale)
+    ).order_by("-created", "-id")
 
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         template = "wiki/includes/revision_list.html"
@@ -786,7 +796,14 @@ def document_revisions(request, document_slug, contributor_form=None):
 
     form = contributor_form or AddContributorForm()
     return render(
-        request, template, {"revisions": revs, "document": doc, "contributor_form": form}
+        request,
+        template,
+        {
+            "revisions": revs,
+            "document": doc,
+            "contributor_form": form,
+            "schedule": ScheduledRevision.objects.filter(revision__in=revs).first(),
+        },
     )
 
 
@@ -804,12 +821,26 @@ def review_revision(request, document_slug, revision_id):
     if not doc.allows(request.user, "review_revision"):
         raise PermissionDenied
 
-    form = ReviewForm(
-        initial={
-            "needs_change": doc.needs_change,
-            "needs_change_comment": doc.needs_change_comment,
-        }
-    )
+    reviewer_timezone = request_timezone(request)
+    schedule = ScheduledRevision.objects.filter(revision=rev).first()
+    # One schedule per document, so reviewing this revision can cancel another one's.
+    other_schedule = ScheduledRevision.objects.filter(document=doc).exclude(revision=rev).first()
+    initial = {
+        "needs_change": doc.needs_change,
+        "needs_change_comment": doc.needs_change_comment,
+    }
+    if schedule:
+        # Start from the stored decision: an empty date would publish it now.
+        initial.update(
+            publish_at=schedule.publish_at.astimezone(reviewer_timezone).replace(tzinfo=None),
+            comment=schedule.comment,
+            is_ready_for_localization=schedule.is_ready_for_localization,
+            needs_change=schedule.needs_change,
+            needs_change_comment=schedule.needs_change_comment,
+        )
+        if schedule.significance is not None:
+            initial["significance"] = schedule.significance
+    form = ReviewForm(initial=initial, timezone=reviewer_timezone)
 
     # Don't ask significance if this doc is a translation or if it has no
     # former approved versions:
@@ -840,7 +871,7 @@ def review_revision(request, document_slug, revision_id):
 
     # Get Unreviewed Revisions
     unreviewed_revisions = Revision.objects.filter(
-        document=doc, is_approved=False, reviewed=None
+        document=doc, is_approved=False, reviewed=None, schedule__isnull=True
     ).order_by("-id")
 
     # Get latest revision which is still not approved. Use **latest_revision_id** to get the id.
@@ -866,69 +897,36 @@ def review_revision(request, document_slug, revision_id):
         revision_contributors.remove(request.user.username)
 
     if request.method == "POST":
-        form = ReviewForm(request.POST)
+        form = ReviewForm(request.POST, timezone=reviewer_timezone)
         if form.is_valid() and not rev.reviewed:
             # Don't allow revisions to be reviewed twice
-            rev.is_approved = "approve" in request.POST
-            rev.reviewer = request.user
-            rev.reviewed = timezone.now()
-
-            if should_ask_significance and form.cleaned_data["significance"]:
-                rev.significance = form.cleaned_data["significance"]
-            elif not should_ask_significance and not doc.parent:
-                # This is a new document without approved revisions.
-                # Significance is MAJOR.
-                rev.significance = MAJOR_SIGNIFICANCE
-            rev.save()
-            # Use form data to determine localization workflow
-            # Only allow ready for l10n if the revision can actually be localized (not TYPO_SIGNIFICANCE)
-            can_be_localized = TranslationStrategy.can_handle_revision(rev)
-            is_ready_for_l10n = (
-                form.cleaned_data.get("is_ready_for_localization", False)
-                and doc.allows(request.user, "mark_ready_for_l10n")
-                and can_be_localized
-            )
-            match (rev.is_approved, is_ready_for_l10n):
-                case (True, True):
-                    _execute_l10n_strategy(rev, TranslationTrigger.REVIEW_REVISION, request.user)
-                case (True, False):
-                    ManualContentManager().fire_notifications(
-                        rev, [NotificationType.TRANSLATION_WORKFLOW]
-                    )
-                case _:
-                    pass
-
-            # Update the needs change bit (if approved, default language and
-            # user has permission).
-            if (
-                doc.locale == settings.WIKI_DEFAULT_LANGUAGE
-                and doc.allows(request.user, "edit_needs_change")
-                and rev.is_approved
-            ):
-                doc.needs_change = form.cleaned_data["needs_change"]
-
-                # Remove comment if no changes are needed.
-                if doc.needs_change:
-                    doc.needs_change_comment = form.cleaned_data["needs_change_comment"]
-                else:
-                    doc.needs_change_comment = ""
-
-                doc.save()
-
-            # Send review comment notification (separate from approval notifications).
-            msg = form.cleaned_data["comment"]
-            ManualContentManager().fire_notifications(
-                rev, [NotificationType.REVIEW_WORKFLOW], comment=msg
-            )
-
-            render_document_cascade.delay(doc.id)
+            approve = "approve" in request.POST
+            decision = {
+                "comment": form.cleaned_data["comment"],
+                "significance": form.cleaned_data["significance"],
+                "ready_for_localization": form.cleaned_data["is_ready_for_localization"],
+                "needs_change": form.cleaned_data["needs_change"],
+                "needs_change_comment": form.cleaned_data["needs_change_comment"],
+            }
+            if approve and (publish_at := form.cleaned_data["publish_at"]):
+                schedule_revision(rev, request.user, publish_at, **decision)
+            else:
+                apply_review(rev, request.user, approve=approve, **decision)
 
             return HttpResponseRedirect(reverse("wiki.document_revisions", args=[document_slug]))
 
+    current_based_on = None
     if doc.parent:  # A translation
         # For diffing the based_on revision against, to help the user see if he
         # translated all the recent changes:
-        parent_revision = rev.based_on or doc.parent.localizable_or_latest_revision()
+        parent_revision = (
+            _unless_held_from(request.user, rev.based_on, doc.parent.locale)
+            or doc.parent.localizable_or_latest_revision()
+        )
+        if doc.current_revision:
+            current_based_on = _unless_held_from(
+                request.user, doc.current_revision.based_on, doc.parent.locale
+            )
         template = "wiki/review_translation.html"
     else:
         parent_revision = None
@@ -939,11 +937,14 @@ def review_revision(request, document_slug, revision_id):
         "document": doc,
         "form": form,
         "parent_revision": parent_revision,
+        "current_based_on": current_based_on,
         "revision_contributors": revision_contributors,
         "should_ask_significance": should_ask_significance,
         "latest_unapproved_revision_id": latest_unapproved_revision_id,
         "current_revision_id": current_revision_id,
         "unreviewed_revisions": unreviewed_revisions,
+        "schedule": schedule,
+        "other_schedule": other_schedule,
     }
     return render(request, template, data)
 
@@ -962,8 +963,11 @@ def compare_revisions(request, document_slug):
 
     from_id = smart_int(request.GET.get("from"))
     to_id = smart_int(request.GET.get("to"))
-    revision_from = get_object_or_404(Revision, document=doc, id=from_id)
-    revision_to = get_object_or_404(Revision, document=doc, id=to_id)
+    revisions = doc.revisions.filter(
+        Revision.objects.get_held_visibility_condition(request.user, doc.locale)
+    )
+    revision_from = get_object_or_404(revisions, id=from_id)
+    revision_to = get_object_or_404(revisions, id=to_id)
 
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         template = "wiki/includes/revision_diff.html"
@@ -1031,11 +1035,11 @@ def translate(request, document_slug, revision_id=None):
             )
         )
 
-    if not parent_doc.is_localizable:
+    based_on_rev = parent_doc.localizable_or_latest_revision(include_rejected=True)
+
+    if not (parent_doc.is_localizable and based_on_rev):
         message = _lazy("You cannot translate this document.")
         return render(request, "handlers/400.html", {"message": message}, status=400)
-
-    based_on_rev = parent_doc.localizable_or_latest_revision(include_rejected=True)
 
     disclose_description = bool(request.GET.get("opendescription"))
 
@@ -1074,11 +1078,17 @@ def translate(request, document_slug, revision_id=None):
 
         if revision_id:
             allowed_docs = [parent_doc] if doc is None else [parent_doc, doc]
-            base_rev = get_visible_revision_or_404(
-                user,
-                pk=revision_id,
-                document__in=allowed_docs,
-                permission_locale=request.LANGUAGE_CODE,
+            base_rev = get_object_or_404(
+                Revision.objects.visible(
+                    user,
+                    pk=revision_id,
+                    document__in=allowed_docs,
+                    permission_locale=request.LANGUAGE_CODE,
+                ).filter(
+                    # A parent revision's held state is checked against the parent's locale.
+                    Q(document=doc)
+                    | Revision.objects.get_held_visibility_condition(user, parent_doc.locale)
+                )
             )
             rev_initial.update(
                 content=base_rev.content, summary=base_rev.summary, keywords=base_rev.keywords
@@ -1178,6 +1188,9 @@ def translate(request, document_slug, revision_id=None):
                 rev_form.instance.document = doc  # for rev_form.clean()
 
                 if rev_form.is_valid() and not doc_form_invalid:
+                    # The translation's review page shows its based-on revision.
+                    if _is_held_from(user, rev_form.cleaned_data["based_on"], parent_doc.locale):
+                        return HttpResponseBadRequest()
                     if "no-update" in request.POST:
                         # Keep the old based_on.
                         based_on_id = base_rev.based_on_id
@@ -1205,11 +1218,22 @@ def translate(request, document_slug, revision_id=None):
     if doc and doc.current_revision and doc.current_revision.based_on_id:
         recent_approved_revs = recent_approved_revs.filter(id__gt=doc.current_revision.based_on_id)
 
+    current_based_on = None
+    if doc and doc.current_revision:
+        current_based_on = _unless_held_from(
+            user, doc.current_revision.based_on, parent_doc.locale
+        )
+
     if doc:
         locked, locked_by = _document_lock(doc.id, user.username)
         # Most updated rev according to based on revision
         more_updated_rev = (
-            doc.revisions.filter(based_on__id__gt=based_on_rev.id).order_by("based_on__id").last()
+            doc.revisions.filter(
+                Revision.objects.get_held_visibility_condition(user, doc.locale),
+                based_on__id__gt=based_on_rev.id,
+            )
+            .order_by("based_on__id")
+            .last()
         )
     else:
         locked, locked_by = False, None
@@ -1225,6 +1249,7 @@ def translate(request, document_slug, revision_id=None):
             "revision_form": rev_form,
             "locale": request.LANGUAGE_CODE,
             "based_on": based_on_rev,
+            "current_based_on": current_based_on,
             "disclose_description": disclose_description,
             "show_revision_warning": show_revision_warning,
             "recent_approved_revs": recent_approved_revs,
@@ -1623,6 +1648,25 @@ def delete_revision(request, document_slug, revision_id):
 
 @login_required
 @require_POST
+def cancel_revision_schedule(request, document_slug, revision_id):
+    """Cancel a revision's scheduled publishing; it is back in the review queue."""
+    revision = get_visible_revision_or_404(
+        request.user,
+        pk=revision_id,
+        document__slug=document_slug,
+        document__locale=request.LANGUAGE_CODE,
+    )
+    document = revision.document
+
+    if not document.allows(request.user, "review_revision"):
+        raise PermissionDenied
+
+    ScheduledRevision.objects.filter(revision=revision).delete()
+    return HttpResponseRedirect(reverse("wiki.document_revisions", args=[document.slug]))
+
+
+@login_required
+@require_POST
 def mark_ready_for_l10n_revision(request, document_slug, revision_id):
     """Mark a revision as ready for l10n."""
     revision = get_visible_revision_or_404(
@@ -1635,7 +1679,7 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
     if not revision.document.allows(request.user, "mark_ready_for_l10n"):
         raise PermissionDenied
 
-    result = _execute_l10n_strategy(revision, TranslationTrigger.MARK_READY_FOR_L10N, request.user)
+    result = execute_l10n_strategy(revision, TranslationTrigger.MARK_READY_FOR_L10N, request.user)
 
     if result.success:
         return HttpResponse(json.dumps({"message": revision_id}))
@@ -1790,16 +1834,27 @@ def _get_next_url_fallback_localization(request):
     return get_next_url(request) or reverse("dashboards.localization")
 
 
+def _is_held_from(user, revision, locale):
+    """Whether the revision is held for scheduled publishing and hidden from the user."""
+    return (
+        revision is not None
+        and not Revision.objects.filter(
+            Revision.objects.get_held_visibility_condition(user, locale), pk=revision.pk
+        ).exists()
+    )
+
+
+def _unless_held_from(user, revision, locale):
+    """The revision, or None when it is held for scheduled publishing and hidden from the user."""
+    return None if _is_held_from(user, revision, locale) else revision
+
+
 def _show_revision_warning(document, revision):
     if revision:
-        return document.revisions.filter(id__gt=revision.id, reviewed=None).exists()
+        return document.revisions.filter(
+            id__gt=revision.id, reviewed=None, schedule__isnull=True
+        ).exists()
     return False
-
-
-def _execute_l10n_strategy(revision, trigger, user=None):
-    """Execute l10n strategy for a given revision and trigger."""
-    l10n_request = TranslationRequest(revision=revision, trigger=trigger, user=user)
-    return l10n_factory.execute(l10n_request)
 
 
 def recent_revisions(request):

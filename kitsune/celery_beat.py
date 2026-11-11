@@ -185,6 +185,11 @@ PERIODIC_TASKS_ALL = {
         "task": "kitsune.wiki.tasks.cleanup_old_translation_records",
         "schedule": crontab(hour="1", minute="30", day_of_week="0"),
     },
+    # Every 30 minutes, on the hour and half hour.
+    "release_scheduled_revisions": {
+        "task": "kitsune.wiki.tasks.release_scheduled_revisions",
+        "schedule": crontab(minute="0,30"),
+    },
 }
 
 # Periodic tasks only for the prod environment.

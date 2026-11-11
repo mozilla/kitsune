@@ -4,6 +4,7 @@
   <p><a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a></p>
 {% else %}
   <div id="actions">
+    {{ errorlist(form) }}
     <form action="" method="post">
       {% csrf_token %}
       <div class="sumo-button-wrap align-end reverse-on-desktop">
@@ -29,7 +30,7 @@
       {% endif %}
       {% if should_ask_significance %}
         <p>
-          {% trans %}Clicking Accept will make this version of the article live! Please take a moment to be sure all options are correct.{% endtrans %}
+          {% trans %}Clicking Accept will make this version of the article live now, or at the time you choose. Please take a moment to be sure all options are correct.{% endtrans %}
         </p>
         {# Mock form.significance to get the right styling. #}
         <div id="{{ form.significance.auto_id }}">
@@ -44,7 +45,7 @@
       {% if not should_ask_significance and not self_approving %}
         <p>
           {% trans %}Thanks for taking the time to review these changes.
-          Clicking Accept will make this version of the article live! Please take a moment to be sure all options are correct.{% endtrans %}
+          Clicking Accept will make this version of the article live now, or at the time you choose. Please take a moment to be sure all options are correct.{% endtrans %}
         </p>
       {% endif %}
       {% if revision_contributors %}
@@ -53,7 +54,6 @@
         <div class="message">
           <label for="id-approve-comment">
             {{ revision_contributors_label(revision_contributors) }}
-            {{ form.comment.errors }}
           </label>
           <textarea id="id-approve-comment" name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
         </div>
@@ -75,6 +75,11 @@
           </div>
         </div>
       {% endif %}
+      <div class="field publish-at">
+        <label for="{{ form.publish_at.auto_id }}">{{ form.publish_at.label }}</label>
+        {{ form.publish_at }}
+        <p class="help-text" id="{{ form.publish_at.auto_id }}_helptext">{{ form.publish_at.help_text }}</p>
+      </div>
       <input type="hidden" name="approve" value="1" />
       <div class="sumo-button-wrap align-full reverse-on-desktop">
         <button class="sumo-button primary-button btn btn-important" type="submit" data-type="submit">{{ _('Accept') }}</button>
@@ -97,7 +102,7 @@
           <label for="id-reject-comment">
             {{ revision_contributors_label(revision_contributors) }}
           </label>
-          <textarea id="id-reject-comment" name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
+          <textarea id="id-reject-comment" name="comment">{% if not form.initial %}{{ form.comment.data }}{% endif %}</textarea>
         </div>
       {% endif %}
       <input type="hidden" name="reject" value="1" />

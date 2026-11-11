@@ -1,6 +1,6 @@
 {% extends "wiki/base.html" %}
 {% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
-{% from "wiki/includes/document_macros.html" import show_for, revision_diff with context %}
+{% from "wiki/includes/document_macros.html" import show_for, revision_diff, scheduled_for, cancel_schedule_form, other_schedule_warning with context %}
 {% set title = _('Review Revision {id} | {document}')|f(document=document.title, id=revision.id) %}
 {% set crumbs = [(document.get_absolute_url(), document.title), (None, _('Review Revision'))] %}
 {% set classes = 'review' %}
@@ -18,6 +18,14 @@
       <br>
       {{ _('Revision Comment: {comment}')|f(comment=revision.comment) }}
       </p>
+
+      {% if schedule %}
+        {{ scheduled_for(document, schedule) }}
+        {{ cancel_schedule_form(document, schedule) }}
+      {% endif %}
+      {% if other_schedule %}
+        {{ other_schedule_warning(revision, other_schedule) }}
+      {% endif %}
 
       {% if unreviewed_revisions %}
         <p>
@@ -43,7 +51,7 @@
         </p>
       {% elif current_revision_id and current_revision_id > revision.id %}
         <p>
-          {% if latest_unapproved_revision_id > current_revision_id %}
+          {% if latest_unapproved_revision_id and latest_unapproved_revision_id > current_revision_id %}
             {{ _('This revision is outdated, but there is a new revision available.') }}
             <a href="{{ url('wiki.review_revision', document.slug, latest_unapproved_revision_id) }}">{{ _('Please review the latest revision.') }}</a>
           {% else %}

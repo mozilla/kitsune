@@ -1,10 +1,14 @@
 import re
+from datetime import UTC
+from zoneinfo import ZoneInfo
 
 from django import forms
 from django.conf import settings
 from django.db import transaction
 from django.db.models.functions import Coalesce
 from django.template.defaultfilters import slugify
+from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ngettext_lazy as _nlazy
 
@@ -78,6 +82,12 @@ PRODUCT_REQUIRED = _lazy("Please select at least one product.")
 TOPIC_REQUIRED = _lazy("Please select at least one topic.")
 RELATED_DOCUMENTS_DISALLOWED = _lazy(
     "Related documents are not allowed for Templates and Canned Responses."
+)
+PUBLISH_AT_NOT_ON_SLOT = _lazy("Choose a time on the hour or half hour.")
+PUBLISH_AT_NOT_IN_FUTURE = _lazy("Choose a time in the future.")
+PUBLISH_AT_DST_CHANGE = _lazy(
+    "This time happens twice or not at all in your timezone because of a daylight saving "
+    "change. Choose another time."
 )
 
 
@@ -425,6 +435,16 @@ class DraftRevisionForm(forms.ModelForm):
         return ManualContentManager().save_draft(creator, parent_doc, locale, doc_data)
 
 
+class WallClockDateTimeField(forms.DateTimeField):
+    """A DateTimeField whose value stays naive, for the form to place in the user's timezone."""
+
+    def to_python(self, value):
+        if value in self.empty_values:
+            return None
+        # Skip DateTimeField's ISO parsing (offsets included) and its use of the site's timezone.
+        return super(forms.DateTimeField, self).to_python(value)
+
+
 class ReviewForm(forms.Form):
     comment = forms.CharField(
         max_length=2000,
@@ -454,6 +474,50 @@ class ReviewForm(forms.Form):
     needs_change_comment = forms.CharField(
         label=_lazy("Comment:"), widget=forms.Textarea(), required=False
     )
+
+    publish_at = WallClockDateTimeField(
+        label=_lazy("Publish at"),
+        required=False,
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"],
+        widget=forms.DateTimeInput(
+            format="%Y-%m-%dT%H:%M", attrs={"type": "datetime-local", "step": "1800"}
+        ),
+    )
+
+    def __init__(self, *args, timezone: ZoneInfo, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.timezone = timezone
+        # L10n: {timezone} is a timezone name, such as Europe/Berlin.
+        self.fields["publish_at"].help_text = _(
+            "Leave empty to publish now. Times are in {timezone}; articles go live on the hour "
+            "and half hour."
+        ).format(timezone=timezone)
+
+    def clean_publish_at(self):
+        naive = self.cleaned_data["publish_at"]
+        if naive is None:
+            return None
+
+        if naive.minute not in (0, 30) or naive.second or naive.microsecond:
+            raise forms.ValidationError(PUBLISH_AT_NOT_ON_SLOT)
+
+        try:
+            publish_at = naive.replace(tzinfo=self.timezone).astimezone(UTC)
+        except OverflowError:
+            raise forms.ValidationError(self.fields["publish_at"].error_messages["invalid"])
+
+        is_ambiguous = (
+            naive.replace(tzinfo=self.timezone, fold=0).utcoffset()
+            != naive.replace(tzinfo=self.timezone, fold=1).utcoffset()
+        )
+        is_nonexistent = publish_at.astimezone(self.timezone).replace(tzinfo=None) != naive
+        if is_ambiguous or is_nonexistent:
+            raise forms.ValidationError(PUBLISH_AT_DST_CHANGE)
+
+        if publish_at <= timezone.now():
+            raise forms.ValidationError(PUBLISH_AT_NOT_IN_FUTURE)
+
+        return publish_at
 
 
 class AddContributorForm(forms.Form):

@@ -34,6 +34,7 @@ from kitsune.wiki.tests import (
     DocumentFactory,
     RevisionAnchorRecordFactory,
     RevisionFactory,
+    run_badge_checks_now,
 )
 from kitsune.wiki.tests.test_parser import doc_rev_parser
 
@@ -233,6 +234,7 @@ class TestDocumentRenderCascades(TestCase):
         self.assertEqual(cache.get_many(keys), {})
 
 
+@run_badge_checks_now
 class TestMaybeAwardBadge(TestCase):
     """Test that the annual wiki badges are awarded correctly."""
 

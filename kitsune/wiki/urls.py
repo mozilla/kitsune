@@ -42,6 +42,11 @@ document_patterns = [
         views.delete_revision,
         name="wiki.delete_revision",
     ),
+    re_path(
+        r"^revision/(?P<revision_id>\d+)/cancel-schedule$",
+        views.cancel_revision_schedule,
+        name="wiki.cancel_revision_schedule",
+    ),
     # Delete a document
     re_path(r"^delete", views.delete_document, name="wiki.document_delete"),
     # Manage contributors

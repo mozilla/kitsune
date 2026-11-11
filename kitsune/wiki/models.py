@@ -620,7 +620,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
         """Return latest ready-to-localize revision if there is one,
         else the latest approved revision if there is one,
         else the latest unrejected (unreviewed) revision if there is one,
-        else None.
+        else None. Revisions held for scheduled publishing are never returned.
 
         include_rejected -- If true, fall back to the latest rejected
             revision if all else fails.
@@ -630,14 +630,15 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
         rev = self.latest_localizable_revision
         if not rev or not self.is_localizable:
             rejected = Q(is_approved=False, reviewed__isnull=False)
+            unscheduled = self.revisions.filter(schedule__isnull=True)
 
             # Try latest approved revision
             # or not approved revs. Try unrejected
             # or not unrejected revs. Maybe fall back to rejected
             rev = (
                 self.revisions.filter(is_approved=True).last()
-                or self.revisions.exclude(rejected).last()
-                or (self.revisions.last() if include_rejected else None)
+                or unscheduled.exclude(rejected).last()
+                or (unscheduled.last() if include_rejected else None)
             )
         return rev
 
@@ -1175,6 +1176,31 @@ class Revision(ModelBase, AbstractRevision):
         if hasattr(self, "anchor_record"):
             return self.anchor_record.map
         return None
+
+
+class ScheduledRevision(ModelBase):
+    """A reviewer's decision to approve a revision at `publish_at`; the revision stays unreviewed."""
+
+    revision = models.OneToOneField(Revision, on_delete=models.CASCADE, related_name="schedule")
+    # Indexed by the one-per-document constraint.
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name="+", db_index=False
+    )
+    publish_at = models.DateTimeField(db_index=True)
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="+")
+    comment = models.TextField(blank=True)
+    significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
+    is_ready_for_localization = models.BooleanField(default=False)
+    needs_change = models.BooleanField(default=False)
+    needs_change_comment = models.CharField(max_length=500, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["document"], name="wiki_scheduledrevision_one_per_document"
+            )
+        ]
 
 
 class DraftRevision(ModelBase, AbstractRevision):  # type: ignore

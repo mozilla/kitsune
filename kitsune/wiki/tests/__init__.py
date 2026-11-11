@@ -1,3 +1,7 @@
+from datetime import timedelta
+from types import SimpleNamespace
+from unittest.mock import patch
+
 import factory
 from django.conf import settings
 from django.template.defaultfilters import slugify
@@ -23,6 +27,7 @@ from kitsune.wiki.models import (
     Locale,
     Revision,
     RevisionAnchorRecord,
+    ScheduledRevision,
 )
 
 
@@ -158,6 +163,27 @@ class RedirectRevisionFactory(RevisionFactory):
     )
     content = factory.LazyAttribute(lambda o: REDIRECT_CONTENT % o.target.title)
     is_approved = True
+
+
+def next_half_hour():
+    now = timezone.now().replace(second=0, microsecond=0)
+    return now + timedelta(minutes=30 - now.minute % 30)
+
+
+# TestCase never commits, so run the badge checks right away, as autocommit does.
+run_badge_checks_now = patch(
+    "kitsune.wiki.badges.transaction", SimpleNamespace(on_commit=lambda func: func())
+)
+
+
+class ScheduledRevisionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ScheduledRevision
+
+    revision = factory.SubFactory(RevisionFactory)
+    document = factory.SelfAttribute("revision.document")
+    publish_at = factory.LazyFunction(next_half_hour)
+    reviewer = factory.SubFactory(UserFactory)
 
 
 class DraftRevisionFactory(factory.django.DjangoModelFactory):

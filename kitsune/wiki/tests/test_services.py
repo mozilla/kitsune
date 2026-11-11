@@ -22,6 +22,7 @@ from kitsune.wiki.tests import (
     DeferredRevisionFactory,
     DocumentFactory,
     RevisionFactory,
+    ScheduledRevisionFactory,
 )
 
 APPROVED_MSG = "Automatically approved because it was not reviewed within 72 hours."
@@ -686,6 +687,21 @@ class TranslationQueryBuilderTests(TestCase):
         # Should only find the old one
         self.assertEqual(results.count(), 1)
         self.assertEqual(results.first().id, rev_old.id)
+
+    @override_settings(HYBRID_ENABLED_LOCALES=["es"], REVIEW_GRACE_PERIOD=72)
+    def test_hybrid_auto_publish_skips_held_revisions(self):
+        ordinary, held = (
+            RevisionFactory(
+                document=DocumentFactory(parent=english.document, locale="es"),
+                based_on=english,
+                creator=self.sumo_bot,
+                created=timezone.now() - timedelta(hours=80),
+            )
+            for english in (self.rev1_en, self.rev3_en)
+        )
+        ScheduledRevisionFactory(revision=held)
+
+        self.assertQuerySetEqual(self.query_builder.get_pending_translations(), [ordinary])
 
 
 @override_settings(
