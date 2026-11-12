@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyException
@@ -190,10 +191,11 @@ def chat_product_slugs(company, *, include_expired=False) -> set[str]:
 
 
 def revoke_company_chat_tickets(company, product_slugs, using=None) -> None:
-    """Queue tagging for the active members of the company or its departments."""
+    """Queue tagging for the active members and leaders of the company or its departments."""
+    tree = GroupProfile.objects.get_tree(company)
     members = (
         User.objects.db_manager(using)
-        .filter(groups__profile__in=GroupProfile.objects.get_tree(company), is_active=True)
+        .filter(Q(groups__profile__in=tree) | Q(groupprofile__in=tree), is_active=True)
         .select_related("profile")
         .distinct()
     )

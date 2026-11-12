@@ -745,7 +745,7 @@ class CompanySupportSectionTests(TestCase):
                 200,
                 (covered, True),
             ),
-            ("company leader", self.leader(self.company), self.company, 200, (covered, False)),
+            ("company leader", self.leader(self.company), self.company, 200, (covered, True)),
             ("root leader", self.leader(self.root), self.company, 200, (covered, False)),
             ("staff", self.user(self.root, is_staff=True), self.company, 200, (covered, False)),
             ("view-only", auditor, self.company, 200, None),
@@ -850,7 +850,7 @@ class CompanySupportSectionTests(TestCase):
             ("department member", self.user(self.department), self.company),
             ("member without coverage", self.user(self.expired_company), self.expired_company),
             ("root-only member", self.user(self.root), None),
-            ("company leader", self.leader(self.company), None),
+            ("company leader", self.leader(self.company), self.company),
             ("anonymous", AnonymousUser(), None),
         ):
             with self.subTest(persona=persona):

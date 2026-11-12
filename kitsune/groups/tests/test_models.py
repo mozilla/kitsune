@@ -868,10 +868,11 @@ class LeadershipVisibilityTests(TestCase):
 
     def test_parent_leader_without_membership_sees_children(self):
         """Parent leader (not member) can see private children."""
-        # Leader is NOT a member of parent group
-        self.assertNotIn(self.parent_leader, self.parent.group.user_set.all())
+        leader = UserFactory()
+        # The leaders manager adds membership, so model leadership saved without it directly.
+        GroupProfile.leaders.through.objects.create(groupprofile=self.parent, user=leader)
 
-        visible = GroupProfile.objects.visible(self.parent_leader)
+        visible = GroupProfile.objects.visible(leader)
 
         # Should see parent (leader)
         self.assertIn(self.parent, visible)

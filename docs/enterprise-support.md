@@ -23,15 +23,18 @@ professional-support (root, ENTERPRISE_GROUP_SLUG)
 ```
 
 Companies are the root's direct children; departments are any deeper groups. A user
-belongs to at most one company, through the company group or any of its departments.
+belongs to at most one company, by membership or leadership of the company group or any of
+its departments.
 
 Behavior:
 
 - Several departments of one company are allowed. Company and root membership are never
   added implicitly, and staff and superusers get no exception.
-- Root membership, leadership, and staff status don't make anyone a company member.
-- Member and leader controls, admin membership changes, and leader assignment (which also
-  grants membership) enforce the one-company rule; a conflicting batch is rejected whole.
+- Root membership, root leadership, and staff status don't make anyone a company member.
+- Leaders are also members of the group they lead: adding a leader adds the membership.
+  Removing the membership keeps the leadership, which still counts.
+- Member and leader controls, admin membership changes, and leader assignment enforce the
+  one-company rule, counting leadership; a conflicting batch is rejected whole.
   Moving groups or changing their Django groups is refused if it would put a user in two
   companies. Errors never name another private company.
 
@@ -119,18 +122,18 @@ Behavior:
 
 Revocation triggers:
 
-- Leaving the company: removal from the company or a department group, deletion of their
-  group, their group's Django group changed in admin, or their department moving out of
-  the company. All of the user's chats are tagged. A user still in the company through
-  another group isn't tagged.
+- Leaving the company: removal from the company or a department group or its leaders,
+  deletion of their group, their group's Django group changed in admin, or their department
+  moving out of the company. All of the user's chats are tagged. A user still in the
+  company through another group or leadership isn't tagged.
 - Account deactivation or deletion: all of the user's chats are tagged.
 - A contract or coverage change that leaves a product without chat (the contract leaving
   active status or no longer covering today, or a coverage's chat turned off): every active
-  member of the company and its departments has that product's chats tagged.
+  member and leader of the company and its departments has that product's chats tagged.
 - The daily `revoke_expired_chat` task, for chat coverage that ended in the past week, with
   the same effect; missed runs catch up.
-- Archiving a product: every active member of a company whose effective coverage of it
-  includes chat, and of its departments, has that product's chats tagged.
+- Archiving a product: every active member and leader of a company whose effective coverage
+  of it includes chat, and of its departments, has that product's chats tagged.
 
 Gotchas:
 
@@ -158,8 +161,8 @@ Gotchas:
 
 | Viewer | Sees |
 | --- | --- |
-| Company or department member | Covered products with access to the shared form (not in read-only mode), ticket history link |
-| Company leader, root leader, superuser, non-member staff | Covered products without the form, ticket history link |
+| Company or department member or leader | Covered products with access to the shared form (not in read-only mode), ticket history link |
+| Root leader, superuser, non-member staff | Covered products without the form, ticket history link |
 | Anyone else | Nothing |
 
 Without coverage it says the company has no active support coverage. It never shows
@@ -274,12 +277,12 @@ Behavior:
 
 ## Membership mirroring
 
-SUMO membership is the source of truth. Every company membership change made through group
-management, admin, or the ORM's many-to-many managers (including group creation, deletion,
-reassignment, moves, and inactive-member cleanup) queues
-`kitsune.groups.tasks.sync_enterprise_zendesk_membership(user_id)` after commit for each
-affected user; rolled-back changes queue nothing. The task reconciles current state, not the
-triggering change.
+SUMO membership and leadership are the source of truth. Every company membership or
+leadership change made through group management, admin, or the ORM's many-to-many managers
+(including group creation, deletion, reassignment, moves, and inactive-member cleanup)
+queues `kitsune.groups.tasks.sync_enterprise_zendesk_membership(user_id)` after commit for
+each affected user; rolled-back changes queue nothing. The task reconciles current state,
+not the triggering change.
 
 Behavior:
 
@@ -319,12 +322,12 @@ Recovery:
   task's `removed_organization_ids`, if any. Deleted account: requeue
   `remove_stale_zendesk_memberships` with the failed task's arguments. If they're gone,
   remove the membership in Zendesk Admin Center.
-- To reconcile all current members after a deployment or configuration change, run
-  `docker compose run --rm web ./manage.py sync_enterprise_zendesk_memberships`. It syncs
-  each member once, including department-only members, sequentially without queuing jobs,
-  reports each failure, continues, and exits unsuccessfully if any failed; fix and rerun.
-  Read-only mode refuses it. It skips root-only and former members, so departures that were
-  never synced aren't cleaned up; without a root it reports zero members.
+- To reconcile all current members and leaders after a deployment or configuration change,
+  run `docker compose run --rm web ./manage.py sync_enterprise_zendesk_memberships`. It
+  syncs each one once, including department-only members and leaders, sequentially without
+  queuing jobs, reports each failure, continues, and exits unsuccessfully if any failed; fix
+  and rerun. Read-only mode refuses it. It skips root-only and former members, so departures
+  that were never synced aren't cleaned up; without a root it reports zero members.
 
 ## Testing
 

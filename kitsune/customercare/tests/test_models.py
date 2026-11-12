@@ -316,7 +316,11 @@ class AccessibleToTests(TestCase):
                 {self.company_ticket, self.department_ticket},
             ),
             ("company leader", self.leader(self.company), {self.company_ticket}),
-            ("department leader", self.leader(self.department), {self.department_ticket}),
+            (
+                "department leader",
+                self.leader(self.department),
+                {self.company_ticket, self.department_ticket},
+            ),
             (
                 "root leader",
                 self.leader(self.root),
