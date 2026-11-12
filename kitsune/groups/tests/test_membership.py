@@ -68,6 +68,10 @@ class MembershipFixtures:
             operation()
         self.assertEqual(caught.exception.code, "company_conflict")
 
+    def lead_without_membership(self, profile, user):
+        # Leadership kept after its membership was removed; the leaders manager adds both.
+        GroupProfile.leaders.through.objects.create(groupprofile=profile, user=user)
+
 
 @override_settings(ENTERPRISE_GROUP_SLUG="membership-enterprise-root")
 class EnterpriseMembershipTests(MembershipFixtures, TestCase):
@@ -151,18 +155,58 @@ class EnterpriseMembershipTests(MembershipFixtures, TestCase):
         self.root.leaders.add(staff)
         staff.groups.add(self.team_a.group)
         self.assert_company_conflict(lambda: staff.groups.add(self.company_b.group))
-        self.assertEqual(self.memberships(staff), {self.team_a.group_id})
+        self.assertEqual(self.memberships(staff), {self.root.group_id, self.team_a.group_id})
+
+    def test_leaders_become_members_of_the_group_they_lead(self):
+        for direction, lead in (
+            ("forward", lambda user, profile: profile.leaders.add(user)),
+            ("reverse", lambda user, profile: user.groupprofile_set.add(profile)),
+        ):
+            for profile in (self.company_a, self.team_a, self.unrelated):
+                with self.subTest(direction, profile=profile.pk):
+                    user = UserFactory()
+                    lead(user, profile)
+                    self.assertEqual(self.memberships(user), {profile.group_id})
+
+    def test_leading_another_company_is_refused(self):
+        self.user.groups.add(self.team_a.group)
+        self.assert_company_conflict(lambda: self.company_b.leaders.add(self.user))
+        self.assertEqual(self.memberships(self.user), {self.team_a.group_id})
+        self.assertFalse(self.company_b.leaders.filter(pk=self.user.pk).exists())
+
+    def test_leading_a_company_or_department_makes_a_company_member(self):
+        for profile, companies in (
+            (self.company_a, [self.company_a]),
+            (self.nested_a, [self.company_a]),
+            (self.root, []),
+            (self.unrelated, []),
+        ):
+            with self.subTest(profile=profile.pk):
+                user = UserFactory()
+                self.lead_without_membership(profile, user)
+                self.assertQuerySetEqual(
+                    GroupProfile.objects.enterprise_companies(user), companies
+                )
+
+    def test_leadership_counts_toward_the_one_company_rule(self):
+        self.lead_without_membership(self.company_b, self.user)
+        self.assert_company_conflict(lambda: self.user.groups.add(self.team_a.group))
+        self.assert_company_conflict(
+            lambda: validate_enterprise_memberships(
+                [self.user.pk], [self.team_a.group_id], replace=True
+            )
+        )
+        self.user.groups.add(self.team_b.group)
+        self.assertEqual(self.memberships(self.user), {self.team_b.group_id})
 
     def test_root_membership_leadership_and_other_trees_are_unchanged(self):
         other_company = self.child(self.unrelated)
         other_team = self.child(other_company)
         self.root.leaders.add(self.user)
-        self.company_b.leaders.add(self.user)
         profiles = (self.root, self.team_a, self.unrelated, other_company, other_team)
         self.user.groups.add(*(profile.group for profile in profiles))
         self.assertEqual(self.memberships(self.user), {profile.group_id for profile in profiles})
         self.assertTrue(self.root.leaders.filter(pk=self.user.pk).exists())
-        self.assertTrue(self.company_b.leaders.filter(pk=self.user.pk).exists())
 
     def test_legacy_conflict_blocks_new_enterprise_additions_but_not_unrelated_ones(self):
         self.add_legacy_conflict(self.user)

@@ -133,8 +133,32 @@ class ChatRevocationTests(TestCase):
             )
         revoke_expired_chat()
 
+    def lead_without_membership(self, member):
+        # Leadership kept after its membership was removed; the leaders manager adds both.
+        GroupProfile.leaders.through.objects.create(
+            groupprofile=member.department, user=member.user
+        )
+        User.groups.through.objects.filter(user=member.user).delete()
+
     def test_losing_chat_tags_the_members_chats_after_commit(self, delay):
         other_company = EnterpriseCompanyFactory()
+
+        def remove_leader(member):
+            self.lead_without_membership(member)
+            member.department.leaders.remove(member.user)
+
+        def clear_leaders(member):
+            self.lead_without_membership(member)
+            member.department.leaders.clear()
+
+        def deactivate_leader(member):
+            self.lead_without_membership(member)
+            save(member.user, is_active=False)
+
+        def delete_leader(member):
+            self.lead_without_membership(member)
+            delete_user_pipeline(member.user)
+
         for name, change in (
             ("leaving the company", lambda m: m.user.groups.remove(m.department.group)),
             ("removal by the group", lambda m: m.department.group.user_set.remove(m.user)),
@@ -165,9 +189,29 @@ class ChatRevocationTests(TestCase):
             ("archiving the product", lambda m: save(m.coverage.product, is_archived=True)),
             ("the contract running out", self.expire),
             ("the contract running out during skipped runs", lambda m: self.expire(m, days_ago=7)),
+            ("removing a leader who isn't a member", remove_leader),
+            ("clearing the department's leaders", clear_leaders),
+            ("deactivating a leader who isn't a member", deactivate_leader),
+            ("deleting a leader who isn't a member", delete_leader),
         ):
             with self.subTest(name), transaction.atomic():
                 member = self.member()
+                self.assertEqual(self.tagged(delay, change, member), {member.zendesk_id})
+                transaction.set_rollback(True)
+
+    def test_company_wide_losses_tag_leaders_who_are_not_members(self, delay):
+        for name, change in (
+            (
+                "suspending the contract",
+                lambda m: save(m.contract, status=SupportContract.Status.SUSPENDED),
+            ),
+            ("turning chat off", lambda m: save(m.coverage, includes_chat=False)),
+            ("archiving the product", lambda m: save(m.coverage.product, is_archived=True)),
+            ("the contract running out", self.expire),
+        ):
+            with self.subTest(name), transaction.atomic():
+                member = self.member()
+                self.lead_without_membership(member)
                 self.assertEqual(self.tagged(delay, change, member), {member.zendesk_id})
                 transaction.set_rollback(True)
 
@@ -188,6 +232,10 @@ class ChatRevocationTests(TestCase):
 
         def leave_department_but_stay_in_company(member):
             member.user.groups.add(member.contract.company.group)
+            leave(member)
+
+        def leave_department_but_still_lead_it(member):
+            member.department.leaders.add(member.user)
             leave(member)
 
         def delete_one_of_two_departments(member):
@@ -221,6 +269,11 @@ class ChatRevocationTests(TestCase):
                 "leaving a department while still in the company",
                 {},
                 leave_department_but_stay_in_company,
+            ),
+            (
+                "leaving a department while still leading it",
+                {},
+                leave_department_but_still_lead_it,
             ),
             ("deleting one of two departments", {}, delete_one_of_two_departments),
             ("removing an inactive member", {}, remove_inactive_member),

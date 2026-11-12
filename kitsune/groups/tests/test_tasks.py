@@ -1,5 +1,5 @@
 from datetime import timedelta
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from django.test import override_settings
 from django.utils import timezone
@@ -192,21 +192,24 @@ class RemoveInactiveUsersTests(TestCase):
         self.assertTrue(self.group_profile.group.user_set.filter(pk=user.pk).exists())
 
     @override_settings(ENTERPRISE_GROUP_SLUG="cleanup-enterprise")
-    def test_bulk_cleanup_enqueues_only_enterprise_members_after_commit(self):
+    def test_bulk_cleanup_enqueues_only_enterprise_members_and_leaders_after_commit(self):
         root = GroupProfileFactory(slug="cleanup-enterprise")
         company = EnterpriseCompanyFactory(root=root)
         department = DepartmentFactory(company=company)
-        member, root_member, unrelated = UserFactory.create_batch(3)
+        member, leader, root_member, unrelated = UserFactory.create_batch(4)
         member.groups.add(company.group, department.group)
+        # Leadership kept after its membership was removed; the leaders manager adds both.
+        GroupProfile.leaders.through.objects.create(groupprofile=department, user=leader)
         root_member.groups.add(root.group)
         unrelated.groups.add(self.group_profile.group)
-        for user in (member, root_member, unrelated):
+        for user in (member, leader, root_member, unrelated):
             self._deactivate(user, days_ago=181)
 
         with patch("kitsune.groups.tasks.sync_enterprise_zendesk_membership.delay") as enqueue:
             with self.captureOnCommitCallbacks(execute=True):
                 remove_inactive_users_from_groups()
                 enqueue.assert_not_called()
-            enqueue.assert_called_once_with(member.pk)
+            self.assertCountEqual(enqueue.call_args_list, [call(member.pk), call(leader.pk)])
+        self.assertFalse(department.leaders.filter(pk=leader.pk).exists())
         self.assertFalse(company.group.user_set.filter(pk=member.pk).exists())
         self.assertFalse(department.group.user_set.filter(pk=member.pk).exists())

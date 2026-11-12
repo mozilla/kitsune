@@ -532,9 +532,7 @@ def add_leader(request, group_slug):
     if form.is_valid():
         try:
             with transaction.atomic():
-                users = form.cleaned_data["users"]
-                prof.group.user_set.add(*users)
-                prof.leaders.add(*users)
+                prof.leaders.add(*form.cleaned_data["users"])
         except ValidationError as error:
             form.add_error("users", error)
         else:

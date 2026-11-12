@@ -169,20 +169,39 @@ class EnterpriseSupportRoutingTests(TestCase):
         request.user = user if user is not None else User.objects.get(pk=self.user.pk)
         return route_support(request, product if product is not None else self.product)
 
-    def test_company_and_department_members_are_covered(self):
-        for group in (self.company.group, self.department.group):
-            with self.subTest(group=group):
-                self.user.groups.set([group])
-                self.assertEqual(self.route().enterprise_support, EnterpriseSupport(self.coverage))
+    def lead_without_membership(self, profile, user):
+        # Leadership kept after its membership was removed; the leaders manager adds both.
+        GroupProfile.leaders.through.objects.create(groupprofile=profile, user=user)
+
+    def test_company_and_department_members_and_leaders_are_covered(self):
+        for profile in (self.company, self.department):
+            for name, join in (
+                ("member", lambda user, profile=profile: user.groups.add(profile.group)),
+                (
+                    "leader without membership",
+                    lambda user, profile=profile: self.lead_without_membership(profile, user),
+                ),
+            ):
+                with self.subTest(name, profile=profile.slug):
+                    user = UserFactory()
+                    join(user)
+                    self.assertEqual(
+                        self.route(user=user).enterprise_support, EnterpriseSupport(self.coverage)
+                    )
 
     def test_root_members_and_leaders_are_not_company_members(self):
         root = GroupProfile.objects.get_ancestors(self.company).get(depth=1)
-        for groups, leaders in (([], []), ([root.group], []), ([], [self.user])):
-            with self.subTest(groups=groups, leaders=leaders):
-                self.user.groups.set(groups)
-                self.company.leaders.set(leaders)
+        for name, join in (
+            ("no groups", lambda user: None),
+            ("root member", lambda user: user.groups.add(root.group)),
+            ("root leader", lambda user: self.lead_without_membership(root, user)),
+        ):
+            with self.subTest(name):
+                user = UserFactory()
+                join(user)
                 self.assertEqual(
-                    self.route().enterprise_support, EnterpriseSupport(reason="no_company")
+                    self.route(user=user).enterprise_support,
+                    EnterpriseSupport(reason="no_company"),
                 )
 
     @override_settings(ENTERPRISE_GROUP_SLUG="missing-enterprise-root")

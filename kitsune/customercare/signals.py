@@ -46,7 +46,7 @@ def on_save_update_zendesk_user(sender, instance, update_fields=None, **kwargs):
 @receiver(pre_delete, sender=User, dispatch_uid="customercare.signals.on_user_deletion.User")
 def on_user_deletion(sender, instance, **kwargs):
     # Django sends this inside the delete's transaction, before the profile is gone.
-    if had_chat(GroupProfile.objects.containing(instance)):
+    if had_chat(GroupProfile.objects.enterprise_companies(instance)):
         revoke_chat_tickets(instance, using=kwargs.get("using"))
 
 
@@ -65,7 +65,7 @@ def check_deactivation(sender, instance, update_fields=None, **kwargs):
 def on_deactivation(sender, instance, **kwargs):
     # Queued after the save, so the task can't read the user before it's saved.
     if getattr(instance, "_is_being_deactivated", False) and had_chat(
-        GroupProfile.objects.containing(instance)
+        GroupProfile.objects.enterprise_companies(instance)
     ):
         revoke_chat_tickets(instance, using=kwargs.get("using"))
 

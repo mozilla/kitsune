@@ -196,6 +196,7 @@ class GroupProfileAdmin(TreeAdmin):
             raise forms.ValidationError(
                 "Root groups must have at least one leader. Please assign a leader before saving."
             )
+        # Unchanged leaders send no signal when the profile moves to another group.
         form.instance.group.user_set.add(*form.instance.leaders.all())
 
 

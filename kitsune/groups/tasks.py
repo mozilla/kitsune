@@ -301,16 +301,26 @@ def remove_inactive_users_from_groups():
         )
 
     enterprise_user_ids = list(
-        User.groups.through.objects.filter(
-            user_id__in=removable_user_ids,
-            group_id__in=enterprise_profiles().values("group_id"),
-        )
-        .values_list("user_id", flat=True)
-        .distinct()
+        {
+            *User.groups.through.objects.filter(
+                user_id__in=removable_user_ids,
+                group_id__in=enterprise_profiles().values("group_id"),
+            ).values_list("user_id", flat=True),
+            *GroupProfile.leaders.through.objects.filter(
+                user_id__in=removable_user_ids, groupprofile__in=enterprise_profiles()
+            ).values_list("user_id", flat=True),
+        }
     )
     organization_ids = tuple(
         company_organization_ids(
-            User.groups.through.objects.filter(user_id__in=enterprise_user_ids).values("group_id")
+            {
+                *User.groups.through.objects.filter(user_id__in=enterprise_user_ids).values_list(
+                    "group_id", flat=True
+                ),
+                *GroupProfile.leaders.through.objects.filter(
+                    user_id__in=enterprise_user_ids
+                ).values_list("groupprofile__group_id", flat=True),
+            }
         )
     )
 
