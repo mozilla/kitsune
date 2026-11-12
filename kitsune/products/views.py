@@ -14,7 +14,7 @@ from kitsune.products.models import (
     Topic,
     TopicSlugHistory,
 )
-from kitsune.products.utils import get_professional_support
+from kitsune.products.utils import get_professional_support, get_professional_support_products
 from kitsune.sumo.utils import get_aaq_context, has_support_action, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
@@ -27,13 +27,12 @@ def product_list(request):
     """The product picker page."""
     template = "products/products.html"
     products = Product.active.filter(visible=True)
-    support_company, _ = get_professional_support(request)
     return render(
         request,
         template,
         {
             "products": products,
-            "support_company": support_company,
+            "professional_support_products": get_professional_support_products(request),
         },
     )
 

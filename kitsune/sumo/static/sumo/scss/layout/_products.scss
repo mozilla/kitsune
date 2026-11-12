@@ -152,6 +152,19 @@ body.product-landing {
   }
 }
 
+// One button per product the company has support for.
+.pro-support-banner--buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: p.$spacing-sm;
+
+  @media #{p.$mq-lg} {
+    flex: 0 1 auto;
+    justify-content: flex-end;
+  }
+}
+
 .sumo-page-subheader {
   display: flex;
   flex-direction: column-reverse;

@@ -112,7 +112,7 @@
 {%- endmacro %}
 
 {% macro professional_support_banner(extra_class=None) %}
-{% if support_company and not settings.READ_ONLY %}
+{% if professional_support_products and not settings.READ_ONLY %}
   <section class="support-callouts pro-support-banner mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
     <div class="card card--ribbon is-pro-support heading-is-one-line">
       <div class="card--details">
@@ -128,22 +128,34 @@
           {# L10n: A header, displayed to members of a company that has dedicated support from Mozilla. #}
           {{ _("Your company’s support") }}
         </h3>
+        {% set single_product = professional_support_products|length == 1 %}
         <p class="card--desc">
-          {# L10n: Displayed to members of a company that has dedicated support from Mozilla. The button below leads to the support section of their company's page. #}
-          {{ _("Visit your company’s support page to contact our team and access your support services.") }}
+          {% if single_product %}
+            {# L10n: Displayed to members of a company that has dedicated support from Mozilla for one product. {product} is the product name. The button below leads to that product's page. #}
+            {{ _("Visit the {product} page to contact our team and access your support services.")|f(product=pgettext('DB: products.Product.title', professional_support_products[0].title)) }}
+          {% else %}
+            {# L10n: Displayed to members of a company that has dedicated support from Mozilla for several products. Each product has its own button below, which leads to that product's page. #}
+            {{ _("Select a supported product to contact our team and access your support services.") }}
+          {% endif %}
         </p>
-        {# An explicit link_url stops analytics.js from sending the href, which names the company. #}
-        <a class="sumo-button primary-button button-lg"
-          href="{{ url('groups.profile', support_company.slug) }}#your-support"
-          data-event-name="link_click"
-          data-event-parameters='{
-            "link_name": "pro-support-banner.support-page",
-            "link_detail": "your-support",
-            "link_url": "#your-support"
-          }'>
-          {# L10n: A button that leads to the support section of the user's company page. #}
-          {{ _("Access Support") }}
-        </a>
+        <div class="pro-support-banner--buttons">
+          {% for covered_product in professional_support_products %}
+            <a class="sumo-button primary-button button-lg"
+              href="{{ url('products.product', covered_product.slug) }}"
+              data-event-name="link_click"
+              data-event-parameters='{
+                "link_name": "pro-support-banner.product-page",
+                "link_detail": "{{ covered_product.slug }}"
+              }'>
+              {% if single_product %}
+                {# L10n: A button that leads to the page of the product the user's company has dedicated support for. #}
+                {{ _("Access Support") }}
+              {% else %}
+                {{ pgettext('DB: products.Product.title', covered_product.title) }}
+              {% endif %}
+            </a>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </section>

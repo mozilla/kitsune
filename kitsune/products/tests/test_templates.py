@@ -600,11 +600,12 @@ class ProfessionalSupportPresentationTests(TestCase):
             forum_config=AAQConfigFactory(enabled_locales=[locale]),
             default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
         )
-        self.vpn = ProductFactory()
+        # Fixed display orders keep the banner's buttons in a known order.
+        self.vpn = ProductFactory(display_order=1)
         ProductSupportConfigFactory(
             product=self.vpn, zendesk_config=ZendeskConfigFactory(), subscription_only=True
         )
-        self.unconfigured = ProductFactory()
+        self.unconfigured = ProductFactory(display_order=2)
         TopicFactory(slug="getting-started", products=[self.unconfigured])
 
         self.company = EnterpriseCompanyFactory()
@@ -645,8 +646,9 @@ class ProfessionalSupportPresentationTests(TestCase):
                 branded = "Firefox Professional Support" in block.text()
                 blocks.append((block("h2").text(), links, branded))
             else:
-                button = block("a.sumo-button")
-                blocks.append((block(".card--title").text(), button.text(), button.attr("href")))
+                buttons = block("a.sumo-button").items()
+                links = [(a.text(), a.attr("href")) for a in buttons]
+                blocks.append((block(".card--title").text(), links))
         return blocks
 
     def analytics_events(self, doc):
@@ -663,12 +665,13 @@ class ProfessionalSupportPresentationTests(TestCase):
     def step3(self, product):
         return reverse("questions.aaq_step3", args=[product.slug])
 
-    def banner(self, company):
-        return (
-            "Your company’s support",
-            "Access Support",
-            reverse("groups.profile", args=[company.slug]) + "#your-support",
-        )
+    def banner(self, *products):
+        """One product: an "Access Support" button. Several: a button per product name."""
+        links = []
+        for product in products:
+            text = "Access Support" if len(products) == 1 else product.title
+            links.append((text, reverse("products.product", args=[product.slug])))
+        return ("Your company’s support", links)
 
     def section(self, product, company, *, branded=False, get_started=False):
         links = [("Contact support", self.step3(product))]
@@ -679,9 +682,11 @@ class ProfessionalSupportPresentationTests(TestCase):
         return ("Get help", links, branded)
 
     def test_presentation_per_persona(self):
-        forum = ("Still need help?", "Ask the Community", self.step3(self.enterprise))
-        product_ticket = ("Still need help?", "Contact Support", self.step3(self.vpn))
-        sales = ("Need dedicated support?", "Talk to an Expert", self.sales_url)
+        forum = ("Still need help?", [("Ask the Community", self.step3(self.enterprise))])
+        product_ticket = ("Still need help?", [("Contact Support", self.step3(self.vpn))])
+        sales = ("Need dedicated support?", [("Talk to an Expert", self.sales_url)])
+        company_banner = self.banner(self.vpn, self.unconfigured)
+        enterprise_banner = self.banner(self.enterprise)
         uncovered = {
             self.enterprise: (True, [forum]),
             self.vpn: (False, []),
@@ -689,14 +694,13 @@ class ProfessionalSupportPresentationTests(TestCase):
         }
         subscriber = {**uncovered, self.vpn: (False, [product_ticket])}
         covered = {
-            self.enterprise: (True, [self.banner(self.company), forum]),
+            self.enterprise: (True, [company_banner, forum]),
             self.vpn: (True, [self.section(self.vpn, self.company)]),
             self.unconfigured: (
                 True,
                 [self.section(self.unconfigured, self.company, get_started=True)],
             ),
         }
-        enterprise_banner = self.banner(self.enterprise_company)
         enterprise_covered = {
             self.enterprise: (
                 True,
@@ -710,17 +714,16 @@ class ProfessionalSupportPresentationTests(TestCase):
             for company in (self.company, self.enterprise_company, self.expired_company)
         ]
 
-        company_banner = [self.banner(self.company)]
         for persona, user, pages, banner in (
             ("anonymous", None, {**uncovered, self.enterprise: (True, [sales])}, []),
             ("non-member", self.user(), uncovered, []),
-            ("company member", self.user(self.company), covered, company_banner),
+            ("company member", self.user(self.company), covered, [company_banner]),
             ("individual subscriber", self.user(subscribed=True), subscriber, []),
             (
                 "both entitlements",
                 self.user(self.company, subscribed=True),
                 covered,
-                company_banner,
+                [company_banner],
             ),
             ("expired coverage", self.user(self.expired_company, subscribed=True), subscriber, []),
             (
