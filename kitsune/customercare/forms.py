@@ -48,15 +48,15 @@ URGENCY_CHOICES = [
     ("", "Select urgency"),
     (
         "normal",
-        "Normal – Non-critical Firefox issue, minor defect, or integration/deployment question",
+        "SEV3 (Normal) – Minor issue; no urgent business impact",
     ),
     (
         "high",
-        "High – Key functionality is degraded for multiple users or teams, but a workaround exists",
+        "SEV2 (High) – Major degradation; workaround available",
     ),
     (
         "critical",
-        "Critical – Production outage, critical blockage, or material security risk with no workaround",
+        "SEV1 (Critical) – Production outage or security risk",
     ),
 ]
 
@@ -92,9 +92,9 @@ POLICY_DISTRIBUTION_TAGS = {
 }
 
 URGENCY_TAGS = {
-    "normal": "seg-pri-normal",
-    "high": "seg-pri-high",
-    "critical": "seg-pri-critical",
+    "normal": "seg-sev3",
+    "high": "seg-sev2",
+    "critical": "seg-sev1",
 }
 
 
