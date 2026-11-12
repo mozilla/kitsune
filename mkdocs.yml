@@ -80,6 +80,7 @@ nav:
         - classifier.md
         - elastic_search.md
         - retrieval.md
+        - kb-audiences.md
         - frontend.md
         - svelte.md
         - browser_permissions.md
