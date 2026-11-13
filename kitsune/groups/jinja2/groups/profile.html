@@ -198,9 +198,18 @@
 
     {# Group Leaders section #}
     <div class="group-section" id="group-leaders">
-      <div class="section-heading">
-        <h2>{{ _('Group leaders') }}</h2>
-      </div>
+      {% if is_enterprise %}
+        <div class="section-heading">
+          {# L10n: Heading on an enterprise company or department page, above the people who are its main support contacts. #}
+          <h2>{{ _('Primary support contacts') }}</h2>
+        </div>
+        {# L10n: Shown under the "Primary support contacts" heading. Translate "leaders" and "members" the same way as "Leaders", "Leader" and "Members" elsewhere on this page. #}
+        <p class="section-description">{{ _('The group’s leaders. They can manage members and contact support.') }}</p>
+      {% else %}
+        <div class="section-heading">
+          <h2>{{ _('Group leaders') }}</h2>
+        </div>
+      {% endif %}
 
       {% if leaders %}
       <ul class="users leaders">
@@ -220,9 +229,18 @@
 
     {# Group Members section #}
     <div class="group-section" id="group-members">
-      <div class="section-heading">
-        <h2>{{ _('Group members') }}</h2>
-      </div>
+      {% if is_enterprise %}
+        <div class="section-heading">
+          {# L10n: Heading on an enterprise company or department page, above all the people who can contact support for it. #}
+          <h2>{{ _('Secondary support contacts') }}</h2>
+        </div>
+        {# L10n: Shown under the "Secondary support contacts" heading. Translate "members" and "leaders" the same way as "Members", "Leaders" and "Leader" elsewhere on this page. #}
+        <p class="section-description">{{ _('The group’s members, including leaders. They can contact support.') }}</p>
+      {% else %}
+        <div class="section-heading">
+          <h2>{{ _('Group members') }}</h2>
+        </div>
+      {% endif %}
 
       {% if members %}
       <ul class="users members">
