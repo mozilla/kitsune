@@ -2,6 +2,7 @@ import json
 
 from django import forms
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 
 from kitsune.products.models import Product, Topic
 from kitsune.wiki.models import Document
@@ -80,3 +81,25 @@ class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
         return render_to_string(
             "wiki/includes/related_docs_widget.html", {"related_documents": related_documents}
         )
+
+
+class AudiencesWidget(forms.SelectMultiple):
+    """Knowledge base picker that groups options into public and private and marks each one."""
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        # ModelChoiceIteratorValue carries the Audience, so no extra query per option.
+        if audience := getattr(value, "instance", None):
+            option["attrs"]["data-public"] = "true" if audience.is_public else "false"
+        return option
+
+    def optgroups(self, name, value, attrs=None):
+        public, private = [], []
+        for _group, options, _index in super().optgroups(name, value, attrs):
+            for option in options:
+                is_public = option["attrs"].get("data-public") == "true"
+                (public if is_public else private).append(option)
+        groups = ((_("Public"), public), (_("Private"), private))
+        return [
+            (label, options, index) for index, (label, options) in enumerate(groups) if options
+        ]

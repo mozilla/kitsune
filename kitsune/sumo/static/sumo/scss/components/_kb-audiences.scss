@@ -1,0 +1,68 @@
+// Public / Private labels on the knowledge base picker (wiki new article and edit metadata).
+// Colors are the kb-audience tokens in the themes' KB editor section.
+@use 'protocol/css/includes/lib' as p;
+
+.kb-audience-badge {
+  display: inline-block;
+  margin-inline-start: p.$spacing-xs;
+  padding: 0 p.$spacing-sm;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.6;
+  // Tom Select's chip text-shadow is drawn for white-on-blue text.
+  text-shadow: none;
+  white-space: nowrap;
+  vertical-align: middle;
+
+  &--public {
+    border-color: var(--kb-audience-badge-public-border);
+    background: var(--kb-audience-badge-public-bg);
+    color: var(--kb-audience-badge-public-text);
+  }
+
+  &--private {
+    border-color: var(--kb-audience-badge-private-border);
+    background: var(--kb-audience-badge-private-bg);
+    color: var(--kb-audience-badge-private-text);
+  }
+}
+
+.kb-audience-status {
+  display: flex;
+  gap: 0.45rem;
+  align-items: flex-start;
+  margin: 0.65rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+
+  strong {
+    font-weight: 700;
+  }
+
+  // display: flex would otherwise override the hidden attribute.
+  &[hidden] {
+    display: none;
+  }
+
+  &[data-state='public'] {
+    color: var(--kb-audience-public-text);
+  }
+
+  &[data-state='private'] {
+    color: var(--kb-audience-private-text);
+  }
+
+  &[data-state='mixed'] {
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--kb-audience-mixed-border);
+    border-radius: 5px;
+    background: var(--kb-audience-mixed-bg);
+    color: var(--kb-audience-mixed-text);
+
+    strong {
+      color: var(--kb-audience-mixed-strong);
+    }
+  }
+}

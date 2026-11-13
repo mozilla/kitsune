@@ -428,6 +428,18 @@ $dark: (
   'media-picker-item-hover-bg': var(--color-link-active-bg),
   'media-picker-item-active-border': var(--color-azure-03),
   'media-picker-item-selected-bg': var(--status-info-bg),
+  'kb-audience-public-text': var(--color-sage-01),
+  'kb-audience-private-text': var(--color-violet-02),
+  'kb-audience-badge-public-bg': var(--color-green-04),
+  'kb-audience-badge-public-border': var(--color-green-04),
+  'kb-audience-badge-public-text': var(--color-green-09),
+  'kb-audience-badge-private-bg': var(--color-blue-08),
+  'kb-audience-badge-private-border': var(--color-azure-03),
+  'kb-audience-badge-private-text': var(--color-white),
+  'kb-audience-mixed-bg': var(--status-pending-bg),
+  'kb-audience-mixed-border': rgba(246, 188, 93, 0.35),
+  'kb-audience-mixed-text': var(--status-pending-text),
+  'kb-audience-mixed-strong': #FFD58A,
 
   // CodeMirror
   'codemirror-bg': var(--color-field-bg),

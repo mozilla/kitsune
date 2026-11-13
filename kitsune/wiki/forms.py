@@ -30,7 +30,12 @@ from kitsune.wiki.models import (
     Revision,
 )
 from kitsune.wiki.tasks import add_short_links
-from kitsune.wiki.widgets import ProductsWidget, RelatedDocumentsWidget, TopicsWidget
+from kitsune.wiki.widgets import (
+    AudiencesWidget,
+    ProductsWidget,
+    RelatedDocumentsWidget,
+    TopicsWidget,
+)
 
 TITLE_REQUIRED = _lazy("Please provide a title.")
 TITLE_SHORT = _lazy(
@@ -131,6 +136,7 @@ class DocumentForm(forms.ModelForm):
 
     audiences = forms.ModelMultipleChoiceField(
         queryset=Audience.objects.order_by("name"),
+        widget=AudiencesWidget,
         required=True,
         label=_lazy("Knowledge bases"),
         help_text=_lazy(
