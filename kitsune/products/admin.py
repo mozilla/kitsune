@@ -8,6 +8,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.db.models.query import QuerySet
 from django.forms.models import BaseInlineFormSet
 from django.http import HttpRequest
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.groups.membership import lock_enterprise_hierarchy
@@ -464,6 +465,17 @@ admin.site.register(ProductSupportConfig, ProductSupportConfigAdmin)
 admin.site.register(CuratedBlock, CuratedBlockAdmin)
 
 
+class WrappedFilteredSelectMultiple(FilteredSelectMultiple):
+    """The admin's two-box picker, for fields that aren't many-to-many."""
+
+    def render(self, name, value, attrs=None, renderer=None):
+        # Without its own parent, Django's script moves the picker in front of the label.
+        return format_html(
+            '<div class="related-widget-wrapper">{}</div>',
+            super().render(name, value, attrs, renderer),
+        )
+
+
 class SupportContractForm(forms.ModelForm):
     languages = forms.MultipleChoiceField(
         choices=[
@@ -472,7 +484,7 @@ class SupportContractForm(forms.ModelForm):
             if choice[0] != settings.WIKI_DEFAULT_LANGUAGE
         ],
         required=False,
-        widget=FilteredSelectMultiple(_lazy("languages"), is_stacked=False),
+        widget=WrappedFilteredSelectMultiple(_lazy("languages"), is_stacked=False),
         help_text=_lazy("Covered users can file tickets in these languages as well as English."),
     )
 
