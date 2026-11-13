@@ -975,6 +975,9 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         ) or (
             (support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
             and (request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE)
+            and not (
+                selected.coverage and request.LANGUAGE_CODE in selected.coverage.contract.languages
+            )
         ):
             if support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM:
                 message = _(

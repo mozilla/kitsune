@@ -448,6 +448,10 @@ DB_LOCALIZE = {
         "CuratedBlock": {
             "attrs": ["message"],
         },
+        "ZendeskTopic": {
+            "attrs": ["form_title"],
+            "comments": ["L10n: A reason for contacting support, listed in the support form."],
+        },
     },
     "kbadge": {
         "Badge": {

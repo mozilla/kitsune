@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser
+from django.utils import translation
 
 from kitsune.customercare.forms import (
     POLICY_DISTRIBUTION_TAGS,
@@ -17,7 +18,7 @@ from kitsune.products.tests import (
     ZendeskTopicConfigurationFactory,
     ZendeskTopicFactory,
 )
-from kitsune.sumo.tests import TestCase
+from kitsune.sumo.tests import TestCase, translated_db_strings
 from kitsune.users.tests import UserFactory
 
 
@@ -196,6 +197,15 @@ class ZendeskFormTests(TestCase):
         self.assertIn("I forgot my password", category_topics)
         self.assertIn("My security code isn't working or is lost", category_topics)
         self.assertEqual(len(category_topics), 2)  # 2 loginless topics for Mozilla Account
+
+    def test_topic_titles_are_localized(self):
+        title = ("DB: products.ZendeskTopic.form_title", "I can't connect to Mozilla VPN")
+        german = "Ich kann keine Verbindung zu Mozilla VPN herstellen"
+        with translated_db_strings("de", {title: german}), translation.override("de"):
+            form = ZendeskForm(
+                product=self.vpn_product, zendesk_config=self.vpn_zendesk, user=self.user
+            )
+        self.assertIn(("vpn-connection-issues", german), form.fields["category"].choices)
 
     def test_form_stores_product_and_user(self):
         """Test that form stores product and user for later use."""

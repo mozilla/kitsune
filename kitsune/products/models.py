@@ -693,6 +693,7 @@ class SupportContract(ModelBase):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     starts_on = models.DateField()
     ends_on = models.DateField()
+    languages = models.JSONField(default=list, blank=True)
 
     class Meta:
         verbose_name = _lazy("Support contract")
