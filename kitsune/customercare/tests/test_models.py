@@ -125,6 +125,13 @@ class AcceptedTicketContextTests(TestCase):
         self.assertEqual(context["brand_id"], "")
         self.assertTrue(context["skip_spam"])
 
+    def test_mobile_products_use_zendesk_product_values(self):
+        for slug, product_value in (("mobile", "firefox-android"), ("ios", "firefox-ios")):
+            with self.subTest(slug=slug):
+                self.product.slug = slug
+                context = accepted_context_for(self.product, self.config)
+                self.assertEqual(context["product_value"], product_value)
+
     def test_enterprise_context_snapshots_coverage_and_company(self):
         coverage = SupportCoverageFactory(
             product=self.product,
