@@ -1,5 +1,6 @@
 import TomSelect from "tom-select";
 import "sumo/scss/components/_tom-select.scss";
+import "sumo/scss/components/_kb-audiences.scss";
 
 function intersection(setA, setB) {
   // Use this function instead of the Set.intersection method,
@@ -150,6 +151,118 @@ function handleUpdate() {
   updateProducts(allowedTopicIds, allowedProductIds);
 }
 
+// Tom Select copies each <option>'s data-* attributes onto its option data.
+const isPublicAudience = (data) => data.public === "true";
+
+function audienceBadge(data) {
+  const modifier = isPublicAudience(data) ? "public" : "private";
+  const text = isPublicAudience(data) ? gettext("Public") : gettext("Private");
+  return `<span class="kb-audience-badge kb-audience-badge--${modifier}">${text}</span>`;
+}
+
+const AUDIENCE_STATUS_ICONS = { public: "🌐", private: "🔒", mixed: "🌐" };
+const MAX_LISTED_AUDIENCES = 3;
+
+function escapeHtml(text) {
+  const span = document.createElement("span");
+  span.textContent = text;
+  return span.innerHTML;
+}
+
+const strong = (html) => `<strong>${html}</strong>`;
+
+// Joins names as a list in the page's language. Past three names it reads "A, B and 2 more".
+function formatNames(names, type, { bold = false } = {}) {
+  const shown = names.length > MAX_LISTED_AUDIENCES ? names.slice(0, MAX_LISTED_AUDIENCES - 1) : names;
+  const items = shown.map((name) => (bold ? strong(escapeHtml(name)) : escapeHtml(name)));
+  const rest = names.length - shown.length;
+  if (rest) {
+    items.push(interpolate(ngettext("%(count)s more", "%(count)s more", rest), { count: rest }, true));
+  }
+  return new Intl.ListFormat(document.documentElement.lang || undefined, { type }).format(items);
+}
+
+function sameAudiences(values, saved) {
+  return saved !== null && values.length === saved.size && values.every((value) => saved.has(value));
+}
+
+// The strings carry no markup: bold parts go in through placeholders, and names are escaped first.
+function audienceStatusHtml(state, publicNames, privateNames, isSaved) {
+  if (state === "public") {
+    return interpolate(
+      gettext("%(label)s: everyone can read this article, including signed-out visitors."),
+      { label: strong(escapeHtml(gettext("Public"))) },
+      true
+    );
+  }
+  if (state === "private") {
+    return interpolate(
+      gettext(
+        "%(label)s: only members of %(names)s, and staff, can read it. It's hidden from search and listings for everyone else."
+      ),
+      {
+        label: strong(escapeHtml(gettext("Restricted"))),
+        names: formatNames(privateNames, "disjunction"),
+      },
+      true
+    );
+  }
+  const heading = isSaved ? gettext("This article is public.") : gettext("This article will be public.");
+  const because = interpolate(
+    ngettext(
+      "Because %(names)s is public, everyone can read it, including signed-out visitors.",
+      "Because %(names)s are public, everyone can read it, including signed-out visitors.",
+      publicNames.length
+    ),
+    { names: formatNames(publicNames, "conjunction", { bold: true }) },
+    true
+  );
+  const stays = interpolate(
+    ngettext(
+      "%(names)s stays assigned but adds no restriction while a public knowledge base is selected.",
+      "%(names)s stay assigned but add no restriction while a public knowledge base is selected.",
+      privateNames.length
+    ),
+    { names: formatNames(privateNames, "conjunction", { bold: true }) },
+    true
+  );
+  return `${strong(escapeHtml(heading))} ${because} ${stays}`;
+}
+
+function updateAudienceStatus(select, status) {
+  const chosen = select.items.map((value) => select.options[value]);
+  const publicNames = chosen.filter(isPublicAudience).map((data) => data.text);
+  const privateNames = chosen.filter((data) => !isPublicAudience(data)).map((data) => data.text);
+  let state = "";
+  if (publicNames.length && privateNames.length) {
+    state = "mixed";
+  } else if (publicNames.length) {
+    state = "public";
+  } else if (privateNames.length) {
+    state = "private";
+  }
+
+  status.hidden = !state;
+  status.dataset.state = state;
+  if (!state) {
+    status.replaceChildren();
+    return;
+  }
+
+  // Only the edit page knows the saved knowledge bases; "is public" means the selection is saved.
+  const savedAttr = status.dataset.savedAudiences;
+  const saved = savedAttr === undefined ? null : new Set(savedAttr.split(",").filter(Boolean));
+  const isSaved = sameAudiences(select.items, saved);
+
+  const icon = document.createElement("span");
+  icon.className = "kb-audience-status--icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = AUDIENCE_STATUS_ICONS[state];
+  const text = document.createElement("span");
+  text.innerHTML = audienceStatusHtml(state, publicNames, privateNames, isSaved);
+  status.replaceChildren(icon, text);
+}
+
 function clearSelected(name) {
   document.querySelectorAll(
     `#relevant-${name} input[type="checkbox"][name="${name}"]:checked`
@@ -197,6 +310,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (document.getElementById("id_audiences")) {
+    const audienceStatus = document.getElementById("kb-audience-status");
     new TomSelect("select[id='id_audiences']", {
       closeAfterSelect: true,
       plugins: {
@@ -207,6 +321,16 @@ document.addEventListener("DOMContentLoaded", function () {
       placeholder: gettext("Select audiences"),
       persist: false,
       create: false,
+      render: {
+        option: (data, escape) => `<div>${escape(data.text)} ${audienceBadge(data)}</div>`,
+        item: (data, escape) => `<div>${escape(data.text)} ${audienceBadge(data)}</div>`,
+      },
+      onInitialize() {
+        if (audienceStatus) updateAudienceStatus(this, audienceStatus);
+      },
+      onChange() {
+        if (audienceStatus) updateAudienceStatus(this, audienceStatus);
+      },
     });
   }
 });

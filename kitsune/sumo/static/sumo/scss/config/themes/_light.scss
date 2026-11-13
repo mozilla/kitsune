@@ -532,7 +532,9 @@
 // The KB editing and review pages: the summary and message character counters (`is-over-limit`
 // marks a counter past its limit), the draft-saving bars, the revision lists of the history and
 // recent revisions pages, the preview and review panels, the translation source fields, and the
-// editor toolbar's link type-ahead and media picker. The draft bars keep their Bootstrap colors and
+// editor toolbar's link type-ahead and media picker, and the knowledge base picker's Public / Private
+// labels (`--kb-audience-badge-*`, drawn on the blue chips and in the dropdown) and its status line
+// (`--kb-audience-mixed-*` is the mixed public and private notice). The draft bars keep their Bootstrap colors and
 // striped image in light and use the status colors, flat, in dark. The history icons are images drawn
 // in each theme's colors, as is the toolbar sprite (`--markup-toolbar-image`, a light-gray-02 copy in
 // dark). These images, the striped image, and the shadows appear in the theme maps only.
@@ -562,6 +564,18 @@
 // --media-picker-item-hover-bg: #F0F0F0 - Dark: #32353D (graphite-07)
 // --media-picker-item-active-border: #9ACCF7 - Dark: #8FBEFA (azure-03)
 // --media-picker-item-selected-bg: #DAEDF6 - Dark: #2A313D
+// --kb-audience-public-text: #1A7F37 - Dark: #83D5AD (sage-01)
+// --kb-audience-private-text: #5B3CC4 - Dark: #D9BFFF (violet-02)
+// --kb-audience-badge-public-bg: #87FFD1 (green-04) - Dark: #87FFD1 (green-04)
+// --kb-audience-badge-public-border: #87FFD1 (green-04) - Dark: #87FFD1 (green-04)
+// --kb-audience-badge-public-text: #005E5E (green-09) - Dark: #005E5E (green-09)
+// --kb-audience-badge-private-bg: #0250BB (blue-07) - Dark: #054096 (blue-08)
+// --kb-audience-badge-private-border: #0250BB (blue-07) - Dark: #8FBEFA (azure-03)
+// --kb-audience-badge-private-text: #FFFFFF (white) - Dark: #FFFFFF (white)
+// --kb-audience-mixed-bg: #FFF4DE - Dark: #3B342B
+// --kb-audience-mixed-border: #F3C77B - Dark: rgba(246, 188, 93, 0.35)
+// --kb-audience-mixed-text: #A0600A - Dark: #F6BC5D
+// --kb-audience-mixed-strong: #7A4605 - Dark: #FFD58A
 //
 // Weight: 36
 //
@@ -1331,6 +1345,18 @@ $light: (
   'media-picker-item-hover-bg': #F0F0F0,
   'media-picker-item-active-border': #9ACCF7,
   'media-picker-item-selected-bg': #DAEDF6,
+  'kb-audience-public-text': #1A7F37,
+  'kb-audience-private-text': #5B3CC4,
+  'kb-audience-badge-public-bg': var(--color-green-04),
+  'kb-audience-badge-public-border': var(--color-green-04),
+  'kb-audience-badge-public-text': var(--color-green-09),
+  'kb-audience-badge-private-bg': var(--color-blue-07),
+  'kb-audience-badge-private-border': var(--color-blue-07),
+  'kb-audience-badge-private-text': var(--color-white),
+  'kb-audience-mixed-bg': #FFF4DE,
+  'kb-audience-mixed-border': #F3C77B,
+  'kb-audience-mixed-text': #A0600A,
+  'kb-audience-mixed-strong': #7A4605,
 
   // CodeMirror
   'codemirror-bg': var(--color-white),

@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.db import IntegrityError, transaction
 from parameterized import parameterized
+from pyquery import PyQuery as pq
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
@@ -9,6 +10,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.config import DEFAULT_AUDIENCE_SLUG
+from kitsune.wiki.forms import DocumentForm
 from kitsune.wiki.managers import has_private_kb_access
 from kitsune.wiki.models import Audience, Document, DocumentAudience, Revision
 from kitsune.wiki.tests import (
@@ -273,3 +275,56 @@ class KnowledgeBasePresentationTests(TestCase):
     )
     def test_monogram(self, name, mark, expected):
         self.assertEqual(Audience(name=name, mark=mark).monogram, expected)
+
+
+class AudiencesWidgetTests(TestCase):
+    def setUp(self):
+        self.public = AudienceFactory(name="Product Docs", is_public=True)
+        self.private = AudienceFactory(name="Accessibility", is_public=False)
+
+    def _render(self):
+        return pq(str(DocumentForm(can_assign_audiences=True)["audiences"]))
+
+    def test_options_grouped_by_visibility(self):
+        doc = self._render()
+        public_group = doc("optgroup[label='Public']").text()
+        private_group = doc("optgroup[label='Private']").text()
+        self.assertIn("Product Docs", public_group)
+        self.assertNotIn("Accessibility", public_group)
+        self.assertIn("Accessibility", private_group)
+        self.assertNotIn("Product Docs", private_group)
+
+    def test_options_carry_data_public(self):
+        doc = self._render()
+        self.assertEqual(doc(f"option[value='{self.public.pk}']").attr("data-public"), "true")
+        self.assertEqual(doc(f"option[value='{self.private.pk}']").attr("data-public"), "false")
+
+    def test_empty_group_omitted(self):
+        Audience.objects.filter(is_public=False).delete()
+        doc = self._render()
+        self.assertEqual(len(doc("optgroup[label='Private']")), 0)
+        self.assertEqual(len(doc("optgroup[label='Public']")), 1)
+
+    def test_selected_options_stay_selected(self):
+        form = DocumentForm(
+            new_document_data() | {"audiences": [self.private.pk]}, can_assign_audiences=True
+        )
+        doc = pq(str(form["audiences"]))
+        self.assertEqual(doc(f"option[value='{self.private.pk}']").attr("selected"), "selected")
+        self.assertIsNone(doc(f"option[value='{self.public.pk}']").attr("selected"))
+
+    def test_mixed_selection_still_valid(self):
+        data = new_document_data() | {"audiences": [self.public.pk, self.private.pk]}
+        form = DocumentForm(data, can_assign_audiences=True)
+        self.assertNotIn("audiences", form.errors)
+
+    def test_status_region_rendered_for_staff_only(self):
+        url = reverse("wiki.new_document")
+        staff = UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)])
+        self.client.login(username=staff.username, password="testpass")
+        self.assertEqual(len(pq(self.client.get(url).content)("#kb-audience-status")), 1)
+
+        self.client.logout()
+        user = UserFactory()
+        self.client.login(username=user.username, password="testpass")
+        self.assertEqual(len(pq(self.client.get(url).content)("#kb-audience-status")), 0)
