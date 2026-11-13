@@ -526,6 +526,11 @@ body:has(#group-profile) {
   .your-support--history {
     margin: p.$spacing-md 0 0;
   }
+
+  .section-description {
+    margin: 0 0 p.$spacing-lg;
+    color: var(--color-text-light);
+  }
 }
 
 // Sidebar-specific styles

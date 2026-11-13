@@ -231,6 +231,7 @@ def profile(request, group_slug, user_form=None, invitation_form=None):
             "children": children,
             "enterprise_is_root": can_onboard and prof.pk == enterprise_root.pk,
             "enterprise_is_company": enterprise_is_company,
+            "is_enterprise": is_enterprise,
             "covered_products": covered_products,
             "can_view_tickets": can_view_tickets,
             "show_tickets_tab": show_tickets_tab,
