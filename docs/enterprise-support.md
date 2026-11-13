@@ -72,9 +72,10 @@ Behavior:
 ## Contracts and coverage
 
 Staff record agreements in Django admin. A contract has a status (active, suspended, or
-cancelled) and start and end dates, both inclusive in the site time zone. Each coverage
-names a product, its Zendesk form configuration, the Zendesk product value, and whether
-chat is included; a bundle is several coverages on one contract.
+cancelled), start and end dates, both inclusive in the site time zone, and the languages
+besides English its covered users can file tickets in. Each coverage names a product, its
+Zendesk form configuration, the Zendesk product value, and whether chat is included; a
+bundle is several coverages on one contract.
 
 Behavior:
 
@@ -103,6 +104,15 @@ Behavior:
   doesn't apply.
 - Covered users get no personal-ticket form for that product; a forum they can use stays
   available.
+- The enterprise form opens in English and in the contract's languages; on any other page
+  language the form step redirects to the English form. Product Zendesk forms are English
+  only.
+
+Gotchas:
+
+- Zendesk topic titles are database strings (`DB_LOCALIZE`). Translators get them only after
+  `kitsune/sumo/db_strings.py` is regenerated from production, and a new or edited title
+  shows in English on a localized form until it's translated.
 
 ## Live chat
 
