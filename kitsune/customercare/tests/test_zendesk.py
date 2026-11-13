@@ -815,6 +815,21 @@ class ZendeskClientTests(TestCase):
         self.assertEqual(ticket_arg.comment.author_id, 999)
 
     @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_company_member_is_sent_a_language_their_contract_allows(self, mock_zenpy):
+        company = SupportCoverageFactory(contract__languages=["de"]).contract.company
+        member = UserFactory(profile__locale="it", profile__zendesk_id="789")
+        member.groups.add(company.group)
+        outsider = UserFactory(profile__locale="it", profile__zendesk_id="790")
+        for name, user, expected in (
+            ("company member", member, "de"),
+            ("no company", outsider, "it"),
+        ):
+            with self.subTest(name):
+                ZendeskClient().update_user(user)
+                zendesk_user = mock_zenpy.return_value.users.update.call_args.args[0]
+                self.assertEqual(zendesk_user.locale, expected)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
     def test_add_ticket_comment_with_anonymous_user(self, mock_zenpy):
         """Test that add_ticket_comment raises ValueError for anonymous users."""
         mock_client = Mock()

@@ -19,6 +19,7 @@ from kitsune.customercare.zendesk import (
 )
 from kitsune.groups.membership import lock_enterprise_hierarchy, validate_enterprise_memberships
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
+from kitsune.products.utils import get_support_locale
 from kitsune.users.identity import lock_account_email
 from kitsune.users.models import Profile
 from kitsune.users.utils import normalize_username, suggest_username
@@ -462,6 +463,7 @@ def invite_enterprise_user(
                     if normalize_username(email.split("@", 1)[0])
                     else "enterprise-user@example.invalid"
                 )
+                locale = get_support_locale(company)
                 while True:
                     username = suggest_username(username_email)
                     user = User(
@@ -478,6 +480,7 @@ def invite_enterprise_user(
                             Profile.objects.create(
                                 user=user,
                                 account_type=Profile.AccountType.REGULAR,
+                                locale=locale,
                                 name="",
                                 public_email=False,
                                 is_fxa_migrated=False,

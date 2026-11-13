@@ -1,6 +1,7 @@
 import json
 
 import yaml
+from django.conf import settings
 from django.db.models import Count, Prefetch, Q
 
 from kitsune.groups.models import GroupProfile
@@ -32,6 +33,28 @@ def get_covered_products(company: GroupProfile) -> list[Product]:
         .annotate(coverage_count=Count("support_coverages"))
         .filter(coverage_count=1)
     )
+
+
+def get_support_locale(company: GroupProfile, locale: str = "") -> str:
+    """Return the locale if the company's contracts in effect allow it, else their default.
+
+    English is always allowed. The default is the one extra language the contracts list, or
+    English when they list none or several. Without a contract in effect, the locale is kept,
+    and an empty locale becomes English.
+    """
+    if locale == settings.WIKI_DEFAULT_LANGUAGE:
+        return locale
+    language_lists = list(
+        SupportCoverage.objects.effective(company).values_list("contract__languages", flat=True)
+    )
+    if not language_lists:
+        return locale or settings.WIKI_DEFAULT_LANGUAGE
+    languages = {language for contract in language_lists for language in contract}
+    if locale in languages:
+        return locale
+    if len(languages) == 1:
+        return languages.pop()
+    return settings.WIKI_DEFAULT_LANGUAGE
 
 
 def get_professional_support_products(request) -> list[Product]:

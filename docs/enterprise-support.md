@@ -114,6 +114,30 @@ Gotchas:
   `kitsune/sumo/db_strings.py` is regenerated from production, and a new or edited title
   shows in English on a localized form until it's translated.
 
+### Support language
+
+`kitsune.products.utils.get_support_locale` picks the language of the welcome email and of
+the Zendesk user. English and the languages of the company's contracts in effect are
+allowed. A person's own language is used when it's allowed, otherwise the contracts'
+default: their one extra language, or English when they list none or several. Without a
+contract in effect, the person's own language is used.
+
+Behavior:
+
+- New accounts from intake start in the default; existing accounts keep their language.
+  Accepting the invitation replaces it with the Mozilla account's language when that is a
+  SUMO language.
+- Every link in the welcome email uses the email's language.
+- Only what goes to Zendesk changes; the SUMO profile keeps the person's choice.
+
+Gotchas:
+
+- Zendesk gets a changed language only on the person's next profile save, sign-in, or ticket.
+  This covers contract edits, and people who already had a Zendesk user: provisioning never
+  changes an existing Zendesk user.
+- New accounts added before their company's contract is in effect start in English and get
+  an English welcome.
+
 ## Live chat
 
 A user can chat about a product when the `zendesk-chat` switch is on,
@@ -209,8 +233,8 @@ Behavior:
 
 - Each request takes one valid email (matched ignoring case and surrounding whitespace) and
   both first and last names.
-- New accounts are inactive, have unusable passwords, keep their email private, and have no
-  Mozilla account.
+- New accounts are inactive, have unusable passwords, keep their email private, have no
+  Mozilla account, and start in the [support language](#support-language) default.
 - Existing active, regular accounts linked to a Mozilla account are reused, keeping their
   names, identity, subscriptions, and support history, unless they are staff or superusers.
 - Hidden system accounts, legacy accounts without a Mozilla account, inactive accounts the
@@ -232,10 +256,11 @@ first login; the company page when empty). Intake refuses invalid values.
 
 ## Welcome email and first login
 
-The welcome email, in the recipient's locale, names the company and lists what the account
-can do: open tickets for the covered products (omitted without coverage), see tickets
-opened by others at the company, and chat with an agent (only when one of those coverages
-includes chat and the `zendesk-chat` switch and chat settings are in place).
+The welcome email, in the [support language](#support-language), names the company and
+lists what the account can do: open tickets for the covered products (omitted without
+coverage), see tickets opened by others at the company, and chat with an agent (only when
+one of those coverages includes chat and the `zendesk-chat` switch and chat settings are in
+place).
 
 Behavior:
 
