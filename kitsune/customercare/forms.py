@@ -24,6 +24,7 @@ OS_CHOICES = [
 
 UPDATE_CHANNEL_CHOICES = [
     ("", _lazy("Select update channel")),
+    # L10n: "ESR" is short for Extended Support Release, a Firefox update channel.
     ("esr", _lazy("ESR")),
     ("rapid_release", _lazy("Rapid Release")),
     ("full_release", _lazy("Full Release")),
@@ -34,15 +35,21 @@ UPDATE_CHANNEL_CHOICES = [
 POLICY_DISTRIBUTION_CHOICES = [
     ("", _lazy("Select policy distribution method")),
     ("firefox_admin_console", _lazy("Firefox Enterprise Admin Console")),
+    # L10n: Please don't translate "ADMX". It's a Windows file type.
     ("group_policy_admx", _lazy("Windows Group Policy (ADMX)")),
+    # L10n: Please don't translate "Intune", "OMA-URI", or "ADMX". They're technical names.
     ("windows_mdm", _lazy("Windows MDM (Intune / OMA-URI / ADMX-backed)")),
     (
         "macos_config_profiles",
+        # L10n: Please don't translate ".mobileconfig", ".plist", or "Jamf". The first two
+        # are file types and Jamf is a product name.
         _lazy(
             "macOS Configuration Profiles (.mobileconfig / .plist, including MDM tools like Jamf)"
         ),
     ),
+    # L10n: Please don't translate "policies.json". It's a file name.
     ("policies_json", _lazy("policies.json (manual deployment, all platforms)")),
+    # L10n: Please don't translate "mozilla.cfg" or "autoconfig.js". They're file names.
     ("autoconfig", _lazy("Autoconfig (mozilla.cfg + autoconfig.js)")),
     ("not_sure", _lazy("Not sure / Need help selecting")),
 ]
@@ -51,14 +58,17 @@ URGENCY_CHOICES = [
     ("", _lazy("Select urgency")),
     (
         "normal",
+        # L10n: Please don't translate "SEV3". It's a standard severity level name.
         _lazy("SEV3 (Normal) – Minor issue; no urgent business impact"),
     ),
     (
         "high",
+        # L10n: Please don't translate "SEV2". It's a standard severity level name.
         _lazy("SEV2 (High) – Major degradation; workaround available"),
     ),
     (
         "critical",
+        # L10n: Please don't translate "SEV1". It's a standard severity level name.
         _lazy("SEV1 (Critical) – Production outage or security risk"),
     ),
 ]
@@ -130,6 +140,8 @@ class ZendeskForm(forms.Form):
         required=False,
     )
     policy_distribution = forms.ChoiceField(
+        # L10n: These are Firefox enterprise policies: settings that IT admins apply to
+        # every copy of Firefox in their company.
         label=_lazy("How are you distributing policies?"),
         choices=POLICY_DISTRIBUTION_CHOICES,
         widget=forms.HiddenInput,
