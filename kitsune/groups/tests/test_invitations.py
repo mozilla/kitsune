@@ -21,7 +21,11 @@ from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import EnterpriseInvitation, GroupProfile
 from kitsune.groups.onboarding import invite_enterprise_user
 from kitsune.groups.tests import EnterpriseInvitationFactory, GroupProfileFactory
-from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import (
+    ProductFactory,
+    SupportContractFactory,
+    SupportCoverageFactory,
+)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.auth import FXAAuthBackend
 from kitsune.users.models import Profile
@@ -158,6 +162,13 @@ class EnterpriseInvitationTests(InvitationFixtures, TestCase):
         self.assertEqual(len(mail.outbox), sent_before)
         mapping = ZendeskOrganization.objects.get(group_profile=self.company)
         self.assertIsNone(mapping.zendesk_id)
+
+    def test_new_account_starts_in_the_contract_default_language(self):
+        SupportCoverageFactory(
+            contract=SupportContractFactory(company=self.company, languages=["de"])
+        )
+        invitation = self.invite()
+        self.assertEqual(Profile.all_profiles.get(user_id=invitation.user_id).locale, "de")
 
     def test_each_required_field_and_length_is_validated_before_any_writes(self):
         invalid = (

@@ -14,6 +14,8 @@ from zenpy.lib.api_objects import User as ZendeskUser
 from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyException
 
 from kitsune.customercare.models import SupportTicket, TicketHeld
+from kitsune.groups.models import GroupProfile
+from kitsune.products.utils import get_support_locale
 
 NO_RESPONSE = "No response provided."
 LOGINLESS_TAG = "loginless_ticket"
@@ -348,6 +350,9 @@ class ZendeskClient:
             id = int(id_str) if id_str else None
             name = user.profile.display_name
             locale = user.profile.locale
+            company = GroupProfile.objects.enterprise_companies(user).first()
+            if company:
+                locale = get_support_locale(company, locale)
             user_fields = {"user_id": fxa_uid}
             external_id = fxa_uid
         return ZendeskUser(
