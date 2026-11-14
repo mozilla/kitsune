@@ -955,6 +955,66 @@ pgettext("DB: products.Topic.title", """X-Ray Goggles""")
 pgettext("DB: products.Topic.description", """Learn how to inspect the code behind every webpage.""")
 pgettext("DB: products.Topic.title", """Your Pocket Account""")
 pgettext("DB: products.Topic.description", """Signup, login, password reset and more.""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I can't sign in to my Mozilla account or subscription""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Account, sign-in, or single sign-on (SSO) problems""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """A website or web app isn’t working""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Backing up, recovering and syncing data or profiles""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Configuring or troubleshooting PDF.js""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """My security code isn't working or is lost""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I can't recover my account using email""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I'm having issues signing in with my Google or Apple ID""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I forgot my password""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I want to share feedback or suggest a feature""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Help configuring or troubleshooting policies""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Issues with installation, deployment, or updates""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Managing extensions or add-ons""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """My data removal is taking too long""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I'm seeing results that don't belong to me""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I want to delete my Mozilla account""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I want to change the email on my Mozilla account""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I need help with Firefox Sync""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Network, certificate or single sign-on (SSO) problems""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Network, proxy, or certificate problems""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """My issue isn't listed here""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I need help with a billing or subscription question""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I want to change my Relay email domain""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I'm not receiving emails to my Relay mask""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Report security concerns or suspected vulnerabilities""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Sending, receiving, filtering mail or calendar problems""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """Troubleshooting crashes, performance, or unexpected behavior""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I can't connect to Mozilla VPN""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I need help installing or updating Mozilla VPN""")
+# L10n: A reason for contacting support, listed in the support form.
+pgettext("DB: products.ZendeskTopic.form_title", """I can't choose a VPN location""")
 pgettext("DB: kbadge.Badge.title", """Thunderbolt hunt""")
 pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors who can find 5 thunderbolts emoji ⚡ in the Firefox KB articles during the Ask a Fox event""")
 pgettext("DB: kbadge.Badge.title", """Fox hunt""")
