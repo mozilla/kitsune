@@ -57,39 +57,18 @@ class GroupHelperTests(TestCase):
 
 
 class GroupBreadcrumbsTests(TestCase):
-    def test_root_org_includes_self_linked(self):
-        root = GroupProfileFactory(group=GroupFactory(name="Acme"))
-        self.assertEqual(
-            group_breadcrumbs(root),
-            [
-                (reverse("groups.list"), "Groups"),
-                (reverse("groups.profile", args=[root.slug]), "Acme"),
-            ],
-        )
-
-    def test_with_ancestors_in_root_to_self_order(self):
+    def test_crumbs_run_from_groups_list_through_ancestors(self):
         root = GroupProfileFactory(group=GroupFactory(name="Acme"))
         child = GroupProfile.objects.add_child(
             root, create_kwargs={"group": GroupFactory(name="Acme EU"), "slug": "acme-eu"}
         )
-        self.assertEqual(
-            group_breadcrumbs(child),
-            [
-                (reverse("groups.list"), "Groups"),
-                (reverse("groups.profile", args=[root.slug]), "Acme"),
-                (reverse("groups.profile", args=[child.slug]), "Acme EU"),
-            ],
-        )
-
-    def test_include_self_false_drops_trailing_crumb(self):
-        root = GroupProfileFactory(group=GroupFactory(name="Acme"))
-        child = GroupProfile.objects.add_child(
-            root, create_kwargs={"group": GroupFactory(name="Acme EU"), "slug": "acme-eu"}
-        )
-        self.assertEqual(
-            group_breadcrumbs(child, include_self=False),
-            [
-                (reverse("groups.list"), "Groups"),
-                (reverse("groups.profile", args=[root.slug]), "Acme"),
-            ],
-        )
+        groups = (reverse("groups.list"), "Groups")
+        acme = (reverse("groups.profile", args=[root.slug]), "Acme")
+        acme_eu = (reverse("groups.profile", args=[child.slug]), "Acme EU")
+        for profile, kwargs, expected in (
+            (root, {}, [groups, acme]),
+            (child, {}, [groups, acme, acme_eu]),
+            (child, {"include_self": False}, [groups, acme]),
+        ):
+            with self.subTest(group=profile.slug, **kwargs):
+                self.assertEqual(group_breadcrumbs(profile, **kwargs), expected)

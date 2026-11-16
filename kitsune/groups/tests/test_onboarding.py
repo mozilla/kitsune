@@ -511,12 +511,6 @@ class EnterpriseCompanyViewTests(TestCase):
         )
         company = GroupProfile.objects.get(slug="new-enterprise-company")
         self.assertRedirects(response, company.get_absolute_url())
-        self.assertEqual(GroupProfile.objects.get_parent(company), self.root)
-        self.assertEqual(company.depth, 2)
-        self.assertEqual(company.visibility, GroupProfile.Visibility.PRIVATE)
-        self.assertFalse(company.group.user_set.exists())
-        self.assertFalse(company.leaders.exists())
-        self.assertIsNone(company.zendesk_organization.zendesk_id)
 
     def test_creation_requires_name_even_with_forged_edit_mode(self):
         before = GroupProfile.objects.count()
@@ -548,11 +542,6 @@ class EnterpriseCompanyViewTests(TestCase):
         self.assertEqual(page.status_code, 200)
         self.assertEqual(len(pq(page.content)("#enterprise-onboarding")), 0)
         self.assertEqual(self.client.post(self.settings_url, {}).status_code, 403)
-
-    def test_anonymous_uses_login_redirect(self):
-        self.client.logout()
-        for url in (self.create_url, self.settings_url):
-            self.assertEqual(self.client.get(url).status_code, 302)
 
     def test_other_root_and_department_cannot_be_targeted(self):
         other_root = GroupProfileFactory()

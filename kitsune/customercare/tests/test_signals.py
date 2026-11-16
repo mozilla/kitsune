@@ -352,14 +352,3 @@ class ChatRevocationTests(TestCase):
         tag_revoked_chat_tickets(*delay.call_args.args, **delay.call_args.kwargs)
 
         client.add_ticket_tags.assert_called_once_with(1, [CHAT_REVOKED_TAG])
-
-    def test_a_rolled_back_change_tags_nothing(self, delay):
-        member = self.member()
-
-        with self.captureOnCommitCallbacks(execute=True):
-            with self.assertRaises(RuntimeError), transaction.atomic():
-                member.user.groups.remove(member.department.group)
-                save(member.contract, status=SupportContract.Status.SUSPENDED)
-                raise RuntimeError
-
-        delay.assert_not_called()

@@ -388,13 +388,11 @@ class IsolationDisabledTests(TestCase):
 
     def test_isolation_disabled_shows_siblings(self):
         """When isolation disabled, members can see siblings."""
-        # With isolation disabled, users should see more
-        # (exact behavior depends on requirements - for now just verify query works)
         visible = GroupProfile.objects.visible(self.alice)
 
-        # At minimum, Alice sees her own subtree and ancestors
         self.assertIn(self.sub_a, visible)
         self.assertIn(self.root, visible)
+        self.assertIn(self.sub_b, visible)
 
 
 class SiblingIsolationTests(TestCase):
@@ -1331,57 +1329,21 @@ class VisibleToGroupsInheritanceTests(TestCase):
 class LeaderRemovalValidationTests(TestCase):
     """Test validation rules for leader removal."""
 
-    def test_can_remove_leader_from_root_with_multiple_leaders(self):
-        """Root groups with multiple leaders can have a leader removed."""
-        root_group = Group.objects.create(name="Root")
-        root = GroupProfile.objects.add_root(create_kwargs={"group": root_group, "slug": "root"})
-
-        leader1 = UserFactory()
-        leader2 = UserFactory()
-        root.leaders.add(leader1, leader2)
-
-        self.assertTrue(root.can_remove_leader())
-        self.assertTrue(root.can_remove_leader())
-
-    def test_cannot_remove_last_leader_from_root(self):
-        """Root groups cannot have their last leader removed."""
-        root_group = Group.objects.create(name="Root")
-        root = GroupProfile.objects.add_root(create_kwargs={"group": root_group, "slug": "root"})
-
-        leader = UserFactory()
-        root.leaders.add(leader)
-
-        self.assertFalse(root.can_remove_leader())
-
-    def test_can_remove_leader_from_subgroup(self):
-        """Subgroups can have their only leader removed."""
-        root_group = Group.objects.create(name="Root")
-        root = GroupProfile.objects.add_root(create_kwargs={"group": root_group, "slug": "root"})
-        root_leader = UserFactory()
-        root.leaders.add(root_leader)
-
-        sub_group = Group.objects.create(name="Sub")
-        sub = GroupProfile.objects.add_child(
-            root, create_kwargs={"group": sub_group, "slug": "sub"}
-        )
-        sub_leader = UserFactory()
-        sub.leaders.add(sub_leader)
-
-        self.assertTrue(sub.can_remove_leader())
-
-    def test_can_remove_leader_from_subgroup_with_no_leaders(self):
-        """Subgroups with no leaders can still pass validation."""
-        root_group = Group.objects.create(name="Root")
-        root = GroupProfile.objects.add_root(create_kwargs={"group": root_group, "slug": "root"})
-        root_leader = UserFactory()
-        root.leaders.add(root_leader)
-
-        sub_group = Group.objects.create(name="Sub")
-        sub = GroupProfile.objects.add_child(
-            root, create_kwargs={"group": sub_group, "slug": "sub"}
-        )
-
-        self.assertTrue(sub.can_remove_leader())
+    def test_can_remove_leader(self):
+        """Root groups must keep a leader; subgroups can lose their only one."""
+        multi_led_root = GroupProfileFactory()
+        multi_led_root.leaders.add(*UserFactory.create_batch(2))
+        root = GroupProfileFactory()
+        root.leaders.add(UserFactory())
+        sub = GroupProfile.objects.add_child(root, create_kwargs={"group": GroupFactory()})
+        sub.leaders.add(UserFactory())
+        for case, profile, expected in (
+            ("root with multiple leaders", multi_led_root, True),
+            ("last leader of a root", root, False),
+            ("only leader of a subgroup", sub, True),
+        ):
+            with self.subTest(case=case):
+                self.assertEqual(profile.can_remove_leader(), expected)
 
 
 class CanViewInactiveMembersTests(TestCase):

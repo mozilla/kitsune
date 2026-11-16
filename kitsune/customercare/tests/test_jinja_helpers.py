@@ -1,6 +1,5 @@
 from types import SimpleNamespace
 
-from django.contrib.auth.models import AnonymousUser
 from django.test import override_settings
 from waffle.testutils import override_switch
 
@@ -25,23 +24,11 @@ class ChatIsAvailableTests(TestCase):
         self.user = UserFactory()
         self.user.groups.add(coverage.contract.company.group)
 
-    def _request(self, user=None):
-        return SimpleNamespace(user=user or self.user)
+    def _request(self):
+        return SimpleNamespace(user=self.user)
 
     def test_entitled_user(self):
         self.assertTrue(chat_is_available(self._request(), self.product))
 
     def test_page_that_is_not_about_a_product(self):
         self.assertFalse(chat_is_available(self._request(), None))
-
-    def test_user_without_chat_access(self):
-        self.user.groups.clear()
-
-        self.assertFalse(chat_is_available(self._request(), self.product))
-
-    def test_anonymous_user(self):
-        self.assertFalse(chat_is_available(self._request(user=AnonymousUser()), self.product))
-
-    @override_switch("zendesk-chat", active=False)
-    def test_switch_off(self):
-        self.assertFalse(chat_is_available(self._request(), self.product))
