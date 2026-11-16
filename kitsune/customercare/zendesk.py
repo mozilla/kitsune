@@ -334,7 +334,7 @@ class ZendeskClient:
                     continue
                 ZendeskProvisioningConflict.raise_from(exc)
 
-    def _user_to_zendesk_user(self, user, email):
+    def _user_to_zendesk_user(self, user, email, product=None):
         """Given a Django user, return a Zendesk user."""
         if not user or not user.is_authenticated:
             if zuser := self.get_user_by_email(email):
@@ -352,7 +352,7 @@ class ZendeskClient:
             locale = user.profile.locale
             company = GroupProfile.objects.enterprise_companies(user).first()
             if company:
-                locale = get_support_locale(company, locale)
+                locale = get_support_locale(company, locale, product)
             user_fields = {"user_id": fxa_uid}
             external_id = fxa_uid
         return ZendeskUser(
@@ -381,9 +381,9 @@ class ZendeskClient:
         """Fetch a single Zendesk user by ID."""
         return self.client.users(id=int(zendesk_id))
 
-    def create_user(self, user, email=""):
+    def create_user(self, user, email="", product=None):
         """Given a Django user, create a user in Zendesk."""
-        zendesk_user = self._user_to_zendesk_user(user, email=email)
+        zendesk_user = self._user_to_zendesk_user(user, email=email, product=product)
         # call create_or_update to avoid duplicating users FxA previously created
         zendesk_user = self.client.users.create_or_update(zendesk_user)
 
@@ -393,9 +393,9 @@ class ZendeskClient:
 
         return zendesk_user
 
-    def update_user(self, user):
+    def update_user(self, user, product=None):
         """Given a Django user, update a user in Zendesk."""
-        zendesk_user = self._user_to_zendesk_user(user, email=user.email)
+        zendesk_user = self._user_to_zendesk_user(user, email=user.email, product=product)
         return self.client.users.update(zendesk_user)
 
     def get_primary_email_identity(self, zendesk_user_id):
@@ -412,8 +412,8 @@ class ZendeskClient:
             user=zendesk_user_id, identity=ZendeskIdentity(id=identity_id, value=email)
         )
 
-    def create_ticket(self, user, ticket_fields):
-        """Create a ticket in Zendesk."""
+    def create_ticket(self, user, ticket_fields, product=None):
+        """Create a ticket in Zendesk, choosing the requester's locale for the product."""
         custom_fields = [
             {"id": settings.ZENDESK_PRODUCT_FIELD_ID, "value": ticket_fields.get("product")},
             {"id": settings.ZENDESK_OS_FIELD_ID, "value": ticket_fields.get("os")},
@@ -489,9 +489,9 @@ class ZendeskClient:
             if user.profile.zendesk_id:
                 # TODO: is this necessary if we're
                 # updating users as soon as they're updated locally?
-                ticket.requester_id = self.update_user(user).id
+                ticket.requester_id = self.update_user(user, product=product).id
             else:
-                ticket.requester_id = self.create_user(user).id
+                ticket.requester_id = self.create_user(user, product=product).id
         else:
             ticket.requester_id = self.create_user(user, email=ticket_fields.get("email", "")).id
         if "organization_id" in ticket_fields:

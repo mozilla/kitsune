@@ -334,7 +334,9 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
                     "The requester has not been provisioned in the company's Zendesk organization"
                 )
             ticket_fields["organization_id"] = organization_id
-        ticket_audit = ZendeskClient().create_ticket(submission.user, ticket_fields)
+        ticket_audit = ZendeskClient().create_ticket(
+            submission.user, ticket_fields, product=submission.product
+        )
         submission.zendesk_ticket_id = str(ticket_audit.ticket.id)
         submission.submission_status = SupportTicket.STATUS_SENT
         submission.save(update_fields=["zendesk_ticket_id", "submission_status"])

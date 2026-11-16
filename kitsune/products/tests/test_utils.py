@@ -1,3 +1,7 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from kitsune.groups.tests import EnterpriseCompanyFactory
 from kitsune.products.models import SupportContract
 from kitsune.products.tests import (
@@ -547,20 +551,53 @@ class GetSupportLocaleTests(TestCase):
             with self.subTest(locale=locale):
                 self.assertEqual(get_support_locale(self.company, locale), expected)
 
-    def test_without_a_contract_in_effect_the_locale_is_kept(self):
+    def test_without_a_contract_the_locale_is_kept(self):
+        yesterday = timezone.localdate() - timedelta(days=1)
         self.add_contract(["de"], status=SupportContract.Status.CANCELLED)
+        self.add_contract(["de"], starts_on=yesterday, ends_on=yesterday)
         SupportCoverageFactory(contract__languages=["fr"])
-        self.assert_locales({"it": "it", "": "en-US"})
+        self.assert_locales({"it": "it", "en-US": "en-US", "": "en-US"})
 
-    def test_the_one_extra_language_is_the_default(self):
+    def test_contracts_count_before_they_start_until_they_end(self):
+        today = timezone.localdate()
+        for name, kwargs in (
+            ("not started", {"starts_on": today + timedelta(days=1)}),
+            ("ends today", {"ends_on": today}),
+            ("suspended", {"status": SupportContract.Status.SUSPENDED}),
+        ):
+            with self.subTest(name):
+                company = EnterpriseCompanyFactory()
+                SupportCoverageFactory(
+                    contract=SupportContractFactory(company=company, languages=["de"], **kwargs)
+                )
+                self.assertEqual(get_support_locale(company, "it"), "de")
+
+    def test_with_a_product_only_the_contracts_covering_it_count(self):
+        german, french, uncovered = ProductFactory(), ProductFactory(), ProductFactory()
+        SupportCoverageFactory(
+            contract__company=self.company, contract__languages=["de"], product=german
+        )
+        SupportCoverageFactory(
+            contract__company=self.company, contract__languages=["fr"], product=french
+        )
+        for name, product, expected in (
+            ("German contract", german, "de"),
+            ("French contract", french, "fr"),
+            ("no contract", uncovered, "it"),
+            ("no product", None, "en-US"),
+        ):
+            with self.subTest(name):
+                self.assertEqual(get_support_locale(self.company, "it", product), expected)
+
+    def test_the_one_language_is_the_default_even_for_english(self):
         self.add_contract(["de"])
-        self.assert_locales({"de": "de", "en-US": "en-US", "it": "de", "": "de"})
+        self.assert_locales({"de": "de", "en-US": "de", "it": "de", "": "de"})
 
     def test_several_languages_across_contracts_default_to_english(self):
         self.add_contract(["de"])
         self.add_contract(["fr"])
-        self.assert_locales({"de": "de", "fr": "fr", "it": "en-US", "": "en-US"})
+        self.assert_locales({"de": "de", "fr": "fr", "en-US": "en-US", "it": "en-US", "": "en-US"})
 
-    def test_a_contract_without_extra_languages_defaults_to_english(self):
+    def test_a_contract_without_languages_defaults_to_english(self):
         self.add_contract([])
         self.assert_locales({"en-US": "en-US", "it": "en-US", "": "en-US"})

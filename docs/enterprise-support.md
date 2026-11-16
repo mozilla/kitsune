@@ -116,27 +116,17 @@ Gotchas:
 
 ### Support language
 
-`kitsune.products.utils.get_support_locale` picks the language of the welcome email and of
-the Zendesk user. English and the languages of the company's contracts in effect are
-allowed. A person's own language is used when it's allowed, otherwise the contracts'
-default: their one extra language, or English when they list none or several. Without a
-contract in effect, the person's own language is used.
+`kitsune.products.utils.get_support_locale` picks the language of the welcome email, the
+Zendesk user, and live chat. A person's own language is used when one of the company's
+contracts lists it, otherwise the contracts' one language, and English only when they list
+none or several. A contract counts until it ends, even before it starts or while suspended,
+but not once cancelled. Without a contract, the person's own language is used.
 
-Behavior:
+For a ticket or a chat, only the contract covering its product counts, so a ticket for a
+product that no contract covers keeps the person's own language.
 
-- New accounts from intake start in the default; existing accounts keep their language.
-  Accepting the invitation replaces it with the Mozilla account's language when that is a
-  SUMO language.
-- Every link in the welcome email uses the email's language.
-- Only what goes to Zendesk changes; the SUMO profile keeps the person's choice.
-
-Gotchas:
-
-- Zendesk gets a changed language only on the person's next profile save, sign-in, or ticket.
-  This covers contract edits, and people who already had a Zendesk user: provisioning never
-  changes an existing Zendesk user.
-- New accounts added before their company's contract is in effect start in English and get
-  an English welcome.
+A person's own language is their profile's, except in chat, which starts from the page's
+language (`chat_locale` in `customercare/templatetags/jinja_helpers.py`).
 
 ## Live chat
 
