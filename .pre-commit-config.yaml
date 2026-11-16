@@ -36,6 +36,22 @@ repos:
           exit 1; fi'
         language: system
         pass_filenames: false
+      - id: no-module-level-tests
+        name: Test functions must be TestCase methods
+        entry: "^def test_"
+        language: pygrep
+        files: "^kitsune/.*/tests/.*\\.py$"
+      - id: no-def-testcase
+        name: Test classes must use class, not def
+        entry: "^def \\w+\\(.*TestCase\\)"
+        language: pygrep
+        files: "^kitsune/.*/tests/.*\\.py$"
+      - id: no-assert-template-used
+        name: Use template_used(); assertTemplateUsed does not see Jinja templates
+        entry: "\\.assertTemplate(Not)?Used\\("
+        language: pygrep
+        files: "^kitsune/.*/tests/.*\\.py$"
+        exclude: "^kitsune/sumo/tests/__init__\\.py$"
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v2.4.1
     hooks:

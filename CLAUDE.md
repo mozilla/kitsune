@@ -63,6 +63,15 @@ This applies equally in views, templates, API serializers, and search indexing.
 - Run tests **through Docker**, not `uv run`: targeted — `docker compose run --rm web ./manage.py test <dotted.path> --keepdb -v 2`; full suite — `make test`.
 - Factories from `factory_boy` (in `tests/__init__.py`). Mock Elasticsearch on code paths that don't need a live index. E2E in `playwright_tests/`. Tests run with `TESTING=True`.
 - Elasticsearch round-trip and index tests have real gotchas — see the `search` guide.
+- Check the rendered template with `template_used(response, name)` from `kitsune.sumo.tests`; Django's `assertTemplateUsed` never sees Jinja templates (a pre-commit hook rejects it).
+
+**Test budget** — the suite must stay small enough to run for years; a change does not get a test per line it touches.
+- Test a decision **once, where it is computed** (model, manager, service, helper). Don't re-test it through views, templates or tasks.
+- Views and templates: one render per page variant, asserting status and structure — not literal copy.
+- Parametrize with `subTest` tables instead of one method per input value.
+- Don't test Django or the stdlib: `login_required` / `require_POST`, field defaults, `choices`, `__str__`, constants.
+- Assert outcomes (DB state, response, log), not that a mock was called with the arguments the code passes.
+- Every test must be able to fail when the behaviour it names breaks. When deleting or folding tests, compare branch coverage before and after.
 
 ## Development practices
 
