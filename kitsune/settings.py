@@ -1373,10 +1373,6 @@ ZENDESK_CHAT_RATELIMITS = config(
 )
 # Public key from the widget's installation snippet in Admin Center.
 ZENDESK_CHAT_WIDGET_KEY = config("ZENDESK_CHAT_WIDGET_KEY", default="")
-# The non-English locales supported by the Zendesk widget and agents.
-ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES = config(
-    "ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES", default="", cast=Csv()
-)
 # Space-separated list of tags that will be added to all Zendesk live-chat conversations/tickets.
 ZENDESK_CHAT_TAGS = config("ZENDESK_CHAT_TAGS", default="")
 # Prefixes the tag recording which product a live chat is about, e.g. product-firefox.

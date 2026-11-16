@@ -29,7 +29,7 @@ from kitsune.groups.onboarding import (
 )
 from kitsune.products.models import Product, SupportCoverage, Topic
 from kitsune.products.routing import chat_unavailable_reason
-from kitsune.products.utils import get_covered_products
+from kitsune.products.utils import get_covered_products, get_support_locale
 from kitsune.sumo.email_utils import make_mail, safe_translation
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
@@ -65,16 +65,21 @@ def invitation_error(code) -> ValidationError:
     return ValidationError(INVITATION_ERRORS[code], code=code)
 
 
-def invitation_landing_path(invitation) -> str:
-    """Return the configured destination, or the company page in the account's locale."""
+def invitation_landing_path(invitation, locale=None) -> str:
+    """Return the configured destination, or the company page.
+
+    The company page uses the given locale, or the account's when none is given.
+    """
     if not invitation_settings_valid():
         raise invitation_error("configuration_error")
     if path := settings.ENTERPRISE_ONBOARDING_LANDING_PATH:
         return path
-    profile = Profile.all_profiles.filter(user_id=invitation.user_id).first()
-    if profile is None:
-        raise invitation_error("resource_missing")
-    with translation.override(profile.locale):
+    if locale is None:
+        profile = Profile.all_profiles.filter(user_id=invitation.user_id).first()
+        if profile is None:
+            raise invitation_error("resource_missing")
+        locale = profile.locale
+    with translation.override(locale):
         return invitation.company.get_absolute_url()
 
 
@@ -122,18 +127,13 @@ def queue_welcome_email(invitation, *, company, user):
 
     New accounts get the secure first-login link with a fresh expiry. Existing accounts are
     already accepted, so they get a Mozilla sign-in link that continues to the landing page.
+    The email uses the account's locale if the company's contracts allow it, else their default.
     """
     if not invitation_settings_valid():
         raise invitation_error("configuration_error")
     if invitation.created_user:
         invitation.expires_at = timezone.now() + timedelta(
             seconds=settings.ENTERPRISE_INVITATION_MAX_AGE
-        )
-        start_path = None
-    else:
-        # Company pages are private, so a signed-out invitee must sign in first.
-        start_path = urlparams(
-            reverse("users.fxa_authentication_init"), next=invitation_landing_path(invitation)
         )
     covered_products = get_covered_products(company)
     # Promise chat only while the site can deliver it; membership never depends on chat.
@@ -154,8 +154,15 @@ def queue_welcome_email(invitation, *, company, user):
 
     @safe_translation
     def make_welcome(locale):
-        # Reversed inside the locale override so the links carry the recipient's locale.
-        path = start_path or reverse("groups.invitation_link", args=[invitation_token(invitation)])
+        # Reversed inside the locale override so the links carry the email's locale.
+        if invitation.created_user:
+            path = reverse("groups.invitation_link", args=[invitation_token(invitation)])
+        else:
+            # Company pages are private, so a signed-out invitee must sign in first.
+            path = urlparams(
+                reverse("users.fxa_authentication_init"),
+                next=invitation_landing_path(invitation, locale),
+            )
         guides = []
         for product in guide_products:
             guide_path = reverse("products.documents", args=[product.slug, "getting-started"])
@@ -187,7 +194,7 @@ def queue_welcome_email(invitation, *, company, user):
             to_email=invitation.email,
         )
 
-    message = make_welcome(user.profile.locale)
+    message = make_welcome(get_support_locale(company, user.profile.locale))
     # Built directly: post_office's helpers would render this text as a Django template.
     email = Email(
         from_email=message.from_email,

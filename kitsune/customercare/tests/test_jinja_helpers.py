@@ -4,10 +4,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.test import override_settings
 from waffle.testutils import override_switch
 
-from kitsune.customercare.templatetags.jinja_helpers import (
-    chat_is_available,
-    select_zendesk_locale,
-)
+from kitsune.customercare.templatetags.jinja_helpers import chat_is_available
 from kitsune.products.tests import SupportCoverageFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
@@ -48,19 +45,3 @@ class ChatIsAvailableTests(TestCase):
     @override_switch("zendesk-chat", active=False)
     def test_switch_off(self):
         self.assertFalse(chat_is_available(self._request(), self.product))
-
-
-@override_settings(ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES="de,pt-BR")
-class SelectZendeskLocaleTests(TestCase):
-    """Test the selection of a Zendesk locale based on the SUMO locale."""
-
-    def test_english_keeps_its_case(self):
-        self.assertEqual("en-US", select_zendesk_locale("en-US"))
-
-    def test_other_supported_locales_are_lower_cased(self):
-        self.assertEqual("de", select_zendesk_locale("de"))
-        self.assertEqual("pt-br", select_zendesk_locale("pt-BR"))
-
-    def test_unsupported_locales_default_to_english(self):
-        self.assertEqual("en-US", select_zendesk_locale("fr"))
-        self.assertEqual("en-US", select_zendesk_locale("zh-CN"))

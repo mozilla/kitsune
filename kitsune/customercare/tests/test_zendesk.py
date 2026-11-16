@@ -147,6 +147,26 @@ class ZendeskClientTests(TestCase):
         self.assertEqual(ticket.zendesk_tags, ["seg-rel-esr"])
 
     @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_enterprise_requester_is_sent_a_language_for_the_ticket_product(self, mock_zenpy):
+        zenpy = mock_zenpy.return_value
+        zenpy.users.update.return_value = Mock(id=456)
+        zenpy.users.organization_memberships.return_value = [
+            Mock(user_id=456, organization_id=321)
+        ]
+        zenpy.tickets.create.return_value = Mock(ticket=Mock(id=789))
+        ticket = self.enterprise_ticket()
+        contract = ticket.coverage.contract
+        contract.languages = ["de"]
+        contract.save(update_fields=["languages"])
+        SupportCoverageFactory(contract__company=contract.company, contract__languages=["fr"])
+        Profile.objects.filter(user=ticket.user).update(locale="it")
+        ticket.refresh_from_db()
+
+        self.assertTrue(send_support_ticket_to_zendesk(ticket))
+
+        self.assertEqual(zenpy.users.update.call_args.args[0].locale, "de")
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
     def test_enterprise_ticket_is_held_before_any_zendesk_call(self, mock_zenpy):
         def move_to_another_company(ticket):
             other_company = EnterpriseCompanyFactory()
@@ -813,6 +833,21 @@ class ZendeskClientTests(TestCase):
 
         ticket_arg = mock_client.tickets.update.call_args[0][0]
         self.assertEqual(ticket_arg.comment.author_id, 999)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_company_member_is_sent_a_language_their_contract_allows(self, mock_zenpy):
+        company = SupportCoverageFactory(contract__languages=["de"]).contract.company
+        member = UserFactory(profile__locale="it", profile__zendesk_id="789")
+        member.groups.add(company.group)
+        outsider = UserFactory(profile__locale="it", profile__zendesk_id="790")
+        for name, user, expected in (
+            ("company member", member, "de"),
+            ("no company", outsider, "it"),
+        ):
+            with self.subTest(name):
+                ZendeskClient().update_user(user)
+                zendesk_user = mock_zenpy.return_value.users.update.call_args.args[0]
+                self.assertEqual(zendesk_user.locale, expected)
 
     @patch("kitsune.customercare.zendesk.Zenpy")
     def test_add_ticket_comment_with_anonymous_user(self, mock_zenpy):

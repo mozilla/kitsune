@@ -114,6 +114,20 @@ Gotchas:
   `kitsune/sumo/db_strings.py` is regenerated from production, and a new or edited title
   shows in English on a localized form until it's translated.
 
+### Support language
+
+`kitsune.products.utils.get_support_locale` picks the language of the welcome email, the
+Zendesk user, and live chat. A person's own language is used when one of the company's
+contracts lists it, otherwise the contracts' one language, and English only when they list
+none or several. A contract counts until it ends, even before it starts or while suspended,
+but not once cancelled. Without a contract, the person's own language is used.
+
+For a ticket or a chat, only the contract covering its product counts, so a ticket for a
+product that no contract covers keeps the person's own language.
+
+A person's own language is their profile's, except in chat, which starts from the page's
+language (`chat_locale` in `customercare/templatetags/jinja_helpers.py`).
+
 ## Live chat
 
 A user can chat about a product when the `zendesk-chat` switch is on,
@@ -209,8 +223,8 @@ Behavior:
 
 - Each request takes one valid email (matched ignoring case and surrounding whitespace) and
   both first and last names.
-- New accounts are inactive, have unusable passwords, keep their email private, and have no
-  Mozilla account.
+- New accounts are inactive, have unusable passwords, keep their email private, have no
+  Mozilla account, and start in the [support language](#support-language) default.
 - Existing active, regular accounts linked to a Mozilla account are reused, keeping their
   names, identity, subscriptions, and support history, unless they are staff or superusers.
 - Hidden system accounts, legacy accounts without a Mozilla account, inactive accounts the
@@ -232,10 +246,11 @@ first login; the company page when empty). Intake refuses invalid values.
 
 ## Welcome email and first login
 
-The welcome email, in the recipient's locale, names the company and lists what the account
-can do: open tickets for the covered products (omitted without coverage), see tickets
-opened by others at the company, and chat with an agent (only when one of those coverages
-includes chat and the `zendesk-chat` switch and chat settings are in place).
+The welcome email, in the [support language](#support-language), names the company and
+lists what the account can do: open tickets for the covered products (omitted without
+coverage), see tickets opened by others at the company, and chat with an agent (only when
+one of those coverages includes chat and the `zendesk-chat` switch and chat settings are in
+place).
 
 Behavior:
 
