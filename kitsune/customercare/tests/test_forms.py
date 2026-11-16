@@ -693,7 +693,7 @@ class ZendeskFormTests(TestCase):
         self.assertTrue(form.fields["urgency"].required)
 
         urgency_values = [v for v, _ in form.fields["urgency"].widget.choices if v]
-        self.assertEqual(urgency_values, ["normal", "high", "critical"])
+        self.assertEqual(urgency_values, ["critical", "high", "normal"])
 
     @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
     def test_send_stores_urgency(self, mock_task):

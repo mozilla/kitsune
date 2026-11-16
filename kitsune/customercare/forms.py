@@ -57,9 +57,9 @@ POLICY_DISTRIBUTION_CHOICES = [
 URGENCY_CHOICES = [
     ("", _lazy("Select urgency")),
     (
-        "normal",
-        # L10n: Please don't translate "SEV3". It's a standard severity level name.
-        _lazy("SEV3 (Normal) – Minor issue; no urgent business impact"),
+        "critical",
+        # L10n: Please don't translate "SEV1". It's a standard severity level name.
+        _lazy("SEV1 (Critical) – Production outage or security risk"),
     ),
     (
         "high",
@@ -67,9 +67,9 @@ URGENCY_CHOICES = [
         _lazy("SEV2 (High) – Major degradation; workaround available"),
     ),
     (
-        "critical",
-        # L10n: Please don't translate "SEV1". It's a standard severity level name.
-        _lazy("SEV1 (Critical) – Production outage or security risk"),
+        "normal",
+        # L10n: Please don't translate "SEV3". It's a standard severity level name.
+        _lazy("SEV3 (Normal) – Minor issue; no urgent business impact"),
     ),
 ]
 
