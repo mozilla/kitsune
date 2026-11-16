@@ -16,10 +16,9 @@ from kitsune.wiki.models import Document, DraftRevision, Locale, Revision
 
 
 class Command(BaseCommand):
-    help = "Delete the content of locales that are no longer supported."
+    help = "Delete the content of the locales in settings.REMOVED_LOCALES."
 
     def add_arguments(self, parser):
-        parser.add_argument("locales", nargs="+", help="Locale codes, e.g. bm ta-LK")
         parser.add_argument(
             "--dry-run",
             action="store_true",
@@ -27,7 +26,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        locales = options["locales"]
+        locales = settings.REMOVED_LOCALES
 
         supported = [locale for locale in locales if locale in settings.SUMO_LANGUAGES]
         if supported:

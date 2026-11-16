@@ -7,7 +7,7 @@ import kitsune.sumo.models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("gallery", "0013_delete_video"),
+        ("gallery", "0014_private_images"),
     ]
 
     operations = [

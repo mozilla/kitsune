@@ -310,6 +310,20 @@ NON_SUPPORTED_LOCALES = {
     "zu": None,
 }
 
+# Locales we stopped supporting. The delete_locale_content command deletes their content.
+REMOVED_LOCALES = (
+    "bm",
+    "ee",
+    "ha",
+    "ig",
+    "ln",
+    "mg",
+    "ta-LK",
+    "tn",
+    "yo",
+    "zu",
+)
+
 ES_LOCALE_ANALYZERS = {
     "ar": "arabic",
     "bg": "bulgarian",

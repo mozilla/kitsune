@@ -7,7 +7,7 @@ import kitsune.sumo.models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("wiki", "0030_remove_document_restrict_to_groups"),
+        ("wiki", "0031_knowledge_base_presentation"),
     ]
 
     operations = [
