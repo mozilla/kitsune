@@ -188,6 +188,7 @@ def queue_welcome_email(invitation, *, company, user):
                 ),
                 "includes_chat": includes_chat,
                 "start_url": f"https://{host}{path}",
+                "link_days": timedelta(seconds=settings.ENTERPRISE_INVITATION_MAX_AGE).days,
                 "guides": guides,
             },
             from_email=settings.DEFAULT_FROM_EMAIL,
