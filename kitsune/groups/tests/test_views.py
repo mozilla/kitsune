@@ -844,6 +844,29 @@ class CompanySupportSectionTests(TestCase):
         SupportTicketFactory(user=member, org_group=self.department)
         self.assertTrue(has_tab(self.department))
 
+    def test_support_contact_headings_only_below_the_root(self):
+        viewer = self.user(self.root)
+        for profile, is_enterprise in (
+            (self.root, False),
+            (self.company, True),
+            (self.department, True),
+            (GroupProfileFactory(), False),
+        ):
+            with self.subTest(group=profile.slug):
+                response = self.get(viewer, reverse("groups.profile", args=[profile.slug]))
+                self.assertEqual(response.status_code, 200)
+                doc = pq(response.content)
+                headings = [doc("#group-leaders h2").text(), doc("#group-members h2").text()]
+                descriptions = doc(".section-description")
+                if is_enterprise:
+                    self.assertEqual(
+                        headings, ["Primary support contacts", "Secondary support contacts"]
+                    )
+                    self.assertEqual(len(descriptions), 2)
+                else:
+                    self.assertEqual(headings, ["Group leaders", "Group members"])
+                    self.assertFalse(descriptions)
+
     def test_my_support_links_to_the_users_company_regardless_of_coverage(self):
         for persona, user, company in (
             ("company member", self.user(self.company), self.company),
