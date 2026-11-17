@@ -16,6 +16,7 @@ from kitsune.sumo.tests import SkipTest, TestCase, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.config import CATEGORIES, TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
+from kitsune.wiki.forms import DocumentForm
 from kitsune.wiki.models import (
     Audience,
     Document,
@@ -37,7 +38,12 @@ from kitsune.wiki.tests import (
     TranslatedRevisionFactory,
     new_document_data,
 )
-from kitsune.wiki.views import _document_lock_check, _document_lock_clear, _document_lock_steal
+from kitsune.wiki.views import (
+    _document_lock_check,
+    _document_lock_clear,
+    _document_lock_steal,
+    get_visible_related_documents,
+)
 
 
 class DocumentVisibilityTests(TestCase):
@@ -2140,6 +2146,49 @@ class DocumentEditingTests(TestCase):
         self.client.post(trans_url, data)
         draft_revision = DraftRevision.objects.filter(id=draft.id)
         self.assertEqual(False, draft_revision.exists())
+
+
+class RelatedDocumentsTests(TestCase):
+    """An article that exists only in one locale, related to an en-US article."""
+
+    def setUp(self):
+        super().setUp()
+        self.doc = ApprovedRevisionFactory().document
+        self.en_related = ApprovedRevisionFactory().document
+        self.ro_only = ApprovedRevisionFactory(document__locale="ro").document
+        self.doc.related_documents.add(self.en_related)
+        self.ro_only.related_documents.add(self.doc)
+
+    def test_locale_only_article_is_related_in_its_locale_only(self):
+        user = UserFactory()
+        for locale, expected in (
+            ("en-US", {self.en_related}),
+            ("de", {self.en_related}),
+            ("ro", {self.en_related, self.ro_only}),
+        ):
+            with self.subTest(locale=locale):
+                related = get_visible_related_documents(user, self.doc, locale=locale)
+                self.assertEqual(set(related), expected)
+
+    def test_en_us_form_keeps_the_locale_only_link_unless_made_a_template(self):
+        for category, prefix, submitted, expected in (
+            (CATEGORIES[0][0], "", [self.en_related], {self.en_related, self.ro_only}),
+            (TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX, [], set()),
+        ):
+            with self.subTest(category=category):
+                data = new_document_data()
+                data.update(
+                    {
+                        "title": prefix + self.doc.title,
+                        "slug": self.doc.slug,
+                        "category": category,
+                        "related_documents": [doc.pk for doc in submitted],
+                    }
+                )
+                form = DocumentForm(data, instance=self.doc, locale="en-US")
+                self.assertTrue(form.is_valid(), form.errors)
+                form.save(None)
+                self.assertEqual(set(self.doc.related_documents.all()), expected)
 
 
 class DocumentAudienceEditingTests(TestCase):
