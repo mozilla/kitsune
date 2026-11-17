@@ -148,6 +148,47 @@ class EnterpriseZendeskMembershipChangesTests(TestCase):
                 [call(self.user.pk)],
             )
 
+        def lead_department():
+            # Leadership kept after its membership was removed; the leaders manager adds both.
+            GroupProfile.leaders.through.objects.create(
+                groupprofile=self.department, user=self.user
+            )
+
+        def leader_removal():
+            lead_department()
+            ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
+            return lambda: self.department.leaders.remove(self.user), [
+                call(self.user.pk, removed_organization_ids=("101",))
+            ]
+
+        def leaders_clear():
+            lead_department()
+            ZendeskOrganization.objects.create(group_profile=self.company, zendesk_id="101")
+            return self.department.leaders.clear, [
+                call(self.user.pk, removed_organization_ids=("101",))
+            ]
+
+        def reverse_leadership_clear():
+            lead_department()
+            return self.user.groupprofile_set.clear, [call(self.user.pk)]
+
+        def unrelated_leader_removal():
+            unrelated = GroupProfileFactory()
+            GroupProfile.leaders.through.objects.create(groupprofile=unrelated, user=self.user)
+            return lambda: unrelated.leaders.remove(self.user), []
+
+        def department_profile_deletion_for_its_leader():
+            lead_department()
+            return self.department.delete, [call(self.user.pk)]
+
+        def department_move_between_companies_for_its_leader():
+            other_company = EnterpriseCompanyFactory(root=self.root)
+            lead_department()
+            return (
+                lambda: GroupProfile.objects.move(self.department, other_company, "last-child"),
+                [call(self.user.pk)],
+            )
+
         for arrange in (
             company_group_deletion,
             former_company_group_deletion,
@@ -163,6 +204,12 @@ class EnterpriseZendeskMembershipChangesTests(TestCase):
             move_within_a_company,
             child_profile_for_a_group_with_members,
             sibling_profile_for_a_group_with_members,
+            leader_removal,
+            leaders_clear,
+            reverse_leadership_clear,
+            unrelated_leader_removal,
+            department_profile_deletion_for_its_leader,
+            department_move_between_companies_for_its_leader,
         ):
             with self.subTest(arrange.__name__), transaction.atomic():
                 # Rolled-back cases leave stale paths and deleted groups cached on these objects.

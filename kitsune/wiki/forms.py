@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 from django import forms
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.db.models.functions import Coalesce
 from django.template.defaultfilters import slugify
 from django.utils import timezone
@@ -203,10 +204,15 @@ class DocumentForm(forms.ModelForm):
         cdata = super().clean()
         locale = cdata.get("locale")
 
-        if cdata.get("related_documents") and (
-            int(cdata.get("category", 0)) in (TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY)
-        ):
-            raise forms.ValidationError(RELATED_DOCUMENTS_DISALLOWED)
+        if int(cdata.get("category") or 0) in (TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY):
+            if cdata.get("related_documents"):
+                raise forms.ValidationError(RELATED_DOCUMENTS_DISALLOWED)
+        elif self.instance.pk and "related_documents" in cdata:
+            # The field lists only articles in this form's locales; keep links to the others.
+            hidden_docs = self.instance.related_documents.exclude(locale__in=self.related_locales)
+            cdata["related_documents"] = Document.objects.filter(
+                Q(pk__in=cdata["related_documents"]) | Q(pk__in=hidden_docs)
+            )
 
         # Products are required for en-US
         product_ids = set(map(int, cdata.get("products", [])))
@@ -299,10 +305,10 @@ class DocumentForm(forms.ModelForm):
         # Set up the queryset for the related documents field.
         related_documents_field = self.fields["related_documents"]
         queryset = Document.objects.filter(is_template=False)
-        locales = [settings.WIKI_DEFAULT_LANGUAGE]
+        self.related_locales = [settings.WIKI_DEFAULT_LANGUAGE]
         if locale and (locale != settings.WIKI_DEFAULT_LANGUAGE):
-            locales.append(locale)
-        related_documents_field.queryset = queryset.filter(locale__in=locales)
+            self.related_locales.append(locale)
+        related_documents_field.queryset = queryset.filter(locale__in=self.related_locales)
 
         # If user hasn't permission to frob is_archived, remove the field. This
         # causes save() to skip it as well.

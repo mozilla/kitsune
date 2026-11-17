@@ -132,6 +132,8 @@ def chat_jwt(request, product_slug):
 @login_required
 @require_http_methods(["GET", "POST"])
 def ticket_detail(request, username, ticket_id):
+    # A "+" in the username can arrive in the URL as a space.
+    username = username.replace(" ", "+")
     ticket = get_object_or_404(
         SupportTicket.objects.accessible_to(request.user).select_related(
             "product", "topic", "user", "org_group"

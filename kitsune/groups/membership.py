@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import connections, transaction
-from django.db.models import Subquery
+from django.db.models import Exists, OuterRef, Q, Subquery
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import SupportContract
@@ -66,10 +66,13 @@ def queue_enterprise_zendesk_sync(user_ids, *, using="default", removed_organiza
         )
 
 
-def queue_chat_revocation(user_ids, group_ids, *, left_companies=None, using="default"):
+def queue_chat_revocation(
+    user_ids, group_ids, *, left_companies=None, left_profile_ids=(), using="default"
+):
     """Tag chats after commit for active users whom leaving these groups leaves without chat.
 
     `left_companies` defaults to the groups' profiles and ancestors; moves pass the old companies.
+    `left_profile_ids` are profiles whose leadership the users lose.
     """
     # Break the GroupProfile -> managers -> membership -> customercare.tasks import cycle.
     from kitsune.customercare.tasks import had_chat, revoke_chat_tickets
@@ -79,13 +82,18 @@ def queue_chat_revocation(user_ids, group_ids, *, left_companies=None, using="de
         left_companies = profiles.containing_groups(group_ids)
     if not had_chat(left_companies):
         return
-    memberships = User.groups.through.objects.using(using)
     users = User.objects.using(using).filter(pk__in=user_ids, is_active=True)
     for user in users.select_related("profile"):
-        remaining = (
-            memberships.filter(user_id=user.pk).exclude(group_id__in=group_ids).values("group_id")
+        remaining = profiles.filter(
+            Exists(
+                profiles.filter(
+                    (Q(group__user=user) & ~Q(group_id__in=group_ids))
+                    | (Q(leaders=user) & ~Q(pk__in=left_profile_ids)),
+                    path__startswith=OuterRef("path"),
+                )
+            )
         )
-        if not had_chat(profiles.containing_groups(remaining)):
+        if not had_chat(remaining):
             revoke_chat_tickets(user, using=using)
 
 
@@ -143,6 +151,15 @@ def _validate_memberships(user_ids, group_ids, *, replace, using, check_existing
         existing = _company_paths({group_id for _, group_id in memberships}, using)
         for user_id, group_id in memberships:
             companies_by_user[user_id].update(existing.get(group_id, ()))
+    # Replacing memberships keeps leadership, and leading a company or department belongs to it.
+    profiles = enterprise_profiles(using)
+    company_path_length = profiles.model.steplen * 2
+    for user_id, path in (
+        profiles.model.leaders.through.objects.using(using)
+        .filter(user_id__in=user_ids, groupprofile__in=profiles)
+        .values_list("user_id", "groupprofile__path")
+    ):
+        companies_by_user[user_id].add(path[:company_path_length])
 
     if any(len(companies) > 1 for companies in companies_by_user.values()):
         raise ValidationError(
@@ -256,20 +273,26 @@ def guard_enterprise_group_move(node, target, *, using="default"):
                     code="contracted_company",
                 )
             changed_groups = set()
+            changed_profile_ids = set()
             for profile_id in before.keys() | after.keys():
                 old_membership = before.get(profile_id)
                 new_membership = after.get(profile_id)
                 if old_membership != new_membership:
+                    changed_profile_ids.add(profile_id)
                     if old_membership is not None:
                         changed_groups.add(old_membership[0])
                     if new_membership is not None:
                         changed_groups.add(new_membership[0])
             if changed_groups:
                 user_ids = tuple(
-                    User.groups.through.objects.using(using)
-                    .filter(group_id__in=changed_groups)
-                    .values_list("user_id", flat=True)
-                    .distinct()
+                    {
+                        *User.groups.through.objects.using(using)
+                        .filter(group_id__in=changed_groups)
+                        .values_list("user_id", flat=True),
+                        *node.__class__.leaders.through.objects.using(using)
+                        .filter(groupprofile_id__in=changed_profile_ids)
+                        .values_list("user_id", flat=True),
+                    }
                 )
                 _lock_users(user_ids, using)
                 _validate_memberships(
@@ -280,6 +303,7 @@ def guard_enterprise_group_move(node, target, *, using="default"):
                     user_ids,
                     changed_groups,
                     left_companies={company_id for _, company_id in before.values()},
+                    left_profile_ids=changed_profile_ids,
                     using=using,
                 )
                 queue_enterprise_zendesk_sync(

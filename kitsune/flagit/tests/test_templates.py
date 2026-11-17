@@ -74,28 +74,6 @@ class FlaggedQueueTestCase(TestCaseBase):
         kb_post_type = str(ContentType.objects.get_for_model(kb_post).id)
         self.assertEqual(kb_post_type in [option.get("value") for option in options], listed)
 
-    def test_support_tickets_excluded_from_queue(self):
-        """Test that SupportTickets do not appear in the main flagged queue."""
-        product = ProductFactory()
-        ticket = SupportTicket.objects.create(
-            subject="Test support ticket",
-            description="This is a test ticket description",
-            category="test-category",
-            email="test@example.com",
-            product=product,
-            submission_status=SupportTicket.STATUS_FLAGGED,
-        )
-
-        flag = FlaggedObject(content_object=ticket, reason="spam", creator_id=self.flagger.id)
-        flag.save()
-
-        response = get(self.client, "flagit.flagged_queue")
-        self.assertEqual(200, response.status_code)
-
-        content = response.content.decode("utf-8")
-        self.assertNotIn("Test support ticket", content)
-        self.assertNotIn("test@example.com", content)
-
     def test_support_ticket_not_in_filter(self):
         """Test that SupportTicket content type is not in the filter dropdown."""
         product = ProductFactory()

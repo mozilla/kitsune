@@ -333,82 +333,56 @@ class TestWikiInternalLinks(TestCase):
     def setUp(self):
         self.d, self.r, self.p = doc_rev_parser("Test content", "Installing Firefox")
 
-    def test_simple(self):
-        """Simple internal link markup."""
-        link = pq_link(self.p, "[[Installing Firefox]]")
-        self.assertEqual("/en-US/kb/installing-firefox", link.attr("href"))
-        self.assertEqual("Installing Firefox", link.text())
-        assert not link.hasClass("new")
+    def test_links(self):
+        """Internal links to existing and missing pages, with hashes and names."""
+        page = "/en-US/kb/installing-firefox"
+        missing = "/en-US/kb/new?title=A+new+page"
+        for markup, href, text, is_new in (
+            ("[[Installing Firefox]]", page, "Installing Firefox", False),
+            (
+                "[[Installing Firefox#section name]]",
+                f"{page}#section_name",
+                "Installing Firefox",
+                False,
+            ),
+            (
+                "[[Installing Firefox#section name|section]]",
+                f"{page}#section_name",
+                "section",
+                False,
+            ),
+            ("[[#section 3]]", "#section_3", "#section 3", False),
+            ("[[Installing Firefox|this name]]", page, "this name", False),
+            ("[[Installing Firefox|with|pipe]]", page, "with|pipe", False),
+            ("[[#section 3|this name]]", "#section_3", "this name", False),
+            (
+                "[[Installing Firefox#section 3|this name]]",
+                f"{page}#section_3",
+                "this name",
+                False,
+            ),
+            ("[[A new page]]", missing, "A new page", True),
+            ("[[A new page#section 3|this name]]", f"{missing}#section_3", "this name", True),
+        ):
+            with self.subTest(markup):
+                link = pq_link(self.p, markup)
+                self.assertEqual(href, link.attr("href"))
+                self.assertEqual(text, link.text())
+                self.assertEqual(is_new, link.hasClass("new"))
 
-    def test_simple_markup(self):
-        text = "[[Installing Firefox]]"
-        self.assertEqual(
-            '<p><a href="/en-US/kb/installing-firefox">' + "Installing Firefox</a></p>",
-            self.p.parse(text).replace("\n", ""),
-        )
-
-    def test_link_hash(self):
-        """Internal link with hash."""
-        link = pq_link(self.p, "[[Installing Firefox#section name]]")
-        self.assertEqual("/en-US/kb/installing-firefox#section_name", link.attr("href"))
-        self.assertEqual("Installing Firefox", link.text())
-
-    def test_link_hash_text(self):
-        """Internal link with hash and text."""
-        link = pq_link(self.p, "[[Installing Firefox#section name|section]]")
-        self.assertEqual("/en-US/kb/installing-firefox#section_name", link.attr("href"))
-        self.assertEqual("section", link.text())
-
-    def test_hash_only(self):
-        """Internal hash only."""
-        link = pq_link(self.p, "[[#section 3]]")
-        self.assertEqual("#section_3", link.attr("href"))
-        self.assertEqual("#section 3", link.text())
-
-    def test_link_name(self):
-        """Internal link with name."""
-        link = pq_link(self.p, "[[Installing Firefox|this name]]")
-        self.assertEqual("/en-US/kb/installing-firefox", link.attr("href"))
-        self.assertEqual("this name", link.text())
-
-    def test_link_with_extra_pipe(self):
-        link = pq_link(self.p, "[[Installing Firefox|with|pipe]]")
-        self.assertEqual("/en-US/kb/installing-firefox", link.attr("href"))
-        self.assertEqual("with|pipe", link.text())
-
-    def test_hash_name(self):
-        """Internal hash with name."""
-        link = pq_link(self.p, "[[#section 3|this name]]")
-        self.assertEqual("#section_3", link.attr("href"))
-        self.assertEqual("this name", link.text())
-        assert not link.hasClass("new")
-
-    def test_link_hash_name(self):
-        """Internal link with hash and name."""
-        link = pq_link(self.p, "[[Installing Firefox#section 3|this name]]")
-        self.assertEqual("/en-US/kb/installing-firefox#section_3", link.attr("href"))
-        self.assertEqual("this name", link.text())
-
-    def test_link_hash_name_markup(self):
-        """Internal link with hash and name."""
-        text = "[[Installing Firefox#section 3|this name]]"
-        self.assertEqual(
-            '<p><a href="/en-US/kb/installing-firefox#section_3">this name</a>\n</p>',
-            self.p.parse(text),
-        )
-
-    def test_simple_create(self):
-        """Simple link for inexistent page."""
-        link = pq_link(self.p, "[[A new page]]")
-        assert link.hasClass("new")
-        self.assertEqual("/en-US/kb/new?title=A+new+page", link.attr("href"))
-        self.assertEqual("A new page", link.text())
-
-    def test_link_edit_hash_name(self):
-        """Internal link for inexistent page with hash and name."""
-        link = pq_link(self.p, "[[A new page#section 3|this name]]")
-        self.assertEqual("/en-US/kb/new?title=A+new+page#section_3", link.attr("href"))
-        self.assertEqual("this name", link.text())
+    def test_link_markup(self):
+        for markup, html in (
+            (
+                "[[Installing Firefox]]",
+                '<p><a href="/en-US/kb/installing-firefox">Installing Firefox</a>\n</p>',
+            ),
+            (
+                "[[Installing Firefox#section 3|this name]]",
+                '<p><a href="/en-US/kb/installing-firefox#section_3">this name</a>\n</p>',
+            ),
+        ):
+            with self.subTest(markup):
+                self.assertEqual(html, self.p.parse(markup))
 
     def test_link_with_localization(self):
         """A link to an English doc with a local translation."""

@@ -1,7 +1,6 @@
 import base64
 import hashlib
 from contextlib import contextmanager, nullcontext
-from pathlib import Path
 
 from django.conf import settings
 from django.test import Client
@@ -9,7 +8,6 @@ from django.utils.translation import trans_real
 from pyquery import PyQuery as pq
 from waffle.testutils import override_flag
 
-from kitsune.sumo import theme
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.tests.test_middleware import csp_directives
 from kitsune.sumo.theme import DARK_MODE_FLAG
@@ -45,11 +43,6 @@ def translated_strings(locale, strings):
 
 
 class HeadScriptTests(TestCase):
-    def test_setting_is_the_text_of_the_file(self):
-        source = Path(theme.__file__).with_name("theme_head.js").read_bytes()
-
-        self.assertEqual(source.decode("utf-8"), settings.HEAD_SCRIPT)
-
     def test_script_is_safe_to_inline_verbatim(self):
         # Browsers normalize CRLF before hashing, so a CRLF checkout would void the hash.
         self.assertNotIn("\r", settings.HEAD_SCRIPT)

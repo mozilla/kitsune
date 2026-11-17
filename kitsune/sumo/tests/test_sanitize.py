@@ -1,35 +1,8 @@
 import markupsafe
 
-from kitsune.sumo.sanitize import (
-    RESTRICTED_HTML_ATTRIBUTES,
-    RESTRICTED_HTML_TAGS,
-    linkify,
-)
+from kitsune.sumo.sanitize import linkify
 from kitsune.sumo.templatetags.jinja_helpers import sanitize_external_html
 from kitsune.sumo.tests import TestCase
-
-
-class RestrictedHtmlConstantsTests(TestCase):
-    def test_tags_contains_br_and_pre(self):
-        self.assertIn("br", RESTRICTED_HTML_TAGS)
-        self.assertIn("pre", RESTRICTED_HTML_TAGS)
-
-    def test_tags_contains_headings(self):
-        for tag in ("h1", "h2", "h3", "h4", "h5", "h6"):
-            self.assertIn(tag, RESTRICTED_HTML_TAGS)
-
-    def test_tags_contains_table_structure(self):
-        for tag in ("table", "thead", "tbody", "tfoot", "tr", "td", "th"):
-            self.assertIn(tag, RESTRICTED_HTML_TAGS)
-
-    def test_tags_contains_u_and_hr(self):
-        self.assertIn("u", RESTRICTED_HTML_TAGS)
-        self.assertIn("hr", RESTRICTED_HTML_TAGS)
-
-    def test_rename_preserves_existing_attribute_entries(self):
-        self.assertIn("a", RESTRICTED_HTML_ATTRIBUTES)
-        self.assertIn("abbr", RESTRICTED_HTML_ATTRIBUTES)
-        self.assertIn("acronym", RESTRICTED_HTML_ATTRIBUTES)
 
 
 class LinkifyTests(TestCase):

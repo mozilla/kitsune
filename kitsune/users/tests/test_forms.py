@@ -6,27 +6,13 @@ from kitsune.users.validators import UsernameValidator
 
 
 class UsernameValidatorTestCase(TestCase):
-    def setUp(self):
-        def test_valid(self):
-            UsernameValidator("a_valid_name")
-
-        def test_has_number(self):
-            UsernameValidator("valid123")
-
-        def test_has_letter_number_underscore(self):
-            UsernameValidator("valid_name_123")
-
-    def test_has_slash(self):
-        self.assertRaises(ValidationError, lambda: UsernameValidator("x/"))
-
-    def test_has_at_sign(self):
-        self.assertRaises(ValidationError, lambda: UsernameValidator("@x"))
-
-    def test_has_hyphen(self):
-        self.assertRaises(ValidationError, lambda: UsernameValidator("user-name"))
-
-    def test_path_traversal_attack(self):
-        self.assertRaises(ValidationError, lambda: UsernameValidator("/../../wp-login.php"))
+    def test_valid_and_invalid_names(self):
+        for name in ("a_valid_name", "valid123", "valid_name_123"):
+            with self.subTest(name):
+                UsernameValidator(name)
+        for name in ("x/", "@x", "user-name", "/../../wp-login.php"):
+            with self.subTest(name):
+                self.assertRaises(ValidationError, UsernameValidator, name)
 
 
 class Testusername_allowed(TestCase):

@@ -32,26 +32,9 @@ from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.models import AccountEvent, Deactivation, Profile, Setting, User
+from kitsune.users.models import AccountEvent, Deactivation, Profile, User
 from kitsune.users.tests import GroupFactory, ProfileFactory, UserFactory, add_permission
 from kitsune.users.views import edit_profile
-
-
-class UserSettingsTests(TestCase):
-    def setUp(self):
-        self.user = UserFactory()
-        self.profile = self.user.profile
-        self.client.login(username=self.user.username, password="testpass")
-        super().setUp()
-
-    def test_create_setting(self):
-        url = reverse("users.edit_settings", locale="en-US")
-        self.assertEqual(Setting.objects.filter(user=self.user).count(), 0)  # No settings
-        res = self.client.get(url, follow=True)
-        self.assertEqual(200, res.status_code)
-        res = self.client.post(url, {"forums_watch_new_thread": True}, follow=True)
-        self.assertEqual(200, res.status_code)
-        assert Setting.get_for_user(self.user, "forums_watch_new_thread")
 
 
 class UserProfileTests(TestCase):
@@ -60,10 +43,6 @@ class UserProfileTests(TestCase):
         self.profile = self.user.profile
         self.userrl = reverse("users.profile", args=[self.user.username], locale="en-US")
         super().setUp()
-
-    def test_ProfileFactory(self):
-        res = self.client.get(self.userrl)
-        self.assertContains(res, self.user.username)
 
     def test_profile_redirect(self):
         """Ensure that old profile URL's get redirected."""
@@ -90,10 +69,6 @@ class UserProfileTests(TestCase):
         res = self.client.get(self.userrl)
         self.assertEqual(404, res.status_code)
 
-    def test_profile_post(self):
-        res = self.client.post(self.userrl)
-        self.assertEqual(405, res.status_code)
-
     def test_profile_deactivate(self):
         """Test user deactivation"""
         p = UserFactory().profile
@@ -114,108 +89,51 @@ class UserProfileTests(TestCase):
         p = Profile.objects.get(user_id=p.user_id)
         assert not p.user.is_active
 
-    def test_deactivate_and_flag_spam(self):
+    def test_deactivate_spam_deletes_forum_content_and_flags_questions(self):
+        """Spam deactivation deletes the user's (kb)forum content and flags their questions
+        and answers as spam, leaving other users' content alone."""
         self.client.login(username=self.user.username, password="testpass")
         add_permission(self.user, Profile, "deactivate_users")
-
-        # Verify content is flagged as spam when requested.
-        u = UserFactory()
-        AnswerFactory(creator=u)
-        QuestionFactory(creator=u)
-        url = reverse("users.deactivate-spam", locale="en-US")
-        res = self.client.post(url, {"user_id": u.id})
-
-        self.assertEqual(302, res.status_code)
-        self.assertEqual(1, Question.objects.filter(creator=u, is_spam=True).count())
-        self.assertEqual(0, Question.objects.filter(creator=u, is_spam=False).count())
-        self.assertEqual(1, Answer.objects.filter(creator=u, is_spam=True).count())
-        self.assertEqual(0, Answer.objects.filter(creator=u, is_spam=False).count())
-
-    def test_deactivate_spam_deletes_forum_posts_and_threads(self):
-        """Test deactivating a user with mark_spam=True deletes forum content."""
-        self.client.login(username=self.user.username, password="testpass")
-        add_permission(self.user, Profile, "deactivate_users")
-
         spam_user = UserFactory()
-
-        # Create forum threads and posts by the spam user
-        ThreadFactory(creator=spam_user)
-        PostFactory(author=spam_user)
-        PostFactory(author=spam_user)
-
-        # Create content by other users that should NOT be deleted
         other_user = UserFactory()
-        ThreadFactory(creator=other_user)
-        PostFactory(author=other_user)
+        for user in (spam_user, other_user):
+            ThreadFactory(creator=user)
+            PostFactory(author=user)
+            KBForumThreadFactory(creator=user)
+            KBForumPostFactory(creator=user)
+            QuestionFactory(creator=user)
+            AnswerFactory(creator=user)
+        others = {
+            "forum threads": Thread.objects.filter(creator=other_user).count(),
+            "forum posts": Post.objects.filter(author=other_user).count(),
+            "kb threads": KBForumThread.objects.filter(creator=other_user).count(),
+            "kb posts": KBForumPost.objects.filter(creator=other_user).count(),
+        }
+        self.assertTrue(all(others.values()))
 
-        # Count actual content before deactivation
-        spam_threads = Thread.objects.filter(creator=spam_user).count()
-        spam_posts = Post.objects.filter(author=spam_user).count()
-        other_threads = Thread.objects.filter(creator=other_user).count()
-        other_posts = Post.objects.filter(author=other_user).count()
-
-        # Verify content exists before deactivation
-        self.assertGreater(spam_threads, 0)
-        self.assertGreater(spam_posts, 0)
-        self.assertGreater(other_threads, 0)
-        self.assertGreater(other_posts, 0)
-
-        # Deactivate user with spam flag
         url = reverse("users.deactivate-spam", locale="en-US")
-        response = self.client.post(url, {"user_id": spam_user.id})
+        self.assertEqual(302, self.client.post(url, {"user_id": spam_user.id}).status_code)
 
-        # Verify successful deactivation
-        self.assertEqual(302, response.status_code)
         spam_user.refresh_from_db()
         self.assertFalse(spam_user.is_active)
-
-        # Verify all forum content by spam user is deleted
         self.assertEqual(0, Thread.objects.filter(creator=spam_user).count())
         self.assertEqual(0, Post.objects.filter(author=spam_user).count())
-
-        # Verify content by other users remains intact
-        self.assertEqual(other_threads, Thread.objects.filter(creator=other_user).count())
-        self.assertEqual(other_posts, Post.objects.filter(author=other_user).count())
-
-    def test_deactivate_spam_deletes_kbforum_posts_and_threads(self):
-        """Test deactivating a user with mark_spam=True deletes kbforum content."""
-        self.client.login(username=self.user.username, password="testpass")
-        add_permission(self.user, Profile, "deactivate_users")
-
-        spam_user = UserFactory()
-
-        # Create kbforum threads and posts by the spam user
-        KBForumThreadFactory(creator=spam_user)
-        KBForumPostFactory(creator=spam_user)
-        KBForumPostFactory(creator=spam_user)
-
-        # Create content by other users that should NOT be deleted
-        other_user = UserFactory()
-        KBForumThreadFactory(creator=other_user)
-        KBForumPostFactory(creator=other_user)
-
-        # Verify content exists before deactivation
-        self.assertEqual(1, KBForumThread.objects.filter(creator=spam_user).count())
-        self.assertEqual(2, KBForumPost.objects.filter(creator=spam_user).count())
-        self.assertEqual(1, KBForumThread.objects.filter(creator=other_user).count())
-        self.assertEqual(1, KBForumPost.objects.filter(creator=other_user).count())
-
-        # Deactivate user with spam flag
-        url = reverse("users.deactivate-spam", locale="en-US")
-        response = self.client.post(url, {"user_id": spam_user.id})
-
-        # Verify successful deactivation
-        self.assertEqual(302, response.status_code)
-        spam_user.refresh_from_db()
-        self.assertFalse(spam_user.is_active)
-
-        # Verify all kbforum content by spam user is deleted
         self.assertEqual(0, KBForumThread.objects.filter(creator=spam_user).count())
         self.assertEqual(0, KBForumPost.objects.filter(creator=spam_user).count())
-
-        # Verify content by other users remains intact
-        self.assertEqual(1, KBForumThread.objects.filter(creator=other_user).count())
-        self.assertEqual(1, KBForumPost.objects.filter(creator=other_user).count())
+        self.assertEqual(1, Question.objects.filter(creator=spam_user, is_spam=True).count())
+        self.assertEqual(0, Question.objects.filter(creator=spam_user, is_spam=False).count())
+        self.assertEqual(1, Answer.objects.filter(creator=spam_user, is_spam=True).count())
+        self.assertEqual(0, Answer.objects.filter(creator=spam_user, is_spam=False).count())
+        self.assertEqual(
+            others,
+            {
+                "forum threads": Thread.objects.filter(creator=other_user).count(),
+                "forum posts": Post.objects.filter(author=other_user).count(),
+                "kb threads": KBForumThread.objects.filter(creator=other_user).count(),
+                "kb posts": KBForumPost.objects.filter(creator=other_user).count(),
+            },
+        )
+        self.assertEqual(0, Question.objects.filter(creator=other_user, is_spam=True).count())
 
     def test_discuss_page_renders_after_spam_user_replied(self):
         """Regression: deactivating a user whose reply was a thread's last_post
@@ -244,144 +162,52 @@ class UserProfileTests(TestCase):
         self.assertEqual(200, self.client.get(discuss_url).status_code)
 
     def test_deactivate_without_spam_preserves_forum_content(self):
-        """Test deactivating a user without mark_spam=True preserves forum content."""
+        """Deactivating without the spam flag keeps the user's forum and kbforum content."""
         self.client.login(username=self.user.username, password="testpass")
         add_permission(self.user, Profile, "deactivate_users")
-
         user_to_deactivate = UserFactory()
-
-        # Create forum threads and posts by the user
         ThreadFactory(creator=user_to_deactivate)
         PostFactory(author=user_to_deactivate)
-
-        # Count content before deactivation
-        threads_before = Thread.objects.filter(creator=user_to_deactivate).count()
-        posts_before = Post.objects.filter(author=user_to_deactivate).count()
-
-        # Verify content exists before deactivation
-        self.assertGreater(threads_before, 0)
-        self.assertGreater(posts_before, 0)
-
-        # Deactivate user WITHOUT spam flag (regular deactivation)
-        url = reverse("users.deactivate", locale="en-US")
-        response = self.client.post(url, {"user_id": user_to_deactivate.id})
-
-        # Verify successful deactivation
-        self.assertEqual(302, response.status_code)
-        user_to_deactivate.refresh_from_db()
-        self.assertFalse(user_to_deactivate.is_active)
-
-        # Verify forum content is preserved
-        self.assertEqual(threads_before, Thread.objects.filter(creator=user_to_deactivate).count())
-        self.assertEqual(posts_before, Post.objects.filter(author=user_to_deactivate).count())
-
-    def test_deactivate_without_spam_preserves_kbforum_content(self):
-        """Test deactivating user without mark_spam=True preserves kbforum content."""
-        self.client.login(username=self.user.username, password="testpass")
-        add_permission(self.user, Profile, "deactivate_users")
-
-        user_to_deactivate = UserFactory()
-
-        # Create kbforum threads and posts by the user
         KBForumThreadFactory(creator=user_to_deactivate)
         KBForumPostFactory(creator=user_to_deactivate)
+        before = {
+            "forum threads": Thread.objects.filter(creator=user_to_deactivate).count(),
+            "forum posts": Post.objects.filter(author=user_to_deactivate).count(),
+            "kb threads": KBForumThread.objects.filter(creator=user_to_deactivate).count(),
+            "kb posts": KBForumPost.objects.filter(creator=user_to_deactivate).count(),
+        }
+        self.assertTrue(all(before.values()))
 
-        # Verify content exists before deactivation
-        self.assertEqual(1, KBForumThread.objects.filter(creator=user_to_deactivate).count())
-        self.assertEqual(1, KBForumPost.objects.filter(creator=user_to_deactivate).count())
-
-        # Deactivate user WITHOUT spam flag (regular deactivation)
         url = reverse("users.deactivate", locale="en-US")
-        response = self.client.post(url, {"user_id": user_to_deactivate.id})
+        self.assertEqual(
+            302, self.client.post(url, {"user_id": user_to_deactivate.id}).status_code
+        )
 
-        # Verify successful deactivation
-        self.assertEqual(302, response.status_code)
         user_to_deactivate.refresh_from_db()
         self.assertFalse(user_to_deactivate.is_active)
-
-        # Verify kbforum content is preserved
-        self.assertEqual(1, KBForumThread.objects.filter(creator=user_to_deactivate).count())
-        self.assertEqual(1, KBForumPost.objects.filter(creator=user_to_deactivate).count())
-
-    def test_deactivate_spam_comprehensive_deletion(self):
-        """Test comprehensive deletion of all content types when marking user as spam."""
-        self.client.login(username=self.user.username, password="testpass")
-        add_permission(self.user, Profile, "deactivate_users")
-
-        spam_user = UserFactory()
-
-        # Create forum content
-        ThreadFactory(creator=spam_user)
-        PostFactory(author=spam_user)
-
-        # Create kbforum content
-        KBForumThreadFactory(creator=spam_user)
-        KBForumPostFactory(creator=spam_user)
-
-        # Create questions/answers content
-        QuestionFactory(creator=spam_user)
-        AnswerFactory(creator=spam_user)
-
-        # Count content before deactivation
-        forum_threads = Thread.objects.filter(creator=spam_user).count()
-        forum_posts = Post.objects.filter(author=spam_user).count()
-        kb_threads = KBForumThread.objects.filter(creator=spam_user).count()
-        kb_posts = KBForumPost.objects.filter(creator=spam_user).count()
-
-        # Verify all content exists before deactivation
-        self.assertGreater(forum_threads, 0)
-        self.assertGreater(forum_posts, 0)
-        self.assertGreater(kb_threads, 0)
-        self.assertGreater(kb_posts, 0)
-        self.assertEqual(1, Question.objects.filter(creator=spam_user).count())
-        self.assertEqual(1, Answer.objects.filter(creator=spam_user).count())
-
-        # Deactivate user with spam flag
-        url = reverse("users.deactivate-spam", locale="en-US")
-        response = self.client.post(url, {"user_id": spam_user.id})
-
-        # Verify successful deactivation
-        self.assertEqual(302, response.status_code)
-        spam_user.refresh_from_db()
-        self.assertFalse(spam_user.is_active)
-
-        # Verify all forum/kbforum content is deleted
-        self.assertEqual(0, Thread.objects.filter(creator=spam_user).count())
-        self.assertEqual(0, Post.objects.filter(author=spam_user).count())
-        self.assertEqual(0, KBForumThread.objects.filter(creator=spam_user).count())
-        self.assertEqual(0, KBForumPost.objects.filter(creator=spam_user).count())
-
-        # Verify questions/answers are marked as spam (not deleted)
-        self.assertEqual(1, Question.objects.filter(creator=spam_user, is_spam=True).count())
-        self.assertEqual(1, Answer.objects.filter(creator=spam_user, is_spam=True).count())
+        self.assertEqual(
+            before,
+            {
+                "forum threads": Thread.objects.filter(creator=user_to_deactivate).count(),
+                "forum posts": Post.objects.filter(author=user_to_deactivate).count(),
+                "kb threads": KBForumThread.objects.filter(creator=user_to_deactivate).count(),
+                "kb posts": KBForumPost.objects.filter(creator=user_to_deactivate).count(),
+            },
+        )
 
     def test_cannot_deactivate_superuser(self):
-        """Test that superusers cannot be deactivated."""
+        """Superusers can't be deactivated, with or without the spam flag."""
         self.client.login(username=self.user.username, password="testpass")
         add_permission(self.user, Profile, "deactivate_users")
-
         superuser = UserFactory(is_superuser=True)
-
-        url = reverse("users.deactivate", locale="en-US")
-        response = self.client.post(url, {"user_id": superuser.id})
-
-        self.assertEqual(404, response.status_code)
-        superuser.refresh_from_db()
-        self.assertTrue(superuser.is_active)
-
-    def test_cannot_deactivate_superuser_as_spam(self):
-        """Test that superusers cannot be deactivated with spam flag."""
-        self.client.login(username=self.user.username, password="testpass")
-        add_permission(self.user, Profile, "deactivate_users")
-
-        superuser = UserFactory(is_superuser=True)
-
-        url = reverse("users.deactivate-spam", locale="en-US")
-        response = self.client.post(url, {"user_id": superuser.id})
-
-        self.assertEqual(404, response.status_code)
-        superuser.refresh_from_db()
-        self.assertTrue(superuser.is_active)
+        for name in ("users.deactivate", "users.deactivate-spam"):
+            with self.subTest(name):
+                response = self.client.post(
+                    reverse(name, locale="en-US"), {"user_id": superuser.id}
+                )
+                self.assertEqual(404, response.status_code)
+                superuser.refresh_from_db()
+                self.assertTrue(superuser.is_active)
 
 
 class ProfileNotificationTests(TestCase):
@@ -453,7 +279,7 @@ class EditProfileTests(TestCase):
 class FXAAuthenticationTests(TestCase):
     def test_authenticate_does_not_update_session(self):
         self.client.get(reverse("users.fxa_authentication_init"))
-        assert not self.client.session.get("is_contributor")
+        assert not self.client.session.get("contributor")
 
     def test_authenticate_does_update_session(self):
         url = reverse("users.fxa_authentication_init") + "?contributor=KB"

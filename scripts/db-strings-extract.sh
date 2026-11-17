@@ -23,7 +23,7 @@ SELECTOR="${1:-app.kubernetes.io/component=web,app.kubernetes.io/name=sumo,env_c
 KUBECTL="${KUBECTL:-kubectl -n sumo-prod}"
 
 POD="$($KUBECTL get pods --selector "$SELECTOR" -o json | jq -r '.items[0].metadata.name')"
-$KUBECTL exec -ti "$POD" -- ./manage.py extract_db -o /tmp/db_strings.py
-$KUBECTL cp ${POD}:/tmp/db_strings.py "$TARGET"
+$KUBECTL exec -ti "$POD" -c app -- ./manage.py extract_db -o /tmp/db_strings.py
+$KUBECTL cp -c app ${POD}:/tmp/db_strings.py "$TARGET"
 
 git status

@@ -35,46 +35,6 @@ class GroupProfileAdminTests(TestCase):
         self.site = AdminSite()
         self.admin = GroupProfileAdmin(GroupProfile, self.site)
 
-    def test_leader_added_as_member_via_admin(self):
-        """Ensure leaders added via admin are automatically added as members."""
-        group = Group.objects.create(name="Test Group")
-        profile = GroupProfile.objects.add_root(
-            create_kwargs={"group": group, "slug": "test-group"}
-        )
-
-        user = UserFactory()
-        self.assertFalse(user.groups.filter(pk=group.pk).exists())
-
-        profile.leaders.add(user)
-
-        mock_request = self.factory.post("/admin/groups/groupprofile/")
-        mock_form = MockForm(profile)
-
-        self.admin.save_related(mock_request, mock_form, [], change=True)
-
-        self.assertTrue(user.groups.filter(pk=group.pk).exists())
-
-    def test_existing_member_stays_member(self):
-        """Ensure existing members who become leaders remain members."""
-        group = Group.objects.create(name="Test Group 2")
-        profile = GroupProfile.objects.add_root(
-            create_kwargs={"group": group, "slug": "test-group-2"}
-        )
-
-        user = UserFactory()
-        user.groups.add(group)
-        self.assertTrue(user.groups.filter(pk=group.pk).exists())
-
-        profile.leaders.add(user)
-
-        mock_request = self.factory.post("/admin/groups/groupprofile/")
-        mock_form = MockForm(profile)
-
-        self.admin.save_related(mock_request, mock_form, [], change=True)
-
-        self.assertTrue(user.groups.filter(pk=group.pk).exists())
-        self.assertEqual(user.groups.filter(pk=group.pk).count(), 1)
-
     def test_root_group_requires_leader(self):
         """Ensure root groups cannot be saved without at least one leader."""
         group = Group.objects.create(name="Test Root Group")

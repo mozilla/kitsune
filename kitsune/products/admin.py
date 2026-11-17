@@ -1,11 +1,14 @@
 from typing import Any
 
 from django import forms
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.utils import unquote
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.db.models.query import QuerySet
 from django.forms.models import BaseInlineFormSet
 from django.http import HttpRequest
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.groups.membership import lock_enterprise_hierarchy
@@ -462,7 +465,29 @@ admin.site.register(ProductSupportConfig, ProductSupportConfigAdmin)
 admin.site.register(CuratedBlock, CuratedBlockAdmin)
 
 
+class WrappedFilteredSelectMultiple(FilteredSelectMultiple):
+    """The admin's two-box picker, for fields that aren't many-to-many."""
+
+    def render(self, name, value, attrs=None, renderer=None):
+        # Without its own parent, Django's script moves the picker in front of the label.
+        return format_html(
+            '<div class="related-widget-wrapper">{}</div>',
+            super().render(name, value, attrs, renderer),
+        )
+
+
 class SupportContractForm(forms.ModelForm):
+    languages = forms.MultipleChoiceField(
+        choices=[
+            choice
+            for choice in settings.LANGUAGE_CHOICES_ENGLISH
+            if choice[0] != settings.WIKI_DEFAULT_LANGUAGE
+        ],
+        required=False,
+        widget=WrappedFilteredSelectMultiple(_lazy("languages"), is_stacked=False),
+        help_text=_lazy("Covered users can file tickets in these languages as well as English."),
+    )
+
     class Meta:
         model = SupportContract
         fields = "__all__"
@@ -486,6 +511,9 @@ class SupportContractForm(forms.ModelForm):
         if starts_on and ends_on and starts_on > ends_on:
             self.add_error("ends_on", _lazy("The end date must be on or after the start date."))
         return cleaned_data
+
+    def clean_languages(self):
+        return sorted(self.cleaned_data["languages"])
 
 
 class SupportCoverageInlineFormSet(BaseInlineFormSet):
@@ -582,7 +610,7 @@ def lock_contract_company(company_id):
 
 class SupportContractAdmin(admin.ModelAdmin):
     form = SupportContractForm
-    fields = ("company", "name", "status", "starts_on", "ends_on")
+    fields = ("company", "name", "status", "starts_on", "ends_on", "languages")
     inlines = (SupportCoverageInline,)
     list_display = ("name", "company", "status", "starts_on", "ends_on")
     list_filter = ("status",)

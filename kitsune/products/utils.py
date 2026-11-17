@@ -1,10 +1,12 @@
 import json
 
 import yaml
+from django.conf import settings
 from django.db.models import Count, Prefetch, Q
+from django.utils import timezone
 
 from kitsune.groups.models import GroupProfile
-from kitsune.products.models import Product, SupportCoverage, Topic
+from kitsune.products.models import Product, SupportContract, SupportCoverage, Topic
 
 
 def get_enterprise_companies(request) -> list[GroupProfile]:
@@ -32,6 +34,32 @@ def get_covered_products(company: GroupProfile) -> list[Product]:
         .annotate(coverage_count=Count("support_coverages"))
         .filter(coverage_count=1)
     )
+
+
+def get_support_locale(
+    company: GroupProfile, locale: str = "", product: Product | None = None
+) -> str:
+    """Return the locale if the company's contracts allow it, else their default.
+
+    A contract counts until it ends, even before it starts, unless it's cancelled. With a
+    product, only the contracts covering it count. The default is the one language the
+    contracts list, or English when they list none or several. Without a contract, the
+    locale is kept, and an empty locale becomes English.
+    """
+    coverages = SupportCoverage.objects.filter(
+        contract__company=company, contract__ends_on__gte=timezone.localdate()
+    ).exclude(contract__status=SupportContract.Status.CANCELLED)
+    if product:
+        coverages = coverages.filter(product=product)
+    language_lists = list(coverages.values_list("contract__languages", flat=True))
+    if not language_lists:
+        return locale or settings.WIKI_DEFAULT_LANGUAGE
+    languages = {language for contract in language_lists for language in contract}
+    if locale in languages:
+        return locale
+    if len(languages) == 1:
+        return languages.pop()
+    return settings.WIKI_DEFAULT_LANGUAGE
 
 
 def get_professional_support_products(request) -> list[Product]:

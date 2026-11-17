@@ -61,12 +61,21 @@ class GroupProfileQuerySet(MP_NodeQuerySet):
                     Q(pk__in=enterprise_profiles(self.db).values("pk")) | Exists(mapped_ancestor),
                 )
                 deleted_group_ids = deleted_profiles.values("group_id")
-                user_ids = (
-                    User.groups.through.objects.using(self.db)
+                deleted_profile_ids = list(deleted_profiles.values_list("pk", flat=True))
+                user_ids = {
+                    *User.groups.through.objects.using(self.db)
                     .filter(group_id__in=deleted_group_ids)
-                    .values_list("user_id", flat=True)
+                    .values_list("user_id", flat=True),
+                    *self.model.leaders.through.objects.using(self.db)
+                    .filter(groupprofile_id__in=deleted_profile_ids)
+                    .values_list("user_id", flat=True),
+                }
+                queue_chat_revocation(
+                    user_ids,
+                    deleted_group_ids,
+                    left_profile_ids=deleted_profile_ids,
+                    using=self.db,
                 )
-                queue_chat_revocation(user_ids, deleted_group_ids, using=self.db)
                 queue_enterprise_zendesk_sync(
                     user_ids,
                     using=self.db,
@@ -132,7 +141,18 @@ class GroupProfileManager(MP_NodeManager):
         )
 
     def enterprise_companies(self, user):
-        return self.containing(user).filter(depth=2, pk__in=self.enterprise())
+        """Companies the user belongs to by membership or leadership of the company or below."""
+        if not (user and user.is_authenticated):
+            return self.none()
+        return self.filter(
+            Exists(
+                self.model.objects.filter(
+                    Q(group__user=user) | Q(leaders=user), path__startswith=OuterRef("path")
+                )
+            ),
+            depth=2,
+            pk__in=self.enterprise(),
+        )
 
     def cached_enterprise_companies(self, user):
         """

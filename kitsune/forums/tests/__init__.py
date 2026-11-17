@@ -38,8 +38,7 @@ class ThreadFactory(factory.django.DjangoModelFactory):
         else:
             posts = []
             for args in extracted:
-                args.update(defaults)
-                posts.append(PostFactory(**args))
+                posts.append(PostFactory(**{**defaults, **args}))
 
         for post in posts:
             self.post_set.add(post)

@@ -11,22 +11,25 @@ from kitsune.groups.tasks import (
 
 
 class Command(BaseCommand):
-    help = "Synchronize Zendesk memberships for current enterprise company members sequentially."
+    help = (
+        "Synchronize Zendesk memberships for current enterprise company members and leaders "
+        "sequentially."
+    )
 
     def handle(self, **options):
         if settings.READ_ONLY:
             raise CommandError(
                 "Zendesk membership synchronization is unavailable in read-only mode."
             )
-        user_ids = (
-            enterprise_profiles()
-            .filter(group__user__isnull=False)
-            .order_by("group__user")
-            .values_list("group__user", flat=True)
-            .distinct()
+        profiles = enterprise_profiles()
+        user_ids = sorted(
+            {
+                *profiles.filter(group__user__isnull=False).values_list("group__user", flat=True),
+                *profiles.filter(leaders__isnull=False).values_list("leaders", flat=True),
+            }
         )
         succeeded = failed = 0
-        for user_id in user_ids.iterator():
+        for user_id in user_ids:
             try:
                 failure = sync_enterprise_zendesk_membership(user_id)
             except ZendeskUnavailable as error:

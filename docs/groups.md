@@ -76,7 +76,8 @@ Alice and Bob can't discover GroupB; Charlie and Dana can't discover GroupA.
 
 ## Leadership and moderation
 
-A group's leaders (`leaders`) are its moderators.
+A group's leaders (`leaders`) are its moderators, and members of the group: adding a leader
+adds the membership, and a refused membership refuses the leadership.
 
 - **Root leaders** moderate the whole tree: they add or remove members anywhere, edit any
   group, and are the only ones who can delete subgroups.

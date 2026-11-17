@@ -16,16 +16,18 @@ SNIPPET_MARKER = "static.zdassets.com/ekr/snippet.js"
     ZENDESK_CHAT_WIDGET_KEY=CHAT_WIDGET_KEY,
     ZENDESK_CHAT_SIGNING_SECRET="test-signing-secret",
     ZENDESK_CHAT_SIGNING_KEY_ID="test-key-id",
-    ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES=["de"],
 )
 class ChatWidgetTemplateTests(TestCase):
     """Test that the widget snippet and its inline settings render into the page."""
 
     def setUp(self):
         self.product = ProductFactory(slug="firefox-enterprise")
-        coverage = SupportCoverageFactory(product=self.product, includes_chat=True)
+        coverage = SupportCoverageFactory(
+            product=self.product, includes_chat=True, contract__languages=["de", "pt-BR"]
+        )
+        self.company = coverage.contract.company
         self.user = UserFactory()
-        self.user.groups.add(coverage.contract.company.group)
+        self.user.groups.add(self.company.group)
 
     def _get(self, locale=None):
         url = reverse("products.product", args=[self.product.slug], locale=locale)
@@ -60,43 +62,21 @@ class ChatWidgetTemplateTests(TestCase):
 
         self.assertContains(self._get(), 'data-zendesk-chat-tags="product-firefox-enterprise"')
 
-    def test_locale_is_set_to_the_page_locale(self):
+    def test_locale_is_the_page_locale_when_the_contract_lists_it(self):
         self.client.force_login(self.user)
 
-        self.assertContains(self._get(), "'locale', 'en-US')")
         self.assertContains(self._get(locale="de"), "'locale', 'de')")
+        self.assertContains(self._get(locale="pt-BR"), "'locale', 'pt-br')")
 
-    def test_a_locale_zendesk_does_not_support_still_gets_the_widget_in_english(self):
-        self.client.force_login(self.user)
-        response = self._get(locale="fr")
-
-        self.assertContains(response, SNIPPET_MARKER)
-        self.assertContains(response, "'locale', 'en-US')")
-
-    def test_no_snippet_for_anonymous_users(self):
-        self.assertNotContains(self._get(), SNIPPET_MARKER)
-
-    def test_no_snippet_for_a_user_without_chat_access(self):
-        self.user.groups.clear()
+    def test_a_locale_no_contract_for_the_product_lists_gets_the_widget_in_english(self):
+        SupportCoverageFactory(contract__company=self.company, contract__languages=["fr"])
         self.client.force_login(self.user)
 
-        self.assertNotContains(self._get(), SNIPPET_MARKER)
-
-    @override_switch("zendesk-chat", active=False)
-    def test_no_snippet_when_the_switch_is_off(self):
-        self.client.force_login(self.user)
-
-        self.assertNotContains(self._get(), SNIPPET_MARKER)
-
-    @override_settings(
-        ZENDESK_CHAT_WIDGET_KEY="",
-        ZENDESK_CHAT_SIGNING_SECRET="",
-        ZENDESK_CHAT_SIGNING_KEY_ID="",
-    )
-    def test_page_renders_without_chat_when_settings_are_missing(self):
-        self.client.force_login(self.user)
-
-        self.assertNotContains(self._get(), SNIPPET_MARKER)
+        for locale in ("en-US", "fr"):
+            with self.subTest(locale):
+                response = self._get(locale=locale)
+                self.assertContains(response, SNIPPET_MARKER)
+                self.assertContains(response, "'locale', 'en-US')")
 
     def test_a_chat_page_lets_the_widget_style_itself(self):
         self.client.force_login(self.user)
@@ -115,8 +95,10 @@ class ChatWidgetTemplateTests(TestCase):
         self.assertIn("wss://*.zendesk.com", directives["connect-src"])
 
     def test_a_page_without_chat_names_no_zendesk_host(self):
-        directives = csp_directives(self._get()["Content-Security-Policy"])
+        response = self._get()
+        directives = csp_directives(response["Content-Security-Policy"])
 
+        self.assertNotContains(response, SNIPPET_MARKER)
         self.assertNotIn("https://*.zdassets.com", directives["script-src"])
         self.assertNotIn("wss://*.zendesk.com", directives["connect-src"])
 

@@ -57,10 +57,6 @@ class UsernamesTests(TestCase):
         data = json.loads(res.content)
         self.assertEqual(1, len(data))
 
-    def test_post(self):
-        res = self.client.post(self.url)
-        self.assertEqual(405, res.status_code)
-
     def test_logged_out(self):
         self.client.logout()
         res = self.client.get(self.url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")

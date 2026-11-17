@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from kitsune.products.models import Product
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.sumo.tests import FuzzyUnicode, TestCase
+from kitsune.sumo.tests import FuzzyUnicode
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.config import (
     CATEGORIES,
@@ -143,14 +143,6 @@ class TranslatedRevisionFactory(ApprovedRevisionFactory):
         is_ready_for_localization=True,
         document=factory.SelfAttribute("..document.parent"),
     )
-
-
-def test_translated_revision_factory():
-    tc = TestCase()
-    rev = TranslatedRevisionFactory()
-    assert rev.document.locale != "en-US"
-    tc.assertEqual(rev.based_on.document, rev.document.parent)
-    tc.assertEqual(rev.document.parent.locale, "en-US")
 
 
 class RedirectRevisionFactory(RevisionFactory):

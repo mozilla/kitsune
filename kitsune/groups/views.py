@@ -231,6 +231,7 @@ def profile(request, group_slug, user_form=None, invitation_form=None):
             "children": children,
             "enterprise_is_root": can_onboard and prof.pk == enterprise_root.pk,
             "enterprise_is_company": enterprise_is_company,
+            "is_enterprise": is_enterprise,
             "covered_products": covered_products,
             "can_view_tickets": can_view_tickets,
             "show_tickets_tab": show_tickets_tab,
@@ -532,9 +533,7 @@ def add_leader(request, group_slug):
     if form.is_valid():
         try:
             with transaction.atomic():
-                users = form.cleaned_data["users"]
-                prof.group.user_set.add(*users)
-                prof.leaders.add(*users)
+                prof.leaders.add(*form.cleaned_data["users"])
         except ValidationError as error:
             form.add_error("users", error)
         else:

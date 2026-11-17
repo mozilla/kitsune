@@ -8,42 +8,23 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, simple_paginate
 
 
-def test_paginated_url():
-    """Avoid duplicating page param in pagination."""
-    url = "{}?{}".format(reverse("search"), "q=bookmarks&page=2")
-    request = RequestFactory().get(url)
-    queryset = [{}, {}]
-    paginated = paginate(request, queryset)
-    TestCase().assertEqual(
-        paginated.url, request.build_absolute_uri(request.path) + "?q=bookmarks"
-    )
+class PaginateTests(TestCase):
+    def test_paginated_url_drops_the_page_param(self):
+        for query, expected in (("q=bookmarks&page=2", "?q=bookmarks"), ("page=a", "?")):
+            with self.subTest(query=query):
+                request = RequestFactory().get(f"{reverse('search')}?{query}")
+                paginated = paginate(request, list(range(100)))
+                self.assertEqual(
+                    paginated.url, request.build_absolute_uri(request.path) + expected
+                )
 
-
-def test_invalid_page_param():
-    url = "{}?{}".format(reverse("search"), "page=a")
-    request = RequestFactory().get(url)
-    queryset = list(range(100))
-    paginated = paginate(request, queryset)
-    TestCase().assertEqual(paginated.url, request.build_absolute_uri(request.path) + "?")
-
-
-def test_paginator_filter():
-    tc = TestCase()
-    # Correct number of <li>s on page 1.
-    url = reverse("search")
-    request = RequestFactory().get(url)
-    pager = paginate(request, list(range(100)), per_page=9)
-    html = paginator(pager)
-    doc = pyquery.PyQuery(html)
-    tc.assertEqual(11, len(doc("li")))
-
-    # Correct number of <li>s in the middle.
-    url = "{}?{}".format(reverse("search"), "page=10")
-    request = RequestFactory().get(url)
-    pager = paginate(request, list(range(200)), per_page=10)
-    html = paginator(pager)
-    doc = pyquery.PyQuery(html)
-    tc.assertEqual(13, len(doc("li")))
+    def test_paginator_filter(self):
+        for query, items, per_page, expected_li in (("", 100, 9, 11), ("page=10", 200, 10, 13)):
+            with self.subTest(query=query):
+                request = RequestFactory().get(f"{reverse('search')}?{query}")
+                pager = paginate(request, list(range(items)), per_page=per_page)
+                doc = pyquery.PyQuery(paginator(pager))
+                self.assertEqual(expected_li, len(doc("li")))
 
 
 class SimplePaginatorTestCase(TestCase):

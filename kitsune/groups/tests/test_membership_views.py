@@ -286,6 +286,20 @@ class EnterpriseMembershipAdminTests(EnterpriseMembershipFixtures, TestCase):
         )
         self.assertQuerySetEqual(self.team_a.leaders.all(), [member])
 
+    def test_group_reassignment_makes_unchanged_leaders_members_of_the_new_group(self):
+        leader = UserFactory()
+        self.team_a.leaders.add(leader)
+        replacement = GroupFactory()
+
+        response = self.client.post(
+            reverse("admin:groups_groupprofile_change", args=[self.team_a.pk]),
+            self.profile_data(self.team_a, group=replacement.pk),
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(replacement.pk, self.memberships(leader))
+        self.assertQuerySetEqual(self.team_a.leaders.all(), [leader])
+
     def test_add_root_siblings_preserves_existing_company_memberships(self):
         for position in ("left", "right"):
             with self.subTest(position=position):

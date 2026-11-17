@@ -16,9 +16,6 @@ from kitsune.sumo.templatetags.jinja_helpers import (
     class_selected,
     collapse_linebreaks,
     datetimeformat,
-    f,
-    fe,
-    json,
     label_with_help,
     matomo_mzla_enabled,
     number,
@@ -201,10 +198,6 @@ class TestDateTimeFormat(TestCase):
         with self.assertRaises(ValueError):
             datetimeformat(self.context, "invalid")
 
-    def test_json_helper(self):
-        self.assertEqual("false", json(False))
-        self.assertEqual('{"foo": "bar"}', json({"foo": "bar"}))
-
 
 class TestUrlHelper(TestCase):
     """Tests for the url helper."""
@@ -230,20 +223,6 @@ class TimesinceTests(TestCase):
         """Test behavior when date is in the future and also when omitting the
         `now` kwarg."""
         self.assertEqual("", timesince(datetime(9999, 1, 2)))
-
-
-class TestFormat(TestCase):
-    """Test the |f and |fe filters"""
-
-    def test_f_handles_unicode_in_ascii_strings(self):
-        var = "Pśetergnuś"
-        # Note that the format string is not a unicode string.
-        self.assertEqual(f("{0}", var), var)
-
-    def test_fe_handles_unicode_in_ascii_strings(self):
-        var = "Pśetergnuś"
-        # Note that the format string is not a unicode string.
-        self.assertEqual(fe("{0}", var), var)
 
 
 class TestClassSelected(TestCase):

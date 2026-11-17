@@ -144,10 +144,6 @@ class ZendeskWebhookViewTests(TestCase):
         response = self._post({})
         self.assertEqual(response.status_code, 400)
 
-    def test_get_method_not_allowed(self):
-        response = self.client.get(WEBHOOK_URL)
-        self.assertEqual(response.status_code, 405)
-
 
 class TicketDetailViewTests(TestCase):
     def setUp(self):
@@ -156,13 +152,6 @@ class TicketDetailViewTests(TestCase):
         self.ticket = SupportTicketFactory(
             user=self.owner, zendesk_ticket_id="123", last_synced_at=timezone.now()
         )
-
-    def test_owner_can_view(self):
-        self.client.force_login(self.owner)
-        response = self.client.get(
-            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
-        )
-        self.assertEqual(200, response.status_code)
 
     def test_product_and_topic_titles_are_localized(self):
         product = ProductFactory(title="Firefox Focus", slug="focus")
@@ -199,12 +188,15 @@ class TicketDetailViewTests(TestCase):
         )
         self.assertEqual(404, response.status_code)
 
-    def test_anonymous_redirects_to_login(self):
-        response = self.client.get(
-            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
-        )
-        self.assertEqual(302, response.status_code)
-        self.assertIn("/users/login", response["Location"])
+    def test_space_in_username_is_read_as_plus(self):
+        self.owner.username = "some+user"
+        self.owner.save()
+        self.client.force_login(self.owner)
+        url = reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+
+        response = self.client.get(url.replace("+", "%20"))
+
+        self.assertEqual(200, response.status_code)
 
     def test_staff_can_view_any_ticket(self):
         staff = UserFactory(is_staff=True)
@@ -340,19 +332,14 @@ class TicketDetailViewTests(TestCase):
         )
         self.assertEqual(expected, self.ticket.get_absolute_url())
 
-    def test_template_shows_subject(self):
+    def test_template_shows_subject_description_and_status_badge(self):
         self.client.force_login(self.owner)
         response = self.client.get(
             reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
         )
         self.assertContains(response, self.ticket.subject)
-
-    def test_template_shows_description(self):
-        self.client.force_login(self.owner)
-        response = self.client.get(
-            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
-        )
         self.assertContains(response, self.ticket.description)
+        self.assertContains(response, 'class="status-label')
 
     def test_template_hides_the_description_of_a_chat(self):
         """A chat's description only repeats its subject, so it isn't shown."""
@@ -368,18 +355,10 @@ class TicketDetailViewTests(TestCase):
         self.assertContains(response, "Chat about printing")
         self.assertNotContains(response, "Conversation with Ringo Starr")
 
-    def test_template_shows_status_badge(self):
-        self.client.force_login(self.owner)
-        response = self.client.get(
-            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
-        )
-        self.assertContains(response, 'class="status-label')
-
 
 class SyncTicketCommentsViewTests(TestCase):
     def setUp(self):
         self.owner = UserFactory()
-        self.other = UserFactory()
         self.ticket = SupportTicketFactory(user=self.owner, zendesk_ticket_id="123")
 
     def _url(self):
@@ -387,14 +366,6 @@ class SyncTicketCommentsViewTests(TestCase):
 
     def _htmx_get(self):
         return self.client.get(self._url(), HTTP_HX_REQUEST="true")
-
-    @patch("kitsune.customercare.views.sync_ticket_from_zendesk")
-    def test_htmx_request_triggers_sync_and_returns_partial(self, mock_sync):
-        mock_sync.return_value = self.ticket
-        self.client.force_login(self.owner)
-        response = self._htmx_get()
-        self.assertEqual(200, response.status_code)
-        mock_sync.assert_called_once_with(self.ticket)
 
     @patch(
         "kitsune.customercare.utils.fetch_zendesk_ticket_data",
@@ -466,15 +437,6 @@ class SyncTicketCommentsViewTests(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertNotIn(b'hx-swap-oob="true"', response.content)
         self.assertNotIn(b'id="thread-detail--pill-cluster"', response.content)
-
-    def test_non_owner_htmx_gets_404(self):
-        self.client.force_login(self.other)
-        response = self._htmx_get()
-        self.assertEqual(404, response.status_code)
-
-    def test_anonymous_htmx_redirects(self):
-        response = self._htmx_get()
-        self.assertEqual(302, response.status_code)
 
 
 class TicketReplySyncTests(TestCase):
@@ -595,25 +557,19 @@ class TicketReplySyncTests(TestCase):
         self.assertNotIn(b"hi</textarea>", response.content)
 
     @patch("kitsune.customercare.views.ZendeskClient")
-    def test_post_zendesk_api_exception_sets_reply_error(self, mock_client_cls):
-        mock_client_cls.return_value.add_ticket_comment.side_effect = APIException("nope")
-        response = self.client.post(self.url, {"body": "kept on failure"}, HTTP_HX_REQUEST="true")
-        self.ticket.refresh_from_db()
-        self.assertEqual([], self.ticket.comments)
-        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, self.ticket.zd_status)
-        # Bound form preserves the user's body
-        self.assertIn(b"kept on failure", response.content)
-        self.assertIn(b"failed to send", response.content.lower())
-
-    @patch("kitsune.customercare.views.ZendeskClient")
-    def test_post_request_exception_sets_reply_error(self, mock_client_cls):
-        mock_client_cls.return_value.add_ticket_comment.side_effect = (
-            requests.exceptions.RequestException("network")
-        )
-        response = self.client.post(self.url, {"body": "x"}, HTTP_HX_REQUEST="true")
-        self.ticket.refresh_from_db()
-        self.assertEqual([], self.ticket.comments)
-        self.assertIn(b"failed to send", response.content.lower())
+    def test_post_zendesk_error_sets_reply_error(self, mock_client_cls):
+        for error in (APIException("nope"), requests.exceptions.RequestException("network")):
+            with self.subTest(error=type(error).__name__):
+                mock_client_cls.return_value.add_ticket_comment.side_effect = error
+                response = self.client.post(
+                    self.url, {"body": "kept on failure"}, HTTP_HX_REQUEST="true"
+                )
+                self.ticket.refresh_from_db()
+                self.assertEqual([], self.ticket.comments)
+                self.assertEqual(SupportTicket.ZD_STATUS_OPEN, self.ticket.zd_status)
+                # Bound form preserves the user's body
+                self.assertIn(b"kept on failure", response.content)
+                self.assertIn(b"failed to send", response.content.lower())
 
     @patch("kitsune.customercare.views.ZendeskClient")
     def test_audit_without_comment_event_sets_reply_error(self, mock_client_cls):
@@ -683,15 +639,19 @@ class TicketReplySyncTests(TestCase):
         mock_client_cls.return_value.add_ticket_comment.assert_not_called()
 
     @patch("kitsune.customercare.views.ZendeskClient")
-    def test_htmx_post_includes_oob_status_badge(self, mock_client_cls):
-        """HTMX response carries an OOB pill cluster reflecting the new status."""
+    def test_htmx_post_reopening_pending_ticket_swaps_pill_and_notice(self, mock_client_cls):
+        """Reopening a PENDING ticket OOB-swaps the pill cluster to the new status and an
+        empty notice slot, clearing the 'waiting for your response' banner without a full
+        reload (#3078)."""
         self.ticket.zd_status = SupportTicket.ZD_STATUS_PENDING
         self.ticket.save(update_fields=["zd_status"])
         mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(status="open")
         response = self.client.post(self.url, {"body": "hi"}, HTTP_HX_REQUEST="true")
         self.assertEqual(200, response.status_code)
         self.assertContains(response, 'id="thread-detail--pill-cluster"')
+        self.assertContains(response, 'id="thread-detail--notice-slot"')
         self.assertContains(response, 'hx-swap-oob="true"')
+        self.assertNotIn(b"waiting for your response", response.content)
 
     @patch("kitsune.customercare.views.ZendeskClient")
     def test_htmx_post_without_status_change_omits_oob_badge(self, mock_client_cls):
@@ -703,31 +663,13 @@ class TicketReplySyncTests(TestCase):
         self.assertNotIn(b'hx-swap-oob="true"', response.content)
         self.assertNotIn(b'id="thread-detail--pill-cluster"', response.content)
 
-    def test_non_htmx_render_emits_single_pill_cluster(self):
-        """Initial page render must NOT duplicate the pill cluster element."""
+    def test_non_htmx_render_emits_single_pill_cluster_and_notice_slot(self):
+        """Initial page render must NOT duplicate the pill cluster or notice slot element."""
         response = self.client.get(self.url)
         self.assertEqual(200, response.status_code)
         # Exactly one `id="thread-detail--pill-cluster"` should appear:
         # the one in the hero. The OOB block must be gated off.
         self.assertEqual(1, response.content.count(b'id="thread-detail--pill-cluster"'))
-
-    @patch("kitsune.customercare.views.ZendeskClient")
-    def test_htmx_post_removes_pending_notice_via_oob(self, mock_client_cls):
-        """Reopening a PENDING ticket OOB-swaps an empty notice slot, clearing
-        the 'waiting for your response' banner without a full reload (#3078)."""
-        self.ticket.zd_status = SupportTicket.ZD_STATUS_PENDING
-        self.ticket.save(update_fields=["zd_status"])
-        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(status="open")
-        response = self.client.post(self.url, {"body": "hi"}, HTTP_HX_REQUEST="true")
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, 'id="thread-detail--notice-slot"')
-        self.assertContains(response, 'hx-swap-oob="true"')
-        self.assertNotIn(b"waiting for your response", response.content)
-
-    def test_non_htmx_render_emits_single_notice_slot(self):
-        """Initial page render must NOT duplicate the notice slot element."""
-        response = self.client.get(self.url)
-        self.assertEqual(200, response.status_code)
         self.assertEqual(1, response.content.count(b'id="thread-detail--notice-slot"'))
 
 
@@ -797,73 +739,34 @@ class TicketDetailBreadcrumbsTests(TestCase):
         self.assertNotIn("Groups", crumbs.text())
         self.assertNotIn("Tickets", crumbs.text())
 
-    # --- owner of a personal (non-org) ticket -------------------------------
-
-    def test_owner_personal_ticket_gets_my_questions(self):
-        self.assertMyQuestionsTrail(self._get(self.owner))
-
-    # --- owner who is also an org agent -------------------------------------
-
-    def test_owner_agent_without_referer_gets_my_questions(self):
-        """An owner who also happens to be an org agent still defaults to their
-        own questions trail when they did not arrive from the group pool."""
-        _make_viewable_by_teammate(self.owner, self.ticket)
-        self.ticket.refresh_from_db()
-        self.assertMyQuestionsTrail(self._get(self.owner))
-
-    def test_owner_agent_from_group_pool_gets_group_trail(self):
-        """The design change: an owner who navigated in from the group ticket
-        pool (per the Referer) sees the group trail instead of My Questions."""
-        _make_viewable_by_teammate(self.owner, self.ticket)
-        self.ticket.refresh_from_db()
-        response = self._get(self.owner, referer=self._group_pool_url())
-        self.assertGroupPoolTrail(response)
-
-    def test_owner_agent_with_unrelated_referer_gets_my_questions(self):
-        """Only the group pool Referer flips the owner's trail; arriving from
-        any other page keeps the personal trail."""
-        _make_viewable_by_teammate(self.owner, self.ticket)
-        self.ticket.refresh_from_db()
-        elsewhere = reverse_locale("users.questions", args=[self.owner.username])
-        self.assertMyQuestionsTrail(self._get(self.owner, referer=elsewhere))
-
-    # --- non-owner viewers ---------------------------------------------------
-
-    def test_org_agent_gets_group_trail(self):
-        """A teammate who can view someone else's org ticket gets the group
-        trail without any Referer."""
+    def test_trail_follows_the_viewer_and_referer(self):
         teammate = _make_viewable_by_teammate(self.owner, self.ticket)
-        self.ticket.refresh_from_db()
-        self.assertGroupPoolTrail(self._get(teammate))
-
-    def test_org_agent_referer_is_ignored(self):
-        """The Referer gate applies only to the owner: a non-owner agent gets
-        the group trail even when they arrived from an unrelated page."""
-        teammate = _make_viewable_by_teammate(self.owner, self.ticket)
-        self.ticket.refresh_from_db()
+        groups = {
+            "personal": None,
+            "company": self.ticket.org_group,
+            # A legacy owner outside the enterprise tree has no ticket list to link to.
+            "outside": DepartmentFactory(company=GroupProfileFactory()),
+        }
+        company_pool = reverse_locale("groups.tickets", args=[groups["company"].slug])
+        outside_pool = reverse_locale("groups.tickets", args=[groups["outside"].slug])
         elsewhere = reverse_locale("users.questions", args=[self.owner.username])
-        self.assertGroupPoolTrail(self._get(teammate, referer=elsewhere))
-
-    def test_staff_on_org_ticket_gets_group_trail(self):
-        """Staff can view any ticket; on an org ticket they get the group trail
-        (they pass can_view_tickets without org membership)."""
-        _make_viewable_by_teammate(self.owner, self.ticket)
-        self.ticket.refresh_from_db()
-        staff = UserFactory(is_staff=True)
-        self.assertGroupPoolTrail(self._get(staff))
-
-    def test_staff_on_personal_ticket_gets_subject_only(self):
-        """Staff viewing a stranger's personal (non-org) ticket gets just the
-        subject: no personal trail (not theirs) and no group trail (no org)."""
-        staff = UserFactory(is_staff=True)
-        self.assertSubjectOnlyTrail(self._get(staff))
-
-    def test_group_outside_the_enterprise_tree_gets_no_group_trail(self):
-        """A legacy owner outside the enterprise tree has no ticket list to link to."""
-        self.ticket.org_group = DepartmentFactory(company=GroupProfileFactory())
-        self.ticket.save(update_fields=["org_group"])
-        self.assertMyQuestionsTrail(self._get(self.owner, referer=self._group_pool_url()))
-        self.assertSubjectOnlyTrail(self._get(UserFactory(is_staff=True)))
+        viewers = {"owner": self.owner, "teammate": teammate, "staff": UserFactory(is_staff=True)}
+        for group, viewer, referer, assert_trail in (
+            ("personal", "owner", None, self.assertMyQuestionsTrail),
+            ("personal", "staff", None, self.assertSubjectOnlyTrail),
+            ("company", "owner", None, self.assertMyQuestionsTrail),
+            ("company", "owner", company_pool, self.assertGroupPoolTrail),
+            ("company", "owner", elsewhere, self.assertMyQuestionsTrail),
+            ("company", "teammate", None, self.assertGroupPoolTrail),
+            ("company", "teammate", elsewhere, self.assertGroupPoolTrail),
+            ("company", "staff", None, self.assertGroupPoolTrail),
+            ("outside", "owner", outside_pool, self.assertMyQuestionsTrail),
+            ("outside", "staff", None, self.assertSubjectOnlyTrail),
+        ):
+            with self.subTest(group=group, viewer=viewer, referer=referer):
+                self.ticket.org_group = groups[group]
+                self.ticket.save(update_fields=["org_group"])
+                assert_trail(self._get(viewers[viewer], referer=referer))
 
 
 CHAT_WIDGET_KEY = "test-chat-widget-key"

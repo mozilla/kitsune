@@ -31,26 +31,20 @@ from kitsune.users.tests import UserFactory
 
 
 class SmartIntTestCase(TestCase):
-    def test_sanity(self):
-        self.assertEqual(10, smart_int("10"))
-        self.assertEqual(10, smart_int("10.5"))
-
-    def test_int(self):
-        self.assertEqual(10, smart_int(10))
-
-    def test_invalid_string(self):
-        self.assertEqual(0, smart_int("invalid"))
-
-    def test_empty_string(self):
-        self.assertEqual(0, smart_int(""))
-
-    def test_wrong_type(self):
-        self.assertEqual(0, smart_int(None))
-        self.assertEqual(10, smart_int([], 10))
-
-    def test_large_values(self):
-        """Makes sure ints that would cause an overflow result in fallback."""
-        self.assertEqual(0, smart_int("1" * 1000))
+    def test_smart_int(self):
+        for value, default, expected in (
+            ("10", 0, 10),
+            ("10.5", 0, 10),
+            (10, 0, 10),
+            ("invalid", 0, 0),
+            ("", 0, 0),
+            (None, 0, 0),
+            ([], 10, 10),
+            # Ints that would cause an overflow fall back to the default.
+            ("1" * 1000, 0, 0),
+        ):
+            with self.subTest(value=value):
+                self.assertEqual(expected, smart_int(value, default))
 
 
 class GetNextUrlTests(TestCase):
@@ -65,71 +59,35 @@ class GetNextUrlTests(TestCase):
         self.patcher.stop()
         super().tearDown()
 
-    def test_query_string(self):
-        """Query-strings remain intact."""
-        r = self.r.get("/", {"next": "/new?f=b"})
-        self.assertEqual("/new?f=b", get_next_url(r))
-
-    def test_good_host_https(self):
-        """Full URLs work with valid hosts."""
-        r = self.r.post("/users/login", {"next": "https://su.mo.com/kb/new"})
-        self.assertEqual("https://su.mo.com/kb/new", get_next_url(r))
-
-    def test_post(self):
-        """'next' in POST overrides GET."""
-        r = self.r.post("/?next=/foo", {"next": "/bar"})
-        self.assertEqual("/bar", get_next_url(r))
-
-    def test_get(self):
-        """'next' can be a query-string parameter."""
-        r = self.r.get("/users/login", {"next": "/kb/new"})
-        self.assertEqual("/kb/new", get_next_url(r))
-
-    def test_referer(self):
-        """Use HTTP referer if nothing else."""
-        r = self.r.get("/")
-        r.META["HTTP_REFERER"] = "http://su.mo.com/new"
-        self.assertEqual("http://su.mo.com/new", get_next_url(r))
-
-    def test_bad_host_https(self):
-        r = self.r.get("/", {"next": "https://example.com"})
-        self.assertEqual(None, get_next_url(r))
+    def test_next_url(self):
+        referred = self.r.get("/")
+        referred.META["HTTP_REFERER"] = "http://su.mo.com/new"
+        for name, request, expected in (
+            ("query string kept", self.r.get("/", {"next": "/new?f=b"}), "/new?f=b"),
+            (
+                "full URL on a valid host",
+                self.r.post("/users/login", {"next": "https://su.mo.com/kb/new"}),
+                "https://su.mo.com/kb/new",
+            ),
+            ("POST overrides GET", self.r.post("/?next=/foo", {"next": "/bar"}), "/bar"),
+            ("query-string parameter", self.r.get("/users/login", {"next": "/kb/new"}), "/kb/new"),
+            ("referer when nothing else", referred, "http://su.mo.com/new"),
+            ("bad host", self.r.get("/", {"next": "https://example.com"}), None),
+            ("protocol-relative bad host", self.r.get("/", {"next": "//example.com"}), None),
+            ("empty", self.r.get("/", {"next": ""}), None),
+            ("spaces", self.r.get("/", {"next": "/kb/abc abc abc"}), "/kb/abc%20abc%20abc"),
+            ("newline XSS", self.r.get("/", {"next": "j\navascrip\nt:alert()//"}), None),
+            ("carriage-return XSS", self.r.get("/", {"next": "j\ravascrip\rt:alert()//"}), None),
+            ("tab XSS", self.r.get("/", {"next": "j\tavascrip\tt:alert()//"}), None),
+        ):
+            with self.subTest(name):
+                self.assertEqual(expected, get_next_url(request))
 
     def test_bad_host_https_debug(self):
         """If settings.DEBUG == True, bad hosts pass."""
         r = self.r.get("/", {"next": "https://example.com"})
         with self.settings(DEBUG=True):
             self.assertEqual("https://example.com", get_next_url(r))
-
-    def test_bad_host_protocol_relative(self):
-        """Protocol-relative URLs do not let bad hosts through."""
-        r = self.r.get("/", {"next": "//example.com"})
-        self.assertEqual(None, get_next_url(r))
-
-    def test_when_empty(self):
-        """Next url is empty"""
-        r = self.r.get("/", {"next": ""})
-        self.assertEqual(None, get_next_url(r))
-
-    def test_when_spaces(self):
-        """Next url contains one or more spaces"""
-        r = self.r.get("/", {"next": "/kb/abc abc abc"})
-        self.assertEqual("/kb/abc%20abc%20abc", get_next_url(r))
-
-    def test_xss_attempt_with_newline(self):
-        """Next url with newline-based xss attempt"""
-        r = self.r.get("/", {"next": "j\navascrip\nt:alert()//"})
-        self.assertEqual(None, get_next_url(r))
-
-    def test_xss_attempt_with_carriage_return(self):
-        """Next url with carriage-return-based xss attempt"""
-        r = self.r.get("/", {"next": "j\ravascrip\rt:alert()//"})
-        self.assertEqual(None, get_next_url(r))
-
-    def test_xss_attempt_with_tab(self):
-        """Next url with tab-based xss attempt"""
-        r = self.r.get("/", {"next": "j\tavascrip\tt:alert()//"})
-        self.assertEqual(None, get_next_url(r))
 
 
 class JSONTests(TestCase):
@@ -232,21 +190,6 @@ class IsRatelimitedTest(TestCase):
         self.assertEqual(is_ratelimited(request, "test-ratelimited", "1/min"), False)
         # And a second one still won't, because the user has the bypass permission.
         self.assertEqual(is_ratelimited(request, "test-ratelimited", "1/min"), False)
-
-    def test_ratelimit_logging(self):
-        u = UserFactory()
-        request = Mock()
-        request.user = u
-        request.limited = False
-        request.method = "POST"
-
-        self.assertEqual(Record.objects.count(), 0)
-
-        # Two calls will trigger the ratelimit once.
-        is_ratelimited(request, "test-ratelimited", "1/min")
-        is_ratelimited(request, "test-ratelimited", "1/min")
-
-        self.assertEqual(Record.objects.count(), 1)
 
 
 class GetBrowserNameTest(TestCase):
@@ -394,62 +337,40 @@ class AAQContextTests(TestCase):
 
 
 class GetAAQUrlTests(TestCase):
-    def test_empty_context_returns_community_support(self):
-        url = get_aaq_url({})
-        self.assertEqual(url, "/en-US/kb/get-community-support?exit_aaq=1")
-
-    def test_ticketed_single_product_returns_step3(self):
-        url = get_aaq_url(
-            {
-                "current_support_type": "zendesk",
-                "has_public_forum": False,
-                "multiple_products": False,
-                "product_slug": "firefox",
-            }
-        )
-        self.assertEqual(url, "/en-US/questions/new/firefox/form")
-
-    def test_forum_single_product_returns_step3(self):
-        url = get_aaq_url(
-            {
-                "current_support_type": "forum",
-                "has_public_forum": True,
-                "multiple_products": False,
-                "product_slug": "firefox",
-            }
-        )
-        self.assertEqual(url, "/en-US/questions/new/firefox/form")
-
-    def test_multiple_products_returns_step1(self):
-        url = get_aaq_url(
-            {
-                "current_support_type": "zendesk",
-                "has_public_forum": False,
-                "multiple_products": True,
-                "product_slug": "firefox",
-            }
-        )
-        self.assertEqual(url, "/en-US/questions/new")
-
-    def test_no_channels_no_topic_returns_community_support(self):
-        url = get_aaq_url(
-            {
-                "current_support_type": "forum",
-                "has_public_forum": False,
-                "multiple_products": False,
-                "product_slug": "firefox",
-            }
-        )
-        self.assertEqual(url, "/en-US/kb/get-community-support?exit_aaq=1")
-
-    def test_no_channels_with_topic_returns_step3(self):
-        url = get_aaq_url(
-            {
-                "current_support_type": "forum",
-                "has_public_forum": False,
-                "multiple_products": False,
-                "product_slug": "firefox",
-            },
-            topic="some-topic",
-        )
-        self.assertEqual(url, "/en-US/questions/new/firefox/form")
+    def test_aaq_url(self):
+        single = {"has_public_forum": False, "multiple_products": False, "product_slug": "firefox"}
+        for name, context, topic, expected in (
+            ("empty context", {}, None, "/en-US/kb/get-community-support?exit_aaq=1"),
+            (
+                "ticketed single product",
+                {**single, "current_support_type": "zendesk"},
+                None,
+                "/en-US/questions/new/firefox/form",
+            ),
+            (
+                "forum single product",
+                {**single, "current_support_type": "forum", "has_public_forum": True},
+                None,
+                "/en-US/questions/new/firefox/form",
+            ),
+            (
+                "multiple products",
+                {**single, "current_support_type": "zendesk", "multiple_products": True},
+                None,
+                "/en-US/questions/new",
+            ),
+            (
+                "no channels, no topic",
+                {**single, "current_support_type": "forum"},
+                None,
+                "/en-US/kb/get-community-support?exit_aaq=1",
+            ),
+            (
+                "no channels, with topic",
+                {**single, "current_support_type": "forum"},
+                "some-topic",
+                "/en-US/questions/new/firefox/form",
+            ),
+        ):
+            with self.subTest(name):
+                self.assertEqual(expected, get_aaq_url(context, topic=topic))

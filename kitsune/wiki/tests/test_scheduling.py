@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.db import DatabaseError, IntegrityError, transaction
 from django.test import RequestFactory, override_settings
+from pyquery import PyQuery as pq
 
 from kitsune.celery_beat import PERIODIC_TASKS_ALL
 from kitsune.dashboards.readouts import (
@@ -612,6 +613,19 @@ class ScheduleReviewTests(TestCase):
                 if page == "review":
                     # Re-reviewing starts from the scheduled time, not an empty "publish now".
                     self.assertIn('name="publish_at" value="2026-10-02T09:30"', content)
+
+    def test_revision_page_review_status(self):
+        cases = {"scheduled": "Approved, goes live at the scheduled time", "not scheduled": "No"}
+
+        for case, status in cases.items():
+            with self.subTest(case=case):
+                ScheduledRevision.objects.all().delete()
+                if case == "scheduled":
+                    ScheduledRevisionFactory(revision=self.revision)
+                doc = pq(self.client.get(self.revision.get_absolute_url()).content)
+                self.assertEqual(
+                    doc('.revision-info li:contains("Reviewed:") span').text(), status
+                )
 
     def test_review_page_warns_about_another_revisions_schedule(self):
         newer = RevisionFactory(document=self.document)

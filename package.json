@@ -40,14 +40,14 @@
     "@babel/runtime": "^8.0.5",
     "@mozmeao/dnt-helper": "^1.0.0",
     "@urql/svelte": "^5.0.0",
-    "chart.js": "^4.5.1",
+    "chart.js": "^4.6.1",
     "chartjs-adapter-date-fns": "^3.0.0",
     "codemirror": "^5.65.21",
     "date-fns": "^4.4.0",
     "htmx.org": "^2.0.11",
     "nunjucks": "^3.2.4",
     "svelte": "^5.55.7",
-    "tom-select": "^2.5.2",
+    "tom-select": "^2.7.0",
     "underscore": "^1.13.8"
   },
   "devDependencies": {

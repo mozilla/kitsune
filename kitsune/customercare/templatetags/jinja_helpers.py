@@ -4,6 +4,7 @@ from django.conf import settings
 from django_jinja import library
 
 from kitsune.products.routing import route_support
+from kitsune.products.utils import get_support_company, get_support_locale
 
 if TYPE_CHECKING:
     from kitsune.products.models import Product
@@ -31,10 +32,11 @@ def chat_conversation_tags(product: Product) -> str:
 
 
 @library.global_function
-def select_zendesk_locale(locale: str) -> str:
-    """Select the Zendesk locale for the given SUMO locale."""
-    return (
-        locale.lower()
-        if locale in settings.ZENDESK_CHAT_SUPPORTED_NON_ENGLISH_LOCALES
-        else "en-US"
-    )
+def chat_locale(request, product: Product) -> str:
+    """The widget's locale: the page's, if the company's contracts for the product allow it."""
+    locale = request.LANGUAGE_CODE
+    company = get_support_company(request)
+    if company:
+        locale = get_support_locale(company, locale, product)
+    # The widget takes lower-case codes like "pt-br"; English stays "en-US".
+    return locale if locale == settings.WIKI_DEFAULT_LANGUAGE else locale.lower()
