@@ -188,6 +188,16 @@ class TicketDetailViewTests(TestCase):
         )
         self.assertEqual(404, response.status_code)
 
+    def test_space_in_username_is_read_as_plus(self):
+        self.owner.username = "some+user"
+        self.owner.save()
+        self.client.force_login(self.owner)
+        url = reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+
+        response = self.client.get(url.replace("+", "%20"))
+
+        self.assertEqual(200, response.status_code)
+
     def test_staff_can_view_any_ticket(self):
         staff = UserFactory(is_staff=True)
         self.client.force_login(staff)

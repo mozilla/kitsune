@@ -156,6 +156,17 @@ class PlusToSpaceTestCase(TestCase):
         request = self.rf.get("/path")
         assert not self.ptsm.process_request(request)
 
+    def test_user_urls_keep_plus(self):
+        """A + is valid in a username, so only user URLs are left alone."""
+        for path, redirected in (
+            ("/user/some+user/", False),
+            ("/ru/user/some+user/questions/1", False),
+            ("/ru/kb/user/some+user", True),
+        ):
+            with self.subTest(path=path):
+                response = self.ptsm.process_request(self.rf.get(path))
+                self.assertEqual(redirected, response is not None)
+
     def test_with_locale(self):
         """URLs with a locale should keep it."""
         request = self.rf.get("/ru/pa+th", {"a": "b"})
