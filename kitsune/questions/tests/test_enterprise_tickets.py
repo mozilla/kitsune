@@ -197,16 +197,27 @@ class EnterpriseTicketTests(TestCase):
                     str(replacement.pk),
                 )
 
-    def test_non_english_locale_redirects_to_english_form(self):
-        response = self.client.get(
-            reverse("questions.aaq_step3", args=[self.product.slug], locale="fr"),
-            {"support_type": "zendesk"},
-        )
-        self.assertRedirects(
-            response,
-            self.url + "?support_type=zendesk&from_locale=fr",
-            fetch_redirect_response=False,
-        )
+    def test_form_opens_only_in_the_contract_languages(self):
+        self.coverage.contract.languages = ["de"]
+        self.coverage.contract.save()
+        de_url = reverse("questions.aaq_step3", args=[self.product.slug], locale="de")
+        response = self.client.get(de_url)
+        self.assertContains(response, "Enterprise support topic")
+        self.assertEqual(self.client.post(de_url, self.data).status_code, 302)
+        self.assertEqual(SupportTicket.objects.get().origin, SupportTicket.Origin.ENTERPRISE)
+
+        for user, locale in ((self.user, "el"), (UserFactory(), "de")):
+            with self.subTest(locale=locale, covered=user == self.user):
+                self.client.force_login(user)
+                response = self.client.get(
+                    reverse("questions.aaq_step3", args=[self.product.slug], locale=locale),
+                    {"support_type": "zendesk"},
+                )
+                self.assertRedirects(
+                    response,
+                    self.url + f"?support_type=zendesk&from_locale={locale}",
+                    fetch_redirect_response=False,
+                )
 
     def test_coverage_for_other_product_keeps_subscriber_ticket_ordinary(self):
         self.coverage.product = ProductFactory(slug="thunderbird")

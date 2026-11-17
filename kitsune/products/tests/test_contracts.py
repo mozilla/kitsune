@@ -149,7 +149,10 @@ class SupportContractAdminTests(ContractAdminFixtures, TestCase):
         coverage = self.covered()
         contract = coverage.contract
         data = self.contract_data(
-            contract=contract, company=EnterpriseCompanyFactory().pk, name="Renewed agreement"
+            contract=contract,
+            company=EnterpriseCompanyFactory().pk,
+            name="Renewed agreement",
+            languages=["el", "de"],
         )
         data["coverages-0-zendesk_product_value"] = "renewed_browser"
         response = self.client.post(
@@ -161,6 +164,7 @@ class SupportContractAdminTests(ContractAdminFixtures, TestCase):
         coverage.refresh_from_db()
         self.assertEqual(contract.company, self.company)
         self.assertEqual(contract.name, "Renewed agreement")
+        self.assertEqual(contract.languages, ["de", "el"])
         self.assertEqual(coverage.product, self.product)
         self.assertEqual(coverage.zendesk_product_value, "renewed_browser")
 
@@ -174,6 +178,8 @@ class SupportContractAdminTests(ContractAdminFixtures, TestCase):
             ("company", {"company": DepartmentFactory(company=self.company).pk}),
             ("company", {"company": unrelated.pk}),
             ("company", {"company": EnterpriseCompanyFactory(root=unrelated).pk}),
+            ("languages", {"languages": ["en-US"]}),
+            ("languages", {"languages": ["xx"]}),
         ):
             with self.subTest(changes=changes):
                 response = self.client.post(self.add_url, self.contract_data(**changes))

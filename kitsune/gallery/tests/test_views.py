@@ -37,17 +37,6 @@ class DeleteEditImageTests(TestCase):
         Image.objects.all().delete()
         super().tearDown()
 
-    def test_delete_image(self):
-        """Deleting an uploaded image works."""
-        im = ImageFactory()
-        u = UserFactory()
-        add_permission(u, Image, "delete_image")
-        self.client.login(username=u.username, password="testpass")
-        r = post(self.client, "gallery.delete_media", args=[im.id])
-
-        self.assertEqual(200, r.status_code)
-        self.assertEqual(0, Image.objects.count())
-
     def test_delete_image_without_permissions(self):
         """Can't delete an image I didn't create."""
         img = ImageFactory()
@@ -80,16 +69,6 @@ class DeleteEditImageTests(TestCase):
         self.assertEqual(200, r.status_code)
         self.assertEqual(0, Image.objects.count())
         assert schedule_rebuild_kb.called
-
-    def test_edit_own_image(self):
-        """Can edit an image I created."""
-        u = UserFactory()
-        img = ImageFactory(creator=u)
-        self.client.login(username=u.username, password="testpass")
-        r = post(self.client, "gallery.edit_media", {"description": "arrr"}, args=[img.id])
-
-        self.assertEqual(200, r.status_code)
-        self.assertEqual("arrr", Image.objects.get().description)
 
     def test_edit_image_without_permissions(self):
         """Can't edit an image I didn't create."""

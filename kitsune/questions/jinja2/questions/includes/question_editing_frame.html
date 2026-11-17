@@ -145,7 +145,13 @@ behaviors like editing them can be provided by overriding blocks.
                   {% endif %}
 
                   <li class="{{ li_class }} {% if field.errors %}has-error invalid{% endif %} cf">
-                    {{ field.label_tag()|safe }}
+                    {% if form.required_css_class and field.field.required %}
+                      {# L10n: Shown under the label of a field that must be filled in. #}
+                      {% set required_label %}{{ field.label }}<span class="required-text">{{ _('Required') }}</span>{% endset %}
+                      {{ field.label_tag(contents=required_label)|safe }}
+                    {% else %}
+                      {{ field.label_tag()|safe }}
+                    {% endif %}
                     {% if field.help_text and field.name != 'troubleshooting' %}
                       <div id="{{ field.help_id }}" class="field-help-text">{{ field.help_text|safe }}</div>
                     {% endif %}

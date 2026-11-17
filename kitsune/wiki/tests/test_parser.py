@@ -12,8 +12,6 @@ from kitsune.users.tests import GroupFactory
 from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
 from kitsune.wiki.models import Audience, Document
 from kitsune.wiki.parser import PATTERNS, RECURSION_MESSAGE, ForParser, WikiParser, _key_split
-from kitsune.wiki.parser import _build_template_params as _btp
-from kitsune.wiki.parser import _format_template_content as _ftc
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     AudienceFactory,
@@ -37,29 +35,25 @@ def doc_parse_markup(content, markup):
 class SimpleSyntaxTestCase(TestCase):
     """Simple syntax regexing, like {note}...{/note}, {key Ctrl+K}"""
 
-    def test_note_simple(self):
-        """Simple note syntax"""
-        p = WikiParser()
-        doc = pq(p.parse("{note}this is a note{/note}"))
-        self.assertEqual("this is a note", doc("div.note").text())
-
-    def test_warning_simple(self):
-        """Simple warning syntax"""
-        p = WikiParser()
-        doc = pq(p.parse("{warning}this is a warning{/warning}"))
-        self.assertEqual("this is a warning", doc("div.warning").text())
-
-    def test_warning_multiline(self):
-        """Multiline warning syntax"""
-        p = WikiParser()
-        doc = pq(p.parse("{warning}\nthis is a warning\n{/warning}"))
-        self.assertEqual("this is a warning", doc("div.warning").text())
-
-    def test_warning_multiline_breaks(self):
-        """Multiline breaks warning syntax"""
-        p = WikiParser()
-        doc = pq(p.parse("\n\n{warning}\n\nthis is a warning\n\n{/warning}\n\n"))
-        self.assertEqual("this is a warning", doc("div.warning").text())
+    def test_block_and_inline_syntax(self):
+        """{note}, {warning} and the custom inline tags wrap their content."""
+        cases = [
+            ("{note}this is a note{/note}", "div.note", "this is a note"),
+            ("{warning}this is a warning{/warning}", "div.warning", "this is a warning"),
+            ("{warning}\nthis is a warning\n{/warning}", "div.warning", "this is a warning"),
+            (
+                "\n\n{warning}\n\nthis is a warning\n\n{/warning}\n\n",
+                "div.warning",
+                "this is a warning",
+            ),
+            *(
+                (f"{{{tag} this is a {tag}}}", f"span.{tag}", f"this is a {tag}")
+                for tag in ("menu", "button", "filepath", "pref")
+            ),
+        ]
+        for markup, selector, text in cases:
+            with self.subTest(markup=markup):
+                self.assertEqual(text, pq(WikiParser().parse(markup))(selector).text())
 
     def test_general_warning_note(self):
         """A bunch of wiki text with {warning} and {note}"""
@@ -135,14 +129,6 @@ class SimpleSyntaxTestCase(TestCase):
             '<span class="key">{</span>',
             key_p.sub(_key_split, "{key ctrl + and + {}"),
         )
-
-    def test_simple_inline_custom(self):
-        """Simple custom inline syntax: menu, button, filepath, pref"""
-        p = WikiParser()
-        tags = ["menu", "button", "filepath", "pref"]
-        for tag in tags:
-            doc = pq(p.parse("{{{} this is a {}}}".format(tag, tag)))
-            self.assertEqual("this is a " + tag, doc("span." + tag).text())
 
     def test_general_warning_note_inline_custom(self):
         """A mix of custom inline syntax with warnings and notes"""
@@ -238,26 +224,25 @@ class TestWikiTemplate(TestCase):
         doc = pq(p.parse("[[T:test]]", locale="fr"))
         self.assertEqual("English content", doc.text())
 
-    def test_template_anonymous_params(self):
-        """Template markup with anonymous parameters."""
-        doc, p = doc_parse_markup("{{{1}}}:{{{2}}}", "[[Template:test|one|two]]")
-        self.assertEqual("one:two", doc.text())
-        doc = pq(p.parse("[[T:test|two|one]]"))
-        self.assertEqual("two:one", doc.text())
-
-    def test_template_named_params(self):
-        """Template markup with named parameters."""
-        doc, p = doc_parse_markup("{{{a}}}:{{{b}}}", "[[Template:test|a=one|b=two]]")
-        self.assertEqual("one:two", doc.text())
-        doc = pq(p.parse("[[T:test|a=two|b=one]]"))
-        self.assertEqual("two:one", doc.text())
-
-    def test_template_numbered_params(self):
-        """Template markup with numbered parameters."""
-        doc, p = doc_parse_markup("{{{1}}}:{{{2}}}", "[[Template:test|2=one|1=two]]")
-        self.assertEqual("two:one", doc.text())
-        doc = pq(p.parse("[[T:test|2=two|1=one]]"))
-        self.assertEqual("one:two", doc.text())
+    def test_template_params(self):
+        """Anonymous, named and numbered arguments fill the template's placeholders."""
+        for name, content in (
+            ("pos", "{{{1}}}:{{{2}}}"),
+            ("named", "{{{a}}}:{{{b}}}"),
+            ("mixed", "{{{1}}}:{{{hi}}}:{{{3}}}"),
+        ):
+            doc_rev_parser(content, TEMPLATE_TITLE_PREFIX + name, category=TEMPLATES_CATEGORY)
+        for markup, expected in (
+            ("[[Template:pos|one|two]]", "one:two"),
+            ("[[T:pos|two|one]]", "two:one"),
+            ("[[Template:named|a=one|b=two]]", "one:two"),
+            ("[[T:named|a=two|b=one]]", "two:one"),
+            ("[[Template:pos|2=one|1=two]]", "two:one"),
+            ("[[T:pos|2=two|1=one]]", "one:two"),
+            ("[[T:mixed|hi=test|a|3=z]]", "a:test:z"),
+        ):
+            with self.subTest(markup):
+                self.assertEqual(expected, pq(WikiParser().parse(markup)).text())
 
     def test_template_wiki_markup(self):
         """A template with wiki markup"""
@@ -282,38 +267,6 @@ class TestWikiTemplate(TestCase):
         doc, _ = doc_parse_markup("{{{1}}}\n\n{{{2}}}", "[[Template:test|* ordered|# list]]")
 
         self.assertEqual("<p/><p>* ordered</p><p># list</p><p/>", doc.html().replace("\n", ""))
-
-    def test_format_template_content_named(self):
-        """_ftc handles named arguments"""
-        self.assertEqual("ab", _ftc("{{{some}}}{{{content}}}", {"some": "a", "content": "b"}))
-
-    def test_format_template_content_numbered(self):
-        """_ftc handles numbered arguments"""
-        self.assertEqual("a:b", _ftc("{{{1}}}:{{{2}}}", {"1": "a", "2": "b"}))
-
-    def test_build_template_params_anonymous(self):
-        """_btp handles anonymous arguments"""
-        self.assertEqual({"1": "<span>a</span>", "2": "test"}, _btp(["<span>a</span>", "test"]))
-
-    def test_build_template_params_numbered(self):
-        """_btp handles numbered arguments"""
-        self.assertEqual({"20": "a", "10": "test"}, _btp(["20=a", "10=test"]))
-
-    def test_build_template_params_named(self):
-        """_btp handles only named-arguments"""
-        self.assertEqual({"a": "b", "hi": "test"}, _btp(["hi=test", "a=b"]))
-
-    def test_build_template_params_named_anonymous(self):
-        """_btp handles mixed named and anonymous arguments"""
-        self.assertEqual({"1": "a", "hi": "test"}, _btp(["hi=test", "a"]))
-
-    def test_build_template_params_named_numbered(self):
-        """_btp handles mixed named and numbered arguments"""
-        self.assertEqual({"10": "a", "hi": "test"}, _btp(["hi=test", "10=a"]))
-
-    def test_build_template_params_named_anonymous_numbered(self):
-        """_btp handles mixed named, anonymous and numbered arguments"""
-        self.assertEqual({"1": "a", "hi": "test", "3": "z"}, _btp(["hi=test", "a", "3=z"]))
 
     def test_unapproved_template(self):
         TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + "new")
@@ -633,87 +586,83 @@ class ForWikiTests(TestCase):
     arranges for certain parts of the page to show only when viewed on certain
     OSes or browser versions"""
 
-    def assertWikiHtmlEqual(self, wiki, html, msg=None):
-        self.assertHTMLEqual(WikiParser().parse(wiki), html, msg=msg)
-
-    def test_block(self):
-        """A {for} set off by itself or wrapping a block-level element should
-        be a paragraph or other kind of block-level thing."""
-        self.assertWikiHtmlEqual(
-            "Joe\n\n{for}Red{/for}\n\nBlow",
-            '<p>Joe</p><p><span class="for">Red</span></p><p>Blow</p>',
-        )
-        self.assertWikiHtmlEqual(
-            "Joe\n\n{for}\n* Red\n{/for}\n\nBlow",
-            '<p>Joe</p><div class="for"><ul><li> Red</li></ul></div><p>Blow</p>',
-        )
-
-    def test_inline(self):
-        """A for not meeting the conditions in test_block should be inline."""
-        self.assertWikiHtmlEqual(
-            "Joe\n\nRed {for}riding{/for} hood\n\nBlow",
-            '<p>Joe</p><p>Red <span class="for">riding</span> hood</p><p>Blow</p>',
-        )
-
-    def test_nested(self):
-        """{for} tags should be nestable."""
-        self.assertWikiHtmlEqual(
-            "{for mac}\nJoe\n\nRed {for}{for}riding\n{/for} hood{/for}\n\nBlow\n{/for}",
-            '<div data-for="mac" class="for">'
-            "<p>Joe</p>"
-            '<p>Red <span class="for"><span class="for">riding'
-            "</span> hood</span></p>"
-            "<p>Blow</p>"
-            "</div>",
-        )
-
-    def test_data_attrs(self):
-        """Make sure the correct attributes are set on the for element."""
-        self.assertWikiHtmlEqual(
-            "{for mac,linux,3.6}One{/for}",
-            '<p><span class="for" data-for="mac,linux,3.6">One</span></p>',
-        )
-
-    def test_early_close(self):
-        """Make sure the parser closes the for tag at the right place when
-        its closer is early."""
-        self.assertWikiHtmlEqual(
-            "{for}\nOne\n\n*Fish{/for}", '<div class="for"><p>One</p><ul><li>Fish</li></ul></div>'
-        )
-
-    def test_late_close(self):
-        """If the closing for tag is not closed by the time the enclosing
-        element of the opening for tag is closed, close the for tag
-        just before the enclosing element."""
-        self.assertWikiHtmlEqual(
-            "*{for}One\n*Fish\n\nTwo\n{/for}",
-            '<ul><li><span class="for">One</span></li><li>Fish</li></ul><p>Two</p>',
-        )
-
-    def test_missing_close(self):
-        """If the closing for tag is missing, close the for tag just
-        before the enclosing element."""
-        self.assertWikiHtmlEqual(
-            "{for}One fish\n\nTwo fish", '<p><span class="for">One fish</span></p><p>Two fish</p>'
-        )
-
-    def test_unicode(self):
-        """Make sure non-ASCII chars survive being wrapped in a for."""
-        french = "Vous parl\u00e9 Fran\u00e7ais"
-        self.assertWikiHtmlEqual(
-            "{for}" + french + "{/for}", '<p><span class="for">' + french + "</span></p>"
-        )
-
-    def test_boolean_attr(self):
-        """Make sure empty attributes don't raise exceptions."""
-        self.assertWikiHtmlEqual(
-            '<p><video controls="" height="120">'
-            '  <source src="/some/path/file.ogv" type="video/ogv">'
-            "</video></p>",
-            '<p><video controls height="120">'
-            '  <source src="/some/path/file.ogv" type="video/ogv">'
-            "</video></p>",
-        )
+    def test_rendering(self):
+        cases = [
+            # A {for} set off by itself or wrapping a block-level element is block-level.
+            (
+                "Joe\n\n{for}Red{/for}\n\nBlow",
+                '<p>Joe</p><p><span class="for">Red</span></p><p>Blow</p>',
+            ),
+            (
+                "Joe\n\n{for}\n* Red\n{/for}\n\nBlow",
+                '<p>Joe</p><div class="for"><ul><li> Red</li></ul></div><p>Blow</p>',
+            ),
+            (
+                "Joe\n\nRed {for}riding{/for} hood\n\nBlow",
+                '<p>Joe</p><p>Red <span class="for">riding</span> hood</p><p>Blow</p>',
+            ),
+            (
+                "{for mac}\nJoe\n\nRed {for}{for}riding\n{/for} hood{/for}\n\nBlow\n{/for}",
+                '<div data-for="mac" class="for">'
+                "<p>Joe</p>"
+                '<p>Red <span class="for"><span class="for">riding'
+                "</span> hood</span></p>"
+                "<p>Blow</p>"
+                "</div>",
+            ),
+            (
+                "{for mac,linux,3.6}One{/for}",
+                '<p><span class="for" data-for="mac,linux,3.6">One</span></p>',
+            ),
+            # Early closer.
+            (
+                "{for}\nOne\n\n*Fish{/for}",
+                '<div class="for"><p>One</p><ul><li>Fish</li></ul></div>',
+            ),
+            # Closer after the enclosing element closes: close just before it.
+            (
+                "*{for}One\n*Fish\n\nTwo\n{/for}",
+                '<ul><li><span class="for">One</span></li><li>Fish</li></ul><p>Two</p>',
+            ),
+            # Missing closer: close just before the enclosing element.
+            (
+                "{for}One fish\n\nTwo fish",
+                '<p><span class="for">One fish</span></p><p>Two fish</p>',
+            ),
+            (
+                "{for}Vous parl\u00e9 Fran\u00e7ais{/for}",
+                '<p><span class="for">Vous parl\u00e9 Fran\u00e7ais</span></p>',
+            ),
+            # Empty attributes don't raise.
+            (
+                '<p><video controls="" height="120">'
+                '  <source src="/some/path/file.ogv" type="video/ogv">'
+                "</video></p>",
+                '<p><video controls height="120">'
+                '  <source src="/some/path/file.ogv" type="video/ogv">'
+                "</video></p>",
+            ),
+            (
+                "{for}\n"
+                "=H1=\n"
+                "==H2==\n"
+                "Llamas are fun:\n"
+                "\n"
+                "*Jumping\n"
+                "*Rolling\n"
+                "*Grazing\n"
+                "\n"
+                "They have high melting points.\n"
+                "{/for}",
+                '<div class="for"><h1 id="w_h1">H1</h1>'
+                '<h2 id="w_h2">H2</h2><p>Llamas are fun:</p>'
+                "<ul><li>Jumping</li><li>Rolling</li><li>Grazing</li></ul>"
+                "<p>They have high melting points.</p></div>",
+            ),
+        ]
+        for wiki, html in cases:
+            with self.subTest(wiki=wiki):
+                self.assertHTMLEqual(WikiParser().parse(wiki), html)
 
     def test_adjacent_blocks(self):
         """Make sure one block-level {for} doesn't absorb an adjacent one."""
@@ -731,50 +680,11 @@ class ForWikiTests(TestCase):
         doc = pq(WikiParser().parse("\n\n{for linux}\nunixify\n{/for}"))
         self.assertEqual("unixify", doc(".for").text().strip())
 
-    def test_big_swath(self):
-        """Enclose a big section containing many tags."""
-        self.assertWikiHtmlEqual(
-            "{for}\n"
-            "=H1=\n"
-            "==H2==\n"
-            "Llamas are fun:\n"
-            "\n"
-            "*Jumping\n"
-            "*Rolling\n"
-            "*Grazing\n"
-            "\n"
-            "They have high melting points.\n"
-            "{/for}",
-            '<div class="for"><h1 id="w_h1">H1</h1>'
-            '<h2 id="w_h2">H2</h2><p>Llamas are fun:</p>'
-            "<ul><li>Jumping</li><li>Rolling</li><li>Grazing</li></ul>"
-            "<p>They have high melting points.</p></div>",
-        )
-
     def test_block_level_section(self):
         """Make sure we recognize <section> as a block element."""
         p = WikiParser()
         html = p.parse("{for}<section>hi</section>{/for}")
         assert "<div" in html, "Didn't detect <section> tag as block level"
-
-
-def balanced_eq(want, to_balance):
-    """Run `to_balance` through the expander to get its tags balanced, and
-    assert the result is `want`."""
-    expander = ForParser(to_balance)
-    TestCase().assertEqual(want, str(expander))
-
-
-def expanded_eq(want, to_expand):
-    """Balance and expand the fors in `to_expand`, and assert equality with
-    `want`."""
-    expander = ForParser(to_expand)
-    expander.expand_fors()
-    TestCase().assertEqual(want, str(expander))
-
-
-def strip_eq(want, text):
-    TestCase().assertEqual(want, ForParser.strip_fors(text)[0])
 
 
 class ForParserTests(TestCase):
@@ -785,56 +695,46 @@ class ForParserTests(TestCase):
 
     """
 
-    def test_well_formed(self):
-        """Make sure the expander works on well-formed fragments."""
-        html = '<ul><li class="1"><br><for>One</for></li></ul>'
-        balanced_eq(html, html)
+    def test_balancing(self):
+        """Tags come out balanced, with misplaced or missing for closers fixed."""
+        cases = [
+            ('<ul><li class="1"><br><for>One</for></li></ul>', None),
+            # Text chunks interspersed with tags.
+            ("<p>Hello<br>there, <br>you.</p>", None),
+            ("<for>Vous parl\u00e9 Fran\u00e7ais</for>", None),
+            # A leading naked run of text, and inner runs.
+            ("A<i>hi</i>B<i>there</i>C", None),
+            # Self-closing tags aren't balanced as paired ones.
+            ('<img src="smoo"><span>g</span>', None),
+            ('<img src="smoo"/><span>g</span>', '<img src="smoo"><span>g</span>'),
+            # Early closer.
+            ("<div><for><p>One</for></for></p></div>", "<div><for><p>One</p></for></div>"),
+            # Late closer: close just before the enclosing element.
+            (
+                "<ul><li><for><for>One</li></ul></for>",
+                "<ul><li><for><for>One</for></for></li></ul>",
+            ),
+            # For tags left open at the end.
+            ("<for><p>One</for></for></p>", "<for><p>One</p></for>"),
+        ]
+        for html, want in cases:
+            with self.subTest(html=html):
+                self.assertEqual(want or html, str(ForParser(html)))
 
-    def test_document_mode(self):
-        """Make sure text chunks interspersed with tags are parsed right."""
-        html = "<p>Hello<br>there, <br>you.</p>"
-        balanced_eq(html, html)
-
-    def test_early_close(self):
-        """Make sure the parser closes the for tag at the right place when
-        its closer is early."""
-        balanced_eq("<div><for><p>One</p></for></div>", "<div><for><p>One</for></for></p></div>")
-
-    def test_late_close(self):
-        """If the closing for tag is not closed by the time the enclosing
-        element of the opening for tag is closed, close the for tag
-        just before the enclosing element."""
-        balanced_eq(
-            "<ul><li><for><for>One</for></for></li></ul>", "<ul><li><for><for>One</li></ul></for>"
-        )
-
-    def test_close_absent_at_end(self):
-        """Make sure the parser closes for tags left open at the EOF.
-
-        This mattered more when we weren't building a parse tree.
-
-        """
-        balanced_eq("<for><p>One</p></for>", "<for><p>One</for></for></p>")
-
-    def test_unicode(self):
-        """Make sure this all works with non-ASCII chars."""
-        html = "<for>Vous parl\u00e9 Fran\u00e7ais</for>"
-        balanced_eq(html, html)
-
-    def test_div(self):
-        """Make sure we use divs for fors containing block elements."""
-        expanded_eq('<div class="for"><p>One</p></div>', "<for><p>One</p></for>")
-
-    def test_span(self):
-        """Make sure we use spans for fors containing no block elements."""
-        expanded_eq('<span class="for"><em>One</em></span>', "<for><em>One</em></for>")
-
-    def test_data_attrs(self):
-        """Make sure the data- attributes look good."""
-        expanded_eq(
-            '<span class="for" data-for="mac,linux">One</span>',
-            '<for data-for="mac,linux">One</for>',
-        )
+    def test_expansion(self):
+        """Fors with block content become divs, others spans, keeping data- attributes."""
+        for html, want in (
+            ("<for><p>One</p></for>", '<div class="for"><p>One</p></div>'),
+            ("<for><em>One</em></for>", '<span class="for"><em>One</em></span>'),
+            (
+                '<for data-for="mac,linux">One</for>',
+                '<span class="for" data-for="mac,linux">One</span>',
+            ),
+        ):
+            with self.subTest(html=html):
+                expander = ForParser(html)
+                expander.expand_fors()
+                self.assertEqual(want, str(expander))
 
     def test_on_own_line(self):
         def on_own_line_eq(want, text):
@@ -851,55 +751,26 @@ class ForParserTests(TestCase):
         on_own_line_eq((True, False, False), "\n{for} \nq")
 
     def test_strip(self):
-        strip_eq("\x910\x91inline\x91/sf\x91", "{for}inline{/for}")
-        strip_eq("\x910\x91\n\nblock\n\n\x91/sf\x91", "{for}\nblock\n{/for}")
-        strip_eq("\x910\x91inline\n\n\x91/sf\x91", "{for}inline\n{/for}")
-        strip_eq("\x910\x91\n\nblock\x91/sf\x91", "{for}\nblock{/for}")
-
-    def test_whitespace_lookbehind(self):
-        """Assert strip_fors is aware of newlines preceding the current match.
-
-        This used to fail because both the postspace for the first closer and
-        the prespace for the 2nd got 1 \n added, resulting in 3, which is 1
-        too many. Now we use the preceding_whitespace function to look behind
-        and take preceding newlines into account.
-
-        """
-        strip_eq(
-            "\x910\x91\n\n\x911\x91inline\x91/sf\x91\n\n\x91/sf\x91",
-            "{for}\n{for}inline{/for}\n{/for}",
-        )
-
-    def test_matches_see_replacements(self):
-        """Make sure each whitespace lookbehind takes into account the effect
-        of previous replacements' whitespace additions.
-
-        When this bug existed, strip_fors would add a \n for postspace to the
-        2nd {/for}, but then the preceding_whitespace call for the next {for}
-        wouldn't see what was added, since it was still looking in the
-        original string, without the replacements applied.
-
-        """
-        strip_eq(
-            "\x910\x91\n\n\x911\x91Fx4\x91/sf\x91\n\n\x91/sf\x91\n\n"
-            "\x912\x91\n\n\x913\x91Fx3\x91/sf\x91\n\n\x91/sf\x91",
-            "{for fx4}\n{for mac}Fx4{/for}\n{/for}\n{for fx3}\n{for mac}Fx3{/for}\n{/for}",
-        )
-
-    def test_self_closers(self):
-        """Make sure self-closing tags aren't balanced as paired ones."""
-        balanced_eq('<img src="smoo"><span>g</span>', '<img src="smoo"><span>g</span>')
-        balanced_eq('<img src="smoo"><span>g</span>', '<img src="smoo"/><span>g</span>')
-
-    def test_leading_text_nodes(self):
-        """Make sure the parser handles a leading naked run of text.
-
-        Test inner runs of text while we're at it.
-
-        """
-        html = "A<i>hi</i>B<i>there</i>C"
-        p = ForParser(html)
-        self.assertEqual(html, str(p))
+        cases = [
+            ("{for}inline{/for}", "\x910\x91inline\x91/sf\x91"),
+            ("{for}\nblock\n{/for}", "\x910\x91\n\nblock\n\n\x91/sf\x91"),
+            ("{for}inline\n{/for}", "\x910\x91inline\n\n\x91/sf\x91"),
+            ("{for}\nblock{/for}", "\x910\x91\n\nblock\x91/sf\x91"),
+            # Newlines preceding the current match count toward its prespace.
+            (
+                "{for}\n{for}inline{/for}\n{/for}",
+                "\x910\x91\n\n\x911\x91inline\x91/sf\x91\n\n\x91/sf\x91",
+            ),
+            # Each lookbehind sees the whitespace earlier replacements added.
+            (
+                "{for fx4}\n{for mac}Fx4{/for}\n{/for}\n{for fx3}\n{for mac}Fx3{/for}\n{/for}",
+                "\x910\x91\n\n\x911\x91Fx4\x91/sf\x91\n\n\x91/sf\x91\n\n"
+                "\x912\x91\n\n\x913\x91Fx3\x91/sf\x91\n\n\x91/sf\x91",
+            ),
+        ]
+        for text, want in cases:
+            with self.subTest(text=text):
+                self.assertEqual(want, ForParser.strip_fors(text)[0])
 
 
 class WhatLinksHereTests(TestCase):

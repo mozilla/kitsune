@@ -39,6 +39,68 @@ def guard_company_memberships(sender, instance, action, reverse, pk_set, using, 
 
 @receiver(
     m2m_changed,
+    sender=GroupProfile.leaders.through,
+    dispatch_uid="groups.add_leaders_as_members",
+)
+def add_leaders_as_members(sender, instance, action, reverse, pk_set, using, **kwargs):
+    if action != "pre_add" or not pk_set:
+        return
+    if reverse:
+        instance.groups.add(
+            *GroupProfile.objects.using(using)
+            .filter(pk__in=pk_set)
+            .values_list("group_id", flat=True)
+        )
+    else:
+        instance.group.user_set.add(*pk_set)
+
+
+@receiver(
+    m2m_changed,
+    sender=GroupProfile.leaders.through,
+    dispatch_uid="groups.sync_enterprise_zendesk_leaderships",
+)
+def sync_company_leaderships(sender, instance, action, reverse, pk_set, using, **kwargs):
+    if action not in ("post_remove", "pre_clear"):
+        return
+    if action == "post_remove" and not pk_set:
+        return
+    leaderships = sender.objects.using(using)
+    if reverse:
+        user_ids = (instance.pk,)
+        profile_ids = (
+            list(leaderships.filter(user_id=instance.pk).values_list("groupprofile_id", flat=True))
+            if action == "pre_clear"
+            else list(pk_set)
+        )
+    else:
+        profile_ids = (instance.pk,)
+        user_ids = (
+            list(leaderships.filter(groupprofile_id=instance.pk).values_list("user_id", flat=True))
+            if action == "pre_clear"
+            else list(pk_set)
+        )
+    group_ids = list(
+        enterprise_profiles(using).filter(pk__in=profile_ids).values_list("group_id", flat=True)
+    )
+    if not group_ids:
+        return
+    queue_chat_revocation(
+        user_ids,
+        (),
+        left_companies=GroupProfile.objects.db_manager(using).containing_groups(group_ids),
+        left_profile_ids=profile_ids,
+        using=using,
+    )
+    queue_enterprise_zendesk_sync(
+        user_ids,
+        using=using,
+        removed_organization_ids=company_organization_ids(group_ids, using=using),
+    )
+
+
+@receiver(
+    m2m_changed,
     sender=User.groups.through,
     dispatch_uid="groups.sync_enterprise_zendesk_memberships",
 )

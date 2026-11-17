@@ -29,7 +29,12 @@ from django.utils.deprecation import MiddlewareMixin
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
 
-from kitsune.sumo.i18n import get_language_from_user, normalize_language, normalize_path
+from kitsune.sumo.i18n import (
+    get_language_from_user,
+    normalize_language,
+    normalize_path,
+    split_into_language_and_path,
+)
 from kitsune.sumo.views import handle403
 from kitsune.users.auth import FXAAuthBackend
 
@@ -295,9 +300,16 @@ class StripNulCharactersMiddleware(MiddlewareMixin):
 class PlusToSpaceMiddleware(MiddlewareMixin):
     """Replace old-style + with %20 in URLs."""
 
+    @staticmethod
+    def is_user_path(path):
+        if translation.get_language_from_path(path):
+            _, path = split_into_language_and_path(path)
+        return path.startswith("/user/")
+
     def process_request(self, request):
         p = re.compile(r"\+")
-        if p.search(request.path_info):
+        # A "+" is valid in a username.
+        if p.search(request.path_info) and not self.is_user_path(request.path_info):
             new = p.sub(" ", request.path_info)
             if request.GET:
                 new += f"?{request.GET.urlencode()}"

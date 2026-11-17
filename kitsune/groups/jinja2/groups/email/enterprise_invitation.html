@@ -35,7 +35,8 @@
 
     <p><a class="button" href="{{ start_url }}">{{ _('Activate account') }}</a></p>
 
-    <p>{{ _('This link is only for you and expires soon. If it stops working, contact the person who invited you.') }}</p>
+    {# L10n: {n} is the number of days until the link stops working. #}
+    <p>{{ ngettext('This link is only for you and expires in {n} day. If it stops working, contact the person who invited you.', 'This link is only for you and expires in {n} days. If it stops working, contact the person who invited you.', link_days)|f(n=link_days) }}</p>
 
     <p>{{ _("Once you've activated your account, you'll be able to sign in to Firefox Professional Support and access your organization's support resources.") }}</p>
   {% else %}

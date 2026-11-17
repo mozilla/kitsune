@@ -23,6 +23,7 @@ from kitsune.groups.onboarding import (
     get_prepared_resources,
     require_onboarding_allowed,
 )
+from kitsune.products.utils import get_support_locale
 from kitsune.users.identity import lock_account_email
 from kitsune.users.models import Profile
 
@@ -91,7 +92,7 @@ def provision_zendesk_membership(
     user_id = client.ensure_user(
         email=email,
         name=name,
-        locale=profile.locale,
+        locale=get_support_locale(company, profile.locale),
         fxa_uid=profile.fxa_uid or None,
         zendesk_id=profile.zendesk_id or None,
     )

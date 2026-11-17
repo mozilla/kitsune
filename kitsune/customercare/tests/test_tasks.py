@@ -172,34 +172,22 @@ class ZendeskSubmissionClassifierTests(TestCase):
             product=self.product, is_active=True, zendesk_config=self.zendesk_config
         )
 
-    @patch("kitsune.customercare.tasks.classify_zendesk_submission")
-    @patch("kitsune.customercare.tasks.process_zendesk_classification_result")
-    def test_successful_classification(self, mock_process, mock_classify):
-        """Test normal successful classification flow."""
-        mock_classify.return_value = {
-            "action": ModerationAction.NOT_SPAM,
-            "spam_result": {},
-            "product_result": {},
-            "topic_result": {},
-        }
+    def test_nonexistent_submission(self):
+        """Test task handles nonexistent submission gracefully."""
+        zendesk_submission_classifier(99999)
 
-        submission = SupportTicket.objects.create(
-            subject="Help",
-            description="Need help",
-            category="general",
-            email="user@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING,
+    @override_switch("zendesk-spam-classifier", active=False)
+    @patch("kitsune.customercare.tasks.classify_zendesk_submission")
+    def test_classification_result_is_applied(self, mock_classify):
+        mock_classify.return_value = {"action": ModerationAction.SPAM, "spam_result": {}}
+        submission = SupportTicketFactory(
+            product=self.product, submission_status=SupportTicket.STATUS_PENDING
         )
 
         zendesk_submission_classifier(submission.id)
 
-        mock_classify.assert_called_once_with(submission)
-        mock_process.assert_called_once()
-
-    def test_nonexistent_submission(self):
-        """Test task handles nonexistent submission gracefully."""
-        zendesk_submission_classifier(99999)
+        submission.refresh_from_db()
+        self.assertEqual(submission.submission_status, SupportTicket.STATUS_REJECTED)
 
     @patch("kitsune.customercare.tasks.classify_zendesk_submission")
     @patch("kitsune.customercare.tasks.process_zendesk_classification_result")
@@ -224,76 +212,6 @@ class ZendeskSubmissionClassifierTests(TestCase):
         submission.refresh_from_db()
         self.assertEqual(submission.submission_status, SupportTicket.STATUS_PROCESSING_FAILED)
 
-    @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
-    @patch("kitsune.llm.support.classifiers.get_taxonomy")
-    @patch("kitsune.llm.support.classifiers.classify_spam")
-    @patch("kitsune.llm.support.classifiers.classify_topic")
-    def test_skip_spam_moderation_enabled(
-        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment
-    ):
-        """Test that spam check is skipped when skip_spam_moderation=True."""
-        self.zendesk_config.skip_spam_moderation = True
-        self.zendesk_config.save()
-
-        mock_get_taxonomy.return_value = {}
-        mock_reassignment.return_value = None
-        mock_classify_topic.return_value = {
-            "topic_result": {"topic": "General Support", "confidence": 0.9}
-        }
-
-        submission = SupportTicket.objects.create(
-            subject="Need help with deployment",
-            description="How do I deploy Firefox Enterprise?",
-            category="deployment",
-            email="admin@enterprise.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING,
-        )
-
-        result = classify_zendesk_submission(submission)
-
-        mock_classify_spam.assert_not_called()
-        mock_reassignment.assert_not_called()
-        mock_classify_topic.assert_called_once()
-        self.assertEqual(result["action"], ModerationAction.NOT_SPAM)
-        self.assertEqual(result["spam_result"], {})
-        self.assertEqual(result["product_result"], {})
-        self.assertIn("topic_result", result)
-
-    @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
-    @patch("kitsune.llm.support.classifiers.get_taxonomy")
-    @patch("kitsune.llm.support.classifiers.classify_spam")
-    @patch("kitsune.llm.support.classifiers.classify_topic")
-    def test_skip_spam_moderation_disabled(
-        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment
-    ):
-        """Test that spam check runs normally when skip_spam_moderation=False."""
-        self.zendesk_config.skip_spam_moderation = False
-        self.zendesk_config.save()
-
-        mock_get_taxonomy.return_value = {}
-        mock_reassignment.return_value = None
-        mock_classify_spam.return_value = {
-            "spam_result": {"is_spam": False, "confidence": 0.1, "reason": ""}
-        }
-        mock_classify_topic.return_value = {
-            "topic_result": {"topic": "General Support", "confidence": 0.9}
-        }
-
-        submission = SupportTicket.objects.create(
-            subject="Need help",
-            description="How do I use Firefox?",
-            category="general",
-            email="user@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING,
-        )
-
-        classify_zendesk_submission(submission)
-
-        mock_classify_spam.assert_called_once()
-        mock_classify_topic.assert_called_once()
-
     @patch("kitsune.llm.support.classifiers._handle_product_reassignment", return_value=None)
     @patch("kitsune.llm.support.classifiers.classify_spam")
     @patch("kitsune.llm.support.classifiers.classify_topic")
@@ -310,20 +228,31 @@ class ZendeskSubmissionClassifierTests(TestCase):
         enterprise_ticket = EnterpriseTicketFactory(
             coverage__product=self.product, coverage__zendesk_config=self.zendesk_config
         )
-        for ticket, live_skip_spam, spam_checked in (
-            (product_ticket, True, True),
-            (enterprise_ticket, False, False),
+        for ticket, live_skip_spam, spam_checked, spam_result in (
+            (product_ticket, True, True, {"is_spam": False}),
+            (enterprise_ticket, False, False, {}),
         ):
             with self.subTest(origin=ticket.origin):
                 self.zendesk_config.skip_spam_moderation = live_skip_spam
                 self.zendesk_config.save()
                 mock_spam.reset_mock()
                 mock_reassignment.reset_mock()
+                mock_topic.reset_mock()
 
-                classify_zendesk_submission(ticket)
+                result = classify_zendesk_submission(ticket)
 
                 self.assertEqual(mock_spam.called, spam_checked)
                 self.assertEqual(mock_reassignment.called, spam_checked)
+                mock_topic.assert_called_once()
+                self.assertEqual(
+                    result,
+                    {
+                        "action": ModerationAction.NOT_SPAM,
+                        "spam_result": spam_result,
+                        "product_result": {},
+                        "topic_result": {},
+                    },
+                )
 
     @patch("kitsune.llm.support.classifiers.classify_topic")
     @patch("kitsune.llm.support.classifiers.classify_product")
@@ -443,21 +372,17 @@ class ProcessFailedZendeskTicketsTests(TestCase):
 
     @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
     def test_process_failed_tickets(self, mock_send):
-        """Test that periodic task processes failed tickets."""
-        mock_send.return_value = True
-
-        submission = SupportTicket.objects.create(
-            subject="Help",
-            description="Need help",
-            category="general",
-            email="user@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
+        """Every failed ticket is resent; only successful sends are counted."""
+        mock_send.side_effect = [True, False]
+        submissions = SupportTicketFactory.create_batch(
+            2, product=self.product, submission_status=SupportTicket.STATUS_PROCESSING_FAILED
         )
 
-        process_failed_zendesk_tickets()
+        with self.assertLogs("k.task", level="INFO") as logs:
+            process_failed_zendesk_tickets()
 
-        mock_send.assert_called_once_with(submission)
+        self.assertCountEqual([c.args[0] for c in mock_send.call_args_list], submissions)
+        self.assertEqual(logs.output, ["INFO:k.task:Processed 1 failed Zendesk tickets"])
 
     @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
     def test_process_failed_tickets_ignores_other_statuses(self, mock_send):
@@ -485,27 +410,6 @@ class ProcessFailedZendeskTicketsTests(TestCase):
 
         mock_send.assert_not_called()
 
-    @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
-    def test_process_failed_tickets_handles_send_failure(self, mock_send):
-        """Test that periodic task handles cases where Zendesk send fails."""
-        mock_send.return_value = False
-
-        submission = SupportTicket.objects.create(
-            subject="Help",
-            description="Need help",
-            category="general",
-            email="user@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
-        )
-
-        process_failed_zendesk_tickets()
-
-        mock_send.assert_called_once_with(submission)
-
-        submission.refresh_from_db()
-        self.assertEqual(submission.submission_status, SupportTicket.STATUS_PROCESSING_FAILED)
-
 
 class ProcessZendeskUpdateTests(TestCase):
     """Tests for process_zendesk_update Celery task."""
@@ -529,32 +433,20 @@ class ProcessZendeskUpdateTests(TestCase):
         }
 
     @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
-    def test_status_changed_triggers_resync(self, mock_sync):
-        process_zendesk_update(self._payload("zen:event-type:ticket.status_changed"))
+    def test_ticket_changes_trigger_resync(self, mock_sync):
+        for event_type in (
+            "zen:event-type:ticket.status_changed",
+            "zen:event-type:ticket.subject_changed",
+            "zen:event-type:ticket.description_changed",
+            "zen:event-type:ticket.comment_added",
+        ):
+            with self.subTest(event_type=event_type):
+                mock_sync.reset_mock()
 
-        mock_sync.assert_called_once()
-        self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
+                process_zendesk_update(self._payload(event_type))
 
-    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
-    def test_subject_changed_triggers_resync(self, mock_sync):
-        process_zendesk_update(self._payload("zen:event-type:ticket.subject_changed"))
-
-        mock_sync.assert_called_once()
-        self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
-
-    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
-    def test_description_changed_triggers_resync(self, mock_sync):
-        process_zendesk_update(self._payload("zen:event-type:ticket.description_changed"))
-
-        mock_sync.assert_called_once()
-        self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
-
-    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
-    def test_comment_added_triggers_resync(self, mock_sync):
-        process_zendesk_update(self._payload("zen:event-type:ticket.comment_added"))
-
-        mock_sync.assert_called_once()
-        self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
+                mock_sync.assert_called_once()
+                self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
 
     @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
     def test_unhandled_event_type_is_noop(self, mock_sync):
@@ -682,36 +574,15 @@ class SyncSupportTicketTests(TestCase):
         self.assertEqual(called_ticket.id, ticket.id)
 
     @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
-    def test_missing_ticket_returns_silently(self, mock_helper):
-        sync_support_ticket(999999)
+    def test_missing_or_unsyncable_ticket_skips_helper(self, mock_helper):
+        for case, ticket_id in (
+            ("missing", 999999),
+            ("deleted in Zendesk", self._make_ticket(zd_deleted_at=timezone.now()).id),
+        ):
+            with self.subTest(case=case):
+                sync_support_ticket(ticket_id)
 
-        mock_helper.assert_not_called()
-
-    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
-    def test_null_or_blank_zendesk_ticket_id_skips_helper(self, mock_helper):
-        null_ticket = self._make_ticket(zendesk_ticket_id=None)
-        blank_ticket = self._make_ticket(zendesk_ticket_id="")
-
-        sync_support_ticket(null_ticket.id)
-        sync_support_ticket(blank_ticket.id)
-
-        mock_helper.assert_not_called()
-
-    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
-    def test_helper_exception_propagates(self, mock_helper):
-        mock_helper.side_effect = RuntimeError("Zendesk down")
-        ticket = self._make_ticket()
-
-        with self.assertRaises(RuntimeError):
-            sync_support_ticket(ticket.id)
-
-    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
-    def test_deleted_ticket_skips_helper(self, mock_helper):
-        ticket = self._make_ticket(zd_deleted_at=timezone.now())
-
-        sync_support_ticket(ticket.id)
-
-        mock_helper.assert_not_called()
+                mock_helper.assert_not_called()
 
 
 class SyncActiveSupportTicketsTests(TestCase):

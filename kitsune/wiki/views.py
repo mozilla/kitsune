@@ -2002,8 +2002,11 @@ def get_visible_related_documents(user, document, locale=None, **extra_filters):
     if not locale:
         locale = document.locale
 
-    # Ensure that we always use the parent's related documents.
-    related_docs = document.original.related_documents.all()
+    # Ensure that we always use the parent's related documents. The relation is symmetric,
+    # so skip links back from articles that exist only in another locale.
+    related_docs = document.original.related_documents.filter(
+        locale__in=[settings.WIKI_DEFAULT_LANGUAGE, locale]
+    )
 
     if extra_filters:
         related_docs = related_docs.filter(**extra_filters)

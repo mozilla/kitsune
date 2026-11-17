@@ -459,9 +459,7 @@ textarea {
   border-bottom: 1px solid var(--color-heading);
 }
 
-label.required::after {
-  content: "Required";
-  white-space: pre;
+label .required-text {
   display: block;
   font-size: 14px;
   font-size: .875rem;

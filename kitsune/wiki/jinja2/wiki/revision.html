@@ -38,7 +38,12 @@
             </li>
             <li>
               <strong>{{ _('Reviewed:') }}</strong>
-              <span>{{ revision.reviewed|yesno }}</span>
+              {% if schedule and not revision.reviewed %}
+                {# L10n: Review status of a revision approved to go live at a later date. #}
+                <span>{{ _('Approved, goes live at the scheduled time') }}</span>
+              {% else %}
+                <span>{{ revision.reviewed|yesno }}</span>
+              {% endif %}
             </li>
             {% if schedule and not revision.reviewed %}
               <li>

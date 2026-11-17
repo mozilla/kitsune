@@ -209,7 +209,7 @@ class ThreadModelTestCase(TestCase):
         """Deleting the only post in a thread should delete the thread"""
         t = ThreadFactory()
         self.assertEqual(1, t.post_set.count())
-        t.delete()
+        t.post_set.get().delete()
         self.assertEqual(0, Thread.objects.filter(pk=t.id).count())
 
 

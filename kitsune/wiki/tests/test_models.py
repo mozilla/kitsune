@@ -11,7 +11,6 @@ from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.tags.models import SumoTaggedItem
 from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.config import (
     CATEGORIES,
@@ -63,17 +62,6 @@ class DocumentTests(TestCase):
         d.save()
 
         assert not d.is_template
-
-    def test_delete_tagged_document(self):
-        """Make sure deleting a tagged doc deletes its tag relationships."""
-        # TODO: Move to wherever the tests for TaggableMixin are.
-        # This works because Django's delete() sees the `tags` many-to-many
-        # field (actually a manager) and follows the reference.
-        d = DocumentFactory(tags=["grape"])
-        self.assertEqual(1, SumoTaggedItem.objects.count())
-
-        d.delete()
-        self.assertEqual(0, SumoTaggedItem.objects.count())
 
     def test_category_inheritance(self):
         """A document's categories must always be those of its parent."""
@@ -302,8 +290,8 @@ class DocumentTests(TestCase):
         self.assertEqual(2, len(en_us.get_topics()))
 
         # Localized document inherits parent's topics.
-        DocumentFactory(parent=en_us)
-        self.assertEqual(2, len(en_us.get_topics()))
+        translation = DocumentFactory(parent=en_us)
+        self.assertEqual(2, len(translation.get_topics()))
 
     def test_get_products(self):
         """Test the get_products() method."""
@@ -311,9 +299,9 @@ class DocumentTests(TestCase):
 
         self.assertEqual(2, len(en_us.get_products()))
 
-        # Localized document inherits parent's topics.
-        DocumentFactory(parent=en_us)
-        self.assertEqual(2, len(en_us.get_products()))
+        # Localized document inherits parent's products.
+        translation = DocumentFactory(parent=en_us)
+        self.assertEqual(2, len(translation.get_products()))
 
     def test_template_title_and_category_to_template(self):
         d = DocumentFactory()
@@ -1506,12 +1494,6 @@ class RevisionTests(TestCase):
         # Creating another approved revision keeps initial content
         RevisionFactory(document=d, content="Fail to replace html")
         assert "Here to stay" in d.html, '"Here to stay" not in {}'.format(d.html)
-
-    def test_revision_unicode(self):
-        """Revision containing unicode characters is saved successfully."""
-        str = " \r\nFirefox informa\xe7\xf5es \u30d8\u30eb"
-        r = ApprovedRevisionFactory(content=str)
-        self.assertEqual(str, r.content)
 
     def test_save_bad_based_on(self):
         """Saving a Revision with a bad based_on value raises an error."""

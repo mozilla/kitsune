@@ -3,6 +3,7 @@ import re
 from django import forms
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import pgettext
 
 from kitsune.customercare.models import accepted_context_for
 from kitsune.customercare.utils import create_support_ticket
@@ -22,41 +23,53 @@ OS_CHOICES = [
 ]
 
 UPDATE_CHANNEL_CHOICES = [
-    ("", "Select update channel"),
-    ("esr", "ESR"),
-    ("rapid_release", "Rapid Release"),
-    ("full_release", "Full Release"),
-    ("beta", "Beta"),
-    ("other", "Other"),
+    ("", _lazy("Select update channel")),
+    # L10n: "ESR" is short for Extended Support Release, a Firefox update channel.
+    ("esr", _lazy("ESR")),
+    ("rapid_release", _lazy("Rapid Release")),
+    ("full_release", _lazy("Full Release")),
+    ("beta", _lazy("Beta")),
+    ("other", _lazy("Other")),
 ]
 
 POLICY_DISTRIBUTION_CHOICES = [
-    ("", "Select policy distribution method"),
-    ("firefox_admin_console", "Firefox Enterprise Admin Console"),
-    ("group_policy_admx", "Windows Group Policy (ADMX)"),
-    ("windows_mdm", "Windows MDM (Intune / OMA-URI / ADMX-backed)"),
+    ("", _lazy("Select policy distribution method")),
+    ("firefox_admin_console", _lazy("Firefox Enterprise Admin Console")),
+    # L10n: Please don't translate "ADMX". It's a Windows file type.
+    ("group_policy_admx", _lazy("Windows Group Policy (ADMX)")),
+    # L10n: Please don't translate "Intune", "OMA-URI", or "ADMX". They're technical names.
+    ("windows_mdm", _lazy("Windows MDM (Intune / OMA-URI / ADMX-backed)")),
     (
         "macos_config_profiles",
-        "macOS Configuration Profiles (.mobileconfig / .plist, including MDM tools like Jamf)",
+        # L10n: Please don't translate ".mobileconfig", ".plist", or "Jamf". The first two
+        # are file types and Jamf is a product name.
+        _lazy(
+            "macOS Configuration Profiles (.mobileconfig / .plist, including MDM tools like Jamf)"
+        ),
     ),
-    ("policies_json", "policies.json (manual deployment, all platforms)"),
-    ("autoconfig", "Autoconfig (mozilla.cfg + autoconfig.js)"),
-    ("not_sure", "Not sure / Need help selecting"),
+    # L10n: Please don't translate "policies.json". It's a file name.
+    ("policies_json", _lazy("policies.json (manual deployment, all platforms)")),
+    # L10n: Please don't translate "mozilla.cfg" or "autoconfig.js". They're file names.
+    ("autoconfig", _lazy("Autoconfig (mozilla.cfg + autoconfig.js)")),
+    ("not_sure", _lazy("Not sure / Need help selecting")),
 ]
 
 URGENCY_CHOICES = [
-    ("", "Select urgency"),
+    ("", _lazy("Select urgency")),
     (
-        "normal",
-        "Normal – Non-critical Firefox issue, minor defect, or integration/deployment question",
+        "critical",
+        # L10n: Please don't translate "SEV1". It's a standard severity level name.
+        _lazy("SEV1 (Critical) – Production outage or security risk"),
     ),
     (
         "high",
-        "High – Key functionality is degraded for multiple users or teams, but a workaround exists",
+        # L10n: Please don't translate "SEV2". It's a standard severity level name.
+        _lazy("SEV2 (High) – Major degradation; workaround available"),
     ),
     (
-        "critical",
-        "Critical – Production outage, critical blockage, or material security risk with no workaround",
+        "normal",
+        # L10n: Please don't translate "SEV3". It's a standard severity level name.
+        _lazy("SEV3 (Normal) – Minor issue; no urgent business impact"),
     ),
 ]
 
@@ -92,9 +105,9 @@ POLICY_DISTRIBUTION_TAGS = {
 }
 
 URGENCY_TAGS = {
-    "normal": "seg-pri-normal",
-    "high": "seg-pri-high",
-    "critical": "seg-pri-critical",
+    "normal": "seg-sev3",
+    "high": "seg-sev2",
+    "critical": "seg-sev1",
 }
 
 
@@ -110,7 +123,7 @@ class ZendeskForm(forms.Form):
         label=_lazy("What do you need help with?"), required=True, choices=[]
     )
     urgency = forms.ChoiceField(
-        label="What is the impact to your org?",
+        label=_lazy("What is the impact to your org?"),
         choices=URGENCY_CHOICES,
         widget=forms.HiddenInput,
         required=False,
@@ -121,13 +134,15 @@ class ZendeskForm(forms.Form):
         required=False,
     )
     update_channel = forms.ChoiceField(
-        label="What update channel are you using?",
+        label=_lazy("What update channel are you using?"),
         choices=UPDATE_CHANNEL_CHOICES,
         widget=forms.HiddenInput,
         required=False,
     )
     policy_distribution = forms.ChoiceField(
-        label="How are you distributing policies?",
+        # L10n: These are Firefox enterprise policies: settings that IT admins apply to
+        # every copy of Firefox in their company.
+        label=_lazy("How are you distributing policies?"),
         choices=POLICY_DISTRIBUTION_CHOICES,
         widget=forms.HiddenInput,
         required=False,
@@ -163,7 +178,12 @@ class ZendeskForm(forms.Form):
         self.fields["category"].choices = [
             ("", _lazy("Select a reason for contacting")),
             *[
-                (config.zendesk_topic.slug, config.zendesk_topic.form_title)
+                (
+                    config.zendesk_topic.slug,
+                    pgettext(
+                        "DB: products.ZendeskTopic.form_title", config.zendesk_topic.form_title
+                    ),
+                )
                 for config in topic_configs
                 if config.loginless_only == is_loginless
             ],

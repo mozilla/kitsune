@@ -174,6 +174,35 @@ class EnterpriseProvisioningTests(ProvisioningFixtures, TestCase):
         moved = self.invite(company=self.other_company)
         self.assertEqual(moved.company_id, self.other_company.pk)
 
+    def test_existing_account_outside_contract_languages_gets_the_contract_default(self):
+        product = ProductFactory()
+        TopicFactory(slug="getting-started", products=[product])
+        contract = SupportContractFactory(company=self.company, languages=["de"])
+        SupportCoverageFactory(contract=contract, product=product)
+        user = self.eligible_user(profile__locale="it")
+        result = self.provision(self.invite())
+        self.assertEqual(self.client.ensure_user.call_args.kwargs["locale"], "de")
+        email, link = self.welcome(result)
+        landing_path = parse_qs(urlsplit(link).query)["next"][0]
+        self.assertEqual(landing_path, invitation_landing_path(result, "de"))
+        self.assertTrue(landing_path.startswith("/de/"))
+        self.assertIn(
+            reverse("products.documents", args=[product.slug, "getting-started"], locale="de"),
+            email.html_message,
+        )
+        self.assertEqual(Profile.all_profiles.get(user=user).locale, "it")
+
+    def test_new_account_outside_contract_languages_gets_the_contract_default(self):
+        invitation = self.invite()
+        contract = SupportContractFactory(company=self.company, languages=["de"])
+        SupportCoverageFactory(contract=contract)
+        Profile.all_profiles.filter(user_id=invitation.user_id).update(locale="it")
+        result = self.provision(invitation)
+        self.assertEqual(self.client.ensure_user.call_args.kwargs["locale"], "de")
+        _email, link = self.welcome(result)
+        self.assertTrue(urlsplit(link).path.startswith("/de/groups/invitation/"))
+        self.assertEqual(Profile.all_profiles.get(user_id=invitation.user_id).locale, "it")
+
     @override_settings(
         ZENDESK_CHAT_WIDGET_KEY="widget",
         ZENDESK_CHAT_SIGNING_KEY_ID="key",

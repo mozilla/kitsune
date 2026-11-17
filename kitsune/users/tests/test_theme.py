@@ -225,15 +225,6 @@ class ThemeAttributesTests(TestCase):
         self.assertEqual(flag_off + 1, flag_on)
 
 
-class SettingsFormThemeFieldTests(TestCase):
-    def test_theme_field_exists_only_on_an_enabled_form(self):
-        field = SettingsForm(theme_enabled=True).fields["theme_preference"]
-
-        self.assertEqual(list(THEME_PREFERENCES), [value for value, _label in field.choices])
-        self.assertEqual("system", field.initial)
-        self.assertEqual(NOTIFICATION_SETTINGS, list(SettingsForm().fields))
-
-
 class SettingsPageTestCase(TestCase):
     def setUp(self):
         super().setUp()

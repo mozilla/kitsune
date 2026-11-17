@@ -8,6 +8,7 @@ from django.db import OperationalError
 from django.test import override_settings
 
 from kitsune.customercare.zendesk import ZendeskProvisioningConflict
+from kitsune.groups.models import GroupProfile
 from kitsune.groups.tasks import sync_enterprise_zendesk_membership
 from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
 from kitsune.sumo.tests import TestCase
@@ -40,6 +41,9 @@ class SyncEnterpriseZendeskMembershipsTests(TestCase):
         department_member.groups.add(company.group, department.group, nested_department.group)
         nested_member.groups.add(nested_department.group)
         inactive_member.groups.add(other_company.group)
+        # Leadership kept after its membership was removed; the leaders manager adds both.
+        leader = UserFactory()
+        GroupProfile.leaders.through.objects.create(groupprofile=department, user=leader)
 
         call_command("sync_enterprise_zendesk_memberships", stdout=self.output)
 
@@ -50,17 +54,18 @@ class SyncEnterpriseZendeskMembershipsTests(TestCase):
                 call(department_member.pk),
                 call(nested_member.pk),
                 call(inactive_member.pk),
+                call(leader.pk),
             ],
         )
-        self.assertIn("Synchronized: 4; failed: 0.", self.output.getvalue())
+        self.assertIn("Synchronized: 5; failed: 0.", self.output.getvalue())
 
-    def test_excludes_root_members_leaders_former_members_and_unrelated_users(self):
+    def test_excludes_root_members_and_leaders_former_members_and_unrelated_users(self):
         root = GroupProfileFactory(slug=settings.ENTERPRISE_GROUP_SLUG)
         company = EnterpriseCompanyFactory(root=root)
         unrelated = GroupProfileFactory()
         unrelated_department = DepartmentFactory(company=unrelated)
         root.group.user_set.add(UserFactory())
-        company.leaders.add(UserFactory())
+        GroupProfile.leaders.through.objects.create(groupprofile=root, user=UserFactory())
         unrelated.group.user_set.add(UserFactory())
         unrelated_department.group.user_set.add(UserFactory())
         former_member = UserFactory()

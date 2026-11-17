@@ -20,7 +20,7 @@ class NewMessagePage(BasePage):
             "#id_to-ts-dropdown div.no-results, #id_to-ts-dropdown div.name_search").first
         self.searched_group = lambda group_name: page.locator(
             "#id_to-ts-dropdown div.Group").filter(has_text=group_name)
-        self.added_user_delete_button = page.locator("div.ts-control div.item a.remove")
+        self.added_user_delete_button = page.locator("div.ts-control div.item .remove")
         self.searched_user = lambda username: page.locator(
             f"//div[@class='name_search']/span[text()='{username}']")
         self.textarea_input_field = page.locator("textarea#id_message")

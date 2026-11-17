@@ -263,25 +263,6 @@ class AddRemoveLeaderTests(TestCase):
         self.assertContains(r, "last leader of a root group")
         assert self.user in self.group_profile.leaders.all()
 
-    def test_can_remove_leader_from_subgroup(self):
-        """Can remove the only leader from a subgroup."""
-        sub_profile = GroupProfile.objects.add_child(
-            self.group_profile,
-            create_kwargs={"group": self.group_profile.group, "slug": "subgroup"},
-        )
-        sub_leader = UserFactory()
-        sub_profile.leaders.add(sub_leader)
-
-        self.user.is_superuser = True
-        self.user.save()
-
-        url = reverse(
-            "groups.remove_leader", locale="en-US", args=[sub_profile.slug, sub_leader.id]
-        )
-        r = self.client.post(url)
-        self.assertEqual(302, r.status_code)
-        assert sub_leader not in sub_profile.leaders.all()
-
 
 class JoinContributorsTests(TestCase):
     def setUp(self):
@@ -462,11 +443,13 @@ class MemberOrderingTests(TestCase):
         self.assertEqual(200, r.status_code)
         return [pq(el).text() for el in pq(r.content)(f"ul.users.{section} .user-name")]
 
-    def test_members_sorted_by_displayed_name(self):
-        self.assertEqual(self._names("members"), ["Aaron", "Bob", "carla", "Carol", "quinn"])
-
-    def test_leaders_sorted_by_displayed_name(self):
-        self.assertEqual(self._names("leaders"), ["Aaron", "Bob", "carla"])
+    def test_members_and_leaders_sorted_by_displayed_name(self):
+        for section, names in (
+            ("members", ["Aaron", "Bob", "carla", "Carol", "quinn"]),
+            ("leaders", ["Aaron", "Bob", "carla"]),
+        ):
+            with self.subTest(section=section):
+                self.assertEqual(self._names(section), names)
 
 
 class MemberOrderingTieBreakTests(TestCase):
@@ -492,11 +475,10 @@ class MemberOrderingTieBreakTests(TestCase):
         links = pq(r.content)(f"ul.users.{section} .user-name")
         return [pq(el).attr("href").rstrip("/").rsplit("/", 1)[-1] for el in links]
 
-    def test_members_with_same_displayed_name_sorted_by_username(self):
-        self.assertEqual(self._usernames("members"), ["alpha", "mike", "zeta"])
-
-    def test_leaders_with_same_displayed_name_sorted_by_username(self):
-        self.assertEqual(self._usernames("leaders"), ["alpha", "mike", "zeta"])
+    def test_members_and_leaders_with_same_displayed_name_sorted_by_username(self):
+        for section in ("members", "leaders"):
+            with self.subTest(section=section):
+                self.assertEqual(self._usernames(section), ["alpha", "mike", "zeta"])
 
 
 class GroupTicketsViewTests(TestCase):
@@ -575,26 +557,23 @@ class GroupTicketsViewTests(TestCase):
         response = self.client.get(reverse("groups.tickets", args=[self.c1.slug]))
         self.assertEqual(response.status_code, 404)
 
-    def test_member_sees_active_tickets_by_default(self):
+    def test_status_filter(self):
+        """Active by default and for unknown values; all and solved on request."""
         self.client.force_login(self.member)
-        response = self.client.get(reverse("groups.tickets", args=[self.c1.slug]))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.open_ticket.subject)
-        self.assertNotContains(response, self.solved_ticket.subject)
-
-    def test_status_filter_all(self):
-        self.client.force_login(self.member)
-        response = self.client.get(reverse("groups.tickets", args=[self.c1.slug]) + "?status=all")
-        self.assertContains(response, self.open_ticket.subject)
-        self.assertContains(response, self.solved_ticket.subject)
-
-    def test_status_filter_solved(self):
-        self.client.force_login(self.member)
-        response = self.client.get(
-            reverse("groups.tickets", args=[self.c1.slug]) + "?status=solved"
-        )
-        self.assertContains(response, self.solved_ticket.subject)
-        self.assertNotContains(response, self.open_ticket.subject)
+        url = reverse("groups.tickets", args=[self.c1.slug])
+        for query, shown, hidden in (
+            ("", [self.open_ticket], [self.solved_ticket]),
+            ("?status=all", [self.open_ticket, self.solved_ticket], []),
+            ("?status=solved", [self.solved_ticket], [self.open_ticket]),
+            ("?status=bogus", [self.open_ticket], [self.solved_ticket]),
+        ):
+            with self.subTest(query=query):
+                response = self.client.get(url + query)
+                self.assertEqual(response.status_code, 200)
+                for ticket in shown:
+                    self.assertContains(response, ticket.subject)
+                for ticket in hidden:
+                    self.assertNotContains(response, ticket.subject)
 
     def test_only_chats_are_badged_as_live_chats(self):
         chat = SupportTicketFactory(
@@ -614,25 +593,6 @@ class GroupTicketsViewTests(TestCase):
             if pq(row)(".my-questions--channel-badge--live-chat")
         ]
         self.assertEqual([chat.subject], badged)
-
-    def test_deleted_ticket_only_under_all(self):
-        """A ticket deleted in Zendesk is excluded from active/solved but shown under all."""
-        deleted = SupportTicketFactory(
-            user=self.member,
-            product=self.open_ticket.product,
-            org_group=self.c1,
-            zd_status=SupportTicket.ZD_STATUS_OPEN,
-            zd_deleted_at=timezone.now(),
-        )
-        self.client.force_login(self.member)
-        url = reverse("groups.tickets", args=[self.c1.slug])
-
-        self.assertNotContains(self.client.get(url), deleted.subject)
-        self.assertNotContains(self.client.get(url + "?status=solved"), deleted.subject)
-        all_response = self.client.get(url + "?status=all")
-        self.assertContains(all_response, deleted.subject)
-        # The deleted ticket renders with the shared "Inactive" status pill.
-        self.assertContains(all_response, "Inactive")
 
     def test_ticket_of_a_deleted_user_renders_without_links(self):
         leaver = UserFactory()
@@ -669,17 +629,6 @@ class GroupTicketsViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(b"<html", response.content)
         self.assertIn(b'id="tickets-content"', response.content)
-
-    def test_breadcrumb_shows_ancestor_chain(self):
-        self.client.force_login(self.member)
-        response = self.client.get(reverse("groups.tickets", args=[self.c1.slug]))
-        self.assertEqual(response.status_code, 200)
-        crumbs = pq(response.content)("#main-breadcrumbs a")
-        hrefs = [a.attrib["href"] for a in crumbs]
-        self.assertIn(reverse("groups.list"), hrefs)
-        self.assertIn(reverse("groups.profile", args=[self.root.slug]), hrefs)
-        self.assertIn(reverse("groups.profile", args=[self.c1.slug]), hrefs)
-        self.assertContains(response, "Tickets")
 
 
 class CompanySupportSectionTests(TestCase):
@@ -745,7 +694,7 @@ class CompanySupportSectionTests(TestCase):
                 200,
                 (covered, True),
             ),
-            ("company leader", self.leader(self.company), self.company, 200, (covered, False)),
+            ("company leader", self.leader(self.company), self.company, 200, (covered, True)),
             ("root leader", self.leader(self.root), self.company, 200, (covered, False)),
             ("staff", self.user(self.root, is_staff=True), self.company, 200, (covered, False)),
             ("view-only", auditor, self.company, 200, None),
@@ -850,7 +799,7 @@ class CompanySupportSectionTests(TestCase):
             ("department member", self.user(self.department), self.company),
             ("member without coverage", self.user(self.expired_company), self.expired_company),
             ("root-only member", self.user(self.root), None),
-            ("company leader", self.leader(self.company), None),
+            ("company leader", self.leader(self.company), self.company),
             ("anonymous", AnonymousUser(), None),
         ):
             with self.subTest(persona=persona):

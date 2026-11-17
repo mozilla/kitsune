@@ -11,11 +11,15 @@ from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
 
 from kitsune.groups.models import GroupProfile
-from kitsune.products import PRODUCT_SLUG_ALIASES
 from kitsune.products.models import Product, ProductSupportConfig, Topic
 from kitsune.sumo.models import ModelBase
 
-ZENDESK_PRODUCT_SLUGS = {v: k for k, v in PRODUCT_SLUG_ALIASES.items()}
+# Products whose Zendesk product value differs from their slug.
+ZENDESK_PRODUCT_VALUES = {
+    "mozilla-vpn": "firefox-private-network-vpn",
+    "mobile": "firefox-android",
+    "ios": "firefox-ios",
+}
 
 
 class MissingTicketContext(Exception):
@@ -36,11 +40,7 @@ def accepted_context_for(product, zendesk_config, coverage=None, *, topics=None)
     context = {
         "form_id": zendesk_config.ticket_form_id,
         "brand_id": zendesk_config.brand_id,
-        "product_value": (
-            ZENDESK_PRODUCT_SLUGS.get(product.slug, product.slug)
-            if product.slug == "mozilla-vpn"
-            else product.slug
-        ),
+        "product_value": ZENDESK_PRODUCT_VALUES.get(product.slug, product.slug),
         "skip_spam": zendesk_config.skip_spam_moderation,
         "automation_tags": automation_tags,
     }

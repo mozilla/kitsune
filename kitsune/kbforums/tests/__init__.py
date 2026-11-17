@@ -56,19 +56,19 @@ class PostTestCase(TestCase):
 
     def test_sticky_threads_first(self):
         """Sticky threads should come before non-sticky threads."""
-        ThreadFactory()
-        t2 = ThreadFactory(is_sticky=True)
-        s = Thread.objects.all()[0]
-        self.assertEqual(t2.id, s.id)
+        sticky = ThreadFactory(is_sticky=True)
+        sticky.new_post(creator=sticky.creator, content="older")
+        t = ThreadFactory()
+        t.new_post(creator=t.creator, content="newer")
+        self.assertEqual([sticky, t], list(Thread.objects.all()))
 
     def test_thread_sorting(self):
         """After the sticky threads, threads should be sorted by the created
         date of the last post."""
-        t1 = ThreadFactory(is_sticky=False)
-        t1.post_set.create(creator=t1.creator, content="foo")
-        t2 = ThreadFactory(is_sticky=False)
-        t2.post_set.create(creator=t2.creator, content="bar")
-        self.assertGreater(t2.last_post.created, t1.last_post.created)
+        a, b, c = ThreadFactory(), ThreadFactory(), ThreadFactory()
+        for thread in (b, a, c):
+            thread.new_post(creator=thread.creator, content="reply")
+        self.assertEqual([c, a, b], list(Thread.objects.all()))
 
     def test_post_sorting(self):
         """Posts should be sorted chronologically."""
@@ -81,13 +81,13 @@ class PostTestCase(TestCase):
 
     def test_sorting_creator(self):
         """Sorting threads by creator."""
-        u1 = UserFactory(username="foo")
-        u2 = UserFactory(username="bar")
-        ThreadFactory(creator=u1)
-        ThreadFactory(creator=u2)
+        foo = ThreadFactory(creator=UserFactory(username="foo"))
+        bar = ThreadFactory(creator=UserFactory(username="bar"))
+        # The default sort (newest post first) would put bar first.
+        for thread in (foo, bar):
+            thread.new_post(creator=thread.creator, content="reply")
         threads = sort_threads(Thread.objects, 3, 1)
-        self.assertEqual(threads[0].creator.username, u1.username)
-        self.assertEqual(threads[1].creator.username, u2.username)
+        self.assertEqual([foo, bar], list(threads))
 
     def test_sorting_replies(self):
         """Sorting threads by replies."""
@@ -104,13 +104,14 @@ class PostTestCase(TestCase):
         self.assertEqual(threads[1].title, t2.title)
 
     def test_sorting_last_post_desc(self):
-        """Sorting threads by last_post descendingly."""
+        """Sorting threads by last_post descendingly, threads without posts last."""
+        empty = ThreadFactory()
         t1 = ThreadFactory()
         t1.new_post(t1.creator, "foo")
         t2 = ThreadFactory()
         t2.new_post(t2.creator, "bar")
         threads = sort_threads(Thread.objects, 5, 1)
-        self.assertGreaterEqual(threads[0].last_post.created, threads[1].last_post.created)
+        self.assertEqual([t2, t1, empty], list(threads))
 
     def test_thread_last_page(self):
         """Thread's last_page property is accurate."""
