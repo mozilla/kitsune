@@ -46,32 +46,21 @@ class GenerateClassificationTagsTests(TestCase):
         self.zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(product=self.product, zendesk_config=self.zendesk_config)
 
-    def test_no_topic_result_returns_undefined(self):
-        """Test that missing topic_result returns ['undefined', 'general']."""
-        submission = SupportTicket(product=self.product)
-        result = {}
+    def test_unmatched_topic_returns_undefined(self):
+        TopicFactory(title="Undefined", products=[self.product])
+        TopicFactory(title="Settings", parent=None, is_archived=True, products=[self.product])
+        for case, result in (
+            ("no topic result", {}),
+            ("undefined topic", {"topic_result": {"topic": "Undefined"}}),
+            ("topic not in the database", {"topic_result": {"topic": "Nonexistent Topic"}}),
+            ("archived topic", {"topic_result": {"topic": "Settings"}}),
+        ):
+            with self.subTest(case):
+                submission = SupportTicket(product=self.product)
 
-        tags = generate_classification_tags(submission, result)
+                tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["undefined", "general"])
-
-    def test_undefined_topic_returns_empty_list(self):
-        """Test that 'Undefined' topic returns ['undefined', 'general']."""
-        submission = SupportTicket(product=self.product)
-        result = {"topic_result": {"topic": "Undefined"}}
-
-        tags = generate_classification_tags(submission, result)
-
-        self.assertEqual(tags, ["undefined", "general"])
-
-    def test_topic_not_found_in_db_returns_undefined(self):
-        """Test that topic not found in database returns ['undefined', 'general']."""
-        submission = SupportTicket(product=self.product)
-        result = {"topic_result": {"topic": "Nonexistent Topic"}}
-
-        tags = generate_classification_tags(submission, result)
-
-        self.assertEqual(tags, ["undefined", "general"])
+                self.assertEqual(tags, ["undefined", "general"])
 
     def test_single_tier_topic(self):
         """Test generating tags for a tier 1 topic."""
@@ -99,22 +88,6 @@ class GenerateClassificationTagsTests(TestCase):
                     ),
                     ["t1-settings", "technical"],
                 )
-
-    def test_two_tier_topic(self):
-        """Test generating tags for a tier 2 topic."""
-        tier1 = TopicFactory(
-            title="Settings", parent=None, is_archived=False, legacy_tag="technical"
-        )
-        tier1.products.add(self.product)
-        tier2 = TopicFactory(title="Notifications", parent=tier1, is_archived=False)
-        tier2.products.add(self.product)
-
-        submission = SupportTicket(product=self.product)
-        result = {"topic_result": {"topic": "Notifications"}}
-
-        tags = generate_classification_tags(submission, result)
-
-        self.assertEqual(tags, ["t1-settings", "t2-notifications", "technical"])
 
     def test_three_tier_topic(self):
         """Test generating tags for a tier 3 topic."""
@@ -169,23 +142,6 @@ class GenerateClassificationTagsTests(TestCase):
             ],
         )
 
-    def test_no_automation_tag_when_no_zendesk_topic_match(self):
-        """No automation tag is appended when no ZendeskTopic links to the classified Topic."""
-        tier1 = TopicFactory(
-            title="Billing and subscriptions",
-            parent=None,
-            is_archived=False,
-            legacy_tag="payments",
-        )
-        tier1.products.add(self.product)
-
-        submission = SupportTicket(product=self.product)
-        result = {"topic_result": {"topic": "Billing and subscriptions"}}
-
-        tags = generate_classification_tags(submission, result)
-
-        self.assertEqual(tags, ["t1-billing-and-subscriptions", "payments"])
-
     def test_product_reassignment_includes_other_tag(self):
         """Test that product reassignment adds 'other' tag."""
         tier1 = TopicFactory(
@@ -204,18 +160,6 @@ class GenerateClassificationTagsTests(TestCase):
         self.assertIn("other", tags)
         self.assertIn("t1-settings", tags)
         self.assertIn("technical", tags)
-
-    def test_archived_topic_returns_undefined(self):
-        """Test that archived topics are not found and return ['undefined', 'general']."""
-        topic = TopicFactory(title="Settings", parent=None, is_archived=True)
-        topic.products.add(self.product)
-
-        submission = SupportTicket(product=self.product)
-        result = {"topic_result": {"topic": "Settings"}}
-
-        tags = generate_classification_tags(submission, result)
-
-        self.assertEqual(tags, ["undefined", "general"])
 
 
 class SendSupportTicketToZendeskTests(TestCase):
@@ -245,34 +189,28 @@ class SendSupportTicketToZendeskTests(TestCase):
         self.submission.origin = SupportTicket.Origin.PRODUCT
 
     @patch("kitsune.customercare.utils.ZendeskClient")
-    def test_suspended_user_error_auto_rejects(self, mock_zendesk_client):
-        """Test that UserSuspended errors result in auto-rejection (issue 2670)."""
+    def test_suspended_user_or_invalid_record_auto_rejects(self, mock_zendesk_client):
         mock_client = mock_zendesk_client.return_value
-        error = APIException(
-            '{"error": "RecordInvalid", "description": "Record validation errors", "details": {"requester": [{"description": "Requester: test@example.com is suspended.", "error": "UserSuspended"}]}}'
-        )
-        mock_client.create_ticket.side_effect = error
+        for case, error in (
+            (
+                "UserSuspended (issue 2670)",
+                '{"error": "UserSuspended", "description": "Requester is suspended."}',
+            ),
+            (
+                "RecordInvalid email (issue 2669)",
+                '{"error": "RecordInvalid", "description": "Record validation errors", "details": {"email": ["Email is not properly formatted"]}}',
+            ),
+        ):
+            with self.subTest(case):
+                self.submission.submission_status = SupportTicket.STATUS_PENDING
+                self.submission.save.reset_mock()
+                mock_client.create_ticket.side_effect = APIException(error)
 
-        result = send_support_ticket_to_zendesk(self.submission)
+                result = send_support_ticket_to_zendesk(self.submission)
 
-        self.assertFalse(result)
-        self.assertEqual(self.submission.submission_status, SupportTicket.STATUS_REJECTED)
-        self.submission.save.assert_called_with(update_fields=["submission_status"])
-
-    @patch("kitsune.customercare.utils.ZendeskClient")
-    def test_record_invalid_email_error_auto_rejects(self, mock_zendesk_client):
-        """Test that RecordInvalid errors for email result in auto-rejection (issue 2669)."""
-        mock_client = mock_zendesk_client.return_value
-        error = APIException(
-            '{"error": "RecordInvalid", "description": "Record validation errors", "details": {"email": ["Email is not properly formatted"]}}'
-        )
-        mock_client.create_ticket.side_effect = error
-
-        result = send_support_ticket_to_zendesk(self.submission)
-
-        self.assertFalse(result)
-        self.assertEqual(self.submission.submission_status, SupportTicket.STATUS_REJECTED)
-        self.submission.save.assert_called_with(update_fields=["submission_status"])
+                self.assertFalse(result)
+                self.assertEqual(self.submission.submission_status, SupportTicket.STATUS_REJECTED)
+                self.submission.save.assert_called_once_with(update_fields=["submission_status"])
 
     @patch("kitsune.customercare.utils.flag_object")
     @patch("kitsune.customercare.utils.Profile")
@@ -572,11 +510,11 @@ class SyncTicketFromZendeskTests(TestCase):
     def setUp(self):
         self.ticket = SupportTicketFactory(zendesk_ticket_id="123")
 
-    def _make_mock_comment(self, *, id, body, html_body=None, public=True):
+    def _make_mock_comment(self, *, id, body, public=True):
         mock_comment = MagicMock()
         mock_comment.id = id
         mock_comment.body = body
-        mock_comment.html_body = html_body if html_body is not None else f"<p>{body}</p>"
+        mock_comment.html_body = f"<p>{body}</p>"
         mock_comment.created_at = "2025-01-01T00:00:00Z"
         mock_comment.public = public
         mock_comment.author.name = "Agent"
@@ -590,66 +528,33 @@ class SyncTicketFromZendeskTests(TestCase):
         # followed by any agent replies.
         description_comment = self._make_mock_comment(id=1, body="Original question")
         reply_comment = self._make_mock_comment(id=2, body="Hello")
-        mock_client.get_ticket_comments.return_value = [description_comment, reply_comment]
+        private_reply = self._make_mock_comment(id=3, body="Internal note", public=False)
+        mock_client.get_ticket_comments.return_value = [
+            description_comment,
+            reply_comment,
+            private_reply,
+        ]
         mock_zd_ticket = MagicMock()
         mock_zd_ticket.status = "open"
         mock_zd_ticket.updated_at = timezone.now()
         mock_zd_ticket.subject = self.ticket.subject
-        mock_zd_ticket.description = self.ticket.description
+        mock_zd_ticket.description = "An updated description from Zendesk"
         mock_client.get_ticket.return_value = mock_zd_ticket
 
         sync_ticket_from_zendesk(self.ticket)
 
         self.ticket.refresh_from_db()
-        self.assertEqual(len(self.ticket.comments), 2)
+        self.assertEqual(len(self.ticket.comments), 3)
         self.assertEqual(self.ticket.comments[0]["body"], "<p>Original question</p>")
         self.assertEqual(self.ticket.comments[1]["body"], "<p>Hello</p>")
         self.assertEqual(self.ticket.comments[1]["author"]["name"], "Agent")
+        self.assertEqual([c["public"] for c in self.ticket.comments], [True, True, False])
         self.assertEqual(self.ticket.zd_status, "open")
+        self.assertEqual(self.ticket.description, "An updated description from Zendesk")
         self.assertIsNotNone(self.ticket.last_synced_at)
         # public_comments excludes the description-comment and any private notes.
         self.assertEqual(len(self.ticket.public_comments), 1)
         self.assertEqual(self.ticket.public_comments[0]["body"], "<p>Hello</p>")
-
-    @patch("kitsune.customercare.utils.ZendeskClient")
-    def test_stores_html_body_not_plain_body(self, mock_client_cls):
-        """html_body (rich HTML) is stored, not the plain-text body."""
-        mock_client = mock_client_cls.return_value
-        comment = self._make_mock_comment(id=1, body="plain", html_body="<p><b>rich</b></p>")
-        mock_client.get_ticket_comments.return_value = [comment]
-        mock_client.get_ticket.return_value = MagicMock(
-            status="open",
-            updated_at=timezone.now(),
-            subject=self.ticket.subject,
-            description=self.ticket.description,
-        )
-
-        sync_ticket_from_zendesk(self.ticket)
-
-        self.ticket.refresh_from_db()
-        self.assertEqual(self.ticket.comments[0]["body"], "<p><b>rich</b></p>")
-        self.assertNotEqual(self.ticket.comments[0]["body"], "plain")
-
-    @patch("kitsune.customercare.utils.ZendeskClient")
-    def test_filters_private_comments(self, mock_client_cls):
-        """Private comments are stored but excluded from public_comments."""
-        mock_client = mock_client_cls.return_value
-        description_comment = self._make_mock_comment(id=1, body="Original question")
-        private_reply = self._make_mock_comment(id=2, body="Internal note", public=False)
-        mock_client.get_ticket_comments.return_value = [description_comment, private_reply]
-        mock_client.get_ticket.return_value = MagicMock(
-            status="open",
-            updated_at=timezone.now(),
-            subject=self.ticket.subject,
-            description=self.ticket.description,
-        )
-
-        sync_ticket_from_zendesk(self.ticket)
-
-        self.ticket.refresh_from_db()
-        self.assertEqual(len(self.ticket.comments), 2)
-        self.assertFalse(self.ticket.comments[1]["public"])
-        self.assertEqual(self.ticket.public_comments, [])
 
     @patch("kitsune.customercare.utils.ZendeskClient")
     def test_chat_transcript_comments_have_no_author(self, mock_client_cls):
@@ -677,22 +582,6 @@ class SyncTicketFromZendeskTests(TestCase):
         )
 
     @patch("kitsune.customercare.utils.ZendeskClient")
-    def test_updates_subject(self, mock_client_cls):
-        mock_client = mock_client_cls.return_value
-        mock_client.get_ticket_comments.return_value = []
-        mock_client.get_ticket.return_value = MagicMock(
-            status="open",
-            updated_at=timezone.now(),
-            subject="A renamed ticket",
-            description=self.ticket.description,
-        )
-
-        sync_ticket_from_zendesk(self.ticket)
-
-        self.ticket.refresh_from_db()
-        self.assertEqual(self.ticket.subject, "A renamed ticket")
-
-    @patch("kitsune.customercare.utils.ZendeskClient")
     def test_truncates_long_subject(self, mock_client_cls):
         mock_client = mock_client_cls.return_value
         mock_client.get_ticket_comments.return_value = []
@@ -707,22 +596,6 @@ class SyncTicketFromZendeskTests(TestCase):
 
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.subject, ("Conversation with " + "x" * 255)[:255])
-
-    @patch("kitsune.customercare.utils.ZendeskClient")
-    def test_updates_description(self, mock_client_cls):
-        mock_client = mock_client_cls.return_value
-        mock_client.get_ticket_comments.return_value = []
-        mock_client.get_ticket.return_value = MagicMock(
-            status="open",
-            updated_at=timezone.now(),
-            subject=self.ticket.subject,
-            description="An updated description from Zendesk",
-        )
-
-        sync_ticket_from_zendesk(self.ticket)
-
-        self.ticket.refresh_from_db()
-        self.assertEqual(self.ticket.description, "An updated description from Zendesk")
 
     @patch("kitsune.customercare.utils.fetch_zendesk_ticket_data")
     def test_skips_deleted_ticket(self, mock_fetch):

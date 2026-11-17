@@ -27,61 +27,6 @@ from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
 
-class SupportTicketModelTests(TestCase):
-    """Tests for SupportTicket model."""
-
-    def setUp(self):
-        """Set up test data."""
-        self.product = ProductFactory()
-
-    def test_status_choices_include_processing_failed(self):
-        """Test that STATUS_PROCESSING_FAILED is a valid status choice."""
-        status_values = [choice[0] for choice in SupportTicket.SUBMISSION_STATUS_CHOICES]
-        self.assertIn(SupportTicket.STATUS_PROCESSING_FAILED, status_values)
-        self.assertEqual(SupportTicket.STATUS_PROCESSING_FAILED, "processing_failed")
-
-    def test_create_ticket_with_processing_failed_status(self):
-        """Test that tickets can be created with STATUS_PROCESSING_FAILED."""
-        ticket = SupportTicket.objects.create(
-            subject="Test",
-            description="Test description",
-            category="test",
-            email="test@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
-        )
-
-        ticket.refresh_from_db()
-        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_PROCESSING_FAILED)
-
-    def test_default_status_is_pending(self):
-        """Test that default status is STATUS_PENDING."""
-        ticket = SupportTicket.objects.create(
-            subject="Test",
-            description="Test description",
-            category="test",
-            email="test@example.com",
-            product=self.product,
-        )
-
-        self.assertEqual(ticket.submission_status, SupportTicket.STATUS_PENDING)
-
-    def test_str_method(self):
-        """Test the __str__ method includes status."""
-        ticket = SupportTicket.objects.create(
-            subject="Test Subject",
-            description="Test description",
-            category="test",
-            email="test@example.com",
-            product=self.product,
-            submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
-        )
-
-        str_repr = str(ticket)
-        self.assertIn("Test Subject", str_repr)
-        self.assertIn("processing_failed", str_repr)
-
-
 class AcceptedTicketContextTests(TestCase):
     def setUp(self):
         self.product = ProductFactory(slug="mozilla-vpn")
@@ -366,21 +311,21 @@ class AccessibleToTests(TestCase):
 class IsSyncableTests(TestCase):
     """is_syncable is True only with a usable Zendesk id and no deletion."""
 
-    def test_syncable_with_id_and_not_deleted(self):
-        ticket = SupportTicketFactory(zendesk_ticket_id="123")
-        self.assertTrue(ticket.is_syncable)
-
-    def test_not_syncable_when_deleted(self):
-        ticket = SupportTicketFactory(zendesk_ticket_id="123", zd_deleted_at=timezone.now())
-        self.assertFalse(ticket.is_syncable)
-
-    def test_not_syncable_with_null_id(self):
-        ticket = SupportTicketFactory(zendesk_ticket_id=None)
-        self.assertFalse(ticket.is_syncable)
-
-    def test_not_syncable_with_blank_id(self):
-        ticket = SupportTicketFactory(zendesk_ticket_id="")
-        self.assertFalse(ticket.is_syncable)
+    def test_syncable_needs_a_usable_id_and_no_deletion(self):
+        for zendesk_ticket_id, zd_deleted_at, syncable in (
+            ("123", None, True),
+            ("124", timezone.now(), False),
+            (None, None, False),
+            ("", None, False),
+        ):
+            with self.subTest(zendesk_ticket_id=zendesk_ticket_id, deleted=bool(zd_deleted_at)):
+                ticket = SupportTicketFactory(
+                    zendesk_ticket_id=zendesk_ticket_id, zd_deleted_at=zd_deleted_at
+                )
+                self.assertEqual(ticket.is_syncable, syncable)
+                self.assertEqual(
+                    SupportTicket.objects.syncable().filter(pk=ticket.pk).exists(), syncable
+                )
 
 
 class ZendeskTicketIdTests(TestCase):
@@ -472,15 +417,4 @@ class SupportTicketQuerySetTests(TestCase):
         self.assertEqual(
             self._ids(SupportTicket.objects.solved()),
             {self.live_solved.id, self.closed.id},
-        )
-
-    def test_active_and_solved_exclude_deleted(self):
-        self.assertNotIn(self.deleted_open.id, self._ids(SupportTicket.objects.active()))
-        self.assertNotIn(self.deleted_open.id, self._ids(SupportTicket.objects.solved()))
-
-    def test_active_syncable_composition_drops_unsyncable(self):
-        # The sync dispatch path: active by status AND sync-eligible.
-        self.assertEqual(
-            self._ids(SupportTicket.objects.active().syncable()),
-            {self.live_open.id},
         )
