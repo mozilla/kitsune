@@ -118,19 +118,6 @@ class SpamFlagReconciliationTestCase(TestCaseBase):
             args=[flag.id],
         )
 
-    def test_rejecting_spam_flag_clears_is_spam_on_answer(self):
-        answer = AnswerFactory()
-        answer.is_spam = True
-        answer.save()
-        flag = self._flag(answer)
-
-        self._reject(flag)
-
-        answer.refresh_from_db()
-        self.assertFalse(answer.is_spam)
-        self.assertIsNone(answer.marked_as_spam)
-        self.assertIsNone(answer.marked_as_spam_by)
-
     def test_mark_as_spam_sticks_after_earlier_rejection(self):
         """Regression for mozilla/sumo#2948.
 
@@ -153,32 +140,6 @@ class SpamFlagReconciliationTestCase(TestCaseBase):
         self.assertTrue(answer.is_spam)
         self.assertEqual(self.moderator, answer.marked_as_spam_by)
 
-    def test_rejecting_non_spam_flag_leaves_is_spam_alone(self):
-        answer = AnswerFactory()
-        answer.is_spam = True
-        answer.save()
-        flag = self._flag(answer, reason=FlaggedObject.REASON_ABUSE)
-
-        self._reject(flag)
-
-        answer.refresh_from_db()
-        self.assertTrue(answer.is_spam)
-
-    def test_rejection_overrides_prior_manual_mark_as_spam(self):
-        other_moderator = UserFactory()
-        answer = AnswerFactory()
-        answer.mark_as_spam(other_moderator)
-        self.assertTrue(answer.is_spam)
-        self.assertEqual(other_moderator, answer.marked_as_spam_by)
-
-        flag = self._flag(answer)
-        self._reject(flag)
-
-        answer.refresh_from_db()
-        self.assertFalse(answer.is_spam)
-        self.assertIsNone(answer.marked_as_spam)
-        self.assertIsNone(answer.marked_as_spam_by)
-
     def test_rejecting_spam_flag_on_non_aaq_content_is_noop(self):
         """Content types without is_spam (e.g. user profiles) are unaffected."""
         target = UserFactory()
@@ -190,60 +151,40 @@ class SpamFlagReconciliationTestCase(TestCaseBase):
         flag.refresh_from_db()
         self.assertEqual(FlaggedObject.FLAG_REJECTED, flag.status)
 
-    def test_accepting_spam_flag_backfills_marked_as_spam(self):
-        """Acceptance backfills audit metadata on an auto-flagged answer."""
-        answer = AnswerFactory()
-        answer.is_spam = True
-        answer.save()
-        flag = self._flag(answer)
-
-        self._accept(flag)
-
-        answer.refresh_from_db()
-        self.assertTrue(answer.is_spam)
-        self.assertIsNotNone(answer.marked_as_spam)
-        self.assertEqual(self.moderator, answer.marked_as_spam_by)
-
-    def test_accepting_spam_flag_preserves_existing_manual_mark(self):
-        """Acceptance does not overwrite an answer already manually marked."""
+    def test_decisions_reconcile_the_answers_spam_mark(self):
+        """Rejecting a spam flag unmarks the answer; accepting one backfills a missing mark.
+        Flags for other reasons, and answers that aren't spam, are left alone."""
         other_moderator = UserFactory()
-        answer = AnswerFactory()
-        answer.mark_as_spam(other_moderator)
-        original_timestamp = answer.marked_as_spam
+        spam, abuse = FlaggedObject.REASON_SPAM, FlaggedObject.REASON_ABUSE
+        for state, reason, decide, is_spam, mark, marked_by in (
+            ("auto-flagged", spam, self._reject, False, None, None),
+            ("auto-flagged", abuse, self._reject, True, None, None),
+            ("marked by hand", spam, self._reject, False, None, None),
+            ("auto-flagged", spam, self._accept, True, "new", self.moderator),
+            ("marked by hand", spam, self._accept, True, "kept", other_moderator),
+            ("auto-flagged", abuse, self._accept, True, None, None),
+            ("not spam", spam, self._accept, False, None, None),
+        ):
+            with self.subTest(state=state, reason=reason, decision=decide.__name__):
+                answer = AnswerFactory()
+                if state == "auto-flagged":
+                    answer.is_spam = True
+                    answer.save()
+                elif state == "marked by hand":
+                    answer.mark_as_spam(other_moderator)
+                original_mark = answer.marked_as_spam
 
-        flag = self._flag(answer)
-        self._accept(flag)
+                decide(self._flag(answer, reason=reason))
 
-        answer.refresh_from_db()
-        self.assertTrue(answer.is_spam)
-        self.assertEqual(original_timestamp, answer.marked_as_spam)
-        self.assertEqual(other_moderator, answer.marked_as_spam_by)
-
-    def test_accepting_non_spam_flag_does_not_touch_answer(self):
-        """Accepting e.g. an abuse flag leaves the Answer untouched."""
-        answer = AnswerFactory()
-        answer.is_spam = True
-        answer.save()
-        flag = self._flag(answer, reason=FlaggedObject.REASON_ABUSE)
-
-        self._accept(flag)
-
-        answer.refresh_from_db()
-        self.assertTrue(answer.is_spam)
-        self.assertIsNone(answer.marked_as_spam)
-        self.assertIsNone(answer.marked_as_spam_by)
-
-    def test_accepting_spam_flag_on_non_spam_answer_is_noop(self):
-        """Acceptance on is_spam=False content does not retroactively mark."""
-        answer = AnswerFactory()  # is_spam defaults to False
-        flag = self._flag(answer)
-
-        self._accept(flag)
-
-        answer.refresh_from_db()
-        self.assertFalse(answer.is_spam)
-        self.assertIsNone(answer.marked_as_spam)
-        self.assertIsNone(answer.marked_as_spam_by)
+                answer.refresh_from_db()
+                self.assertEqual(is_spam, answer.is_spam)
+                self.assertEqual(marked_by, answer.marked_as_spam_by)
+                if mark == "kept":
+                    self.assertEqual(original_mark, answer.marked_as_spam)
+                elif mark == "new":
+                    self.assertIsNotNone(answer.marked_as_spam)
+                else:
+                    self.assertIsNone(answer.marked_as_spam)
 
 
 class SupportTicketFlagUpdateTestCase(TestCaseBase):

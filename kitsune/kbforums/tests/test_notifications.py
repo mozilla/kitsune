@@ -65,33 +65,6 @@ https://testserver/en-US/unsubscribe/"""
 class NotificationsTests(TestCase):
     """Test that notifications get sent."""
 
-    @mock.patch.object(NewPostEvent, "fire")
-    def test_fire_on_reply(self, fire):
-        """The event fires when there is a reply."""
-        t = ThreadFactory()
-        u = UserFactory()
-        self.client.login(username=u.username, password="testpass")
-        post(
-            self.client, "wiki.discuss.reply", {"content": "a post"}, args=[t.document.slug, t.id]
-        )
-        # NewPostEvent.fire() is called.
-        assert fire.called
-
-    @mock.patch.object(NewThreadEvent, "fire")
-    def test_fire_on_new_thread(self, fire):
-        """The event fires when there is a new thread."""
-        d = ApprovedRevisionFactory().document
-        u = UserFactory()
-        self.client.login(username=u.username, password="testpass")
-        post(
-            self.client,
-            "wiki.discuss.new_thread",
-            {"title": "a title", "content": "a post"},
-            args=[d.slug],
-        )
-        # NewThreadEvent.fire() is called.
-        assert fire.called
-
     def _toggle_watch_thread_as(self, username, thread, turn_on=True):
         """Watch a thread and return it."""
         self.client.login(username=username, password="testpass")

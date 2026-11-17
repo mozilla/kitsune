@@ -9,7 +9,6 @@ from kitsune.flagit.views import get_flagged_objects
 from kitsune.llm.spam.classifier import (
     HIGH_CONFIDENCE_THRESHOLD,
     LOW_CONFIDENCE_THRESHOLD,
-    ModerationAction,
     determine_action_from_spam_result,
 )
 from kitsune.llm.spam.prompt import UNCERTAIN_RELEVANCE_CONFIDENCE_CEILING, build_spam_prompt
@@ -142,12 +141,6 @@ class UncertainRelevanceConfidenceCeilingTests(SimpleTestCase):
     def test_ceiling_sits_between_the_action_thresholds(self):
         self.assertGreater(UNCERTAIN_RELEVANCE_CONFIDENCE_CEILING, LOW_CONFIDENCE_THRESHOLD)
         self.assertLess(UNCERTAIN_RELEVANCE_CONFIDENCE_CEILING, HIGH_CONFIDENCE_THRESHOLD)
-
-    def test_capped_confidence_is_flagged_for_review(self):
-        action = determine_action_from_spam_result(
-            {"confidence": UNCERTAIN_RELEVANCE_CONFIDENCE_CEILING}
-        )
-        self.assertEqual(action, ModerationAction.FLAG_REVIEW)
 
 
 class CappedConfidenceRoutingTests(TestCase):

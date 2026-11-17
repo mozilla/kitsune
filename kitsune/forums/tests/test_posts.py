@@ -91,24 +91,26 @@ class PostTestCase(TestCase):
 
     def test_sorting_creator(self):
         """Sorting threads by creator."""
-        ThreadFactory(creator__username="aaa")
+        # The default sort (newest post first) would put aaa first.
         ThreadFactory(creator__username="bbb")
+        ThreadFactory(creator__username="aaa")
         threads = sort_threads(Thread.objects, 3, 1)
-        self.assertTrue(threads[0].creator.username >= threads[1].creator.username)
+        self.assertEqual(["bbb", "aaa"], [t.creator.username for t in threads])
 
     def test_sorting_replies(self):
         """Sorting threads by replies."""
-        ThreadFactory(posts=[{}, {}, {}])
         ThreadFactory()
+        ThreadFactory(posts=[{}, {}, {}])
         threads = sort_threads(Thread.objects, 4)
-        self.assertTrue(threads[0].replies <= threads[1].replies)
+        self.assertEqual([0, 2], [t.replies for t in threads])
 
     def test_sorting_last_post_desc(self):
-        """Sorting threads by last_post descendingly."""
-        ThreadFactory(posts=[{}, {}, {}])
-        PostFactory(created=timezone.now() - timedelta(days=1))
+        """Sorting threads by last_post descendingly, threads without posts last."""
+        empty = ThreadFactory(posts=[])
+        newest = ThreadFactory(posts=[{}, {}, {}])
+        older = PostFactory(created=timezone.now() - timedelta(days=1)).thread
         threads = sort_threads(Thread.objects, 5, 1)
-        self.assertTrue(threads[0].last_post.created >= threads[1].last_post.created)
+        self.assertEqual([newest, older, empty], list(threads))
 
     def test_thread_last_page(self):
         """Thread's last_page property is accurate."""
