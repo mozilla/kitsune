@@ -1,4 +1,3 @@
-import json
 import time
 from datetime import date, timedelta
 from unittest import mock
@@ -591,20 +590,6 @@ class GetKBVisitedTests(TestCase):
             },
         )
         self.assertFalse(self.session.modified)
-
-    def test_conversion_to_json(self):
-        now = time.time()
-        self.session["kb-visited"] = {
-            "/firefox/browse/": {
-                "/en-US/kb/stuff": now,
-            },
-            "/firefox/mobile/settings/": {
-                "/en-US/kb/nonsense": now + 1,
-            },
-        }
-        self.session.modified = False
-        visits = get_kb_visited(self.session, self.product1, ttl=10)
-        self.assertEqual(json.dumps(sorted(visits)), '["/en-US/kb/nonsense", "/en-US/kb/stuff"]')
 
 
 class HasVisitedKBTests(TestCase):

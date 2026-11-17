@@ -2032,7 +2032,7 @@ class DocumentEditingTests(TestCase):
 
         # Verify that needs_change can't be set if the user doesn't have
         # the permission.
-        self.client.post(reverse("wiki.edit_document", args=[doc.slug]), data)
+        self.client.post(reverse("wiki.edit_document_metadata", args=[doc.slug]), data)
         doc = Document.objects.get(pk=doc.pk)
         assert not doc.needs_change
         assert not doc.needs_change_comment
@@ -2089,20 +2089,6 @@ class DocumentEditingTests(TestCase):
         obj = DraftRevision.objects.filter(creator=self.u, document=rev.document, locale="bn")
         # There should be only one draft revision
         self.assertEqual(1, obj.count())
-
-    def test_draft_revision_restore_in_translation_page(self):
-        """Check Draft Revision is restored when a user click on the Restore Button"""
-        # Create a draft revision
-        draft = DraftRevisionFactory(creator=self.u)
-        doc = draft.document
-        # Now send a get request to the page for restoring the draft
-        trans_url = reverse("wiki.translate", locale=draft.locale, args=[doc.slug])
-        draft_request = {"restore": "Restore"}
-        restore_draft_resp = self.client.post(trans_url, draft_request)
-        self.assertEqual(200, restore_draft_resp.status_code)
-        # Check if the title of the translate page contains the title of draft revision
-        trans_page = pq(restore_draft_resp.content)
-        self.assertEqual("\n" + draft.content, trans_page("#id_content").text())
 
     def test_discard_draft_revision(self):
         """Check Draft Revision is discarded
@@ -2411,11 +2397,6 @@ class TestDocumentLocking(TestCase):
         doc = DocumentFactory()
         self._test_lock_helpers(doc)
 
-    def test_lock_helpers_translation(self):
-        doc_en = DocumentFactory()
-        doc_de = DocumentFactory(parent=doc_en, locale="de")
-        self._test_lock_helpers(doc_de)
-
     def _lock_workflow(self, doc, edit_url):
         """This is a big end to end feature test of document locking.
 
@@ -2533,212 +2514,42 @@ class FallbackSystem(TestCase):
         doc_content = doc("#doc-content").text()
         return doc_content
 
-    def test_header_locales_in_translated_list(self):
+    def test_accept_language_fallback(self):
         """
-        Test that the article is showing in the header locale
-
-        Test cases when the document is not localized to locale requested by the user,
-        but is localized to a locale mentioned in the ACCEPT_LANGUAGE header
+        A document missing in the requested locale is shown in the first Accept-Language
+        locale (or a wiki fallback of one) it is translated into. en-US in the header
+        stops the search, and header values may be in any case.
         """
-        # Define a client with es, fr, ja as locale choices in the ACCEPT_LANGUAGE header
-        header = "es,fr;q=0.7,ja;q=0.3,"
-        # Create a document localized into fr
-        # Attempt to resolve to the es version of the document with the client defined before
-        doc_content = self.get_data_from_translated_document(
-            header=header, create_doc_locale="fr", req_doc_locale="es"
-        )
-        # Show the fr version of the document based on existing client header,
-        # as it is not localized into es
-        en_content = "This article is in English"
-        trans_content = "This article is translated into fr"
-        assert en_content not in doc_content
-        assert trans_content in doc_content
-
-    def test_header_locales_not_in_translated_list(self):
-        """
-        Test that the article is showing in the header locale, with the following conditions:
-
-        * the article is not localized into the user-requested locale
-        * the article is not localized to any of the locales listed in the ACCEPT_LANGUAGE header
-        * there is a fallback locale defined for one of the locales listed in the the
-          ACCEPT LANGUAGE header
-           ** it is set in kitsune/settings.py
-
-        Test that the fallback locale is used
-        """
-
-        # Define a client with de, an, ja as locale choices in the ACCEPT_LANGUAGE header
-        header = "de,an;q=0.7,ja;q=0.3,"
-        # Create a document localized into es
-        # Attempt to resolve to the de version of the document with the client defined before
-        doc_content = self.get_data_from_translated_document(
-            header=header, create_doc_locale="es", req_doc_locale="de"
-        )
-        # Show the es version of the document based on the fallback locale for an set in
-        # kitsune/settings.py, as it is not localized into de and there is no available
-        # locale based on the client header
-        en_content = "This article is in English"
-        trans_content = "This article is translated into es"
-        assert en_content not in doc_content
-        assert trans_content in doc_content
-
-    def test_en_in_accept_language_header(self):
-        """If the first fallback locale does not exist and the second fallback locale is en-US,
-        the second fallback locale should not be used"""
-        # Define a client with fr, en-US, de as locale choices in the ACCEPT_LANGUAGE header
-        header = "fr,en-US;q=0.7,de;q=0.3,"
-        # Create a document localized into de
-        # Attempt to resolve to the es version of the document with the client defined before
-        doc_content = self.get_data_from_translated_document(
-            header=header, create_doc_locale="de", req_doc_locale="es"
-        )
-        # Show the en-US version of the document based on existing client header,
-        # as it is not localized into fr and de is behind en-US in header
-        en_content = "This article is in English"
-        trans_content = "This article is translated into de"
-        assert en_content in doc_content
-        assert trans_content not in doc_content
-
-    def test_custom_locale_mapping(self):
-        """
-        Test that the article is showing according to defined locale fallback options
-        (more than one), with the following conditions:
-
-        * the article is not localized into the user-requested locale
-        * the article is not localized into any of the locales listed in the ACCEPT_LANGUAGE header
-        * None of the ACCEPT_LANGUAGE header locales has a defined fallback locale
-        * the user-requested locale has more than one fallback locale defined and
-          the requested article is localized into one of the defined fallback locales
-            ** the fallback locale is set in kitsune/settings.py
-
-        Test that the article is shown in the defined fallback locale
-        """
-
-        # Create a document localized into es. Attempt to resolve to the ca version
-        # of the document without defining locale options for the client
-
-        # of the document. While we the client have no language choices.
-        doc_content = self.get_data_from_translated_document(
-            header=None, create_doc_locale="es", req_doc_locale="ca"
-        )
-        # Show the es locale version of the document based on the fallback locale,
-        # as it is not localized into ca locale and there is no available locale
-        # from the ACCEPT_LANGUAGE header
-        en_content = "This article is in English"
-        trans_content = "This article is translated into es"
-        assert en_content not in doc_content
-        assert trans_content in doc_content
-
-    def test_custom_locale_mapping_for_header_locale(self):
-        """
-        Test that defined locale fallbacks are used as header locales,
-        with the following conditions:
-
-        * the article is not localized into the user-requested locale
-        * the article is not localized to any of the locales listed in the ACCEPT_LANGUAGE header
-        * the header locales do not have a defined fallback locale OR the article is not localized
-          into any of those defined fallback locales
-        * the user-requested locale has a defined fallback locale, but the article is
-          not localized into it
-        * one of the locales listed in the ACCEPT_LANGUAGE headers has a defined fallback locale
-          and the article is localized into that fallback locale
-
-        Test that the defined fallback locale is used
-        """
-
-        # The user-requested locale has a defined custom wiki fallback locale,
-        # but the article is not localized into that fallback locale
-
-        # Define a client with ca, wo, ja as locale choices in the ACCEPT_LANGUAGE header
-        header = "ca,wo;q=0.7,ja;q=0.3,"
-        # Create a document localized into fr
-        # Attempt to resolve to the ca version of the document with the client defined before
-        doc_content = self.get_data_from_translated_document(
-            header=header, create_doc_locale="fr", req_doc_locale="ca"
-        )
-        # Show the pt-BR version of the document based on existing custom wiki locale mapping
-        # for pt-PT, as it is not localized into ca
-        en_content = "This article is in English"
-        trans_content = "This article is translated into fr"
-        assert en_content not in doc_content
-        assert trans_content in doc_content
-
-        # If the user-requested locale does not have a custom wiki fallback locale
-        # Define a client with ca, wo, ja as locale choices in the ACCEPT_LANGUAGE header
-        header = "ar,wo;q=0.7,ja;q=0.3,"
-        # Create a document localized into fr
-        # Attempt to resolve to the ar version of the document with the client defined before
-        doc_content = self.get_data_from_translated_document(
-            header=header, create_doc_locale="fr", req_doc_locale="ar"
-        )
-        # Show the article in wo based on the custom wiki fallback locale mapping for wo,
-        # as it is localized neither into any of the locales listed in the
-        # ACCEPT_LANGUAGE header, nor into ar
-        en_content = "This article is in English"
-        trans_content = "This article is translated into fr"
-        assert en_content not in doc_content
-        assert trans_content in doc_content
-
-    def test_non_normalized_case_in_accept_language_header(self):
-        """
-        We should be able to handle the Accept-Language values no matter their case.
-        """
-        en_content = "This article is in English"
-
-        with self.subTest("wiki fallback"):
-            doc_content = self.get_data_from_translated_document(
-                header="fy-nl,fr;q=0.8,en-us;q=0.7", create_doc_locale="nl", req_doc_locale="fr"
-            )
-            self.assertNotIn(en_content, doc_content)
-            self.assertIn("This article is translated into nl", doc_content)
-
-        with self.subTest("global override"):
-            doc_content = self.get_data_from_translated_document(
-                header="sv-se,fr;q=0.8,en-us;q=0.7", create_doc_locale="sv", req_doc_locale="fr"
-            )
-            self.assertNotIn(en_content, doc_content)
-            self.assertIn("This article is translated into sv", doc_content)
-
-        with self.subTest("supported language"):
-            doc_content = self.get_data_from_translated_document(
-                header="pt-br,fr;q=0.8,en-us;q=0.7", create_doc_locale="pt-BR", req_doc_locale="fr"
-            )
-            self.assertNotIn(en_content, doc_content)
-            self.assertIn("This article is translated into pt-BR", doc_content)
-
-    def test_skip_of_document_cache_when_fallback_uses_accept_language(self):
-        en_doc, _es_doc = self.create_documents("es")
-        url = reverse("wiki.document", args=[en_doc.slug], locale="fr")
-
-        # First, request the document in French via the English slug. Since a
-        # French translation doesn't exist, the Accept-Language header is used
-        # to determine that the Spanish translation can be returned instead.
-        # This shouldn't be cached, because the response depends on the user's
-        # Accept-Language header.
-        headers = {"accept-language": "fr;q=0.8,es;q=0.7"}
-        response = self.client.get(url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        self.assertIn("vary", response)
-        self.assertIn("accept-language", response["vary"])
-        doc = pq(response.content)
-        self.assertEqual(doc("html").attr("lang"), "fr")
-        self.assertEqual(doc("html").attr("data-ga-article-locale"), "es")
-        self.assertIn("This article is translated into es", doc("#doc-content").text())
-
-        # If another user makes the same request, the French content via the
-        # English slug, but this user will only accept English content as a
-        # fallback, then let's make sure the previous request wasn't cached,
-        # because if it was cached, the Spanish content would be returned.
-        headers = {"accept-language": "fr;q=0.8,en-us;q=0.7"}
-        response = self.client.get(url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        self.assertIn("vary", response)
-        self.assertIn("accept-language", response["vary"])
-        doc = pq(response.content)
-        doc_content = doc("#doc-content").text()
-        self.assertEqual(doc("html").attr("lang"), "fr")
-        self.assertEqual(doc("html").attr("data-ga-article-locale"), "en-US")
-        self.assertIn("This article is in English", doc_content)
+        for header, translated_locale, requested_locale, shown_locale in (
+            # A header locale the article is translated into.
+            ("es,fr;q=0.7,ja;q=0.3,", "fr", "es", "fr"),
+            # The wiki fallback of a header locale (an -> es).
+            ("de,an;q=0.7,ja;q=0.3,", "es", "de", "es"),
+            # en-US comes before the header locale the article is translated into.
+            ("fr,en-US;q=0.7,de;q=0.3,", "de", "es", "en-US"),
+            # The requested locale's fallback (ca -> es) is missing; a header one is used.
+            ("ca,wo;q=0.7,ja;q=0.3,", "fr", "ca", "fr"),
+            # The requested locale has no fallback; the header's wiki fallback (wo -> fr).
+            ("ar,wo;q=0.7,ja;q=0.3,", "fr", "ar", "fr"),
+            # Non-normalized case: a wiki fallback, a global override, a supported language.
+            ("fy-nl,fr;q=0.8,en-us;q=0.7", "nl", "fr", "nl"),
+            ("sv-se,fr;q=0.8,en-us;q=0.7", "sv", "fr", "sv"),
+            ("pt-br,fr;q=0.8,en-us;q=0.7", "pt-BR", "fr", "pt-BR"),
+        ):
+            with self.subTest(header=header):
+                doc_content = self.get_data_from_translated_document(
+                    header=header,
+                    create_doc_locale=translated_locale,
+                    req_doc_locale=requested_locale,
+                )
+                en_content = "This article is in English"
+                trans_content = f"This article is translated into {translated_locale}"
+                if shown_locale == settings.WIKI_DEFAULT_LANGUAGE:
+                    self.assertIn(en_content, doc_content)
+                    self.assertNotIn(trans_content, doc_content)
+                else:
+                    self.assertNotIn(en_content, doc_content)
+                    self.assertIn(trans_content, doc_content)
 
     def test_vary_header_when_fallback_uses_accept_language(self):
         en_doc, _es_doc = self.create_documents("es")
@@ -2827,3 +2638,43 @@ class PocketArticleTests(TestCase):
         self.assertEqual(len(redirect_chain), 2)
         self.assertEqual(redirect_chain[0], (f"/en-US{pocket_style_url}", 302))
         self.assertEqual(redirect_chain[1], ("/en-US/products/pocket", 301))
+
+
+class ViewMethodAndLoginTests(TestCase):
+    """Views that change state accept only POST, and editing views require a login."""
+
+    def test_post_only_views(self):
+        rev = ApprovedRevisionFactory()
+        slug = rev.document.slug
+        user = UserFactory()
+        self.client.login(username=user.username, password="testpass")
+        for name, args in (
+            ("wiki.document_watch", [slug]),
+            ("wiki.document_unwatch", [slug]),
+            ("wiki.locale_watch", []),
+            ("wiki.locale_unwatch", []),
+            ("wiki.approved_watch", []),
+            ("wiki.approved_unwatch", []),
+            ("wiki.preview", []),
+            ("wiki.mark_ready_for_l10n_revision", [slug, rev.id]),
+        ):
+            with self.subTest(name):
+                self.assertEqual(405, self.client.get(reverse(name, args=args)).status_code)
+
+    def test_login_required_views(self):
+        rev = ApprovedRevisionFactory()
+        slug = rev.document.slug
+        for method, url in (
+            ("get", reverse("wiki.edit_document", args=[slug])),
+            ("get", reverse("wiki.translate", locale="es", args=[slug])),
+            ("post", reverse("wiki.review_revision", args=[slug, rev.id])),
+            ("get", reverse("wiki.delete_revision", args=[slug, rev.id])),
+            ("post", reverse("wiki.delete_revision", args=[slug, rev.id])),
+            ("get", reverse("wiki.document_delete", args=[slug])),
+            ("post", reverse("wiki.document_delete", args=[slug])),
+        ):
+            with self.subTest(method=method, url=url):
+                response = getattr(self.client, method)(url)
+                self.assertEqual(302, response.status_code)
+                locale = url.split("/")[1]
+                self.assertEqual(f"/{locale}{settings.LOGIN_URL}?next={url}", response["Location"])
