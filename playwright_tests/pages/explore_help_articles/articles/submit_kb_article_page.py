@@ -96,7 +96,7 @@ class SubmitKBArticlePage(BasePage):
         Args:
             name (str): The knowledge base name.
         """
-        self._click(self.selected_knowledge_base(name).locator("a.remove"))
+        self._click(self.selected_knowledge_base(name).locator(".remove"))
 
     def add_text_to_article_form_title_field(self, text: str):
         # Clearing the field first from auto-population
