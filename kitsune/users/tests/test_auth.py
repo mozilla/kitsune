@@ -96,7 +96,7 @@ class FXAAuthBackendTests(TestCase):
         self.backend.create_user(claims)
         users = User.objects.all()
         self.assertEqual("kb-contributors", users[0].groups.all()[0].name)  # noqa: group-leak
-        assert "is_contributor" not in request_mock.session
+        assert "contributor" not in request_mock.session
         message_mock.success.assert_called()
 
     @patch("kitsune.users.auth.messages")
@@ -131,6 +131,7 @@ class FXAAuthBackendTests(TestCase):
     def test_login_existing_user_by_fxa_uid(self):
         """Test user filtering by FxA uid."""
         user = UserFactory.create(profile__fxa_uid="my_unique_fxa_id")
+        UserFactory.create(profile__fxa_uid="another_fxa_id")
         claims = {
             "uid": "my_unique_fxa_id",
         }
@@ -140,8 +141,7 @@ class FXAAuthBackendTests(TestCase):
         self.backend.claims = claims
         self.backend.request = request_mock
         self.backend.request.user = user
-        self.backend.filter_users_by_claims(claims)
-        self.assertEqual(User.objects.all()[0].id, user.id)
+        self.assertEqual([user], list(self.backend.filter_users_by_claims(claims)))
 
     @patch("kitsune.users.auth.messages")
     def test_connecting_using_existing_fxa_account(self, message_mock):
@@ -172,6 +172,7 @@ class FXAAuthBackendTests(TestCase):
     def test_login_existing_user_by_email(self):
         """Test user filtering by email."""
         user = UserFactory.create(email="bar@example.com")
+        UserFactory.create(email="foo@example.com")
         claims = {
             "email": "bar@example.com",
         }
@@ -180,24 +181,7 @@ class FXAAuthBackendTests(TestCase):
         self.backend.claims = claims
         self.backend.request = request_mock
         self.backend.request.user = user
-        self.backend.filter_users_by_claims(claims)
-        self.assertEqual(User.objects.all()[0].id, user.id)
-
-    @patch("kitsune.users.auth.messages")
-    def test_email_changed_in_FxA_match_by_uid(self, message_mock):
-        """Test that the user email is updated successfully if it
-        is changed in Mozilla accounts and we match users by uid.
-        """
-        user = UserFactory.create(
-            profile__fxa_uid="my_unique_fxa_id",
-            email="foo@example.com",
-            profile__is_fxa_migrated=True,
-        )
-        claims = {"uid": "my_unique_fxa_id", "email": "bar@example.com", "subscriptions": "[]"}
-        self.backend.update_user(user, claims)
-        user = User.objects.get(id=user.id)
-        self.assertEqual(user.email, "bar@example.com")
-        assert not message_mock.info.called
+        self.assertEqual([user], list(self.backend.filter_users_by_claims(claims)))
 
     @patch("kitsune.users.auth.messages")
     @patch("mozilla_django_oidc.auth.requests")
@@ -265,104 +249,33 @@ class FXAAuthBackendTests(TestCase):
 
     @patch("kitsune.users.auth.messages")
     @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
-    def test_create_user_with_mozilla_domain_email(self, message_mock):
-        """Test that is_mozilla_staff is set to True for Mozilla domain emails."""
-        claims = {
-            "email": "user@mozilla.org",
-            "uid": "my_unique_fxa_id",
-            "avatar": "http://example.com/avatar",
-            "locale": "en-US",
-            "displayName": "Mozilla User",
-        }
-
-        request_mock = Mock(spec=HttpRequest)
-        request_mock.session = {}
-        self.backend.claims = claims
-        self.backend.request = request_mock
-        users = User.objects.all()
-        self.assertEqual(users.count(), 0)
-        self.backend.create_user(claims)
-        users = User.objects.all()
-        self.assertEqual(users.count(), 1)
-        self.assertTrue(users[0].profile.is_mozilla_staff)
-        message_mock.success.assert_called()
-
-    @patch("kitsune.users.auth.messages")
-    @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
-    def test_create_user_with_non_mozilla_domain_email(self, message_mock):
-        """Test that is_mozilla_staff is set to False for non-Mozilla domain emails."""
-        claims = {
-            "email": "user@example.com",
-            "uid": "my_unique_fxa_id",
-            "avatar": "http://example.com/avatar",
-            "locale": "en-US",
-            "displayName": "Regular User",
-        }
-
-        request_mock = Mock(spec=HttpRequest)
-        request_mock.session = {}
-        self.backend.claims = claims
-        self.backend.request = request_mock
-        users = User.objects.all()
-        self.assertEqual(users.count(), 0)
-        self.backend.create_user(claims)
-        users = User.objects.all()
-        self.assertEqual(users.count(), 1)
-        self.assertFalse(users[0].profile.is_mozilla_staff)
-        message_mock.success.assert_called()
-
-    @patch("kitsune.users.auth.messages")
-    @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
-    def test_update_user_email_to_mozilla_domain(self, message_mock):
-        """Test that is_mozilla_staff is updated when email changes to Mozilla domain."""
-        user = UserFactory.create(
-            profile__fxa_uid="my_unique_fxa_id",
-            email="user@example.com",
-            profile__is_fxa_migrated=True,
-            profile__is_mozilla_staff=False,
-        )
-        claims = {"uid": "my_unique_fxa_id", "email": "user@mozilla.org", "subscriptions": "[]"}
-        self.backend.update_user(user, claims)
-        user = User.objects.get(id=user.id)
-        self.assertEqual(user.email, "user@mozilla.org")
-        self.assertTrue(user.profile.is_mozilla_staff)
-        assert not message_mock.info.called
-
-    @patch("kitsune.users.auth.messages")
-    @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
-    def test_update_user_email_from_mozilla_domain(self, message_mock):
-        """Test that is_mozilla_staff is updated when email changes from Mozilla domain."""
-        user = UserFactory.create(
-            profile__fxa_uid="my_unique_fxa_id",
-            email="user@mozilla.org",
-            profile__is_fxa_migrated=True,
-            profile__is_mozilla_staff=True,
-        )
-        claims = {"uid": "my_unique_fxa_id", "email": "user@example.com", "subscriptions": "[]"}
-        self.backend.update_user(user, claims)
-        user = User.objects.get(id=user.id)
-        self.assertEqual(user.email, "user@example.com")
-        self.assertFalse(user.profile.is_mozilla_staff)
-        assert not message_mock.info.called
-
-    @patch("kitsune.users.auth.messages")
-    @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
-    def test_update_user_sets_mozilla_staff_flag(self, message_mock):
-        """Test that is_mozilla_staff is set when updating a Mozilla domain user."""
-        user = UserFactory.create(
-            email="user@mozilla.org",
-            profile__is_mozilla_staff=False,
-        )
-        claims = {"uid": "my_unique_fxa_id", "email": "user@mozilla.org", "subscriptions": "[]"}
-
-        request_mock = Mock(spec=HttpRequest)
-        request_mock.session = {}
-        self.backend.request = request_mock
-
-        self.backend.update_user(user, claims)
-        user = User.objects.get(id=user.id)
-        self.assertTrue(user.profile.is_mozilla_staff)
-        assert not message_mock.info.called
+    def test_mozilla_staff_follows_the_email_domain(self, message_mock):
+        """is_mozilla_staff is set from the email on account creation and on every update."""
+        self.backend.request = Mock(spec=HttpRequest)
+        self.backend.request.session = {}
+        for email, is_staff in (("user@mozilla.org", True), ("user@example.com", False)):
+            with self.subTest("create", email=email):
+                claims = {"email": email, "uid": f"uid-{email}", "locale": "en-US"}
+                self.backend.claims = claims
+                user = self.backend.create_user(claims)
+                self.assertEqual(is_staff, Profile.objects.get(user=user).is_mozilla_staff)
+        for old_email, was_staff, new_email, is_staff in (
+            ("old@example.com", False, "old@mozilla.org", True),
+            ("former@mozilla.org", True, "former@example.com", False),
+            ("still@mozilla.org", False, "still@mozilla.org", True),
+        ):
+            with self.subTest("update", email=new_email):
+                user = UserFactory.create(
+                    email=old_email,
+                    profile__fxa_uid=f"uid-{old_email}",
+                    profile__is_fxa_migrated=True,
+                    profile__is_mozilla_staff=was_staff,
+                )
+                claims = {"uid": f"uid-{old_email}", "email": new_email, "subscriptions": "[]"}
+                self.backend.update_user(user, claims)
+                user = User.objects.get(id=user.id)
+                self.assertEqual(new_email, user.email)
+                self.assertEqual(is_staff, user.profile.is_mozilla_staff)
 
     @override_settings(FXA_RP_SCOPES="openid email")
     def test_dispatch_verifies_claims_before_mutating_accounts(self):

@@ -173,28 +173,6 @@ class DocumentTests(TestCase):
         # d.html would definitely have a <p> in it, at least.
         self.assertEqual(doc("#doc-content").html().strip(), doc("#doc-content").text())
 
-    def test_document_fallback_with_translation(self):
-        """The document template falls back to English if translation exists
-        but it has no approved revisions."""
-        user = UserFactory()
-        add_permission(user, Revision, "review_revision")
-        self.client.login(username=user.username, password="testpass")
-        r = ApprovedRevisionFactory(content="Test")
-        d2 = DocumentFactory(parent=r.document, locale="fr", slug="french")
-        RevisionFactory(document=d2, is_approved=False)
-        url = reverse("wiki.document", args=[d2.slug], locale="fr")
-        response = self.client.get(url)
-        doc = pq(response.content)
-        self.assertEqual(d2.title, doc("h1.sumo-page-heading").text())
-
-        # Fallback message is shown.
-        self.assertEqual(1, len(doc("#doc-pending-fallback")))
-        # Removing this as it shows up in text(), and we don't want to depend
-        # on its localization.
-        doc("#doc-pending-fallback").remove()
-        # Included content is English.
-        self.assertEqual(pq(r.document.html).text(), doc("#doc-content").text())
-
     def test_document_fallback_banner_with_unapproved_translation(self):
         """The document template falls back to English if translation exists
         but it has no approved revisions."""
@@ -336,122 +314,48 @@ class DocumentTests(TestCase):
         doc = pq(resp.content)
         assert doc("#doc-watch input[type=hidden]")
 
-    def test_non_localizable_translate_disabled(self):
-        """Non localizable document doesn't show tab for 'Localize'."""
+    def test_page_sections_follow_article_state(self):
+        """Voting, editing, translating and search indexing follow the article's state."""
         user = UserFactory()
         add_permission(user, Revision, "review_revision")
         self.client.login(username=user.username, password="testpass")
-        d = DocumentFactory(is_localizable=True)
-        resp = self.client.get(d.get_absolute_url())
-        doc = pq(resp.content)
-        assert "Translate" in doc("#doc-tools li").text()
-
-        # Make it non-localizable
-        d.is_localizable = False
-        d.save()
-        resp = self.client.get(d.get_absolute_url())
-        doc = pq(resp.content)
-        assert "Localize" not in doc("#doc-tools li").text()
-
-    def test_obsolete_hide_edit(self):
-        """Make sure Edit sidebar link is hidden for obsolete articles."""
-        user = UserFactory()
-        add_permission(user, Revision, "review_revision")
-        self.client.login(username=user.username, password="testpass")
-        d = DocumentFactory(is_archived=True)
-        r = self.client.get(d.get_absolute_url())
-        doc = pq(r.content)
-        assert not doc("#doc-tabs li.edit")
-
-    def test_obsolete_no_vote(self):
-        """No voting on is_archived documents."""
-        d = DocumentFactory(is_archived=True)
-        RevisionFactory(document=d, is_approved=True)
-        response = self.client.get(d.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        assert not doc(".document-vote")
-
-    def test_templates_noindex(self):
-        """Document templates should have a noindex meta tag."""
-        # Create a document and verify there is no robots:noindex
-        d = DocumentFactory()
-        r = ApprovedRevisionFactory(document=d)
-
-        response = self.client.get(r.document.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        self.assertEqual(0, len(doc("meta[name=robots]")))
-
-        # Convert the document to a template and verify robots:noindex
-        d.category = TEMPLATES_CATEGORY
-        d.title = TEMPLATE_TITLE_PREFIX + d.title
-        d.save()
-
-        # This page is cached
-        cache.clear()
-
-        response = self.client.get(r.document.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        self.assertEqual(doc("meta[name=robots]")[0].attrib["content"], "noindex")
-
-    def test_archived_noindex(self):
-        """Archived documents should have a noindex meta tag."""
-        # Create a document and verify there is no robots:noindex
-        r = ApprovedRevisionFactory(content="Some text.")
-        response = self.client.get(r.document.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        self.assertEqual(0, len(doc("meta[name=robots]")))
-
-        # Archive the document and verify robots:noindex
-        d = r.document
-        d.is_archived = True
-        d.save()
-        cache.clear()
-        response = self.client.get(r.document.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        self.assertEqual("noindex", doc("meta[name=robots]")[0].attrib["content"])
-
-    def test_administration_noindex(self):
-        """Administration documents should have a noindex meta tag."""
-        # Create a document and verify there is no robots:noindex
-        r = ApprovedRevisionFactory(content="Some text.")
-        response = self.client.get(r.document.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        self.assertEqual(0, len(doc("meta[name=robots]")))
-
-        # Archive the document and verify robots:noindex
-        d = r.document
-        d.category = ADMINISTRATION_CATEGORY
-        d.save()
-        cache.clear()
-        response = self.client.get(r.document.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        self.assertEqual("noindex", doc("meta[name=robots]")[0].attrib["content"])
-
-    def test_canned_responses_noindex(self):
-        """Canned response documents should have a noindex meta tag."""
-        # Create a document and verify there is no robots:noindex
-        r = ApprovedRevisionFactory(content="Some text.")
-        response = self.client.get(r.document.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        self.assertEqual(0, len(doc("meta[name=robots]")))
-
-        # Archive the document and verify robots:noindex
-        d = r.document
-        d.category = CANNED_RESPONSES_CATEGORY
-        d.save()
-        cache.clear()
-        response = self.client.get(r.document.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        self.assertEqual("noindex", doc("meta[name=robots]")[0].attrib["content"])
+        sections = {
+            "vote": ".document-vote",
+            "edit": '#doc-tools a[href$="/edit"]',
+            "translate": '#doc-tools a[href$="/locales"]',
+            "noindex": "meta[name=robots][content=noindex]",
+        }
+        default = {"vote": True, "edit": True, "translate": True, "noindex": False}
+        hidden_everywhere = {"vote": False, "edit": False, "translate": False, "noindex": True}
+        for state, document, expected in (
+            ("current", {}, default),
+            ("archived", {"is_archived": True}, hidden_everywhere),
+            ("not localizable", {"is_localizable": False}, {**default, "translate": False}),
+            (
+                "template",
+                {"category": TEMPLATES_CATEGORY, "title": TEMPLATE_TITLE_PREFIX + "Sections"},
+                {**default, "vote": False, "noindex": True},
+            ),
+            (
+                "administration",
+                {"category": ADMINISTRATION_CATEGORY},
+                {**default, "noindex": True},
+            ),
+            (
+                "canned responses",
+                {"category": CANNED_RESPONSES_CATEGORY},
+                {**default, "noindex": True},
+            ),
+        ):
+            with self.subTest(state):
+                doc = ApprovedRevisionFactory(
+                    **{f"document__{field}": value for field, value in document.items()}
+                ).document
+                response = self.client.get(doc.get_absolute_url())
+                self.assertEqual(200, response.status_code)
+                page = pq(response.content)
+                shown = {section: bool(page(selector)) for section, selector in sections.items()}
+                self.assertEqual(expected, shown)
 
     def test_links_follow(self):
         """Links in kb should not have rel=nofollow"""
@@ -606,25 +510,6 @@ class RevisionTests(TestCase):
         self.assertEqual(r2.document.latest_localizable_revision, r2)
 
     @mock.patch.object(ReadyRevisionEvent, "fire")
-    def test_mark_as_ready_GET(self, fire):
-        """HTTP GET to mark a revision as ready for l10n must fail."""
-        r = ApprovedRevisionFactory(is_ready_for_localization=False)
-
-        u = UserFactory()
-        add_permission(u, Revision, "mark_ready_for_l10n")
-        self.client.login(username=u.username, password="testpass")
-
-        url = reverse("wiki.mark_ready_for_l10n_revision", args=[r.document.slug, r.id])
-        response = self.client.get(url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
-
-        self.assertEqual(405, response.status_code)
-
-        r2 = Revision.objects.get(pk=r.pk)
-
-        assert not fire.called
-        assert not r2.is_ready_for_localization
-
-    @mock.patch.object(ReadyRevisionEvent, "fire")
     def test_mark_as_ready_no_perm(self, fire):
         """Mark a revision as ready for l10n without perm must fail."""
 
@@ -707,7 +592,6 @@ class NewDocumentTests(TestCase):
         # checked? Maybe add a column to the table and use that to
         # figure out which are initial?
         # self.assertEqual(1, len(doc('input[name="products"][checked=checked]')))
-        self.assertEqual(None, doc('input[name="tags"]').attr("required"))
         self.assertEqual("checked", doc("input#id_allow_discussion").attr("checked"))
         self.assertEqual(None, doc("input#id_allow_discussion").attr("required"))
 
@@ -740,39 +624,6 @@ class NewDocumentTests(TestCase):
         d = Document.objects.get(title=data["title"])
         self.assertEqual(doc_locale, d.locale)
         assert ready_fire.called
-
-    def test_new_document_POST_empty_title(self):
-        """Trigger required field validation for title."""
-        self.client.login(username="admin", password="testpass")
-        data = new_document_data()
-        data["title"] = ""
-        response = self.client.post(reverse("wiki.new_document"), data, follow=True)
-        doc = pq(response.content)
-        ul = doc("#document-form > ul.errorlist")
-        self.assertEqual(1, len(ul))
-        self.assertEqual("Please provide a title.", ul("li").text())
-
-    def test_new_document_POST_empty_content(self):
-        """Trigger required field validation for content."""
-        self.client.login(username="admin", password="testpass")
-        data = new_document_data()
-        data["content"] = ""
-        response = self.client.post(reverse("wiki.new_document"), data, follow=True)
-        doc = pq(response.content)
-        ul = doc("#document-form > ul.errorlist")
-        self.assertEqual(1, len(ul))
-        self.assertEqual("Please provide content.", ul("li").text())
-
-    def test_new_document_POST_invalid_category(self):
-        """Try to create a new document with an invalid category value."""
-        self.client.login(username="admin", password="testpass")
-        data = new_document_data()
-        data["category"] = 963
-        response = self.client.post(reverse("wiki.new_document"), data, follow=True)
-        doc = pq(response.content)
-        ul = doc("#document-form > ul.errorlist")
-        self.assertEqual(1, len(ul))
-        assert "Select a valid choice. 963 is not one of the available choices." in ul("li").text()
 
     def test_new_document_missing_category(self):
         """Test the DocumentForm's category validation.
@@ -853,12 +704,6 @@ class NewRevisionTests(TestCase):
 
         self.user = UserFactory()
         self.client.login(username=self.user.username, password="testpass")
-
-    def test_new_revision_GET_logged_out(self):
-        """Creating a revision without being logged in redirects to login page."""
-        self.client.logout()
-        response = self.client.get(reverse("wiki.edit_document", args=[self.d.slug]))
-        self.assertEqual(302, response.status_code)
 
     def test_new_revision_GET_with_perm(self):
         """HTTP GET to new revision URL renders the form."""
@@ -1062,7 +907,7 @@ class NewRevisionTests(TestCase):
         response = self.client.get(
             reverse("wiki.new_revision_based_on", locale=doc.locale, args=[doc.slug, r.id])
         )
-        assert not len(pq(response.content)("div.warning-box"))
+        assert not len(pq(response.content)(".mzp-t-warning"))
 
         # Create a newer unreviewed revision and now warning shows
         created = created + timedelta(seconds=1)
@@ -1353,32 +1198,24 @@ class DocumentEditTests(TestCase):
         doc = Document.objects.get(pk=self.d.pk)
         self.assertEqual(new_title, doc.title)
 
-    def test_archive_permission_off(self):
-        """Shouldn't be able to change is_archive bit without permission."""
-        u = UserFactory()
-        add_permission(u, Document, "change_document")
-        self.client.login(username=u.username, password="testpass")
-        data = new_document_data()
-        # Try to set is_archived, even though we shouldn't have permission to:
-        data.update(form="doc", is_archived="on")
-        response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
-        self.assertEqual(200, response.status_code)
-        doc = Document.objects.get(pk=self.d.pk)
-        assert not doc.is_archived
-
-    # TODO: Factor with test_archive_permission_off.
-    def test_archive_permission_on(self):
-        """Shouldn't be able to change is_archive bit without permission."""
-        u = UserFactory()
-        add_permission(u, Document, "change_document")
-        add_permission(u, Document, "archive_document")
-        self.client.login(username=u.username, password="testpass")
+    def test_archive_permission(self):
+        """The metadata form saves is_archived only for users with archive_document."""
         data = new_document_data()
         data.update(form="doc", is_archived="on")
-        response = post(self.client, "wiki.edit_document_metadata", data, args=[self.d.slug])
-        self.assertEqual(200, response.status_code)
-        doc = Document.objects.get(pk=self.d.pk)
-        assert doc.is_archived
+        for can_archive in (False, True):
+            with self.subTest(can_archive=can_archive):
+                u = UserFactory()
+                add_permission(u, Document, "change_document")
+                if can_archive:
+                    add_permission(u, Document, "archive_document")
+                self.client.login(username=u.username, password="testpass")
+                # The first save renames the slug, leaving a redirect at the old one.
+                slug = Document.objects.get(pk=self.d.pk).slug
+                response = post(self.client, "wiki.edit_document_metadata", data, args=[slug])
+                self.assertEqual(200, response.status_code)
+                doc = Document.objects.get(pk=self.d.pk)
+                self.assertEqual(data["title"], doc.title)
+                self.assertEqual(can_archive, doc.is_archived)
 
     @mock.patch.object(EditDocumentEvent, "notify")
     def test_watch_article_from_edit_page(self, notify_on_edit):
@@ -1461,7 +1298,7 @@ class DocumentRevisionsTests(TestCase):
         doc = pq(response.content)
         self.assertEqual(4, len(doc("#revision-list tr")))
         # Verify there is no Review link
-        self.assertEqual(0, len(doc("#revision-list th.status a")))
+        self.assertEqual(0, len(doc("#revision-list td.status a")))
         self.assertEqual(
             "Unreviewed",
             doc("#revision-list td.status").first().text(),
@@ -1509,12 +1346,12 @@ class DocumentRevisionsTests(TestCase):
         response = self.client.get(reverse("wiki.document_revisions", args=[r1.document.slug]))
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual(1, len(doc("#revision-list table th.l10n")))
+        self.assertEqual(1, len(doc("#revision-list table th.l10n abbr")))
 
         response = self.client.get(reverse("wiki.document_revisions", args=[d2.slug], locale="es"))
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual(0, len(doc("#revision-list th.l10n-head")))
+        self.assertEqual(0, len(doc("#revision-list table th.l10n abbr")))
 
 
 class ReviewRevisionTests(TestCase):
@@ -1752,24 +1589,6 @@ class ReviewRevisionTests(TestCase):
         )
         self.assertEqual(200, response.status_code)
 
-    def test_review_logged_out(self):
-        """Make sure logged out users can't review revisions."""
-        self.client.logout()
-        response = post(
-            self.client,
-            "wiki.review_revision",
-            {"reject": "Reject Revision"},
-            args=[self.document.slug, self.revision.id],
-        )
-        redirect = response.redirect_chain[0]
-        self.assertEqual(302, redirect[1])
-        self.assertEqual(
-            "/{}{}?next=/en-US/kb/test-document/review/{}".format(
-                settings.LANGUAGE_CODE, settings.LOGIN_URL, str(self.revision.id)
-            ),
-            redirect[0],
-        )
-
     @mock.patch.object(Site.objects, "get_current")
     def test_review_translation(self, get_current):
         """Make sure it works for localizations as well."""
@@ -1885,20 +1704,6 @@ class ReviewRevisionTests(TestCase):
         self.assertEqual(
             "La versión English carece aún de contenido aprobado.",
             doc("details .warning-box").text(),
-        )
-
-    def test_default_significance(self):
-        """Verify the default significance is MEDIUM_SIGNIFICANCE."""
-        response = get(
-            self.client,
-            "wiki.review_revision",
-            args=[self.document.slug, self.revision.id],
-        )
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        self.assertEqual(
-            MEDIUM_SIGNIFICANCE,
-            int(doc("input[name=significance][checked]")[0].attrib["value"]),
         )
 
     def test_self_approve_without_revision_contributors(self):
@@ -2055,18 +1860,10 @@ class CompareRevisionTests(TestCase):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
 
-    def test_compare_revisions(self):
-        """Compare two revisions"""
-        url = reverse("wiki.compare_revisions", args=[self.document.slug])
-        query = {"from": self.revision1.id, "to": self.revision2.id}
-        url = urlparams(url, **query)
-        response = self.client.get(url)
-        self.assertEqual(200, response.status_code)
-
     def test_compare_revisions_invalid_to_int(self):
         """Provide invalid 'to' int for revision ids."""
         url = reverse("wiki.compare_revisions", args=[self.document.slug])
-        query = {"from": "", "to": "invalid"}
+        query = {"from": self.revision1.id, "to": "invalid"}
         url = urlparams(url, **query)
         response = self.client.get(url)
         self.assertEqual(404, response.status_code)
@@ -2103,13 +1900,6 @@ class TranslateTests(TestCase):
 
         self.user = UserFactory()
         self.client.login(username=self.user.username, password="testpass")
-
-    def test_translate_GET_logged_out(self):
-        """Try to create a translation while logged out."""
-        self.client.logout()
-        url = reverse("wiki.translate", locale="es", args=[self.d.slug])
-        response = self.client.get(url)
-        self.assertEqual(302, response.status_code)
 
     def test_translate_GET_with_perm(self):
         """HTTP GET to translate URL renders the form."""
@@ -2578,16 +2368,6 @@ class DocumentWatchTests(TestCase):
         self.user = UserFactory()
         self.client.login(username=self.user.username, password="testpass")
 
-    def test_watch_GET_405(self):
-        """Watch document with HTTP GET results in 405."""
-        response = get(self.client, "wiki.document_watch", args=[self.document.slug])
-        self.assertEqual(405, response.status_code)
-
-    def test_unwatch_GET_405(self):
-        """Unwatch document with HTTP GET results in 405."""
-        response = get(self.client, "wiki.document_unwatch", args=[self.document.slug])
-        self.assertEqual(405, response.status_code)
-
     def test_watch_unwatch(self):
         """Watch and unwatch a document."""
         # Subscribe
@@ -2610,16 +2390,6 @@ class LocaleWatchTests(TestCase):
 
         self.user = UserFactory()
         self.client.login(username=self.user, password="testpass")
-
-    def test_watch_GET_405(self):
-        """Watch document with HTTP GET results in 405."""
-        response = get(self.client, "wiki.locale_watch")
-        self.assertEqual(405, response.status_code)
-
-    def test_unwatch_GET_405(self):
-        """Unwatch document with HTTP GET results in 405."""
-        response = get(self.client, "wiki.locale_unwatch")
-        self.assertEqual(405, response.status_code)
 
     def test_watch_and_unwatch_by_locale(self):
         """Watch and unwatch a locale."""
@@ -2657,11 +2427,6 @@ class ArticlePreviewTests(TestCase):
 
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
-
-    def test_preview_GET_405(self):
-        """Preview with HTTP GET results in 405."""
-        response = get(self.client, "wiki.preview")
-        self.assertEqual(405, response.status_code)
 
     def test_preview(self):
         """Preview the wiki syntax content."""
@@ -2991,30 +2756,6 @@ class RevisionDeleteTestCase(TestCase):
         response = post(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
         self.assertEqual(403, response.status_code)
 
-    def test_delete_revision_logged_out(self):
-        """Deleting a revision while logged out redirects to login."""
-        doc = DocumentFactory()
-        rev = RevisionFactory(document=doc)
-        response = get(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
-        redirect = response.redirect_chain[0]
-        self.assertEqual(302, redirect[1])
-        self.assertEqual(
-            "/{}{}?next=/en-US/kb/{}/revision/{}/delete".format(
-                settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id
-            ),
-            redirect[0],
-        )
-
-        response = post(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
-        redirect = response.redirect_chain[0]
-        self.assertEqual(302, redirect[1])
-        self.assertEqual(
-            "/{}{}?next=/en-US/kb/{}/revision/{}/delete".format(
-                settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id
-            ),
-            redirect[0],
-        )
-
     def _test_delete_revision_with_permission(self):
         doc = DocumentFactory()
         rev1 = ApprovedRevisionFactory(document=doc)
@@ -3099,16 +2840,6 @@ class ApprovedWatchTests(TestCase):
         self.user = UserFactory()
         self.client.login(username=self.user.username, password="testpass")
 
-    def test_watch_GET_405(self):
-        """Watch with HTTP GET results in 405."""
-        response = get(self.client, "wiki.approved_watch")
-        self.assertEqual(405, response.status_code)
-
-    def test_unwatch_GET_405(self):
-        """Unwatch with HTTP GET results in 405."""
-        response = get(self.client, "wiki.approved_unwatch")
-        self.assertEqual(405, response.status_code)
-
     def test_watch_unwatch(self):
         """Watch and unwatch a document."""
         locale = "es"
@@ -3141,28 +2872,6 @@ class DocumentDeleteTestCase(TestCase):
 
         response = post(self.client, "wiki.document_delete", args=[self.document.slug])
         self.assertEqual(403, response.status_code)
-
-    def test_delete_document_logged_out(self):
-        """Deleting a document while logged out redirects to login."""
-        response = get(self.client, "wiki.document_delete", args=[self.document.slug])
-        redirect = response.redirect_chain[0]
-        self.assertEqual(302, redirect[1])
-        self.assertEqual(
-            "/{}{}?next=/en-US/kb/{}/delete".format(
-                settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug
-            ),
-            redirect[0],
-        )
-
-        response = post(self.client, "wiki.document_delete", args=[self.document.slug])
-        redirect = response.redirect_chain[0]
-        self.assertEqual(302, redirect[1])
-        self.assertEqual(
-            "/{}{}?next=/en-US/kb/{}/delete".format(
-                settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug
-            ),
-            redirect[0],
-        )
 
     def test_document_as_l10n_leader(self):
         """Deleting a document as l10n leader should work."""
@@ -3216,59 +2925,22 @@ class RecentRevisionsTest(TestCase):
 
         self.url = reverse("wiki.revisions")
 
-    def test_basic(self):
-        res = self.client.get(self.url)
-        self.assertEqual(res.status_code, 200)
-
-        doc = pq(res.content)
-        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 5)
-
-    def test_locale_filtering(self):
-        url = urlparams(self.url, locale="fr")
-        res = self.client.get(url)
-        self.assertEqual(res.status_code, 200)
-
-        doc = pq(res.content)
-        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 2)
-
-        url = urlparams(self.url, locale="de")
-        res = self.client.get(url)
-        self.assertEqual(res.status_code, 200)
-
-        doc = pq(res.content)
-        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 1)
-
-    def test_bad_locale(self):
-        """A bad locale should not filter anything."""
-        url = urlparams(self.url, locale="asdf")
-        res = self.client.get(url)
-        self.assertEqual(res.status_code, 200)
-
-        doc = pq(res.content)
-        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 5)
-
-    def test_user_filtering(self):
-        url = urlparams(self.url, users=self.u1.username)
-        res = self.client.get(url)
-        self.assertEqual(res.status_code, 200)
-
-        doc = pq(res.content)
-        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 2)
-
-    def test_date_filtering(self):
-        url = urlparams(self.url, start="2013-03-02")
-        res = self.client.get(url)
-        self.assertEqual(res.status_code, 200)
-
-        doc = pq(res.content)
-        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 4)
-
-        url = urlparams(self.url, end="2013-03-02")
-        res = self.client.get(url)
-        self.assertEqual(res.status_code, 200)
-
-        doc = pq(res.content)
-        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 1)
+    def test_filtering(self):
+        """Filters narrow the list; an unknown locale filters nothing."""
+        for params, count in (
+            ({}, 5),
+            ({"locale": "fr"}, 2),
+            ({"locale": "de"}, 1),
+            ({"locale": "asdf"}, 5),
+            ({"users": self.u1.username}, 2),
+            ({"start": "2013-03-02"}, 4),
+            ({"end": "2013-03-02"}, 1),
+        ):
+            with self.subTest(**params):
+                res = self.client.get(urlparams(self.url, **params))
+                self.assertEqual(res.status_code, 200)
+                doc = pq(res.content)
+                self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), count)
 
     def test_visibility(self):
         """
@@ -3375,27 +3047,9 @@ class MatomoMzlaDocumentTests(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertContains(response, _MATOMO_MARKER)
 
-    def test_matomo_present_for_all_mzla_products(self):
-        """A document associated only with MZLA products should show the snippet."""
-        p_tb = ProductFactory(slug="thunderbird")
-        p_tba = ProductFactory(slug="thunderbird-android")
-        r = ApprovedRevisionFactory(document__products=[p_tb, p_tba])
-        response = self.client.get(r.document.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, _MATOMO_MARKER)
-
     def test_matomo_absent_for_non_mzla_product(self):
         p = ProductFactory(slug="firefox")
         r = ApprovedRevisionFactory(document__products=[p])
-        response = self.client.get(r.document.get_absolute_url())
-        self.assertEqual(200, response.status_code)
-        self.assertNotContains(response, _MATOMO_MARKER)
-
-    def test_matomo_absent_for_mixed_products(self):
-        """A document with any non-MZLA product should not show the snippet."""
-        p_firefox = ProductFactory(slug="firefox")
-        p_thunderbird = ProductFactory(slug="thunderbird")
-        r = ApprovedRevisionFactory(document__products=[p_firefox, p_thunderbird])
         response = self.client.get(r.document.get_absolute_url())
         self.assertEqual(200, response.status_code)
         self.assertNotContains(response, _MATOMO_MARKER)

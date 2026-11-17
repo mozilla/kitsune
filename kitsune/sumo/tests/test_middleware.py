@@ -1,3 +1,8 @@
+import json
+import os
+import subprocess
+import sys
+
 from django.conf import settings
 from django.core.exceptions import MiddlewareNotUsed
 from django.http import HttpResponse, HttpResponsePermanentRedirect
@@ -14,6 +19,11 @@ from kitsune.sumo.middleware import (
     SumoCSPMiddleware,
 )
 from kitsune.sumo.tests import TestCase
+
+DEBUG_SCRIPT_SRC = (
+    "import json; from kitsune import settings; "
+    "print(json.dumps(settings.CONTENT_SECURITY_POLICY['DIRECTIVES']['script-src'], default=str))"
+)
 
 
 @override_settings(ENFORCE_HOST=["support.mozilla.org", "all-your-base.are-belong-to.us"])
@@ -471,7 +481,18 @@ class SumoCSPMiddlewareTestCase(TestCase):
     def test_configured_scripts_never_pair_the_hash_with_unsafe_inline(self):
         # Browsers ignore 'unsafe-inline' beside a hash, which would block DEBUG's inline scripts.
         script_src = settings.CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"]
+        self.assertIn(settings.HEAD_SCRIPT_CSP_SOURCE, script_src)
+        self.assertNotIn("'unsafe-inline'", script_src)
 
-        self.assertFalse(
-            settings.HEAD_SCRIPT_CSP_SOURCE in script_src and "'unsafe-inline'" in script_src
+        # Tests run with DEBUG off, so read the DEBUG policy from a fresh settings import.
+        debug = subprocess.run(
+            [sys.executable, "-c", DEBUG_SCRIPT_SRC],
+            env={**os.environ, "DEBUG": "True"},
+            cwd=settings.ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
         )
+        debug_script_src = json.loads(debug.stdout.splitlines()[-1])
+        self.assertIn("'unsafe-inline'", debug_script_src)
+        self.assertNotIn(settings.HEAD_SCRIPT_CSP_SOURCE, debug_script_src)

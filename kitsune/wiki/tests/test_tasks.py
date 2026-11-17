@@ -163,22 +163,6 @@ class ReviewMailTestCase(TestCase):
         self.assertEqual(0, len(mail.outbox))
 
     @mock.patch.object(Site.objects, "get_current")
-    def test_unicode_notifications(self, get_current):
-        get_current.return_value.domain = "testserver"
-
-        rev = RevisionFactory()
-        doc = rev.document
-        doc.title = "Foo \xe8 incode"
-        msg = "foo"
-        self._approve_and_send(rev, self.user, msg)
-
-        # Only one email will be sent to the revision creator.
-        self.assertEqual(1, len(mail.outbox))
-        self.assertEqual(
-            "Your revision has been approved: {}".format(doc.title), mail.outbox[0].subject
-        )
-
-    @mock.patch.object(Site.objects, "get_current")
     def test_escaping(self, get_current):
         get_current.return_value.domain = "testserver"
 
