@@ -229,9 +229,9 @@ class AudienceManager(models.Manager):
 
     def listed_for(self, user):
         """
-        The knowledge bases the user sees in menus, the directory and search filters: listed
-        public ones, and listed private ones with a group in the user's effective groups.
-        Membership only, so Staff don't list every customer's knowledge base.
+        The knowledge bases the user sees in menus and search filters: listed public ones, and
+        listed private ones with a group in the user's effective groups. Membership only, so
+        Staff menus don't list every customer's knowledge base.
         """
         condition = Q(is_public=True)
         group_ids = effective_group_ids(user)
@@ -241,8 +241,8 @@ class AudienceManager(models.Manager):
 
     def browsable_by(self, user):
         """
-        The listed knowledge bases whose page and search filter the user may open: those the
-        user lists, plus every listed one for Staff and superusers.
+        The listed knowledge bases whose page, directory entry and search filter the user may
+        open: those the user lists, plus every listed one for Staff and superusers.
         """
         if user and (user.is_superuser or in_staff_group(user)):
             return self._listed(Q())

@@ -8,7 +8,7 @@ from django.views.decorators.http import require_GET
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import mark_private, paginate
+from kitsune.sumo.utils import in_staff_group, mark_private, paginate
 from kitsune.wiki.config import DOCUMENTS_PER_PAGE, REDIRECT_HTML
 from kitsune.wiki.models import Audience, Document, DocumentAudience
 from kitsune.wiki.utils import group_by_visibility
@@ -19,13 +19,17 @@ TOPIC_CARD_DOCUMENT_COUNT = 3
 
 @require_GET
 def knowledge_bases(request):
-    """The directory of the knowledge bases listed for the user."""
-    listed = list(Audience.objects.listed_for(request.user))
+    """The directory of the knowledge bases the user can open: every listed one for Staff."""
+    sees_every_kb = request.user.is_superuser or in_staff_group(request.user)
+    listed = list(Audience.objects.browsable_by(request.user))
     shows_private = any(not knowledge_base.is_public for knowledge_base in listed)
     response = render(
         request,
         "wiki/knowledge_bases.html",
-        {"sections": group_by_visibility(listed), "suppress_analytics": shows_private},
+        {
+            "sections": group_by_visibility(listed, all_private=sees_every_kb),
+            "suppress_analytics": shows_private,
+        },
     )
     if shows_private:
         mark_private(response)

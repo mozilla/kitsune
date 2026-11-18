@@ -384,19 +384,26 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     return topics_data
 
 
-def group_by_visibility(knowledge_bases):
+def group_by_visibility(knowledge_bases, all_private=False):
     """
     Group knowledge bases as the menu and the directory show them: the private ones, then the
     public ones, each group sorted by name. Groups without knowledge bases are left out.
+    "all_private" heads the private group for a viewer who sees every private one, not only
+    their own.
     """
     private = []
     public = []
     for knowledge_base in sorted(knowledge_bases, key=lambda kb: kb.name.casefold()):
         (public if knowledge_base.is_public else private).append(knowledge_base)
 
-    groups = [
+    if all_private:
+        # L10n: Heading over every private knowledge base, in the directory Staff see.
+        private_heading = _lazy("Private knowledge bases")
+    else:
         # L10n: Heading over the private knowledge bases the user belongs to, in the main menu and the directory.
-        (_lazy("Your knowledge bases"), private),
+        private_heading = _lazy("Your knowledge bases")
+    groups = [
+        (private_heading, private),
         # L10n: Heading over the public knowledge bases, in the main menu and the directory.
         (_lazy("Open to everyone"), public),
     ]
