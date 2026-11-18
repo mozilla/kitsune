@@ -28,7 +28,7 @@ class KBArticleEditMetadata(BasePage):
             f'//div[@id="search-related-ts-dropdown"]/div[normalize-space(.)="{search_term}"]'
         )
         self.remove_related_documents_button = lambda related_document: page.locator(
-            f'//div[@class="item" and text()="{related_document}"]/a')
+            f'//div[@class="item" and text()="{related_document}"]/*[@class="remove"]')
         self.no_results_found_related_documents_message = page.locator(
             "div#search-related-ts-dropdown div.no-results")
         self.save_changes_button = page.get_by_role("button", name="Save", exact=True)

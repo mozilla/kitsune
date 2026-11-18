@@ -110,7 +110,7 @@ class QuestionPage(BasePage):
         )
         self.delete_tag = lambda tag_name: page.locator(
             f"//a[@class='tag-name' and normalize-space(text())='{tag_name}']/following-sibling::"
-            "a[@class='remove']")
+            "*[@class='remove']")
 
         """Locators belonging to the post a reply section."""
         self.post_a_reply_section_heading = page.locator("h3[class='sumo-card-heading']")
