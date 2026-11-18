@@ -466,11 +466,11 @@ Run the `bin/create_elastic_bundle.sh` script to create a zip file with the appr
 (You'll need to have `zip` installed for this command to work.)
 
 Then,
-either [create](https://www.elastic.co/guide/en/cloud/9.0/ec-custom-bundles.html#ec-add-your-plugin) an extension,
-or [update](https://www.elastic.co/guide/en/cloud/9.0/ec-custom-bundles.html#ec-update-bundles-and-plugins) the previously created extension.
+either [create](https://www.elastic.co/docs/deploy-manage/plugins-and-custom-configuration-files/elastic-cloud/upload-custom-plugins-bundles#ec-add-your-plugin) an extension,
+or [update](https://www.elastic.co/docs/deploy-manage/plugins-and-custom-configuration-files/elastic-cloud/upload-custom-plugins-bundles#ec-update-bundles-and-plugins) the previously created extension.
 
 And in either case,
-[update the deployment configuration](https://www.elastic.co/guide/en/cloud/9.0/ec-custom-bundles.html#ec-update-bundles)
+[update the deployment configuration](https://www.elastic.co/docs/deploy-manage/plugins-and-custom-configuration-files/elastic-cloud/upload-custom-plugins-bundles#ec-update-bundles)
 with the custom extension.
 
 ```eval_rst
