@@ -17,7 +17,7 @@ from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
 from kitsune.users.managers import AllProfilesManager, RegularProfileManager
-from kitsune.users.validators import UsernameValidator
+from kitsune.users.validators import UsernameValidator, XUsernameValidator
 
 log = logging.getLogger("k.users")
 
@@ -94,10 +94,10 @@ class Profile(ModelBase):
     )
     website = models.URLField(max_length=255, null=True, blank=True, verbose_name=_lazy("Website"))
     twitter = models.CharField(
-        max_length=15,
+        max_length=26,
         null=True,
         blank=True,
-        validators=[UsernameValidator],
+        validators=[XUsernameValidator],
         verbose_name=_lazy("Twitter Username"),
     )
     community_mozilla_org = models.CharField(
