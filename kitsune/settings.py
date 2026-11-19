@@ -1585,6 +1585,15 @@ HYBRID_TRANSLATION_BATCH_SIZE = config("HYBRID_TRANSLATION_BATCH_SIZE", default=
 # Most HYBRID articles one locale gets per run, so its reviewers aren't flooded.
 HYBRID_QUOTA_PER_LOCALE = config("HYBRID_QUOTA_PER_LOCALE", default=3, cast=int)
 REVIEW_GRACE_PERIOD = config("REVIEW_GRACE_PERIOD", default=168, cast=int)  # Hours - 7 days
+
+# Optional. Without a token, GitHub allows 60 API requests an hour per IP address,
+# which the daily sync of UI strings shares with anything else using that address.
+UI_LABELS_GITHUB_TOKEN = config("UI_LABELS_GITHUB_TOKEN", default="")
+# (connect, read) seconds: fail fast on a dead host, tolerate a slow download.
+UI_LABELS_GITHUB_TIMEOUT = config(
+    "UI_LABELS_GITHUB_TIMEOUT", default="5,60", cast=Csv(int, post_process=tuple)
+)
+
 STALE_ANCHOR_RECORD_RETENTION_DAYS = config(
     "STALE_ANCHOR_RECORD_RETENTION_DAYS", default=90, cast=int
 )

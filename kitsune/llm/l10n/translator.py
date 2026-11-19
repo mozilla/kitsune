@@ -1,7 +1,9 @@
 import re
 from typing import Any
 
+import waffle
 from django.conf import settings
+from sentry_sdk import capture_exception
 
 from kitsune.llm.l10n.config import L10N_LLM_MODEL
 from kitsune.llm.l10n.prompt import (
@@ -12,6 +14,7 @@ from kitsune.llm.l10n.prompt import (
     translation_parser,
     translation_prompt,
 )
+from kitsune.llm.l10n.ui_labels.translation import TranslationLabels
 from kitsune.llm.utils import build_chain_with_retry, get_llm
 from kitsune.wiki.models import Document, RevisionAnchorRecord
 
@@ -25,11 +28,48 @@ EXTERNAL_ANCHOR_REGEX = re.compile(
 )
 
 
+def get_labels(doc: Document, target_locale: str) -> TranslationLabels | None:
+    """
+    Return what a translation needs to know about the UI labels in the document's
+    content, when the waffle switch "official-ui-labels" is on.
+    """
+    if not waffle.switch_is_active("official-ui-labels"):
+        return None
+    try:
+        return TranslationLabels(doc, target_locale)
+    except Exception as err:
+        # A problem with the labels must not cost the document its translation. Without
+        # them, the content is translated as it was before official labels.
+        capture_exception(err)
+        return None
+
+
+def check_labels(labels: TranslationLabels, content: dict[str, Any]) -> None:
+    """
+    Give the labels of a translated content their official labels, and add what was
+    done to the explanation that staff can read.
+    """
+    if not (labels.uses or labels.config_prefs or labels.unanswered):
+        return
+    try:
+        checked = labels.check(content["translation"])
+        explanation = labels.explain(checked)
+    except Exception as err:
+        # As above: the translation stays as the LLM wrote it.
+        capture_exception(err)
+        return
+    content["translation"] = checked.content
+    content["explanation"] += "\n\n" + explanation
+
+
 def translate(doc: Document, target_locale: str) -> dict[str, dict[str, Any]]:
     """
     Translates the summary, keywords, content, and, conditionally, the title of the
     given document into the target locale. The given document must be a parent
     document.
+
+    The UI labels in the content get the official labels their products show when the waffle
+    switch "official-ui-labels" is on.
     """
     llm = get_llm(model_name=L10N_LLM_MODEL, temperature=0.0)
 
@@ -70,16 +110,21 @@ def translate(doc: Document, target_locale: str) -> dict[str, dict[str, Any]]:
 
     for content_attribute in content_attributes:
         prior_source_text, prior_target_text = get_prior_translation(content_attribute)
+        labels = get_labels(doc, target_locale) if content_attribute == "content" else None
         payload.update(
             source_text=get_source_text(content_attribute),
             prior_source_text=prior_source_text,
             prior_target_text=prior_target_text,
+            official_ui_labels=labels.for_prompt if labels else [],
+            config_prefs=labels.config_prefs if labels else [],
         )
 
         if payload["source_text"]:
             result[content_attribute] = translation_chain.invoke(payload)
 
             if content_attribute == "content":
+                if labels:
+                    check_labels(labels, result["content"])
                 result["content"]["translation"] = resolve_anchors(
                     source_doc=doc,
                     source_content=payload["source_text"],

@@ -1,4 +1,5 @@
 import inspect
+import time
 from contextlib import contextmanager
 from functools import wraps
 from smtplib import SMTPRecipientsRefused
@@ -18,6 +19,17 @@ from kitsune.sumo.urlresolvers import reverse
 
 def get(client, url, **kwargs):
     return client.get(reverse(url, **kwargs), follow=True)
+
+
+def login_to_admin(client, user):
+    """
+    Log a user in the way the admin asks for outside DEV mode: through the OIDC
+    backend, with an ID token that hasn't expired. Any other session is sent to log in.
+    """
+    client.force_login(user, backend="kitsune.users.auth.SumoOIDCAuthBackend")
+    session = client.session
+    session["oidc_id_token_expiration"] = time.time() + 3600
+    session.save()
 
 
 def post(client, url, data=None, **kwargs):
