@@ -288,7 +288,12 @@ class KnowledgeBasePageTests(TestCase):
 class KnowledgeBaseDirectoryTests(TestCase):
     @parameterized.expand(
         [
-            ("anonymous", [("Open to everyone", ["Alpha", "Zulu"])], []),
+            (
+                "anonymous",
+                [("Open to everyone", ["Alpha", "Zulu"])],
+                [],
+                ["Northwind", "Another company", "Staff handbook"],
+            ),
             (
                 "member",
                 [
@@ -296,16 +301,29 @@ class KnowledgeBaseDirectoryTests(TestCase):
                     ("Open to everyone", ["Alpha", "Zulu"]),
                 ],
                 ["Northwind"],
+                ["Another company", "Staff handbook"],
             ),
-            ("staff", [("Open to everyone", ["Alpha", "Zulu"])], []),
+            (
+                "staff",
+                [
+                    (
+                        "Private knowledge bases",
+                        ["Another company", "Northwind", "Staff handbook"],
+                    ),
+                    ("Open to everyone", ["Alpha", "Zulu"]),
+                ],
+                ["Another company", "Northwind", "Staff handbook"],
+                [],
+            ),
         ]
     )
-    def test_groups_by_visibility(self, viewer, expected_groups, locked):
+    def test_groups_by_visibility(self, viewer, expected_groups, locked, hidden):
         company = GroupFactory()
         AudienceFactory(name="Zulu", is_public=True, is_listed=True)
         AudienceFactory(name="Alpha", is_public=True, is_listed=True)
         AudienceFactory(name="Northwind", is_listed=True, groups=[company])
         AudienceFactory(name="Another company", is_listed=True, groups=[GroupFactory()])
+        AudienceFactory(name="Staff handbook", is_listed=True)
         AudienceFactory(name="Not listed", is_public=True)
         if viewer == "member":
             self.client.force_login(UserFactory(groups=[company]))
@@ -324,10 +342,10 @@ class KnowledgeBaseDirectoryTests(TestCase):
         )
         self.assertEqual(_locked_names(doc, "#kb-directory .card--kb", ".card--title"), locked)
         content = response.content.decode()
-        self.assertNotIn("Another company", content)
-        self.assertNotIn("Not listed", content)
+        for name in [*hidden, "Not listed"]:
+            self.assertNotIn(name, content)
 
-    @parameterized.expand([("anonymous", False), ("staff", False), ("member", True)])
+    @parameterized.expand([("anonymous", False), ("staff", True), ("member", True)])
     @override_settings(CACHE_MIDDLEWARE_SECONDS=3600, GTM_CONTAINER_ID="GTM-TEST")
     def test_listing_private_knowledge_bases_is_not_cached_referred_or_tracked(
         self, viewer, private

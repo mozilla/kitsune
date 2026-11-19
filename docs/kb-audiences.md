@@ -106,8 +106,8 @@ the same way.
 
 | `Audience.objects` | Returns | Staff bypass |
 | --- | --- | --- |
-| `listed_for(user)` | Menu, directory and search filter: listed public KBs, and listed private KBs with one of the viewer's groups | No, so Staff menus don't list every customer |
-| `browsable_by(user)` | KB pages and the `kb=` search scope | Yes |
+| `listed_for(user)` | Menu and search filter: listed public KBs, and listed private KBs with one of the viewer's groups | No, so Staff menus don't list every customer |
+| `browsable_by(user)` | The directory, KB pages and the `kb=` search scope | Yes: every listed KB, with or without groups |
 | `private_for(user)` | Private KBs the viewer can read, listed or not; the KBs they can upload private images to | Yes |
 | `has_private_kb_access(user)` (function) | Whether the viewer can read any private KB | Yes |
 
