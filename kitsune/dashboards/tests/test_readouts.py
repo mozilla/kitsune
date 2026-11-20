@@ -40,9 +40,11 @@ from kitsune.wiki.models import Revision
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     AudienceFactory,
+    DeferredRevisionFactory,
     DocumentFactory,
     RedirectRevisionFactory,
     RevisionFactory,
+    ScheduledRevisionFactory,
     TemplateDocumentFactory,
     TranslatedRevisionFactory,
 )
@@ -181,6 +183,33 @@ class KBOverviewTests(TestCase):
         self.assertNotIn("revision_comment", data[1])
         self.assertTrue(data[0]["latest_revision"])
         self.assertTrue(data[1]["latest_revision"])
+
+    def test_scheduled(self):
+        """A schedule shows in the status, but only to users who may see it."""
+        unpublished = ScheduledRevisionFactory().document
+        published = ApprovedRevisionFactory().document
+        ScheduledRevisionFactory(revision__document=published)
+        reviewer = UserFactory(is_superuser=True)
+
+        for user, document, scheduled, update_scheduled in (
+            (reviewer, unpublished, True, False),
+            (reviewer, published, False, True),
+            (UserFactory(), published, False, False),
+        ):
+            with self.subTest(document=document.title, reviewer=user == reviewer):
+                rows = {row["title"]: row for row in kb_overview_rows(user=user)}
+                row = rows[document.title]
+                self.assertTrue(row["latest_revision"])
+                self.assertEqual(scheduled, "scheduled" in row)
+                self.assertEqual(update_scheduled, "update_scheduled" in row)
+
+    def test_no_approved_content(self):
+        """An article whose revisions were all rejected is not live."""
+        DeferredRevisionFactory()
+
+        row = kb_overview_rows(user=UserFactory(is_superuser=True))[0]
+
+        self.assertTrue(row["no_approved_content"])
 
     def test_needs_update(self):
         rev1 = ApprovedRevisionFactory()
@@ -658,6 +687,31 @@ class MostVisitedDefaultLanguageTests(ReadoutTestCase):
         RedirectRevisionFactory(is_ready_for_localization=True)
         self.assertEqual(0, len(self.titles()))
 
+    def test_publishing_status(self):
+        """Test status for articles with no revision waiting for review"""
+        unpublished = ScheduledRevisionFactory().document
+        published = ApprovedRevisionFactory().document
+        ScheduledRevisionFactory(revision__document=published)
+        rejected = DeferredRevisionFactory().document
+
+        rows = self.rows(
+            locale=settings.WIKI_DEFAULT_LANGUAGE, user=UserFactory(is_superuser=True)
+        )
+        statuses = {row["title"]: str(row["status"]) for row in rows}
+
+        self.assertEqual("Scheduled", statuses[unpublished.title])
+        self.assertEqual("Up to Date (update scheduled)", statuses[published.title])
+        self.assertEqual("No Approved Content", statuses[rejected.title])
+
+    def test_needs_review_without_approved_revision(self):
+        """An article with no approved revision yet still needs review."""
+        unreviewed = RevisionFactory()
+
+        row = self.row(locale=settings.WIKI_DEFAULT_LANGUAGE, user=UserFactory(is_superuser=True))
+
+        self.assertEqual(unreviewed.document.title, row["title"])
+        self.assertEqual("Review Needed", str(row["status"]))
+
 
 class TemplateTests(ReadoutTestCase):
     readout = TemplateReadout
@@ -717,6 +771,25 @@ class TemplateTests(ReadoutTestCase):
 
         self.assertEqual(row["title"], d.title)
         self.assertEqual(str(row["status"]), "Changes Not Ready For Localization")
+
+    def test_publishing_status(self):
+        """Test status for articles with no revision waiting for review"""
+        unpublished = TemplateDocumentFactory()
+        ScheduledRevisionFactory(revision__document=unpublished)
+        published = TemplateDocumentFactory()
+        ApprovedRevisionFactory(document=published)
+        ScheduledRevisionFactory(revision__document=published)
+        rejected = TemplateDocumentFactory()
+        DeferredRevisionFactory(document=rejected)
+
+        rows = self.rows(
+            locale=settings.WIKI_DEFAULT_LANGUAGE, user=UserFactory(is_superuser=True)
+        )
+        statuses = {row["title"]: str(row["status"]) for row in rows}
+
+        self.assertEqual("Scheduled", statuses[unpublished.title])
+        self.assertEqual("Up to Date (update scheduled)", statuses[published.title])
+        self.assertEqual("No Approved Content", statuses[rejected.title])
 
 
 class HowToContributeTests(ReadoutTestCase):
@@ -785,6 +858,18 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         row = self.row(user=reviewer)
         self.assertEqual(row["title"], unreviewed.document.title)
         self.assertEqual(row["status"], "Review Needed")
+
+    def test_scheduled(self):
+        """A translation whose first revision is scheduled is labeled as such."""
+        held = TranslatedRevisionFactory(document__locale="de", reviewed=None, is_approved=False)
+        ScheduledRevisionFactory(revision=held)
+        reviewer = UserFactory()
+        add_permission(reviewer, Revision, "review_revision")
+
+        row = self.row(user=reviewer)
+
+        self.assertEqual(row["title"], held.document.title)
+        self.assertEqual(str(row["status"]), "Scheduled")
 
     def test_unlocalizable(self):
         """Unlocalizable docs shouldn't show up in the list."""
@@ -1153,3 +1238,4 @@ class UnhelpfulTests(ReadoutTestCase):
         user = UserFactory(groups=[group]) if viewer == "member" else None
 
         self.assertEqual([row["title"] for row in self.rows(user=user)], titles)
+
