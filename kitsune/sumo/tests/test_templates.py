@@ -184,17 +184,25 @@ class IconMacroTests(TestCase):
 
 
 class ContentEditorKnowledgeBasesTests(PrivateKnowledgeBases, TestCase):
-    """The editor lists the image picker's knowledge bases for users with private access only."""
+    """The editor lists only the knowledge bases whose images show in what is being edited."""
 
+    # Columns: case, viewer, the edited article's private knowledge bases (None when it has
+    # none: public articles, forums, questions), whether it is a new article whose knowledge
+    # bases are still being chosen, settings, the knowledge bases listed (None: no attribute).
     @parameterized.expand(
         [
-            ("member", "foo_member", {}, ["foo"]),
-            ("staff", "staff", {}, ["bar", "foo"]),
-            ("no_private_access", "no_access", {}, None),
-            ("private_images_off", "staff", PRIVATE_UPLOADS_OFF, None),
+            ("one_private_kb", "staff", ["foo"], False, {}, ["foo"]),
+            ("several_private_kbs", "staff", ["foo", "bar"], False, {}, None),
+            ("no_private_kb", "staff", None, False, {}, None),
+            ("new_article_staff", "staff", None, True, {}, ["bar", "foo"]),
+            ("new_article_member", "foo_member", None, True, {}, ["foo"]),
+            ("no_private_access", "no_access", None, True, {}, None),
+            ("private_images_off", "staff", ["foo"], False, PRIVATE_UPLOADS_OFF, None),
         ]
     )
-    def test_knowledge_bases_attribute(self, _case, viewer, settings_overrides, knowledge_bases):
+    def test_knowledge_bases_attribute(
+        self, _case, viewer, article_kbs, new_article, settings_overrides, knowledge_bases
+    ):
         class EditorForm(forms.Form):
             content = forms.CharField(widget=forms.Textarea)
 
@@ -203,12 +211,21 @@ class ContentEditorKnowledgeBasesTests(PrivateKnowledgeBases, TestCase):
         request.user = self.users[viewer]
         source = (
             "{% from 'includes/common_macros.html' import content_editor with context %}"
-            "{{ content_editor(field) }}"
+            "{{ content_editor(field, private_audience_ids=private_audience_ids,"
+            " all_knowledge_bases=all_knowledge_bases) }}"
         )
         template = template_engines["jinja2"].from_string(source)
+        private_audience_ids = None
+        if article_kbs is not None:
+            private_audience_ids = frozenset(getattr(self, name).pk for name in article_kbs)
+        context = {
+            "field": EditorForm()["content"],
+            "private_audience_ids": private_audience_ids,
+            "all_knowledge_bases": new_article,
+        }
 
         with self.settings(**settings_overrides):
-            html = template.render({"field": EditorForm()["content"]}, request=request)
+            html = template.render(context, request=request)
 
         editor = pq(html)("div.editor")
         self.assertEqual(1, len(editor))
