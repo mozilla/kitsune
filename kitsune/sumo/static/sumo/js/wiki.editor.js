@@ -1,5 +1,6 @@
 import TomSelect from "tom-select";
 import "sumo/scss/components/_tom-select.scss";
+import "sumo/scss/components/_kb-audiences.scss";
 
 function intersection(setA, setB) {
   // Use this function instead of the Set.intersection method,
@@ -150,6 +151,29 @@ function handleUpdate() {
   updateProducts(allowedTopicIds, allowedProductIds);
 }
 
+const isPublicAudience = (data) => data.public === "true";
+
+function audienceBadge(data) {
+  const modifier = isPublicAudience(data) ? "public" : "private";
+  const text = isPublicAudience(data) ? gettext("Public") : gettext("Private");
+  return `<span class="kb-audience-badge kb-audience-badge--${modifier}">${text}</span>`;
+}
+
+function audienceState(select) {
+  const flags = select.items.map((value) => isPublicAudience(select.options[value]));
+  if (!flags.length) return "";
+  if (flags.every(Boolean)) return "public";
+  return flags.some(Boolean) ? "mixed" : "private";
+}
+
+function syncAudienceStatus(select) {
+  const status = document.getElementById("kb-audience-status");
+  if (!status) return;
+  const state = audienceState(select);
+  status.dataset.state = state;
+  status.hidden = !state;
+}
+
 function clearSelected(name) {
   document.querySelectorAll(
     `#relevant-${name} input[type="checkbox"][name="${name}"]:checked`
@@ -207,6 +231,16 @@ document.addEventListener("DOMContentLoaded", function () {
       placeholder: gettext("Select audiences"),
       persist: false,
       create: false,
+      render: {
+        option: (data, escape) => `<div>${escape(data.text)} ${audienceBadge(data)}</div>`,
+        item: (data, escape) => `<div>${escape(data.text)} ${audienceBadge(data)}</div>`,
+      },
+      onInitialize() {
+        syncAudienceStatus(this);
+      },
+      onChange() {
+        syncAudienceStatus(this);
+      },
     });
   }
 });

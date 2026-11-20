@@ -28,6 +28,7 @@
                   <span class="{% if document_form.audiences.errors %}has-error{% endif %}">
                     <label for="{{ document_form.audiences.auto_id }}">{{ document_form.audiences.help_text }}</label>
                     {{ document_form.audiences.as_widget(attrs={"class": "tom-select-audiences"}) }}
+                    {% include "wiki/includes/kb_audience_status.html" %}
                     {{ document_form.audiences.errors }}
                   </span>
               </fieldset>

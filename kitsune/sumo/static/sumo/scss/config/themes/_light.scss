@@ -532,7 +532,9 @@
 // The KB editing and review pages: the summary and message character counters (`is-over-limit`
 // marks a counter past its limit), the draft-saving bars, the revision lists of the history and
 // recent revisions pages, the preview and review panels, the translation source fields, and the
-// editor toolbar's link type-ahead and media picker. The draft bars keep their Bootstrap colors and
+// editor toolbar's link type-ahead and media picker, and the knowledge base picker's Public / Private
+// labels (`--kb-audience-badge-*`, drawn on the blue chips and in the dropdown) and its status line
+// (`--kb-audience-mixed-*` is the mixed public and private notice). The draft bars keep their Bootstrap colors and
 // striped image in light and use the status colors, flat, in dark. The history icons are images drawn
 // in each theme's colors, as is the toolbar sprite (`--markup-toolbar-image`, a light-gray-02 copy in
 // dark). These images, the striped image, and the shadows appear in the theme maps only.
@@ -562,6 +564,18 @@
 // --media-picker-item-hover-bg: #F0F0F0 - Dark: #32353D (graphite-07)
 // --media-picker-item-active-border: #9ACCF7 - Dark: #8FBEFA (azure-03)
 // --media-picker-item-selected-bg: #DAEDF6 - Dark: #2A313D
+// --kb-audience-public-text: #005E5E (Protocol green-80) - Dark: #88FFD1 (Protocol green-30)
+// --kb-audience-private-text: #592ACB (Protocol violet-70) - Dark: #D9BFFF (Protocol violet-10)
+// --kb-audience-badge-public-bg: #D1FFEE (Protocol green-10) - Dark: #88FFD1 (Protocol green-30)
+// --kb-audience-badge-public-border: #008787 (Protocol green-70) - Dark: #2AC3A2 (Protocol green-60)
+// --kb-audience-badge-public-text: #005E5E (Protocol green-80) - Dark: #08403F (Protocol green-90)
+// --kb-audience-badge-private-bg: #E7DFFF (Protocol violet-05) - Dark: #D9BFFF (Protocol violet-10)
+// --kb-audience-badge-private-border: #592ACB (Protocol violet-70) - Dark: #AB71FF (Protocol violet-40)
+// --kb-audience-badge-private-text: #592ACB (Protocol violet-70) - Dark: #321C64 (Protocol violet-90)
+// --kb-audience-mixed-bg: #FFF4DE (Protocol orange-05) - Dark: #FFF4DE (Protocol orange-05)
+// --kb-audience-mixed-border: #FFB587 (Protocol orange-20) - Dark: #FF8A50 (Protocol orange-40)
+// --kb-audience-mixed-text: #9E280B (Protocol orange-80) - Dark: #9E280B (Protocol orange-80)
+// --kb-audience-mixed-strong: #7C1504 (Protocol orange-90) - Dark: #7C1504 (Protocol orange-90)
 //
 // Weight: 36
 //
@@ -1331,6 +1345,18 @@ $light: (
   'media-picker-item-hover-bg': #F0F0F0,
   'media-picker-item-active-border': #9ACCF7,
   'media-picker-item-selected-bg': #DAEDF6,
+  'kb-audience-public-text': p.$color-green-80,
+  'kb-audience-private-text': p.$color-violet-70,
+  'kb-audience-badge-public-bg': p.$color-green-10,
+  'kb-audience-badge-public-border': p.$color-green-70,
+  'kb-audience-badge-public-text': p.$color-green-80,
+  'kb-audience-badge-private-bg': p.$color-violet-05,
+  'kb-audience-badge-private-border': p.$color-violet-70,
+  'kb-audience-badge-private-text': p.$color-violet-70,
+  'kb-audience-mixed-bg': p.$color-orange-05,
+  'kb-audience-mixed-border': p.$color-orange-20,
+  'kb-audience-mixed-text': p.$color-orange-80,
+  'kb-audience-mixed-strong': p.$color-orange-90,
 
   // CodeMirror
   'codemirror-bg': var(--color-white),
