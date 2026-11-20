@@ -8,6 +8,10 @@ from django.core.management.base import BaseCommand, CommandError
 INDENT = " " * 3
 CHECKMARK = "\u2713"
 
+# Pontoon uses its own codes for these locales, so we update its folders.
+# A GitHub Action in sumo-l10n copies them into the folders SUMO reads.
+PONTOON_LOCALES = {"sv": "sv_SE", "no": "nb_NO"}
+
 
 class Command(BaseCommand):
     """
@@ -26,11 +30,7 @@ class Command(BaseCommand):
             if locale in ("en_US", "xx"):
                 continue
 
-            # We need to use "sv_SE" instead of "sv" here because Pontoon
-            # uses "sv-SE" for Swedish instead of "sv".
-            # TODO: Remove this once Pontoon uses "sv" instead of "sv-SE"
-            #       for Swedish.
-            locale = "sv_SE" if locale == "sv" else locale
+            locale = PONTOON_LOCALES.get(locale, locale)
 
             for domain in ("django", "djangojs"):
                 domain_pot = Path(f"locale/templates/LC_MESSAGES/{domain}.pot")
