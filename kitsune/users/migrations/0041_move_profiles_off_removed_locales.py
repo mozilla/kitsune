@@ -9,7 +9,6 @@ FALLBACKS = {
     "ig": "en-US",
     "ln": "fr",
     "mg": "fr",
-    "ta-LK": "ta",
     "tn": "en-US",
     "yo": "en-US",
     "zu": "en-US",

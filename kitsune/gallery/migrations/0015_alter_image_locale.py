@@ -72,6 +72,7 @@ class Migration(migrations.Migration):
                     ("sw", "Kiswahili"),
                     ("sv", "Svenska"),
                     ("ta", "தமிழ்"),
+                    ("ta-LK", "தமிழ் (இலங்கை)"),
                     ("te", "తెలుగు"),
                     ("th", "ไทย"),
                     ("tr", "Türkçe"),
