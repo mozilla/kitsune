@@ -4,6 +4,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from kitsune.flagit.models import FlaggedObject
+from kitsune.llm.l10n.ui_labels.strings.sources import SOURCES
+from kitsune.llm.l10n.ui_labels.strings.spots import build_spot_lists
+from kitsune.llm.l10n.ui_labels.strings.sync import sync
 from kitsune.llm.support.classifiers import classify_question
 from kitsune.sumo.decorators import skip_if_read_only_mode
 from kitsune.users.models import Profile
@@ -96,3 +99,23 @@ def process_moderation_queue(batch_size=10):
         flagged_obj.save()
 
     return f"Processed {processed_count} stale flagged objects"
+
+
+@shared_task
+@skip_if_read_only_mode
+def sync_ui_strings() -> None:
+    """Start a sync of each source of product UI strings."""
+    for name in SOURCES:
+        sync_ui_string_source.delay(name)
+
+
+@shared_task(soft_time_limit=600, time_limit=660)
+@skip_if_read_only_mode
+def sync_ui_string_source(name: str) -> None:
+    sync(SOURCES[name])
+
+
+@shared_task
+@skip_if_read_only_mode
+def build_ui_spot_lists() -> None:
+    build_spot_lists()
