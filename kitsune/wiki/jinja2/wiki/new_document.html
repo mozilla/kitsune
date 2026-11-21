@@ -64,7 +64,8 @@
                   {{ field|label_with_help }}{{ field|safe }}
                 {% elif field.name == 'content' %}
                   {{ revision_form.content.label_tag()|safe }}
-                  {{ content_editor(revision_form.content) }}
+                  {# The article's knowledge bases are chosen on this form, so none is saved yet. #}
+                  {{ content_editor(revision_form.content, all_knowledge_bases="audiences" in document_form.fields) }}
                 {% endif %}
                 {{ field.errors }}
 
