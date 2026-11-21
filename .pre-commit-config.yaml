@@ -10,7 +10,7 @@ repos:
       - id: check-merge-conflict
       - id: debug-statements
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.4
+    rev: v0.17.5
     hooks:
       - id: ruff-check
         files: "^kitsune/"
@@ -21,8 +21,8 @@ repos:
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier@3.10.0
-          - prettier-plugin-svelte@4.1.1
+          - prettier@3.10.1
+          - prettier-plugin-svelte@4.2.0
         files: "^svelte/"
   - repo: local
     hooks:
@@ -57,23 +57,23 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          - boto3-stubs==1.44.0
+          - boto3-stubs==1.44.5
           - types-redis==4.6.0.20241004
           - types-requests==2.33.0.20261030
-          - types-python-dateutil==2.9.0.20261104
-          - types-simplejson==4.2.0.20261104
-          - types-PyYAML==6.0.12.20261111
+          - types-python-dateutil==2.9.0.20261116
+          - types-simplejson==4.3.0.20261112
+          - types-PyYAML==6.0.12.20261113
           - types-Markdown==3.11.3.20261108
         files: "^kitsune/"
         exclude: "/migrations/"
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v10.14.0
+    rev: v10.15.0
     hooks:
       - id: eslint
         files: "^(svelte/|webpack/).*\\.(js|ts|jsx|tsx)$"
         exclude: "webpack/.*|webpack\\..*\\.js"
         additional_dependencies:
-          - eslint@10.14.0
+          - eslint@10.15.0
           - eslint-plugin-import-x@4.18.1
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
     rev: v18.0.0
@@ -83,9 +83,9 @@ repos:
         files: "^(kitsune/sumo/static/sumo/scss/|svelte/).*\\.(scss|svelte)$"
         additional_dependencies:
           - stylelint@18.0.0
-          - stylelint-config-recommended-scss@17.0.1
+          - stylelint-config-recommended-scss@18.0.0
           - stylelint-order@8.1.3
           - "@stylistic/stylelint-plugin@6.0.1"
-          - stylelint-scss@7.4.0
-          - postcss-html@2.0.0
+          - stylelint-scss@7.5.0
+          - postcss-html@2.0.1
           - postcss-scss@4.0.9
