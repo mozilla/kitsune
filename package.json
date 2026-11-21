@@ -67,7 +67,7 @@
     "compression-webpack-plugin": "^12.0.0",
     "concurrently": "^10.0.6",
     "copy-webpack-plugin": "^14.0.0",
-    "css-loader": "^7.1.4",
+    "css-loader": "^7.1.5",
     "cssnano": "^9.9.0",
     "env-cmd": "^11.0.0",
     "eslint": "^10.8.0",
