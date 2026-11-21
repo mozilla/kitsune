@@ -89,10 +89,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "psycopg[binary,pool]>=3.3.4,<4"
+    "psycopg[binary,pool]>=3.3.9,<4"
 ]
 prod = [
-    "psycopg[binary,pool]>=3.3.4,<4"
+    "psycopg[binary,pool]>=3.3.9,<4"
 ]
 
 [tool.black]
