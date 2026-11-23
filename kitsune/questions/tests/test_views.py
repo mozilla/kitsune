@@ -1062,7 +1062,7 @@ class TestEditDetails(TestCase):
         response = self._request(data=data)
         self.assertEqual(400, response.status_code)
 
-        data = {"product": self.product.id, "topic": self.topic.id, "locale": "zu"}
+        data = {"product": self.product.id, "topic": self.topic.id, "locale": "de"}
         response = self._request(data=data)
         self.assertEqual(400, response.status_code)
 
