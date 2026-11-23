@@ -97,10 +97,10 @@ def doc_page_cache(view):
 
     @wraps(view)
     def _doc_page_cache_view(request, document_slug, *args, **kwargs):
-        # We skip caching for authed users or if redirect=no
-        # is in the query string or if we show the aaq widget
+        # Signed-in users and anonymous voters get visitor-specific HTML (e.g. no vote form).
         if (
             request.user.is_authenticated
+            or request.anonymous.has_id
             or request.GET.get("redirect") == "no"
             or request.session.get("product_slug")
             or settings.DEV
@@ -1523,7 +1523,9 @@ def handle_vote(request, document_slug):
                 }
             )
 
-    if request.headers.get("HX-Request") and survey_context:
+    if request.headers.get("HX-Request"):
+        if not survey_context:
+            survey_context = {"response_message": _("Thanks for your feedback!")}
         survey_html = render_to_string("wiki/includes/survey_form.html", survey_context, request)
         response = HttpResponse(survey_html)
         response["HX-Trigger"] = json.dumps({"closeSurveyWidgets": {"url": request.path}})

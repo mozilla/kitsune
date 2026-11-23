@@ -5,9 +5,11 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.test import RequestFactory
 from django.utils import timezone
 
 from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.sumo.anonymous import AnonymousIdentity
 from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -24,7 +26,7 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
     TYPO_SIGNIFICANCE,
 )
-from kitsune.wiki.models import Audience, Document, Revision, doc_html_cache_key
+from kitsune.wiki.models import Audience, Document, HelpfulVote, Revision, doc_html_cache_key
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
@@ -395,6 +397,23 @@ class DocumentTests(TestCase):
     # recategorizing a template undefined in the tests. If this becomes
     # something we do in the future, we should revisit this and define
     # the behavior in a test.
+
+    def test_allows_vote_hides_form_from_voters(self):
+        """The vote form is hidden from anyone who voted on the current revision."""
+        rev = ApprovedRevisionFactory()
+        voter = UserFactory()
+        HelpfulVote.objects.create(revision=rev, creator=voter, user_agent="ua")
+        HelpfulVote.objects.create(revision=rev, anonymous_id="voter", user_agent="ua")
+        for label, user, anonymous_id, allowed in (
+            ("anonymous visitor", AnonymousUser(), None, True),
+            ("anonymous voter", AnonymousUser(), "voter", False),
+            ("signed-in voter", voter, None, False),
+        ):
+            with self.subTest(label):
+                request = RequestFactory().get("/")
+                request.user = user
+                request.anonymous = AnonymousIdentity(anonymous_id)
+                self.assertEqual(allowed, bool(rev.document.allows_vote(request)))
 
 
 class DocHtmlCacheKeyTests(TestCase):
