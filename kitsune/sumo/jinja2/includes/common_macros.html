@@ -690,7 +690,7 @@
 </li>
 {% endmacro %}
 
-{% macro content_editor(field, mention_rules=false, private_audience_ids=None) %}
+{% macro content_editor(field, mention_rules=false, private_audience_ids=None, all_knowledge_bases=false) %}
 {% if mention_rules %}
   {# L10n: Text displayed above the content editor (particularly, when posting a question or a reply). Rules and guidelines refer to https://support.mozilla.org/kb/mozilla-support-rules-guidelines #}
   <div class="field-help-text">{% trans a_open='<a href="https://support.mozilla.org/kb/mozilla-support-rules-guidelines" target="_blank">'|safe, a_close='</a>'|safe %}
@@ -703,10 +703,10 @@
 {% else %}
   {% set gallery_url = url('gallery.home') %}
 {% endif %}
-{% set picker_knowledge_bases = media_knowledge_bases(request.user) %}
+{% set picker_knowledge_bases = media_knowledge_bases(request.user, private_audience_ids, all_knowledge_bases) %}
 <div class="field has-large-textarea editor{% if field.errors %} invalid{% endif %}"
   data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ gallery_url }}"
-  {% if picker_knowledge_bases is not none %}data-media-knowledge-bases="{{ picker_knowledge_bases|json }}"{% endif %}>
+  {% if picker_knowledge_bases %}data-media-knowledge-bases="{{ picker_knowledge_bases|json }}"{% endif %}>
   <div class="editor-tools"></div>
   <div>{{ field|safe }}</div>
   {{ field.errors }}

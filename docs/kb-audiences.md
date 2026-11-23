@@ -147,9 +147,12 @@ finalized. Images uploaded as public go to the default KB.
   look in the default KB only. A private image never renders outside its KB's articles, and
   an article in several private KBs can embed public images only.
 - **Listings.** The gallery, its search and `/api/1/gallery/` are public-only for everyone,
-  Staff included. The editor's picker lists a private KB's images to the people who can
-  upload to it. On user-facing paths use `Image.objects.public()`, `private_in()`,
+  Staff included. On user-facing paths use `Image.objects.public()`, `private_in()`,
   `in_default_kb()` or `Image.is_readable_by(user)`, never a bare `Image.objects` query.
+- **Picker.** When editing an article that is in exactly one private KB, the editor's image
+  picker offers that KB's images next to the public ones. Everywhere else it offers public
+  images only, because private ones would not render. A new article has no KBs until it is
+  saved, so Staff and superusers, who choose its KBs, can pick from every private KB.
 - **Titles** are unique per `(locale, title, KB)`, so a "title taken" error only ever
   concerns the uploader's own KB.
 - **Bytes.** File names under `private/` go to the private storage, never the public bucket
