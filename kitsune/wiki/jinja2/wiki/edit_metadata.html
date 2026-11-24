@@ -42,11 +42,21 @@
                       {{ document_form.audiences.as_widget(attrs={"class": "tom-select-audiences"}) }}
                       {{ document_form.audiences.errors }}
                     </span>
+                    {% if "confirm_audiences" in document_form.fields and (document_form.confirm_audiences.errors or document_form.confirm_audiences.value()) %}
+                      <div class="has-error">
+                        {{ document_form.confirm_audiences.errors }}
+                        {{ document_form.confirm_audiences|label_with_help }}
+                        <div class="checkbox">
+                          {{ document_form.confirm_audiences }}
+                          <label for="{{ document_form.confirm_audiences.id_for_label }}"></label>
+                        </div>
+                      </div>
+                    {% endif %}
                 </fieldset>
               </div>
             {% endif %}
               {% for field in document_form.visible_fields() if
-                (field.name != 'audiences') and (field.name != 'is_localizable' or not document.translations.exists()) %}
+                (field.name not in ('audiences', 'confirm_audiences')) and (field.name != 'is_localizable' or not document.translations.exists()) %}
                 {% if (field.name != 'related_documents') or document.allows_related_documents %}
                 <div class="field full-width">
                   {{ field|label_with_help }}

@@ -18,6 +18,7 @@ from kitsune.gallery.models import Image
 from kitsune.sumo import parser as sumo_parser
 from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, ALLOWED_STYLES, get_object_fallback
 from kitsune.sumo.sanitize import clean
+from kitsune.wiki.config import DEFAULT_AUDIENCE_SLUG
 from kitsune.wiki.models import Document
 
 # block elements wikimarkup knows about (and thus preserves)
@@ -60,6 +61,26 @@ def wiki_to_html(
     """Wiki Markup -> HTML with the wiki app's enhanced parser"""
     parser = (parser_cls or WikiParser)(doc_id=doc_id, audience_ids=audience_ids)
     return parser.to_html(wiki_markup, locale)
+
+
+def can_include(audience_ids, include_doc):
+    """
+    Whether content rendered for these private audience IDs (None when public) may include the
+    document. Every reader of the content must be able to read it: the included document is
+    public, or the content's audiences are a subset of (or equal to) the included document's.
+    """
+    if not include_doc.is_restricted:
+        return True
+
+    if not audience_ids:
+        return False
+
+    return audience_ids <= include_doc.audience_ids
+
+
+def can_embed_image(audience_ids, image):
+    """Whether WikiParser.find_image can return the image for these private audience IDs."""
+    return image.audience.slug == DEFAULT_AUDIENCE_SLUG or audience_ids == {image.audience_id}
 
 
 def _format_template_content(content, params):
@@ -432,23 +453,6 @@ class WikiParser(sumo_parser.WikiParser):
                 wiki_markup, show_toc=False, locale=locale, toc_string=_("Table of Contents")
             )
 
-    def _is_include_allowed(self, include_doc):
-        """
-        Check if the document can be included. Returns True only if every user who can
-        view this parsed content can also view the included content: the included
-        document is public, or the parsed content has audiences and they are a subset of
-        (or equal to) the included document's audiences.
-        """
-        if not include_doc.is_restricted:
-            # Unrestricted documents can always be included.
-            return True
-
-        if not self.audience_ids:
-            # Public documents and those without audiences can't include restricted ones.
-            return False
-
-        return self.audience_ids <= include_doc.audience_ids
-
     def find_image(self, title):
         """An article in exactly one private knowledge base searches it before the default one."""
         image = None
@@ -465,7 +469,7 @@ class WikiParser(sumo_parser.WikiParser):
         if not include or not include.current_revision:
             return message
 
-        if not self._is_include_allowed(include):
+        if not can_include(self.audience_ids, include):
             return message
 
         if include.id in parser.inclusions:
@@ -498,7 +502,7 @@ class WikiParser(sumo_parser.WikiParser):
         if not template or not template.current_revision:
             return message
 
-        if not self._is_include_allowed(template):
+        if not can_include(self.audience_ids, template):
             return message
 
         if template.id in parser.inclusions:

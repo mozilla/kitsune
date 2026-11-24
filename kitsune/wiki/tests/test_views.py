@@ -2327,6 +2327,83 @@ class DocumentAudienceEditingTests(TestCase):
                 self.assertEqual(generate_short_url.call_count, calls)
 
 
+class KnowledgeBaseChangeConfirmationTests(TemporaryMediaRoots, TestCase):
+    """Changing an article's knowledge bases names what would stop showing in its family."""
+
+    def setUp(self):
+        super().setUp()
+        self.foo = AudienceFactory(name="Foo")
+        self.bar = AudienceFactory(name="Bar")
+        ImageFactory(title="Shot", audience=self.foo)
+        ImageFactory(title="Diagram", audience=self.foo)
+        ImageFactory(title="Logo")
+        ApprovedRevisionFactory(
+            document__title="Setup steps", document__audiences=[self.foo, self.bar]
+        )
+        ApprovedRevisionFactory(document__title="Shared steps")
+        ApprovedRevisionFactory(document__title="Bar notes", document__audiences=[self.bar])
+        self.document = DocumentFactory(audiences=[self.foo])
+        ApprovedRevisionFactory(
+            document=self.document,
+            content="[[Image:Shot]] [[Image:Logo]] [[Include:Setup steps]] "
+            "[[Include:Shared steps]] [[Include:Bar notes]]",
+        )
+        translation = DocumentFactory(locale="de", parent=self.document)
+        ApprovedRevisionFactory(document=translation, content="[[Image:Diagram]]")
+
+    def _data(self, audiences, **extra):
+        data = new_document_data()
+        data.update(
+            {
+                "title": self.document.title,
+                "slug": self.document.slug,
+                "is_localizable": True,
+                "audiences": [audience.pk for audience in audiences],
+                **extra,
+            }
+        )
+        return data
+
+    def test_form_names_what_stops_showing(self):
+        # Columns: case, the new knowledge bases, whether the change is confirmed, titles named.
+        cases = (
+            ("other_private_kb", [self.bar], False, {"Shot", "Diagram"}),
+            ("second_private_kb", [self.foo, self.bar], False, {"Shot", "Diagram"}),
+            ("public_kb", [Audience.objects.default()], False, {"Shot", "Diagram", "Setup steps"}),
+            ("unchanged", [self.foo], False, set()),
+            ("confirmed", [self.bar], True, set()),
+        )
+        titles = ("Shot", "Diagram", "Logo", "Setup steps", "Shared steps", "Bar notes")
+        for case, audiences, confirmed, named in cases:
+            with self.subTest(case):
+                extra = {"confirm_audiences": "on"} if confirmed else {}
+                form = DocumentForm(
+                    self._data(audiences, **extra),
+                    instance=self.document,
+                    can_assign_audiences=True,
+                    locale="en-US",
+                )
+
+                self.assertEqual(form.is_valid(), not named, form.errors)
+                errors = " ".join(form.errors.get("confirm_audiences", []))
+                for title in titles:
+                    self.assertEqual(title in errors, title in named, title)
+
+    def test_metadata_page_shows_the_confirmation_only_when_needed(self):
+        staff = UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)])
+        add_permission(staff, Document, "change_document")
+        self.client.force_login(staff)
+        url = reverse("wiki.edit_document_metadata", args=[self.document.slug])
+
+        response = self.client.get(url)
+        self.assertEqual(len(pq(response.content)("#id_confirm_audiences")), 0)
+
+        response = self.client.post(url, self._data([self.bar], form="doc"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(pq(response.content)(".has-error #id_confirm_audiences")), 1)
+        self.assertQuerySetEqual(self.document.audiences.all(), [self.foo])
+
+
 class AddRemoveContributorTests(TestCase):
     def setUp(self):
         super().setUp()
