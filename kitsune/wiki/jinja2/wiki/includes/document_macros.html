@@ -363,7 +363,7 @@
   {% if not header %}
     {% set header = _('Was this article helpful?') %}
   {% endif %}
-  {% if document.allows_vote(request) and not document.current_revision.has_voted(request) %}
+  {% if document.allows_vote(request) %}
     <div class="document-vote elevation-02 text-center" data-page-url="{{ request.path }}">
       <form class="document-vote--form helpful"
             hx-post="{{ url('wiki.document_vote', document_slug=document.slug) }}"

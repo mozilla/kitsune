@@ -33,7 +33,14 @@ from kitsune.wiki.events import (
     ReviewableRevisionInLocaleEvent,
     get_diff_for,
 )
-from kitsune.wiki.models import Document, HelpfulVote, HelpfulVoteMetadata, Locale, Revision
+from kitsune.wiki.models import (
+    Document,
+    HelpfulVote,
+    HelpfulVoteMetadata,
+    Locale,
+    Revision,
+    doc_html_cache_key,
+)
 from kitsune.wiki.tasks import send_reviewed_notification
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
@@ -2578,6 +2585,33 @@ class HelpfulVoteTests(TestCase):
         assert votes[0].helpful
         metadata = HelpfulVoteMetadata.objects.values_list("key", "value")
         self.assertEqual(0, len(metadata))
+
+    @override_settings(DEV=False)
+    def test_page_cache_skips_visitors_with_an_anonymous_id(self):
+        """Pages for anonymous voters can lack the vote form, so they aren't cached."""
+        url = self.document.get_absolute_url()
+        key = doc_html_cache_key(self.document.locale, self.document.slug)
+        for label, anonymous_id, cached in (
+            ("no anonymous id", None, True),
+            ("anonymous id", "voter", False),
+        ):
+            with self.subTest(label):
+                cache.clear()
+                client = self.client_class()
+                if anonymous_id:
+                    client.cookies[settings.ANONYMOUS_COOKIE_NAME] = anonymous_id
+                client.get(url)
+                self.assertEqual(cached, cache.get(key) is not None)
+
+    def test_repeat_htmx_vote_answers_in_place(self):
+        """A repeat htmx vote gets a fragment, not a redirect whose page htmx would swap in."""
+        rev = self.document.current_revision
+        url = reverse("wiki.document_vote", args=[self.document.slug])
+        data = {"helpful": "true", "revision_id": rev.id}
+        self.client.post(url, data=data, HTTP_HX_REQUEST="true")
+        response = self.client.post(url, data=data, HTTP_HX_REQUEST="true")
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(pq(response.content)(".survey-container"))
 
     def test_vote_rejects_revision_id_from_different_document(self):
         """``revision_id`` must belong to the document named in the URL.

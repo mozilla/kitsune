@@ -599,22 +599,10 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
 
     def allows_vote(self, request):
         """Return whether we should render the vote form for the document."""
-
-        # If the user isn't authenticated, we show the form even if they
-        # may have voted. This is because the page can be cached and we don't
-        # want to cache the page without the vote form. Users that already
-        # voted will see a "You already voted on this Article." message
-        # if they try voting again.
-        authed_and_voted = (
-            request.user.is_authenticated
-            and self.current_revision
-            and self.current_revision.has_voted(request)
-        )
-
         return (
             not self.is_archived
             and self.current_revision
-            and not authed_and_voted
+            and not self.current_revision.has_voted(request)
             and not self.redirect_document()
             and self.category != TEMPLATES_CATEGORY
             and not waffle.switch_is_active("hide-voting")
