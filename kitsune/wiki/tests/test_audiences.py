@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.db import IntegrityError, transaction
 from parameterized import parameterized
+from pyquery import PyQuery as pq
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import DepartmentFactory, EnterpriseCompanyFactory, GroupProfileFactory
@@ -9,6 +10,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.config import DEFAULT_AUDIENCE_SLUG
+from kitsune.wiki.forms import DocumentForm
 from kitsune.wiki.managers import has_private_kb_access
 from kitsune.wiki.models import Audience, Document, DocumentAudience, Revision
 from kitsune.wiki.tests import (
@@ -273,3 +275,27 @@ class KnowledgeBasePresentationTests(TestCase):
     )
     def test_monogram(self, name, mark, expected):
         self.assertEqual(Audience(name=name, mark=mark).monogram, expected)
+
+
+class AudiencesWidgetTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.public = AudienceFactory(name="Product Docs", is_public=True)
+        cls.private = AudienceFactory(name="Accessibility", is_public=False)
+
+    def _render(self):
+        return pq(str(DocumentForm(can_assign_audiences=True)["audiences"]))
+
+    def test_options_grouped_by_visibility(self):
+        doc = self._render()
+        public_group = doc("optgroup[label='Public']").text()
+        private_group = doc("optgroup[label='Private']").text()
+        self.assertIn("Product Docs", public_group)
+        self.assertNotIn("Accessibility", public_group)
+        self.assertIn("Accessibility", private_group)
+        self.assertNotIn("Product Docs", private_group)
+
+    def test_options_carry_data_public(self):
+        doc = self._render()
+        self.assertEqual(doc(f"option[value='{self.public.pk}']").attr("data-public"), "true")
+        self.assertEqual(doc(f"option[value='{self.private.pk}']").attr("data-public"), "false")
