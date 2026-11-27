@@ -175,6 +175,16 @@ PERIODIC_TASKS_ALL = {
         "task": "kitsune.retrieval.tasks.reconcile_write_index",
         "schedule": crontab(hour="2", minute="0"),
     },
+    # Daily at 05:00.
+    "sync_ui_strings": {
+        "task": "kitsune.llm.tasks.sync_ui_strings",
+        "schedule": crontab(hour="5", minute="0"),
+    },
+    # Daily at 06:00, once sync_ui_strings has read the sources.
+    "build_ui_spot_lists": {
+        "task": "kitsune.llm.tasks.build_ui_spot_lists",
+        "schedule": crontab(hour="6", minute="0"),
+    },
     # Every Sunday at 01:00.
     "cleanup_old_anchor_records": {
         "task": "kitsune.wiki.tasks.cleanup_old_anchor_records",

@@ -46,6 +46,9 @@ Key features:
 - Supports incremental translation by comparing with prior versions
 - Preserves special wiki markup and protected terms
 - Returns both translation and explanation for each field
+- Writes each product's own translation of the names in `{menu …}`, `{button …}` and
+  `{pref …}`, when the waffle switch `official-ui-labels` is on (see
+  [Official UI labels](ui-labels.md))
 
 #### 3. Translation Prompts (`kitsune/llm/l10n/prompt.py`)
 

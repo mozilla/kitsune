@@ -59,6 +59,9 @@ r"\\{(button|menu|pref) [^}]*\\}"
 - **IMPORTANT**: Extract **ALL** `wiki-hook`, `wiki-article-link`, `wiki-external-link`, and `wiki-ui-element` elements from the **ENTIRE** {{ source_language }} text of the "prior translation". Each element becomes a key in the `prior-translation-wiki-map`, and each key's value is its corresponding translation found in the {{ target_language }} text of the "prior translation".
 - This `prior-translation-wiki-map` preserves human-localized wiki elements, which **must be reused** whenever those elements appear anywhere in your translation, regardless of whether they appear in changed or unchanged sections.
 - If no "prior translation" is provided, the `prior-translation-wiki-map` should be set to an empty `dict`.
+{%- if official_ui_labels or config_prefs %}
+- **The only exception** to reusing this map's values is a `wiki-ui-element` for which rule #4 below gives another answer.
+{%- endif %}
 
 # Rules for translating special strings
 - Each of the following rules describes how to translate special strings that may be present within the {{ source_language }} text that you are translating.
@@ -77,6 +80,32 @@ r"\\{(button|menu|pref) [^}]*\\}"
 
     - In other words, preserve unchanged both the tags and the text inside the tags.
     - For example, each of the strings `{for win10}` and `{key Ctrl+T}` and `{filepath file}` should be preserved unchanged.
+{%- if official_ui_labels or config_prefs %}
+
+3. **CRITICAL RULE**: For **every** `wiki-hook`, `wiki-article-link`, or `wiki-external-link` you encounter **anywhere** in the text (whether in same or different parts), you **MUST** perform the following steps in order:
+    - **FIRST**: Check if the element exists as a key within the `prior-translation-wiki-map`.
+    - **If found in the map**: Use its value from the `prior-translation-wiki-map` as its translation. This preserves human localization. **Do NOT translate it freshly**.
+    - **ONLY if NOT found in the map**:
+        - For `wiki-hook`: **preserve it unchanged**
+        - For `wiki-article-link` and `wiki-external-link`: translate only the `description` text if present (**remember to obey rule #1 above**), and **preserve the rest unchanged**. If there is no `description`, preserve the entire element unchanged.
+    - **NEVER** translate one of these elements freshly if it exists in the `prior-translation-wiki-map`. Always prefer the map value.
+
+4. **CRITICAL RULE**: For **every** `wiki-ui-element` you encounter **anywhere** in the text, **including the parts that you copy from the "prior translation"**, use the **first** of the following that applies:
+{%- if config_prefs %}
+    - **It is one of these names and values of settings**: **preserve it unchanged**, both the tag and the text inside it.
+{%- for pref in config_prefs %}
+        - `{{ pref|safe }}`
+{%- endfor %}
+{%- endif %}
+{%- if official_ui_labels %}
+    - **It is listed here with its official translation**: write that translation. The product itself shows it, so no other wording is correct, **even when the `prior-translation-wiki-map` has another value for the element**. When the words around the element depend on it, such as an ending or a particle attached to it, make them agree with the official translation.
+{%- for source, target in official_ui_labels %}
+        - `{{ source|safe }}` → `{{ target|safe }}`
+{%- endfor %}
+{%- endif %}
+    - **It exists as a key within the `prior-translation-wiki-map`**: use its value from the map. This preserves human localization.
+    - **Otherwise**: **preserve it unchanged**.
+{%- else %}
 
 3. **CRITICAL RULE**: For **every** wiki element (`wiki-hook`, `wiki-article-link`, `wiki-external-link`, or `wiki-ui-element`) you encounter **anywhere** in the text (whether in same or different parts), you **MUST** perform the following steps in order:
     - **FIRST**: Check if the element exists as a key within the `prior-translation-wiki-map`.
@@ -85,6 +114,7 @@ r"\\{(button|menu|pref) [^}]*\\}"
         - For `wiki-hook` and `wiki-ui-element`: **preserve it unchanged**
         - For `wiki-article-link` and `wiki-external-link`: translate only the `description` text if present (**remember to obey rule #1 above**), and **preserve the rest unchanged**. If there is no `description`, preserve the entire element unchanged.
     - **NEVER** translate a wiki element freshly if it exists in the `prior-translation-wiki-map`. Always prefer the map value.
+{%- endif %}
 
 # Task Instructions
 1. **Build the `prior-translation-wiki-map`**:
@@ -97,9 +127,11 @@ r"\\{(button|menu|pref) [^}]*\\}"
 3. For each part that is the same, **copy** its corresponding translation from the {{ target_language }} text of the "prior translation".
 4. For each part that is different, **freshly translate** that part:
    - **Remember to obey ALL of the `Rules for translating special strings`**.
-   - **CRITICAL**: Even in different/changed parts, you **MUST** check the `prior-translation-wiki-map` for every wiki element (per Rule #3) before translating. This ensures already-localized wiki elements are preserved.
-   - Only translate text that is not covered by the protection rules. Wiki elements found in the map must use their map values.
+   - **CRITICAL**: Even in different/changed parts, you **MUST** check the `prior-translation-wiki-map` for every wiki element (per Rule #3{% if official_ui_labels or config_prefs %} and Rule #4{% endif %}) before translating. This ensures already-localized wiki elements are preserved.
+   - Only translate text that is not covered by the protection rules. Wiki elements found in the map must use their map values.{% if official_ui_labels or config_prefs %} The only exception is a `wiki-ui-element` for which Rule #4 gives another answer.{% endif %}
 5. **Combine** the copied parts and the freshly translated parts into a final translation.
+{%- if official_ui_labels or config_prefs %} As you combine them, make sure that **every** `wiki-ui-element` in **every** part, copied or freshly translated, follows Rule #4.
+{%- endif %}
 6. In your response, include your final translation and an explanation describing what you did for each step.
 7. **Format** your response by providing your final translation, followed by the delimiter `{{ delimiter }}`, followed by your explanation. Your final translation **must be provided without any added commentary, formatting, markdown fences, or extra text of any kind**.
 """
