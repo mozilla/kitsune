@@ -23,7 +23,16 @@
       {% endif %}
     </td>
     <td class="status {% if not row.latest_revision %}needs-review{% endif %}">
-      {% if row.latest_revision %}
+      {% if row.update_scheduled %}
+        {# L10n: The article is published, and a newer revision is scheduled to be published later. #}
+        {{ _('Live (update scheduled)') }}
+      {% elif row.scheduled %}
+        {# L10n: The article is not published yet, but its first revision is scheduled to be published later. #}
+        {{ _('Scheduled') }}
+      {% elif row.no_approved_content %}
+        {# L10n: The article is not published, and none of its revisions is waiting for review or scheduled to be published. #}
+        {{ _('No Approved Content') }}
+      {% elif row.latest_revision %}
         {{ _('Live') }}
       {% else %}
         {{ _('Review Needed: {comment}')|f(comment=row.revision_comment) }}

@@ -126,8 +126,63 @@ def translation_needs_review(locale):
     )
 
 
+def has_visible_schedule(user, locale):
+    """
+    Returns a combinable queryset expression for Document queries that is true when
+    the document has a revision scheduled for publishing that the given user may see.
+    """
+    return Exists(
+        Revision.objects.filter(
+            Revision.objects.get_held_visibility_condition(user, locale),
+            document=OuterRef("pk"),
+            schedule__isnull=False,
+        )
+    )
+
+
+def translation_scheduled(user, locale):
+    """
+    Returns a combinable queryset expression for Document queries that is true when
+    the document's translation for the given locale is not published yet, and its
+    first revision is scheduled for publishing and visible to the given user.
+    Archived translations are skipped.
+    """
+    return Exists(
+        Revision.objects.filter(
+            Revision.objects.get_held_visibility_condition(user, locale),
+            document__parent=OuterRef("pk"),
+            document__locale=locale,
+            document__is_archived=False,
+            document__current_revision__isnull=True,
+            schedule__isnull=False,
+        )
+    )
+
+
+def publishing_status(scheduled, current_revision_id):
+    """
+    Returns the status of a document with no revision waiting for review, given whether
+    it has a scheduled revision, and the id of its current revision, which is None when
+    the document is not published yet. Returns None for a published document with no
+    scheduled revision.
+    """
+    if scheduled and current_revision_id:
+        # L10n: This is a KB article status. The article is published, and a newer
+        # revision is scheduled to be published later.
+        return _lazy("Up to Date (update scheduled)")
+    if scheduled:
+        # L10n: This is a KB article status. The article is not published yet, but its
+        # first revision is scheduled to be published later.
+        return _lazy("Scheduled")
+    if not current_revision_id:
+        # L10n: This is a KB article status. The article is not published, and none of
+        # its revisions is waiting for review or scheduled to be published.
+        return _lazy("No Approved Content")
+    return None
+
+
 def row_to_dict_with_out_of_dateness(
-    readout_locale, eng_slug, eng_title, slug, title, visits, significance, needs_review
+    readout_locale, eng_slug, eng_title, slug, title, visits, significance, needs_review, scheduled
 ):
     """Format a row for a readout that has the traffic-light-style
     categorization of how seriously out of date a translation is."""
@@ -135,6 +190,10 @@ def row_to_dict_with_out_of_dateness(
         locale = readout_locale
         if needs_review:
             status, view_name, status_class = REVIEW_STATUSES[needs_review]
+        elif scheduled:
+            status = publishing_status(scheduled=True, current_revision_id=None)
+            view_name = "wiki.document_revisions"
+            status_class = "scheduled"
         else:
             status, view_name, status_class = SIGNIFICANCE_STATUSES.get(
                 significance, REVIEW_STATUSES[needs_review]
@@ -211,6 +270,7 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
             .order_by("created")[:1]
             .values("comment")
         ),
+        scheduled=has_visible_schedule(user, settings.WIKI_DEFAULT_LANGUAGE),
     )
 
     if locale and (locale != settings.WIKI_DEFAULT_LANGUAGE):
@@ -268,6 +328,12 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
 
         if d.unapproved_revision_comment is None:
             data["latest_revision"] = True
+            if d.scheduled and d.current_revision:
+                data["update_scheduled"] = True
+            elif d.scheduled:
+                data["scheduled"] = True
+            elif not d.current_revision:
+                data["no_approved_content"] = True
         else:
             data["revision_comment"] = d.unapproved_revision_comment
 
@@ -645,9 +711,12 @@ class MostVisitedDefaultLanguageReadout(Readout):
                         document=OuterRef("pk"),
                         reviewed__isnull=True,
                         schedule__isnull=True,
-                        id__gt=OuterRef("current_revision__id"),
+                    ).filter(
+                        Q(id__gt=F("document__current_revision__id"))
+                        | Q(document__current_revision__isnull=True)
                     )
-                )
+                ),
+                scheduled=has_visible_schedule(self.user, self.locale),
             )
             .annotate(num_visits=get_visits_subquery(period=period))
             .order_by(F("num_visits").desc(nulls_last=True), "title")
@@ -656,11 +725,18 @@ class MostVisitedDefaultLanguageReadout(Readout):
         if max:
             qs = qs[:max]
 
-        return qs.values_list("slug", "title", "num_visits", "needs_review")
+        return qs.values_list(
+            "slug", "title", "num_visits", "needs_review", "scheduled", "current_revision_id"
+        )
 
     def row_to_dict(self, row):
-        (slug, title, visits, needs_review) = row
-        status, view_name, _dummy = REVIEW_STATUSES[needs_review]
+        (slug, title, visits, needs_review, scheduled, current_revision_id) = row
+        publishing = publishing_status(scheduled, current_revision_id)
+        if publishing and not needs_review:
+            status = publishing
+            view_name = "wiki.document_revisions"
+        else:
+            status, view_name, _dummy = REVIEW_STATUSES[needs_review]
         return {
             "title": title,
             "url": reverse("wiki.document", args=[slug], locale=self.locale),
@@ -717,6 +793,7 @@ class CategoryReadout(Readout):
                 )
                 .filter(Q(significance__gt=TYPO_SIGNIFICANCE) | Q(significance__isnull=True))
             ),
+            scheduled=has_visible_schedule(self.user, self.locale),
             num_visits=get_visits_subquery(period=period),
         ).order_by(F("num_visits").desc(nulls_last=True), "title")
 
@@ -724,11 +801,28 @@ class CategoryReadout(Readout):
             qs = qs[:max]
 
         return qs.values_list(
-            "slug", "title", "num_visits", "needs_change", "needs_review", "unready_for_l10n"
+            "slug",
+            "title",
+            "num_visits",
+            "needs_change",
+            "needs_review",
+            "unready_for_l10n",
+            "scheduled",
+            "current_revision_id",
         )
 
     def row_to_dict(self, row):
-        (slug, title, visits, needs_changes, needs_review, unready_for_l10n) = row
+        (
+            slug,
+            title,
+            visits,
+            needs_changes,
+            needs_review,
+            unready_for_l10n,
+            scheduled,
+            current_revision_id,
+        ) = row
+        publishing = publishing_status(scheduled, current_revision_id)
         if needs_review:
             status, view_name, _ = REVIEW_STATUSES[needs_review]
         elif needs_changes:
@@ -742,6 +836,9 @@ class CategoryReadout(Readout):
         elif unready_for_l10n:
             # L10n: This refers to articles.
             status = _lazy("Changes Not Ready For Localization")
+            view_name = "wiki.document_revisions"
+        elif publishing:
+            status = publishing
             view_name = "wiki.document_revisions"
         else:
             status, view_name, _ = REVIEW_STATUSES[0]
@@ -848,6 +945,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                     transdoc_subquery.values("current_revision__based_on__id")
                 ),
                 needs_review=translation_needs_review(self.locale),
+                scheduled=translation_scheduled(self.user, self.locale),
             )
             .annotate(most_significant_change=MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY)
             .annotate(num_visits=get_visits_subquery(period=period))
@@ -865,6 +963,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             "num_visits",
             "most_significant_change",
             "needs_review",
+            "scheduled",
         )
 
     def row_to_dict(self, columns):
@@ -933,6 +1032,7 @@ class TemplateTranslationsReadout(Readout):
                 transdoc_subquery.values("current_revision__based_on__id")
             ),
             needs_review=translation_needs_review(self.locale),
+            scheduled=translation_scheduled(self.user, self.locale),
         ).annotate(most_significant_change=MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY)
 
         return qs.values_list(
@@ -942,12 +1042,21 @@ class TemplateTranslationsReadout(Readout):
             "transdoc_title",
             "most_significant_change",
             "needs_review",
+            "scheduled",
         )
 
     def row_to_dict(self, row):
-        (eng_slug, eng_title, slug, title, significance, needs_review) = row
+        (eng_slug, eng_title, slug, title, significance, needs_review, scheduled) = row
         return row_to_dict_with_out_of_dateness(
-            self.locale, eng_slug, eng_title, slug, title, None, significance, needs_review
+            self.locale,
+            eng_slug,
+            eng_title,
+            slug,
+            title,
+            None,
+            significance,
+            needs_review,
+            scheduled,
         )
 
     def sort_and_truncate(self, rows, max):
@@ -1298,6 +1407,7 @@ class CannedResponsesReadout(Readout):
                     transdoc_subquery.values("current_revision__based_on__id")
                 ),
                 needs_review=translation_needs_review(self.locale),
+                scheduled=translation_scheduled(self.user, self.locale),
                 num_visits=get_visits_subquery(),
             )
             .annotate(most_significant_change=MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY)
@@ -1315,6 +1425,7 @@ class CannedResponsesReadout(Readout):
             "num_visits",
             "most_significant_change",
             "needs_review",
+            "scheduled",
         )
 
     def row_to_dict(self, row):
