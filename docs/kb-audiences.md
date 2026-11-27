@@ -55,6 +55,8 @@ everyone but their creators, reviewers in the locale, and Staff.
   a Django group removes its grant, which only narrows access.
 - Access follows group membership, not contract status: leaving a company's groups ends it.
 - Making a private article public exposes its whole history.
+- Changing an article's KBs in *Edit article metadata* names the images and included articles
+  that it or its translations would stop showing, and saves only once confirmed.
 
 ```
 default (public)          "Clear the cache"

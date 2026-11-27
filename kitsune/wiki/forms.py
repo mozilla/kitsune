@@ -13,6 +13,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ngettext_lazy as _nlazy
 
+from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField, MultiUsernameFilterField
 from kitsune.wiki.config import (
@@ -30,6 +31,7 @@ from kitsune.wiki.models import (
     DraftRevision,
     Revision,
 )
+from kitsune.wiki.parser import can_embed_image, can_include
 from kitsune.wiki.tasks import add_short_links
 from kitsune.wiki.widgets import (
     AudiencesWidget,
@@ -146,6 +148,8 @@ class DocumentForm(forms.ModelForm):
         ),
     )
 
+    confirm_audiences = forms.BooleanField(required=False, label=_lazy("Save anyway"))
+
     allow_discussion = forms.BooleanField(
         label=_lazy("Allow discussion on this article?"), initial=True, required=False
     )
@@ -219,6 +223,33 @@ class DocumentForm(forms.ModelForm):
             cdata["related_documents"] = Document.objects.filter(
                 Q(pk__in=cdata["related_documents"]) | Q(pk__in=hidden_docs)
             )
+
+        if (
+            "confirm_audiences" in self.fields
+            and cdata.get("audiences")
+            and not cdata.get("confirm_audiences")
+        ):
+            images, includes = self._hidden_embeds(cdata["audiences"])
+            if images:
+                self.add_error(
+                    "confirm_audiences",
+                    # L10n: %(titles)s is a comma-separated list of image titles.
+                    _(
+                        "These images will stop showing in this article or its translations: "
+                        "%(titles)s"
+                    )
+                    % {"titles": ", ".join(images)},
+                )
+            if includes:
+                self.add_error(
+                    "confirm_audiences",
+                    # L10n: %(titles)s is a comma-separated list of article titles.
+                    _(
+                        "These included articles will stop showing in this article or its "
+                        "translations: %(titles)s"
+                    )
+                    % {"titles": ", ".join(includes)},
+                )
 
         # Products are required for en-US
         product_ids = set(map(int, cdata.get("products", [])))
@@ -332,6 +363,44 @@ class DocumentForm(forms.ModelForm):
             del self.fields["audiences"]
         elif self.instance.pk is None:
             self.fields["audiences"].initial = Audience.objects.filter(slug=DEFAULT_AUDIENCE_SLUG)
+        if "audiences" not in self.fields or self.instance.pk is None:
+            del self.fields["confirm_audiences"]
+
+    def _hidden_embeds(self, audiences):
+        """
+        Titles of the images and included articles that the article or its translations show
+        now and would stop showing in these knowledge bases.
+        """
+        old_ids = self.instance.private_audience_ids
+        new_ids = (
+            None if any(a.is_public for a in audiences) else frozenset(a.pk for a in audiences)
+        )
+        if new_ids == old_ids:
+            return [], []
+
+        family = Document.objects.filter(Q(pk=self.instance.pk) | Q(parent=self.instance))
+        images = (
+            Image.objects.filter(documentimage__document__in=family)
+            .select_related("audience")
+            .distinct()
+        )
+        includes = (
+            Document.objects.filter(
+                documentlink_from_set__linked_from__in=family,
+                documentlink_from_set__kind__in=("include", "template"),
+            )
+            .select_related("parent")
+            .prefetch_related("audiences", "parent__audiences")
+            .distinct()
+        )
+        hidden_images = {image.title for image in images if not can_embed_image(new_ids, image)}
+        # Links record every include, also those that already show as missing.
+        hidden_includes = {
+            doc.title
+            for doc in includes
+            if can_include(old_ids, doc) and not can_include(new_ids, doc)
+        }
+        return sorted(hidden_images), sorted(hidden_includes)
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
