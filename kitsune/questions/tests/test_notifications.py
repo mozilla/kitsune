@@ -90,6 +90,24 @@ https://testserver/{locale}unsubscribe/"""
 
 SOLUTION_EMAIL = "Hi {to_user},\n\n" + SOLUTION_EMAIL_TO_ANONYMOUS
 
+SOLUTION_EMAIL_TO_AUTHOR = """Hi {to_user},
+
+Great news! Your answer for the following question has just been marked as the solution: "{title}"
+
+You can view the solved question thread using the following link:
+
+https://testserver/{locale}questions/{question_id}?utm_campaign=\
+questions-solved&utm_source=notification&utm_medium=email
+
+Thank you for taking the time to help another user in our forum. \
+Your knowledge and willingness to contribute make Mozilla Support \
+a welcoming and helpful community.
+
+If you have time to help a few more people, take a look at our unanswered questions. Your next solution could be just a click away!
+
+https://testserver/questions?filter=new
+"""
+
 
 class NotificationsTests(TestCase):
     """Test that notifications get sent."""
@@ -202,6 +220,50 @@ class NotificationsTests(TestCase):
             mail.outbox[1].alternatives[0][0],
             rf"{re.escape('https://example.com/mozilla-support.')}[0-9a-z]+\.png",
         )
+
+    @mock.patch.object(Site.objects, "get_current")
+    def test_solution_author_notification(self, get_current):
+        """Test emails to solution authors and the related setting."""
+        get_current.return_value.domain = "testserver"
+
+        # Create a user and opt in to email_authored_solutions.
+        u = UserFactory(email="alan@example.com")
+        u.settings.create(name="email_authored_solutions", value="True")
+
+        # Create a question and post an answer from `u`.
+        q = QuestionFactory()
+        a = AnswerFactory(question=q, creator=u)
+
+        # Mark `a` as a solution.
+        self.client.login(username=q.creator.username, password="testpass")
+        post(self.client, "questions.solve", args=[q.id, a.id])
+
+        self.assertEqual(len(mail.outbox), 1)
+
+        attrs_eq(
+            mail.outbox[0],
+            to=["alan@example.com"],
+            subject=f'You have solved a question: "{q.title}"',
+        )
+        starts_with(
+            mail.outbox[0].body,
+            SOLUTION_EMAIL_TO_AUTHOR.format(
+                to_user=display_name(u),
+                title=q.title,
+                question_id=q.id,
+                locale="en-US/",
+            ),
+        )
+
+        # Opt out of email_authored_solutions.
+        u.settings.filter(name="email_authored_solutions").update(value="False")
+
+        # Unmark `a` as a solution and mark it again.
+        post(self.client, "questions.unsolve", args=[q.id, a.id])
+        post(self.client, "questions.solve", args=[q.id, a.id])
+
+        # Assert that no new emails have been sent.
+        self.assertEqual(len(mail.outbox), 1)
 
     @mock.patch.object(Site.objects, "get_current")
     def test_autowatch_reply(self, get_current):
