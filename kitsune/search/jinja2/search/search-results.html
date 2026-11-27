@@ -9,9 +9,9 @@
   {% if num_results > 0 %}
   <p class="sumo-page-intro">
     {# L10n: {n} is the number of search results, {q} is the search query. #}
-    {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong>',
-                      'Found <strong>{n}</strong> results for <strong>{q}</strong>',
-                      num_results)|fe(n=num_results, q=q) }}
+    {{ ngettext('Found <strong>{n}</strong> result for ‘<strong>{q}</strong>’',
+                'Found <strong>{n}</strong> results for ‘<strong>{q}</strong>’',
+                num_results)|fe(n=num_results, q=q) }}
   </p>
 
   <div class="content-box">
@@ -23,7 +23,7 @@
   {{ pages|paginator }}
   {% else %}
   <p class="sumo-page-intro">
-    {{ _("Sorry! 0 results found for <strong>‘{q}’</strong>.")|fe(q=q) }}
+    {{ _("Sorry! 0 results found for ‘<strong>{q}</strong>’.")|fe(q=q) }}
   </p>
 
   <p>{{ _("Try searching again with different keywords.") }}</p>
