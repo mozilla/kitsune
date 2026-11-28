@@ -86,7 +86,7 @@
     "onchange": "^7.1.0",
     "path-parse": "^1.0.7",
     "postcss": "^8.5.32",
-    "postcss-custom-properties": "^15.0.1",
+    "postcss-custom-properties": "^15.0.5",
     "postcss-html": "^2.0.0",
     "postcss-loader": "^8.2.1",
     "sass": "^1.108.2",
