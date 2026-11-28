@@ -53,7 +53,7 @@
   "devDependencies": {
     "@babel/core": "^8.0.5",
     "@babel/plugin-transform-runtime": "^8.0.5",
-    "@babel/preset-env": "^8.0.5",
+    "@babel/preset-env": "^8.0.7",
     "@mozilla-protocol/core": "22.0.0",
     "@stylistic/stylelint-plugin": "^5.3.0",
     "@types/underscore": "^1.13.0",
