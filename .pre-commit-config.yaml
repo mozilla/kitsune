@@ -10,7 +10,7 @@ repos:
       - id: check-merge-conflict
       - id: debug-statements
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.5
+    rev: v0.17.6
     hooks:
       - id: ruff-check
         files: "^kitsune/"
@@ -57,13 +57,13 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          - boto3-stubs==1.44.5
+          - boto3-stubs==1.44.11
           - types-redis==4.6.0.20241004
           - types-requests==2.33.0.20261030
-          - types-python-dateutil==2.9.0.20261116
+          - types-python-dateutil==2.9.0.20261122
           - types-simplejson==4.3.0.20261112
-          - types-PyYAML==6.0.12.20261113
-          - types-Markdown==3.11.3.20261108
+          - types-PyYAML==6.0.12.20261122
+          - types-Markdown==3.11.3.20261122
         files: "^kitsune/"
         exclude: "/migrations/"
   - repo: https://github.com/pre-commit/mirrors-eslint
@@ -76,15 +76,15 @@ repos:
           - eslint@10.15.0
           - eslint-plugin-import-x@4.18.1
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
-    rev: v18.0.0
+    rev: v18.1.0
     hooks:
       - id: stylelint
         language_version: "22.23.3"
         files: "^(kitsune/sumo/static/sumo/scss/|svelte/).*\\.(scss|svelte)$"
         additional_dependencies:
-          - stylelint@18.0.0
+          - stylelint@18.1.0
           - stylelint-config-recommended-scss@18.0.0
-          - stylelint-order@8.1.3
+          - stylelint-order@9.0.0
           - "@stylistic/stylelint-plugin@6.0.1"
           - stylelint-scss@7.5.0
           - postcss-html@2.0.1
